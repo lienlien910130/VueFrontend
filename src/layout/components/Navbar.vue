@@ -1,51 +1,120 @@
 <template>
   <div class="navbar">
-    <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
-
-    <breadcrumb class="breadcrumb-container" />
-
-    <div class="right-menu">
-      <el-dropdown class="avatar-container" trigger="click">
-        <div class="avatar-wrapper">
-          <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
-          <i class="el-icon-caret-bottom" />
+    <el-row :gutter="20">
+      <el-col :xs="2" :sm="3" :md="4" :lg="4" :xl="4">
+        <div class="grid-content">
+          <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
         </div>
-        <el-dropdown-menu slot="dropdown" class="user-dropdown">
-          <router-link to="/">
-            <el-dropdown-item>
-              Home
-            </el-dropdown-item>
-          </router-link>
-          <a target="_blank" href="https://github.com/PanJiaChen/vue-admin-template/">
-            <el-dropdown-item>Github</el-dropdown-item>
-          </a>
-          <a target="_blank" href="https://panjiachen.github.io/vue-element-admin-site/#/">
-            <el-dropdown-item>Docs</el-dropdown-item>
-          </a>
-          <el-dropdown-item divided @click.native="logout">
-            <span style="display:block;">Log Out</span>
-          </el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
-    </div>
+      </el-col>
+      
+      <!-- <el-col :xs="20" :sm="18" :md="16" :lg="16" :xl="16">
+        <div class="grid-content">
+          <div class="center-menu">
+            <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4" :offset="2" class="text-center">
+              <router-link class="pan-btn blue-btn" to="/">
+                首頁
+              </router-link>
+            </el-col>
+            <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4" class="text-center vertical">
+              <router-link class="pan-btn blue-btn" to="/equipment/fire">
+                設備管理
+              </router-link>
+            </el-col>
+            <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4" class="text-center">
+              <router-link class="pan-btn blue-btn" to="/normal/basic">
+                平時管理
+              </router-link>
+            </el-col>
+            <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4" class="text-center">
+              <router-link class="pan-btn blue-btn" to="/analysis/fire">
+                歷史分析
+              </router-link>
+            </el-col>
+            <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4" class="text-center">
+              <router-link class="pan-btn blue-btn" to="/emergency/aaa">
+                緊急應變
+              </router-link>
+            </el-col>    
+          </div>
+        </div>
+      </el-col> -->
+      <el-col :xs="2" :sm="3" :md="4" :lg="4" :xl="4" style="float:right;">
+        <div class="grid-content">
+          <div class="right-menu">
+            <Select class="select"
+              v-bind="selectAttrs" 
+              v-on="selectEvent"></Select>
+
+            <svg-icon  icon-class="user" />
+            
+            <el-dropdown 
+            class="avatar-container" trigger="click">
+              <div class="avatar-wrapper">
+                <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
+                <!-- <i class="el-icon-caret-bottom" /> -->
+                <span>{{ name }}</span>
+              </div>
+              <el-dropdown-menu slot="dropdown" class="user-dropdown">
+                <router-link to="/">
+                  <el-dropdown-item>
+                    首頁
+                  </el-dropdown-item>
+                </router-link>
+                <router-link to="/membersetting">
+                  <el-dropdown-item>
+                    設定
+                  </el-dropdown-item>
+                </router-link>
+                <el-dropdown-item divided @click.native="logout">
+                  <span style="display:block;">登出</span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
+    <!-- <breadcrumb class="breadcrumb-container" /> -->
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import Breadcrumb from '@/components/Breadcrumb'
-import Hamburger from '@/components/Hamburger'
+import { getbuilding } from '@/api/building'
 
 export default {
   components: {
-    Breadcrumb,
-    Hamburger
+    Select: () => import('@/components/Select/index.vue'),
+    Breadcrumb: () => import('@/components/Breadcrumb'),
+    Hamburger: () => import('@/components/Hamburger')
   },
   computed: {
     ...mapGetters([
       'sidebar',
-      'avatar'
-    ])
+      'account',
+      'name',
+      'id'
+    ]),
+    selectAttrs() {
+      return {
+        selectData: this.selectData,
+        title:'Building'
+      }
+    },
+    selectEvent() {
+      return {
+        subChangeOption: this.handleSelectOption
+      }
+    },
+  },
+  mounted() {
+      this.getBuilding()
+  },
+  data() {
+    return {
+      selectData:[],
+      options:[]
+    }
   },
   methods: {
     toggleSideBar() {
@@ -54,7 +123,25 @@ export default {
     async logout() {
       await this.$store.dispatch('user/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
-    }
+    },
+    getBuilding() {
+      getbuilding(this.id).then(response => {
+          response.result.forEach(item => {
+              let _array = { 
+                  id : item.id, 
+                  label: item.buildingName, 
+                  value: item.id,
+                  up: item.floorsOfAboveGround,
+                  down: item.floorsOfUnderground
+              }
+              this.options.push(_array)  
+            })
+              this.selectData = this.options
+      })
+    },
+    handleSelectOption(content){
+      this.$store.dispatch('building/setbuildingid',content.id)
+    },
   }
 }
 </script>
@@ -92,7 +179,10 @@ export default {
     &:focus {
       outline: none;
     }
-
+    .select { 
+      width: 200px;
+      margin-bottom: 20px;
+    }
     .right-menu-item {
       display: inline-block;
       padding: 0 8px;
@@ -136,4 +226,18 @@ export default {
     }
   }
 }
+
+  .el-row {
+    //margin-bottom: 20px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  .grid-content {
+    height: 100%;
+  }
+  .row-bg {
+    padding: 10px 0;
+    background-color: #f9fafc;
+  }
 </style>

@@ -1,74 +1,124 @@
 
-const tokens = {
-  admin: {
-    token: 'admin-token'
+const tokens = { // 水星 業主 大樓管理員 防災中心
+  mercuryfire: {
+    token: 'mercuryfire'
   },
-  editor: {
-    token: 'editor-token'
+  owner: {
+    token: 'owner'
+  },
+  manager: {
+    token: 'manager'
+  },
+  prevention: {
+    token: 'prevention'
   }
+  
 }
 
 const users = {
-  'admin-token': {
-    roles: ['admin'],
-    introduction: 'I am a super administrator',
+  'mercuryfire': {
+    roles: 'mercuryfire',
+    authority: ['a','b','c','d'],
     avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
-    name: 'Super Admin'
+    account: 'mercuryfire-水星',
+    token:'mercuryfire',
+    id: '1',
+    building: ['1','2','3']
   },
-  'editor-token': {
-    roles: ['editor'],
-    introduction: 'I am an editor',
+  'owner': {
+    roles: 'owner',
+    authority: ['a','b','c','d'],
     avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
-    name: 'Normal Editor'
+    account: 'owner-業主',
+    token:'owner',
+    id: '2',
+    building: ['1']
+  },
+  'manager': {
+    roles: 'manager',
+    authority: ['a','b','c','d'],
+    avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
+    account: 'manager-大樓管理員',
+    token:'manager',
+    id: '3',
+    building: ['1']
+  },
+  'prevention': {
+    roles: 'prevention',
+    authority: ['a','b','c','d'],
+    avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
+    account: 'prevention-防災中心',
+    token:'prevention',
+    id: '4',
+    building: ['1']
+  }
+}
+//模擬回傳的數據資料
+const version = {
+  'version':{
+    id: '@id',
+    name: '@sentence(1, 2)',
+    components: '@integer(300, 5000)',
+    logo: '../../../dist/static/img/login_logo.png'
   }
 }
 
 module.exports = [
-  // user login
   {
-    url: '/vue-admin-template/user/login',
-    type: 'post',
-    response: config => {
-      const { username } = config.body
-      const token = tokens[username]
-
-      // mock error
-      if (!token) {
-        return {
-          code: 60204,
-          message: 'Account and password are incorrect.'
-        }
-      }
-
-      return {
-        code: 20000,
-        data: token
-      }
-    }
-  },
-
-  // get user info
-  {
-    url: '/vue-admin-template/user/info\.*',
+    url: '/vue-admin-template/user/version',
     type: 'get',
     response: config => {
-      const { token } = config.query
-      const info = users[token]
-
-      // mock error
-      if (!info) {
-        return {
-          code: 50008,
-          message: 'Login failed, unable to get user details.'
-        }
-      }
-
       return {
         code: 20000,
-        data: info
+        data: version
       }
     }
   },
+
+  // {
+  //   url: '/vue-admin-template/user/login',
+  //   type: 'post',
+  //   response: config => {
+  //     console.log('res')
+  //     const { username } = config.body
+  //     const data = tokens[username]
+  //     // mock error
+  //     if (!data) {
+  //       return {
+  //         code: 60204,
+  //         message: 'Account and password are incorrect.'
+  //       }
+  //     }
+
+  //     return {
+  //       code: 20000,
+  //       data: data
+  //     }
+  //   }
+  // },
+
+  // get user info
+  // {
+  //   url: '/vue-admin-template/user/info\.*',
+  //   type: 'get',
+  //   response: config => {
+  //     const { token } = config.query
+  //     const info = users[token]
+
+  //     // mock error
+  //     if (!info) {
+  //       return {
+  //         code: 50008,
+  //         message: 'Login failed, unable to get user details.'
+  //       }
+  //     }
+
+  //     return {
+  //       code: 20000,
+  //       data: info
+  //     }
+  //   }
+  // },
 
   // user logout
   {

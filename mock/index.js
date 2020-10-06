@@ -3,10 +3,16 @@ const { param2Obj } = require('./utils')
 
 const user = require('./user')
 const table = require('./table')
+const indexmock = require('./indexmock') //首頁
+const setting = require('./setting') //設定
+const building = require('./building') //建築
 
 const mocks = [
   ...user,
-  ...table
+  ...table,
+  ...indexmock,
+  ...setting,
+  ...building
 ]
 
 // for front mock

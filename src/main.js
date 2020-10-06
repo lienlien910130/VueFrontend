@@ -1,8 +1,10 @@
 import Vue from 'vue'
-
+import qs from 'qs'
 import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 
 import ElementUI from 'element-ui'
+import fabric from 'fabric'
+import vcolorpicker from 'vcolorpicker'
 import 'element-ui/lib/theme-chalk/index.css'
 import locale from 'element-ui/lib/locale/lang/en' // lang i18n
 
@@ -11,6 +13,8 @@ import '@/styles/index.scss' // global css
 import App from './App'
 import store from './store'
 import router from './router'
+import SIdentify from './views/login/components/identify'
+import socket from './utils/socket';
 
 import '@/icons' // icon
 import '@/permission' // permission control
@@ -32,8 +36,14 @@ if (process.env.NODE_ENV === 'production') {
 Vue.use(ElementUI, { locale })
 // 如果想要中文版 element-ui，按如下方式声明
 // Vue.use(ElementUI)
+Vue.use(SIdentify)
+Vue.use(fabric)
+Vue.use(vcolorpicker)
 
 Vue.config.productionTip = false
+
+Vue.prototype.$socket = socket
+Vue.prototype.$qs = qs
 
 new Vue({
   el: '#app',

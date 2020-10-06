@@ -2,7 +2,17 @@ const getters = {
   sidebar: state => state.app.sidebar,
   device: state => state.app.device,
   token: state => state.user.token,
-  avatar: state => state.user.avatar,
-  name: state => state.user.name
+  level: state => state.user.level,
+  account: state => state.user.account,
+  roles: state => state.user.roles,
+  id: state => state.user.id,
+  name: state => state.user.name,
+  verid: state => state.version.id,
+  vername: state => state.version.name,
+  verlogo: state => state.version.logo,
+  vercom: state => state.version.components,
+  msg: state => state.websocket.msg,
+  buildingid : state => state.building.buildingid
+
 }
 export default getters
