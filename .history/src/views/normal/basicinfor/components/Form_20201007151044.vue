@@ -111,17 +111,16 @@
         </el-input>
       </el-form-item>
       <el-form-item label="檢視文件">
-        <div class="files">
-          <el-link
-          class="link"
-          v-for="(item,index) in originFiles"
+        <el-link
+        class="link"
+         v-for="(item,index) in originFiles"
          :key="item.id"
          :href="downloadbufile(item.id)" target="_blank">{{ index+1 }}.{{ item.fileOriginalName }}</el-link>
-        </div>
-        
          <!-- :href="downloadbufile(item.id)" target="_blank" -->
       </el-form-item>
       <el-form-item>
+        <!-- <input multiple  type="file" @change="fileChange">
+        <el-button type="primary" @click="submitupload">上傳文件</el-button> -->
         <el-upload
           ref="upload"
           action="upload"
@@ -167,7 +166,8 @@ export default {
       ...mapGetters([
         'id',
         'buildingid'
-      ])
+      ]),
+      
     },
   data() {
     const vaildateInt = (rule, value, callback) => {
@@ -240,9 +240,7 @@ export default {
       }
   },
   mounted(){
-    this.$nextTick(() => {
-      this.getbufiles()
-    })
+    this.getbufiles()
   },
   methods: {
     openuser(id){
@@ -278,7 +276,6 @@ export default {
         this.form = this.information
     },
     getbufiles(){
-      this.originFiles = []
       getbufiles(this.buildingid).then(respone =>{
         console.log('getbufiles=>'+JSON.stringify(respone))
         respone.result.forEach( item => {
@@ -326,15 +323,10 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .line{
   text-align: center;
 }
 
-.files {
-  width: 100%;
-  max-height: 200px;
-  overflow: auto;
-}
 </style>
 

@@ -167,7 +167,8 @@ export default {
       ...mapGetters([
         'id',
         'buildingid'
-      ])
+      ]),
+      
     },
   data() {
     const vaildateInt = (rule, value, callback) => {
@@ -278,7 +279,6 @@ export default {
         this.form = this.information
     },
     getbufiles(){
-      this.originFiles = []
       getbufiles(this.buildingid).then(respone =>{
         console.log('getbufiles=>'+JSON.stringify(respone))
         respone.result.forEach( item => {
@@ -333,7 +333,7 @@ export default {
 
 .files {
   width: 100%;
-  max-height: 200px;
+  height: 200px;
   overflow: auto;
 }
 </style>

@@ -111,34 +111,18 @@
         </el-input>
       </el-form-item>
       <el-form-item label="檢視文件">
-        <div class="files">
-          <el-link
-          class="link"
-          v-for="(item,index) in originFiles"
-         :key="item.id"
-         :href="downloadbufile(item.id)" target="_blank">{{ index+1 }}.{{ item.fileOriginalName }}</el-link>
-        </div>
-        
-         <!-- :href="downloadbufile(item.id)" target="_blank" -->
-      </el-form-item>
-      <el-form-item>
         <el-upload
-          ref="upload"
-          action="upload"
+          action=""
           accept="image/jpeg,image/gif,image/png,application/pdf"
           multiple
+          :limit="3"
+          :on-exceed="handleExceed"
           :file-list="fileList"
+          :on-preview="handlePreview"
+          :on-remove="handleRemove"
           :before-remove="beforeRemove"
-          :on-change="handleChange"
-          :auto-upload="false"
           >
-          <el-button slot="trigger" size="small" type="primary">選取文件</el-button>
-          <el-button 
-          style="margin-left: 10px;" 
-          size="small" 
-          type="success"
-          :disabled="isDisabled" 
-          @click="submitupload">上傳</el-button>
+          <el-button type="primary">上傳文件</el-button>
         </el-upload>
       </el-form-item>
       <el-form-item>
@@ -151,7 +135,7 @@
 </template>
 
 <script>
-import { editbuInfo,uploadbuildinginfo,getbufiles,downloadbufile  } from '@/api/building'
+import { editbuInfo  } from '@/api/building'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -165,8 +149,7 @@ export default {
   },
   computed: {
       ...mapGetters([
-        'id',
-        'buildingid'
+        'id'
       ])
     },
   data() {
@@ -228,21 +211,13 @@ export default {
         floorsOfAboveGround: [{ required: true, trigger: 'blur', validator: vaildateInt }],
         floorsOfUnderground: [{ required: true, trigger: 'blur', validator: vaildateInt }],
         licenseNumber:[{ required: true, trigger: 'blur',validator: validateText}]
-      },
-      isDisabled:true,
-      importFiles:[],
-      originFiles:[]
+      }
     }
   },
   watch: {
       information: function(){
         this.refresh()
       }
-  },
-  mounted(){
-    this.$nextTick(() => {
-      this.getbufiles()
-    })
   },
   methods: {
     openuser(id){
@@ -277,64 +252,26 @@ export default {
     refresh(){
         this.form = this.information
     },
-    getbufiles(){
-      this.originFiles = []
-      getbufiles(this.buildingid).then(respone =>{
-        console.log('getbufiles=>'+JSON.stringify(respone))
-        respone.result.forEach( item => {
-          this.originFiles.push(item)
-        })
-      }).catch(error => {
-        console.log('error=>'+error)
-      })
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
     },
-    downloadbufile(fileid){
-      return "http://192.168.88.65:59119/basic/fileDownload/"+fileid
-      // downloadbufile(fileid).then(respone =>{
-      //   console.log('downloadbufile=>'+JSON.stringify(respone))
-      //   this.download(response)
-      // }).catch(error => {
-      //   console.log('error=>'+error)
-      // })
+    handlePreview(file) {
+      console.log(file);
     },
-    submitupload(file){
-      const formData = new FormData();
-      this.importFiles.forEach(item => {
-        formData.append('file', item.raw)
-      })
-      uploadbuildinginfo(this.buildingid,this.id,formData).then(respone => {
-        this.$message('上傳成功')
-        this.importFiles = []
-        this.fileList = []
-        this.getbufiles()
-      }).catch(error =>{
-        console.log('error=>'+error)
-      })
-    },
-   handleChange(file, fileList) {
-      this.importFiles = fileList
-      if (this.importFiles.length > 0) {
-        this.isDisabled = false
-      } else {
-        this.isDisabled = true
-      }
+    handleExceed(files, fileList) {
+      this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
     },
     beforeRemove(file, fileList) {
-      return this.$confirm('是否確定刪除 ${ file.name }？');
+      return this.$confirm('確定移除 ${ file.name }？');
     }
   }
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .line{
   text-align: center;
 }
 
-.files {
-  width: 100%;
-  max-height: 200px;
-  overflow: auto;
-}
 </style>
 

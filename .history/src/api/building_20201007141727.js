@@ -218,16 +218,9 @@ export function uploadbuildinginfo(buildingId,userId,data) {
   })
 }
 //取得建築物檔案
-export function getbufiles(buildingId) {
+export function getbufile(buildingId) {
   return request({
     url: '/basic/'+buildingId+'/filesList',
-    method: 'get'
-  })
-}
-//下載建築物檔案
-export function downloadbufile(filesId) {
-  return request({
-    url: '/basic/fileDownload/'+filesId,
     method: 'get'
   })
 }

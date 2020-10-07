@@ -278,7 +278,6 @@ export default {
         this.form = this.information
     },
     getbufiles(){
-      this.originFiles = []
       getbufiles(this.buildingid).then(respone =>{
         console.log('getbufiles=>'+JSON.stringify(respone))
         respone.result.forEach( item => {

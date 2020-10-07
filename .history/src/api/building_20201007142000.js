@@ -224,10 +224,3 @@ export function getbufiles(buildingId) {
     method: 'get'
   })
 }
-//下載建築物檔案
-export function downloadbufile(filesId) {
-  return request({
-    url: '/basic/fileDownload/'+filesId,
-    method: 'get'
-  })
-}

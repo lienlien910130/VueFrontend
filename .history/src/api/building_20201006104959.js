@@ -208,26 +208,3 @@ export function floorImage(query) {
     params: query
   })
 }
-//上傳建築物檔案
-export function uploadbuildinginfo(buildingId,userId,data) {
-  return request({
-    url: '/basic/'+userId+'/buildings/'+buildingId+'/fileUpload',
-    method: 'post',
-    headers: {'Content-Type': 'multipart/form-data'},
-    data
-  })
-}
-//取得建築物檔案
-export function getbufiles(buildingId) {
-  return request({
-    url: '/basic/'+buildingId+'/filesList',
-    method: 'get'
-  })
-}
-//下載建築物檔案
-export function downloadbufile(filesId) {
-  return request({
-    url: '/basic/fileDownload/'+filesId,
-    method: 'get'
-  })
-}

@@ -75,8 +75,7 @@ import { getbuilding, getbuInfo , getselectOption ,
 getmanagementList, editmanagementList ,cremanagementList,delmanagementList,
 getcontactunitList, editcontactunitList,crecontactunitList,delcontactunitList,
  getfloorList, getfloor, editfloorList ,crefloorList ,delfloorList,
- getuserList, edituserList,creuserList,deluserList, floorImage, getBuildinguser
-  } from '@/api/building'
+ getuserList, edituserList,creuserList,deluserList, floorImage, getBuildinguser } from '@/api/building'
  
 import { mapGetters } from 'vuex'
 

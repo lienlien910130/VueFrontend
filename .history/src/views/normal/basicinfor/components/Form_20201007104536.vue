@@ -111,34 +111,23 @@
         </el-input>
       </el-form-item>
       <el-form-item label="檢視文件">
-        <div class="files">
-          <el-link
-          class="link"
-          v-for="(item,index) in originFiles"
-         :key="item.id"
-         :href="downloadbufile(item.id)" target="_blank">{{ index+1 }}.{{ item.fileOriginalName }}</el-link>
-        </div>
-        
-         <!-- :href="downloadbufile(item.id)" target="_blank" -->
-      </el-form-item>
-      <el-form-item>
+        <!-- <input multiple  type="file" @change="fileChange">
+        <el-button type="primary" @click="submitupload">上傳文件</el-button> -->
         <el-upload
           ref="upload"
-          action="upload"
+          action="uploadURL"
           accept="image/jpeg,image/gif,image/png,application/pdf"
           multiple
           :file-list="fileList"
+          :on-preview="handlePreview"
+          :on-remove="handleRemove"
           :before-remove="beforeRemove"
-          :on-change="handleChange"
+          :on-success="upLoadSuccess"
+          :on-error="upLoadError"
           :auto-upload="false"
           >
-          <el-button slot="trigger" size="small" type="primary">選取文件</el-button>
-          <el-button 
-          style="margin-left: 10px;" 
-          size="small" 
-          type="success"
-          :disabled="isDisabled" 
-          @click="submitupload">上傳</el-button>
+          <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+          <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
         </el-upload>
       </el-form-item>
       <el-form-item>
@@ -151,7 +140,7 @@
 </template>
 
 <script>
-import { editbuInfo,uploadbuildinginfo,getbufiles,downloadbufile  } from '@/api/building'
+import { editbuInfo,uploadbuildinginfo  } from '@/api/building'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -162,12 +151,16 @@ export default {
       selectData: {
             type: Array
       }
+
   },
   computed: {
       ...mapGetters([
         'id',
         'buildingid'
-      ])
+      ]),
+      uploadURL: function() {
+        return "http://192.168.88.65:59119/basic/"+this.id+"/buildings/"+this.buildingid+"/fileUpload";
+      }
     },
   data() {
     const vaildateInt = (rule, value, callback) => {
@@ -204,6 +197,8 @@ export default {
       }
     }
     return {
+      formData: new FormData(),
+      uploadURL:'',
       fileList: [],
       origin:{},
       form:{
@@ -228,21 +223,13 @@ export default {
         floorsOfAboveGround: [{ required: true, trigger: 'blur', validator: vaildateInt }],
         floorsOfUnderground: [{ required: true, trigger: 'blur', validator: vaildateInt }],
         licenseNumber:[{ required: true, trigger: 'blur',validator: validateText}]
-      },
-      isDisabled:true,
-      importFiles:[],
-      originFiles:[]
+      }
     }
   },
   watch: {
       information: function(){
         this.refresh()
       }
-  },
-  mounted(){
-    this.$nextTick(() => {
-      this.getbufiles()
-    })
   },
   methods: {
     openuser(id){
@@ -277,64 +264,49 @@ export default {
     refresh(){
         this.form = this.information
     },
-    getbufiles(){
-      this.originFiles = []
-      getbufiles(this.buildingid).then(respone =>{
-        console.log('getbufiles=>'+JSON.stringify(respone))
-        respone.result.forEach( item => {
-          this.originFiles.push(item)
-        })
-      }).catch(error => {
-        console.log('error=>'+error)
-      })
+    // fileChange(e){
+    //    for (var i = 0; i < e.target.files.length; i++) {
+    //       this.formData.append('file', e.target.files[i]) //用迴圈抓出多少筆再append回來
+    //     }
+    // },
+    // submitupload(){
+    //   uploadbuildinginfo(this.buildingid,this.id,this.formData).then(respone => {
+    //     console.log('su=>'+JSON.stringify(respone))
+    //   }).catch(error =>{
+    //     console.log('error=>'+error)
+    //   })
+    // },
+    submitUpload(){
+      this.$refs.upload.submit();
     },
-    downloadbufile(fileid){
-      return "http://192.168.88.65:59119/basic/fileDownload/"+fileid
-      // downloadbufile(fileid).then(respone =>{
-      //   console.log('downloadbufile=>'+JSON.stringify(respone))
-      //   this.download(response)
-      // }).catch(error => {
-      //   console.log('error=>'+error)
-      // })
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
     },
-    submitupload(file){
-      const formData = new FormData();
-      this.importFiles.forEach(item => {
-        formData.append('file', item.raw)
-      })
-      uploadbuildinginfo(this.buildingid,this.id,formData).then(respone => {
-        this.$message('上傳成功')
-        this.importFiles = []
-        this.fileList = []
-        this.getbufiles()
-      }).catch(error =>{
-        console.log('error=>'+error)
-      })
-    },
-   handleChange(file, fileList) {
-      this.importFiles = fileList
-      if (this.importFiles.length > 0) {
-        this.isDisabled = false
-      } else {
-        this.isDisabled = true
-      }
+    handlePreview(file) {
+      console.log(file);
     },
     beforeRemove(file, fileList) {
       return this.$confirm('是否確定刪除 ${ file.name }？');
+    },
+    upLoadSuccess(response, file, fileList) {
+      if (response == "ok") {
+        console.log(response + "已上传" + file);
+        console.log("项目添加成功");
+      } else {
+        console.log("项目添加失败");
+      }
+    },
+    upLoadError(response, file, fileList) {
+      console.log("项目添加失败");
     }
   }
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .line{
   text-align: center;
 }
 
-.files {
-  width: 100%;
-  max-height: 200px;
-  overflow: auto;
-}
 </style>
 

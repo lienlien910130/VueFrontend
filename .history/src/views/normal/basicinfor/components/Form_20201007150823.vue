@@ -111,17 +111,15 @@
         </el-input>
       </el-form-item>
       <el-form-item label="檢視文件">
-        <div class="files">
-          <el-link
-          class="link"
-          v-for="(item,index) in originFiles"
+        <el-link
+         v-for="item in originFiles"
          :key="item.id"
-         :href="downloadbufile(item.id)" target="_blank">{{ index+1 }}.{{ item.fileOriginalName }}</el-link>
-        </div>
-        
+         @click="downloadbufile(item.id)" >{{ item.fileOriginalName }}</el-link>
          <!-- :href="downloadbufile(item.id)" target="_blank" -->
       </el-form-item>
       <el-form-item>
+        <!-- <input multiple  type="file" @change="fileChange">
+        <el-button type="primary" @click="submitupload">上傳文件</el-button> -->
         <el-upload
           ref="upload"
           action="upload"
@@ -167,7 +165,8 @@ export default {
       ...mapGetters([
         'id',
         'buildingid'
-      ])
+      ]),
+      
     },
   data() {
     const vaildateInt = (rule, value, callback) => {
@@ -240,9 +239,7 @@ export default {
       }
   },
   mounted(){
-    this.$nextTick(() => {
-      this.getbufiles()
-    })
+    this.getbufiles()
   },
   methods: {
     openuser(id){
@@ -278,7 +275,6 @@ export default {
         this.form = this.information
     },
     getbufiles(){
-      this.originFiles = []
       getbufiles(this.buildingid).then(respone =>{
         console.log('getbufiles=>'+JSON.stringify(respone))
         respone.result.forEach( item => {
@@ -289,7 +285,7 @@ export default {
       })
     },
     downloadbufile(fileid){
-      return "http://192.168.88.65:59119/basic/fileDownload/"+fileid
+
       // downloadbufile(fileid).then(respone =>{
       //   console.log('downloadbufile=>'+JSON.stringify(respone))
       //   this.download(response)
@@ -303,6 +299,7 @@ export default {
         formData.append('file', item.raw)
       })
       uploadbuildinginfo(this.buildingid,this.id,formData).then(respone => {
+        console.log('su=>'+JSON.stringify(respone))
         this.$message('上傳成功')
         this.importFiles = []
         this.fileList = []
@@ -326,15 +323,10 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .line{
   text-align: center;
 }
 
-.files {
-  width: 100%;
-  max-height: 200px;
-  overflow: auto;
-}
 </style>
 

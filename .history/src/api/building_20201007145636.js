@@ -228,6 +228,7 @@ export function getbufiles(buildingId) {
 export function downloadbufile(filesId) {
   return request({
     url: '/basic/fileDownload/'+filesId,
-    method: 'get'
+    method: 'get',
+    responseType:'blob'
   })
 }
