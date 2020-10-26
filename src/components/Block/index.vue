@@ -103,16 +103,18 @@
             <p v-if="loading">加載中...</p>
 
             <el-dialog 
+            :width="dialogWidth"
             :title="textMap[dialogStatus]" 
-            :visible.sync="dialogFormVisible"
+            :visible="dialogFormVisible"
             :close-on-click-modal='false'
+            @close="cancelData"
+            center
             >
                 <el-form 
                 ref="dataForm"  
                 :model="temp" 
-                label-position="left" 
-                label-width="150px" 
-                style="margin-left:50px;">
+                :label-position="label" 
+                label-width="auto" >
                     <el-form-item 
                         v-for="(item, index) in config"
                         :key="index"
@@ -195,9 +197,9 @@
 
                 <div v-if="title == 'floor' && dialogStatus == 'update' ">
                     <el-form
-                        label-position="left" 
-                        label-width="150px" 
-                        style="margin-left:50px;">
+                        :label-position="label" 
+                        label-width="auto" 
+                        >
                             <el-form-item label="檔案">
                                 <div
                                 class="files"
@@ -278,7 +280,20 @@ export default {
         }
     },
     computed: {
-        
+        label() {
+            if (this.$store.state.app.device === 'mobile') {
+                return 'top'
+            } else {
+                return 'left'
+            }
+        },
+        dialogWidth(){
+            if (this.$store.state.app.device === 'mobile') {
+                return "90%"
+            } else {
+                return "700px"
+            }
+        },
         uploadEvent(){
             return {
                 subOpitonButton: this.handleUploadOption
@@ -369,7 +384,7 @@ export default {
             temp: {},
             origin:[],
             loadlist:[],
-            innerdata:{}
+            innerdata:{},
         }
     },
 
@@ -473,7 +488,7 @@ export default {
             }
             this.$emit('subOpitonButton', 'deletefile', temp)
         }
-    },
+    }
 }
 </script>
 

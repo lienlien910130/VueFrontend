@@ -21,7 +21,7 @@ const mutations = {
 const actions = {
   setbuildingid({ commit }, buildingid) {
     return new Promise((resolve, reject) => {
-     
+        console.log('buildingid=>'+buildingid)
         commit('SET_BUILDINGID', buildingid)
         setBuildingid(buildingid)
         resolve()

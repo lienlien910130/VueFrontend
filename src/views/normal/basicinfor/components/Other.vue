@@ -4,8 +4,8 @@
         <el-form
             v-else
             label-position="left" 
-            label-width="150px" 
-            style="margin-left:50px;">
+            label-width="auto" 
+            >
                 <el-form-item label="檔案">
                     <div
                     class="files"

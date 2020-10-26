@@ -139,8 +139,8 @@ export default {
       })
     },
     handleSelectOption(content){
-      this.$store.dispatch('building/setbuildingid',content.id)
-    },
+      this.$store.dispatch('building/setbuildingid',content[0].id)
+    }
   }
 }
 </script>

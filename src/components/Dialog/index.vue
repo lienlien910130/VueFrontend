@@ -1,12 +1,13 @@
 <template>
 
     <el-dialog
-        width="40%"
+        :width="dialogWidth"
         :title="textMap[dialogStatus]"
         :visible="visible"
         :close-on-click-modal='false'
         append-to-body
-        @close="cancelData">
+        @close="cancelData"
+        center>
 
         <el-tabs 
         v-if="userdata.length > 1" 
@@ -20,8 +21,8 @@
         </el-tabs>
 
         <keep-alive>
-        <el-form ref="userdataForm"  :model="temp" :rules="formRules"  label-position="left" label-width="150px" 
-            style="margin-left:50px;">
+        <el-form ref="userdataForm"  :model="temp" :rules="formRules"  :label-position="label" label-width="auto" 
+            >
                 <el-form-item label="姓名"  prop="name">
                     <el-input  
                     ref="name"
@@ -116,6 +117,22 @@ export default {
             this.init()
         }
     },
+    computed:{
+        label() {
+            if (this.$store.state.app.device === 'mobile') {
+                return 'top'
+            } else {
+                return 'left'
+            }
+        },
+        dialogWidth(){
+            if (this.$store.state.app.device === 'mobile') {
+                return "90%"
+            } else {
+                return "600px"
+            }
+        }
+    },
     data() {
         return {
             textMap: {
@@ -170,7 +187,8 @@ export default {
             await this.$api.building.apiGetUser(tab.name).then(response => {
                 this.temp = response.result[0]
             })
-        },
-    },
+        }
+    }
 }
 </script>
+
