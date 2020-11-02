@@ -8,7 +8,7 @@
         <div ref="title" class="title-container">
           <img class="pic" :src="src"/>
         </div>
-        
+        <span>帳號:mf44，密碼:1234</span>
         <el-form-item prop="username">
           <el-input
             ref="username"
@@ -20,7 +20,7 @@
             auto-complete="off"
           />
         </el-form-item>
-
+        
         <el-form-item prop="password">
           <el-input
             :key="passwordType"

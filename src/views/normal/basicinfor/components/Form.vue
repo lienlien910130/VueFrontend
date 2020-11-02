@@ -78,9 +78,9 @@
         <Upload v-on="uploadEvent"></Upload>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="onEdit" v-if="type === 'view' ">修改</el-button>
-        <el-button type="primary" @click="onSubmit" v-if="type === 'edit' ">儲存</el-button>
-        <el-button @click="onCancel" v-if="type === 'edit' ">取消</el-button>
+        <el-button style="background:rgb(0,140,214);color:white" @click="onEdit" v-if="type === 'view' ">修改</el-button>
+        <el-button style="background:rgb(0,140,214);color:white" @click="onSubmit" v-if="type === 'edit' ">儲存</el-button>
+        <el-button style="background:white;color:black" @click="onCancel" v-if="type === 'edit' ">取消</el-button>
       </el-form-item>
     </el-form>
   </div>

@@ -536,7 +536,7 @@ export default {
 <style lang="scss" scoped>
 .basicinfor-editor-container {
   padding: 32px;
-  background-color: rgb(240, 242, 245);
+  background-color: rgb(209, 226, 236);
   position: relative;
   min-height: calc(100vh - 85px);
 
@@ -544,7 +544,7 @@ export default {
     background: #fff;
     padding: 0px 16px 15px;
     margin-bottom: 32px;
-    height: 800px;
+    height: 850px;
     overflow-x:hidden;
     overflow-y:auto;
   }

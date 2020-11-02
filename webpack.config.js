@@ -12,6 +12,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist')
   },
   mode: 'development',
+  stats: { children: false },
   module: {
     rules: [
       {
@@ -54,7 +55,7 @@ module.exports = {
         test: /\.(png|jpg|gif|svg)$/,
         loader: 'file-loader',
         options: {
-          name: '[name].[ext]?[hash]'
+          name: '[name].[ext]?[hash]',
         }
       },
       {
@@ -75,14 +76,22 @@ module.exports = {
     // make sure to include the plugin for the magic
     new VueLoaderPlugin(),
     new CleanWebpackPlugin({
-        cleanAfterEveryBuildPatterns: ['dist']
+        cleanAfterEveryBuildPatterns: ['./dist']
     }),
     new ExtractTextPlugin({filename: 'style.css'}),
     new HtmlWebpackPlugin({
       inject: false,
       hash: true,
       template: './src/index.html',
-      filename: 'index.html'
+      filename: 'index.html',
+      minify: {
+        // 移除空白
+        collapseWhitespace: true,
+        // 移除註釋
+        removeComments: true,
+        // 移除屬性中的雙引號
+        removeAttributeQuotes: true
+      }
     })
   ],
   resolve: { 

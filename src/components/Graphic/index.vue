@@ -1,66 +1,67 @@
 <template>
   <div class="maintenancePlanAdd">
-    <div class="panel-body">
-      <div class="demo">
-        <div class="draw-btn-group">
-          <div :class="{active:drawType==''}" @click="drawTypeChange('')">
-            <i class="draw-icon icon-mouse"></i>
+    <el-row :gutter="32">
+      <el-col :xs="24" :sm="24" :md="24" :lg="24">
+          <div class="draw-btn-group">
+                  <div :class="{active:drawType==''}" @click="drawTypeChange('')">
+                    <i class="draw-icon icon-mouse"></i>
+                  </div>
+                  <!-- <div :class="{active:drawType=='arrow'}" @click="drawTypeChange('arrow')">
+                    <i class="draw-icon icon-1"></i>
+                  </div> -->
+                  <div :class="{active:drawType=='text'}" @click="drawTypeChange('text')">
+                    <i class="draw-icon icon-2"></i>
+                  </div>
+                  <div :class="{active:drawType=='ellipse'}" @click="drawTypeChange('ellipse')">
+                    <i class="draw-icon icon-3"></i>
+                  </div>
+                  <div :class="{active:drawType=='rectangle'}" @click="drawTypeChange('rectangle')">
+                    <i class="draw-icon icon-4"></i>
+                  </div>
+                  <!-- <div
+                    :class="{active:drawType=='rectangle-text'}"
+                    @click="drawTypeChange('rectangle-text')"
+                  >
+                    <i class="draw-icon icon-5"></i>
+                  </div> -->
+                  <div :class="{active:drawType=='polygon'}" @click="drawPolygon">
+                    <i class="draw-icon icon-6"></i>
+                  </div>
+                  <div :class="{active:drawType=='pen'}" @click="drawTypeChange('pen')">
+                    <i class="draw-icon icon-7"></i>
+                  </div>
+                  <!-- <div :class="{active:drawType=='pentagram'}" @click="drawTypeChange('pentagram')">
+                    <i class="draw-icon icon-pentagram"></i>
+                  </div> -->
+                  <div @click="save">
+                    <i class="draw-icon icon-save"></i>
+                  </div>
+                  <div @click="deleteObj">
+                    <i class="el-icon-delete"></i>
+                  </div>
+                  <el-color-picker v-model="fillcolor" 
+                  show-alpha 
+                  :predefine="predefineColors"></el-color-picker>
+                  <el-color-picker v-model="strokecolor" 
+                  show-alpha 
+                  :predefine="predefineColors"></el-color-picker>
+                  <el-input v-model="opacity"></el-input>
+                  <el-input v-model.number="drawWidth" type="number"></el-input>
+                  <el-input v-model="objectname" type="text"></el-input>
+                  <!-- <el-select v-model="strokeDash" default placeholder="">
+                        <el-option label="直線" value="[0,0]">直線</el-option>
+                        <el-option label="虛線" value="[3,3]">虛線</el-option>
+                    </el-select> -->
+                  <el-button @click="sendObj">sendObj</el-button>
           </div>
-          <!-- <div :class="{active:drawType=='arrow'}" @click="drawTypeChange('arrow')">
-            <i class="draw-icon icon-1"></i>
-          </div> -->
-          <div :class="{active:drawType=='text'}" @click="drawTypeChange('text')">
-            <i class="draw-icon icon-2"></i>
-          </div>
-          <div :class="{active:drawType=='ellipse'}" @click="drawTypeChange('ellipse')">
-            <i class="draw-icon icon-3"></i>
-          </div>
-          <div :class="{active:drawType=='rectangle'}" @click="drawTypeChange('rectangle')">
-            <i class="draw-icon icon-4"></i>
-          </div>
-          <!-- <div
-            :class="{active:drawType=='rectangle-text'}"
-            @click="drawTypeChange('rectangle-text')"
-          >
-            <i class="draw-icon icon-5"></i>
-          </div> -->
-          <div :class="{active:drawType=='polygon'}" @click="drawPolygon">
-            <i class="draw-icon icon-6"></i>
-          </div>
-          <div :class="{active:drawType=='pen'}" @click="drawTypeChange('pen')">
-            <i class="draw-icon icon-7"></i>
-          </div>
-          <!-- <div :class="{active:drawType=='pentagram'}" @click="drawTypeChange('pentagram')">
-            <i class="draw-icon icon-pentagram"></i>
-          </div> -->
-          <div @click="save">
-            <i class="draw-icon icon-save"></i>
-          </div>
-          <div @click="deleteObj">
-            <i class="el-icon-delete"></i>
-          </div>
-          <el-color-picker v-model="fillcolor" 
-          show-alpha 
-          :predefine="predefineColors"></el-color-picker>
-          <el-color-picker v-model="strokecolor" 
-          show-alpha 
-          :predefine="predefineColors"></el-color-picker>
-          <el-input v-model="opacity"></el-input>
-          <el-input v-model.number="drawWidth" type="number"></el-input>
-          <el-input v-model="objectname" type="text"></el-input>
-          <!-- <el-select v-model="strokeDash" default placeholder="">
-                <el-option label="直線" value="[0,0]">直線</el-option>
-                <el-option label="虛線" value="[3,3]">虛線</el-option>
-            </el-select> -->
-          <el-button @click="sendObj">sendObj</el-button>
-        </div>
-
-        <canvas id="canvas" :width="width" :height="height"></canvas>
-      </div>
-    </div>
+      </el-col>
+      <el-col :xs="24" :sm="24" :md="24" :lg="24">
+          <canvas id="canvas"></canvas>
+      </el-col>
+    </el-row>
     
-    <img id="img" :src="imgSrc" />
-   
+
+    
   </div>
 </template>
 <script>
@@ -137,7 +138,8 @@ export default {
         this.canvas.selection = !this.drawType;
     },
     width(){
-        this.canvas.setWidth(this.width) 
+      
+        this.canvas.setWidth(window.width) 
     },
     height(){
         this.canvas.setHeight(this.height) 
@@ -840,11 +842,10 @@ export default {
   },
   mounted() {
     this.canvas = new fabric.Canvas("canvas", {
-      // skipTargetFind: true,
-      // selectable: false,
-      // selection: false
+      
     });
     
+
     fabric.Image.fromURL(require("../../assets/image/5F_MAP.jpg"), (img) => {
         img.set({
         // 通過scale來設定圖片大小，這裡設定和畫布一樣大
@@ -916,21 +917,27 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.el-container {
-  flex-direction: column;
+.maintenancePlanAdd{
+  width: 100%;
+  height: 100%;
+
+  canvas {
+  border: 1px dashed black;
+  }
 }
 img,
 input {
   display: none;
 }
-.demo {
+
+.graphic {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-canvas {
-  border: 1px dashed black;
-}
+
+
+
 .draw-btn-group {
   // width: 1270px;
   margin-top: 10px;

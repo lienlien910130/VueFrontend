@@ -1,12 +1,20 @@
 <template>
     <el-row  :gutter="32">
         <div class="infinite-list-wrapper">
-            <p v-if="isChoose == false && title === 'floor'">請選擇樓層</p>
-
-            <el-button v-else class="filter-item" style="margin-left: 10px;" type="primary" @click="handleCreate">
-                新增
-            </el-button>
             
+            <div>
+                <el-col :xs="24" :sm="24" :md="24" :lg="24">
+                <p v-if="isChoose == false && title === 'floor'">請選擇樓層</p>
+                <el-button v-else 
+                class="filter-item" 
+                style="" 
+                type="primary" 
+                @click="handleCreate">
+                    新增
+                </el-button>
+                </el-col>
+            </div>
+
             <div 
             class="list"  
             v-infinite-scroll="loadMore"  
@@ -100,6 +108,7 @@
               </el-col>
               </div>
             </div>
+
             <p v-if="loading">加載中...</p>
 
             <el-dialog 
@@ -497,16 +506,19 @@ export default {
     height:680px; // 1. 指定高度
 	overflow: auto; // 2. 内容超过指定高度 出现滚动条
 	width: 100%;
-	  
+    .filter-item{
+        margin: 10px 20px;
+        float: right;
+    }
 }
 
 .dashboard-wrapper{
     background: #DEDEDE;
-    padding: 5px 16px 0;
+    padding: 16px 16px;
     margin-bottom: 32px;
-    height: 300px;
     overflow-x:hidden;
     overflow-y:auto;
+    line-height: 25px;
 }
 
 .files {

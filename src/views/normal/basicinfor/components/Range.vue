@@ -116,8 +116,8 @@ export default {
   .floordiv{
     width: 100% ;
     height: 50px;
-    background-color:darkgray;
-    border: 2px solid black;
+    background-color:rgb(219,231,237);
+    border: 1px solid black;
     text-align: center;
     vertical-align: middle;
     color: white;
@@ -126,10 +126,10 @@ export default {
     line-height:50px;
   }
   .active {
-    background: rgb(0, 110 , 163);
+    background: rgb(202, 191 , 220);
     cursor: pointer;
   }
   .select {
-    background: red;
+    background: rgb(147, 180 , 197);
   }
 </style>
