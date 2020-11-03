@@ -145,7 +145,7 @@ export default {
   padding: 32px;
   background-color: rgb(240, 242, 245);
   position: relative;
-  min-height: calc(100vh - 85px);
+  min-height: calc(100vh - 125px);
 
   .setting-wrapper {
     background: #fff;

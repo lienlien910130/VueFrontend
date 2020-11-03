@@ -1,16 +1,52 @@
 <template>
   <div class="navbar">
-    <el-row :gutter="20">
+    <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+
+    <div class="right-menu">
+      <template v-if="device!=='mobile'">
+        <Select 
+        class="select right-menu-item"
+        v-bind="selectAttrs" 
+        v-on="selectEvent">
+        </Select>
+
+        <Screenfull id="screenfull" class="right-menu-item hover-effect" />
+      </template>
+
+      <el-dropdown 
+        class="avatar-container right-menu-item" trigger="click">
+          <div class="avatar-wrapper">
+            <svg-icon icon-class="user" style="font-size:25px"/>
+            <span style="margin-left:3px">{{ name }}</span>
+          </div>
+          <el-dropdown-menu slot="dropdown" class="user-dropdown">
+            <router-link to="/">
+              <el-dropdown-item>
+                首頁
+              </el-dropdown-item>
+            </router-link>
+            <router-link to="/membersetting">
+              <el-dropdown-item>
+                設定
+              </el-dropdown-item>
+            </router-link>
+            <el-dropdown-item divided @click.native="logout">
+              <span style="display:block;">登出</span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+      </el-dropdown>
+    </div>
+    <!-- <el-row :gutter="20">
       <el-col :xs="2" :sm="3" :md="4" :lg="4" :xl="4">
         <div class="grid-content">
           <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
         </div>
       </el-col>
       
-      <!-- <el-col :xs="20" :sm="18" :md="16" :lg="16" :xl="16">
+      <el-col :xs="20" :sm="18" :md="16" :lg="16" :xl="16">
         <div class="grid-content">
           <div class="center-menu">
-            <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4" :offset="2" class="text-center">
+             <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4" :offset="2" class="text-center">
               <router-link class="pan-btn blue-btn" to="/">
                 首頁
               </router-link>
@@ -34,11 +70,11 @@
               <router-link class="pan-btn blue-btn" to="/emergency/aaa">
                 緊急應變
               </router-link>
-            </el-col>    
+            </el-col>     
           </div>
         </div>
-      </el-col> -->
-      <el-col :xs="2" :sm="3" :md="4" :lg="4" :xl="4" style="float:right;">
+      </el-col>
+      <el-col :xs="2" :sm="3" :md="4" :lg="4" :xl="4">
         <div class="grid-content">
           <div class="right-menu">
             <Select class="select"
@@ -50,8 +86,6 @@
             <el-dropdown 
             class="avatar-container" trigger="click">
               <div class="avatar-wrapper">
-                <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
-                <!-- <i class="el-icon-caret-bottom" /> -->
                 <span>{{ name }}</span>
               </div>
               <el-dropdown-menu slot="dropdown" class="user-dropdown">
@@ -73,7 +107,7 @@
           </div>
         </div>
       </el-col>
-    </el-row>
+    </el-row> -->
     <!-- <breadcrumb class="breadcrumb-container" /> -->
   </div>
 </template>
@@ -85,14 +119,16 @@ export default {
   components: {
     Select: () => import('@/components/Select/index.vue'),
     Breadcrumb: () => import('@/components/Breadcrumb'),
-    Hamburger: () => import('@/components/Hamburger')
+    Hamburger: () => import('@/components/Hamburger'),
+    Screenfull: () => import('@/components/Screenfull')
   },
   computed: {
     ...mapGetters([
       'sidebar',
       'account',
       'name',
-      'id'
+      'id',
+      'device'
     ]),
     selectAttrs() {
       return {
@@ -147,11 +183,13 @@ export default {
 
 <style lang="scss" scoped>
 .navbar {
-  height: 50px;
+  height: 90px;
   overflow: hidden;
   position: relative;
-  background: #fff;
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
+  background-image:url("../../assets/image/navbarimg.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 
   .hamburger-container {
     line-height: 46px;
@@ -173,15 +211,16 @@ export default {
   .right-menu {
     float: right;
     height: 100%;
-    line-height: 50px;
-
+    line-height: 70px;
+    
     &:focus {
       outline: none;
     }
     .select { 
-      width: 200px;
-      margin-bottom: 20px;
+      width: 180px;
+      margin-right: 10px;
     }
+
     .right-menu-item {
       display: inline-block;
       padding: 0 8px;
@@ -204,24 +243,13 @@ export default {
       margin-right: 30px;
 
       .avatar-wrapper {
-        margin-top: 5px;
         position: relative;
-
-        .user-avatar {
-          cursor: pointer;
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-        }
-
-        .el-icon-caret-bottom {
-          cursor: pointer;
-          position: absolute;
-          right: -20px;
-          top: 25px;
-          font-size: 12px;
-        }
       }
+    }
+
+    .el-dropdown{
+      font-size: 18px;
+      color: black;
     }
   }
 }
@@ -233,6 +261,7 @@ export default {
     }
   }
   .grid-content {
+    width: 100%;
     height: 100%;
   }
   .row-bg {

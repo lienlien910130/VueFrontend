@@ -1,5 +1,11 @@
 <template>
-  <el-select ref="selbud" v-model="defaultvalue" @change="currentSel" placeholder="請選擇">
+  <el-select 
+  ref="selbud" 
+  v-model="defaultvalue" 
+  @change="currentSel" 
+  placeholder="請選擇"
+  filterable
+  >
     <el-option
     v-if="title=='ContactUnit' "
     label="全部"

@@ -6,9 +6,6 @@
                   <div :class="{active:drawType==''}" @click="drawTypeChange('')">
                     <i class="draw-icon icon-mouse"></i>
                   </div>
-                  <!-- <div :class="{active:drawType=='arrow'}" @click="drawTypeChange('arrow')">
-                    <i class="draw-icon icon-1"></i>
-                  </div> -->
                   <div :class="{active:drawType=='text'}" @click="drawTypeChange('text')">
                     <i class="draw-icon icon-2"></i>
                   </div>
@@ -18,21 +15,12 @@
                   <div :class="{active:drawType=='rectangle'}" @click="drawTypeChange('rectangle')">
                     <i class="draw-icon icon-4"></i>
                   </div>
-                  <!-- <div
-                    :class="{active:drawType=='rectangle-text'}"
-                    @click="drawTypeChange('rectangle-text')"
-                  >
-                    <i class="draw-icon icon-5"></i>
-                  </div> -->
                   <div :class="{active:drawType=='polygon'}" @click="drawPolygon">
                     <i class="draw-icon icon-6"></i>
                   </div>
                   <div :class="{active:drawType=='pen'}" @click="drawTypeChange('pen')">
                     <i class="draw-icon icon-7"></i>
                   </div>
-                  <!-- <div :class="{active:drawType=='pentagram'}" @click="drawTypeChange('pentagram')">
-                    <i class="draw-icon icon-pentagram"></i>
-                  </div> -->
                   <div @click="save">
                     <i class="draw-icon icon-save"></i>
                   </div>
@@ -56,17 +44,17 @@
           </div>
       </el-col>
       <el-col :xs="24" :sm="24" :md="24" :lg="24">
-          <canvas id="canvas"></canvas>
+          <div ref="canvasdiv" class="canvasdiv">
+            <canvas id="canvas"></canvas>
+          </div>
       </el-col>
     </el-row>
-    
-
-    
   </div>
 </template>
 <script>
 export default {
   name: "App",
+  props:['movingImage','imgDragOffset'],
   computed: {
     getWsMsg() {
         return this.$store.state.websocket.msg
@@ -74,43 +62,41 @@ export default {
   },
   data() {
     return {
-        width:1280,
-        height:720,
-        rect: [],
-        canvas: {},
-        showMenu: false,
-        x: "",
-        y: "",
-        opacity:1,
-        mouseFrom: {},
-        mouseTo: {},
-        zoom: window.zoom ? window.zoom : 1,
-        zoomPoint: new fabric.Point(0, 0), //初始时缩放原点的位置设为（0,0），这是页面的左上顶点
-        lastzoomPoint: { x: 0, y: 0 }, //初始时，前一次缩放原点同样为(0,0)
-        lastmousePoint: { x: 0, y: 0 }, //进行缩放，需要对此刻缩放位置进行保存，来计算出缩放原点，此刻初始时设为0,0
-        lastzoom: 1, //表示为上一次的缩放倍数，此刻设为1
-        relativeMouseX: 0, //表示相对的鼠标位移，用来记录画布的绝对移动距离
-        relativeMouseY: 0, //表示相对的鼠标位移，用来记录画布的绝对移动距离
-        drawType: '',
-        canvasObjectIndex: 0,
-        textbox: null,
-        rectangleLabel: "warning",
-        drawWidth: 3, //笔触宽度
-        fillcolor:'rgb(255, 160, 57)',
-        strokecolor:'rgba(6, 45, 218, 1)',
-        drawingObject: null, //当前绘制对象
-        moveCount: 1, //绘制移动计数器
-        doDrawing: false, // 绘制状态
-        //polygon 相关参数
-        polygonMode: false,
-        pointArray: [],
-        lineArray: [],
-        activeShape: false,
-        activeLine: "",
-        line: {},
-        imgFile: {},
-        imgSrc: "",
-        predefineColors: [
+      rect: [],
+      canvas: {},
+      showMenu: false,
+      x: "",
+      y: "",
+      opacity:1,
+      mouseFrom: {},
+      mouseTo: {},
+      zoom: window.zoom ? window.zoom : 1,
+      zoomPoint: new fabric.Point(0, 0), //初始时缩放原点的位置设为（0,0），这是页面的左上顶点
+      lastzoomPoint: { x: 0, y: 0 }, //初始时，前一次缩放原点同样为(0,0)
+      lastmousePoint: { x: 0, y: 0 }, //进行缩放，需要对此刻缩放位置进行保存，来计算出缩放原点，此刻初始时设为0,0
+      lastzoom: 1, //表示为上一次的缩放倍数，此刻设为1
+      relativeMouseX: 0, //表示相对的鼠标位移，用来记录画布的绝对移动距离
+      relativeMouseY: 0, //表示相对的鼠标位移，用来记录画布的绝对移动距离
+      drawType: '',
+      canvasObjectIndex: 0,
+      textbox: null,
+      rectangleLabel: "warning",
+      drawWidth: 3, //笔触宽度
+      fillcolor:'rgb(255, 160, 57)',
+      strokecolor:'rgba(6, 45, 218, 1)',
+      drawingObject: null, //当前绘制对象
+      moveCount: 1, //绘制移动计数器
+      doDrawing: false, // 绘制状态
+      //polygon 相关参数
+      polygonMode: false,
+      pointArray: [],
+      lineArray: [],
+      activeShape: false,
+      activeLine: "",
+      line: {},
+      imgFile: {},
+      imgSrc: "",
+      predefineColors: [
             '#ff4500',
             '#ff8c00',
             '#ffd700',
@@ -126,23 +112,16 @@ export default {
             'hsla(209, 100%, 56%, 0.73)',
             '#c7158577'
             ],
-        panning:false,
-        previousEvent:'',
-        copiedObjects:[],
-        objectname:'',
-        strokeDash:[0,0]
+      panning:false,
+      previousEvent:'',
+      copiedObjects:[],
+      objectname:'',
+      strokeDash:[0,0]
     };
   },
   watch: {
     drawType() {
         this.canvas.selection = !this.drawType;
-    },
-    width(){
-      
-        this.canvas.setWidth(window.width) 
-    },
-    height(){
-        this.canvas.setHeight(this.height) 
     },
     getWsMsg: function (data, val) {
         console.log('getWsMsg=>'+JSON.stringify(JSON.parse(JSON.parse(JSON.parse(data)).content).target))
@@ -204,14 +183,11 @@ export default {
         }
     },
     strokeDash(){
-        console.log('strokeDash=>'+this.strokeDash)
+      console.log('strokeDash=>'+this.strokeDash)
     }
   },
-  mounted:{
-      //載入json
-  },
   methods: {
-      sendObj(id,type,content){
+    sendObj(id,type,content){
         const msg = {
             type: type,
             content: JSON.stringify(content),
@@ -223,7 +199,7 @@ export default {
         }else{
             this.$socket.$ws
         }
-      },
+    },
     getX(o) {
         return (
           this.lastzoomPoint.x +
@@ -339,6 +315,7 @@ export default {
         });
     },
     mousedown(e) {
+      console.log('mousedown=>',e)
         var xy =e.pointer || this.transformMouse(e.e.offsetX, e.e.offsetY);
         //this.mouseFrom.x = xy.x;
         //this.mouseFrom.y = xy.y;
@@ -455,11 +432,26 @@ export default {
     },
     mousewheel(e){
         this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom();
-        this.zoom = Math.max(0.1, this.zoom); //最小为原来的1/10
+        this.zoom = Math.max(0.5, this.zoom); //最小为原来的1/10
         this.zoom = Math.min(3, this.zoom); //最大是原来的3倍
         this.zoomPoint = new fabric.Point(event.pageX, event.pageY);
         this.canvas.zoomToPoint(this.zoomPoint, this.zoom);
         this.resetOriginAfterZoom()
+    },
+    drop(e){
+      console.log(e)
+      const {offsetX, offsetY} = e.e
+      const image = new fabric.Image(this.movingImage, {
+        width: this.movingImage.naturalWidth,
+        height: this.movingImage.naturalHeight,
+        scaleX: 100 / this.movingImage.naturalWidth,
+        scaleY: 100 / this.movingImage.naturalHeight,
+        top: this.getY(e),
+        left: this.getX(e) 
+        // top: this.mouseFrom.y - this.imgDragOffset.offsetY, // 计算起始位置
+        // left: this.mouseFrom.x - this.imgDragOffset.offsetX
+      })
+      this.canvas.add(image)
     },
     objectaction(e,action){
         var change = []
@@ -841,10 +833,9 @@ export default {
     }
   },
   mounted() {
-    this.canvas = new fabric.Canvas("canvas", {
-      
-    });
-    
+    this.canvas = new fabric.Canvas("canvas");
+    this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
+    this.canvas.setHeight(600)
 
     fabric.Image.fromURL(require("../../assets/image/5F_MAP.jpg"), (img) => {
         img.set({
@@ -856,21 +847,23 @@ export default {
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas));
         this.canvas.renderAll();
     });
-    this.canvas.selectionColor = "rgba(0,0,0,0.3)";
+    this.canvas.selectionColor = "rgba(0,0,0,0.3)"
     this.canvas.selectionBorderColor ="black"
     this.canvas.selectionDashArray = [5, 5]
-    this.canvas.on("mouse:down", this.mousedown);
-    this.canvas.on("mouse:move", this.mousemove);
-    this.canvas.on("mouse:up", this.mouseup);
-    this.canvas.on("mouse:wheel",this.mousewheel);
+    this.canvas.on("mouse:down", this.mousedown)
+    this.canvas.on("mouse:move", this.mousemove)
+    this.canvas.on("mouse:up", this.mouseup)
+    this.canvas.on("mouse:wheel",this.mousewheel)
     this.canvas.on("object:moving",(e) => {
         this.canvas.selection = false
         this.objectaction(e,'moving')
-    });
+    })
     this.canvas.on('object:modified', (e) => {
         console.log('modified=>'+e.target) // e.target為當前編輯的Object
         //this.setAnimate(e.target)
-    });
+    })
+    this.canvas.on('drop', this.drop)
+   
     document.onkeydown = e => {
       let key = window.event.keyCode;
       if (e.keyCode == 46) {
@@ -935,7 +928,10 @@ input {
   flex-direction: column;
   align-items: center;
 }
-
+.canvas-container{
+  width: 100%;
+  height: 100%;
+}
 
 
 .draw-btn-group {

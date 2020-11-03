@@ -538,7 +538,7 @@ export default {
   padding: 32px;
   background-color: rgb(209, 226, 236);
   position: relative;
-  min-height: calc(100vh - 85px);
+  min-height: calc(100vh - 125px);
 
   .block-wrapper {
     background: #fff;

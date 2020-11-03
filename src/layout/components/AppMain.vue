@@ -20,8 +20,8 @@ export default {
 <style lang="scss" scoped>
 .app-main {
   /*50 = navbar  */
-  min-height: calc(100vh - 85px);
-  min-width: calc(100vh - 210px);
+  min-height: calc(100vh - 125px);
+  min-width: calc(100vh - 180px);
   position: relative;
   overflow: hidden;
   margin-left: 54px;
@@ -30,7 +30,7 @@ export default {
   padding-top: 50px;
 }
 .openSidebar .app-main{
-  margin-left: 210px;
+  margin-left: 180px;
 }
 
 .el-popup-parent--hidden {
