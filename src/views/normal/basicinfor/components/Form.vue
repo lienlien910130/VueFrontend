@@ -1,6 +1,8 @@
 <template>
   <div class="app-container">
-    <el-form class="buildinginfo" ref="form" :model="form" :rules="formRules" :label-position="label" label-width="auto">
+    <el-form class="buildinginfo" 
+    ref="form" :model="form" 
+    :rules="formRules" :label-position="label" label-width="auto">
       <el-form-item label="名稱" prop="buildingName">
         <el-input ref="buildingName" name="buildingName" v-model="form.buildingName" :disabled="type === 'view' ? true : false" />
       </el-form-item>

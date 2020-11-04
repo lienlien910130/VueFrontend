@@ -4,20 +4,32 @@
           <el-row :gutter="32">
             <el-col :xs="24" :sm="24" :md="24" :lg="6">
               <div class="block-wrapper">
-                <FloorSelect 
-                  style="margin-bottom: 20px;"
-                  v-bind="floorselectAttrs" 
-                  v-on="floorselectEvent">
-                </FloorSelect>
-                <EquipmentType
-                  v-on="equipmentTypeEvent">
-                </EquipmentType>
+                <el-collapse v-model="activeNames" @change="handleChange">
+                  <el-collapse-item title="樓層" name="1">
+                    <FloorSelect 
+                      style="margin-bottom: 20px;"
+                      v-bind="floorselectAttrs" 
+                      v-on="floorselectEvent">
+                    </FloorSelect>
+                  </el-collapse-item>
+                  <el-collapse-item title="圖層" name="2">
+                    <ObjectList
+                    v-bind="objectListAttrs"
+                    ></ObjectList>
+                  </el-collapse-item>
+                  <el-collapse-item title="圖例" name="3">
+                    <EquipmentType
+                      v-on="equipmentTypeEvent">
+                    </EquipmentType>
+                  </el-collapse-item>
+                </el-collapse>
               </div>
             </el-col>
             <el-col :xs="24" :sm="24" :md="24" :lg="18">
                 <div class="block-wrapper">
                     <Graphic
-                    v-bind="graphicAttrs"></Graphic>
+                    v-bind="graphicAttrs"
+                    v-on="graphicEvent"></Graphic>
                 </div>
             </el-col>
           </el-row>
@@ -32,33 +44,49 @@ export default {
     components:{
       FloorSelect: () => import('@/components/Select/index.vue'),
       EquipmentType: () => import('./components/EquipmentType'),
+      ObjectList: () => import('./components/ObjectList'),
       Graphic: () => import('@/components/Graphic/index.vue'),
     },
     computed:{
       ...mapGetters([
-            'id',
-            'buildingid'
+          'id',
+          'buildingid'
       ]),
       floorselectAttrs() {
-          return {
-              selectData: this.selectData,
-              title:'GraphicFloor'
-          }
+        return {
+          selectData: this.selectData,
+          title:'GraphicFloor'
+        }
       },
       floorselectEvent(){
-          return{
-              subChangeOption: this.handleSelectOption
-          }
+        return{
+          subChangeOption: this.handleSelectOption
+        }
+      },
+      objectListAttrs(){
+        return {
+          list: this.objectlist
+        }
+      },
+      objectListEvent(){
+        return {
+          subSelectOption: this.handleObjSelectOption
+        }
       },
       equipmentTypeEvent(){
-          return{
-              subDragOption: this.handleDragOption
-          }
+        return{
+          subDragOption: this.handleDragOption
+        }
       },
       graphicAttrs(){
         return{
           movingImage:this.movingImage,
           imgDragOffset:this.imgDragOffset
+        }
+      },
+      graphicEvent(){
+        return{
+          subSelectOption: this.handleGraphicObjSelectOption
         }
       }
     },
@@ -66,7 +94,9 @@ export default {
         return {
             selectData:[],
             movingImage:null,
-            imgDragOffset:{offsetX: 0,offsetY: 0}
+            imgDragOffset:{offsetX: 0,offsetY: 0},
+            activeNames:['1','2'],
+            objectlist:[]
         }
     },
     mounted(){
@@ -92,6 +122,15 @@ export default {
         this.imgDragOffset.offsetX = e.clientX - e.target.offsetLeft
         this.imgDragOffset.offsetY = e.clientY - e.target.offsetTop
         this.movingImage = e.target
+      },
+      handleChange(val) {
+        console.log(val);
+      },
+      handleObjSelectOption(){
+
+      },
+      handleGraphicObjSelectOption(val){
+        this.objectlist = val
       }
     }
 }

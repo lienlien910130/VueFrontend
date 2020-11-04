@@ -15,7 +15,7 @@
                   <div :class="{active:drawType=='rectangle'}" @click="drawTypeChange('rectangle')">
                     <i class="draw-icon icon-4"></i>
                   </div>
-                  <div :class="{active:drawType=='polygon'}" @click="drawTypeChange('polygon')">
+                  <div :class="{active:drawType=='polygon'}" @click="drawPolygon">
                     <i class="draw-icon icon-6"></i>
                   </div>
                   <div @click="save">
@@ -38,7 +38,7 @@
                   :predefine="predefineColors"></el-color-picker>
                 </el-form-item>
                 <el-form-item label="透明度">
-                  <el-input-number v-model="opacity" controls-position="right" :min="0" :max="100"></el-input-number>
+                  <el-slider v-model="opacity" :format-tooltip="formatTooltip"></el-slider>
                 </el-form-item>
               </el-form>
             </div>
@@ -68,7 +68,19 @@
                   <el-button type="primary" @click="sendObj">sendObj</el-button>
                 </el-form-item>
               </el-form>
-            </div>
+            </div>   
+            <!-- <div :class="{active:drawType=='ellipse'}" @click="drawTypeChange('ellipse')">
+                    <i class="draw-icon icon-3"></i>
+                  </div>
+                  <div :class="{active:drawType=='pen'}" @click="drawTypeChange('pen')">
+                    <i class="draw-icon icon-7"></i>
+                  </div> 
+                  
+                  <el-input v-model.number="drawWidth" type="number"></el-input>
+                  <el-select v-model="strokeDash" default placeholder="">
+                        <el-option label="直線" value="[0,0]">直線</el-option>
+                        <el-option label="虛線" value="[3,3]">虛線</el-option>
+                    </el-select> -->
       </el-col>
       <el-col :xs="24" :sm="24" :md="24" :lg="24">
           <div ref="canvasdiv" class="canvasdiv">
@@ -91,16 +103,13 @@ export default {
     return {
       drawType: '', //選取的類別
       objectname:'', //圖層標題
-      fontsize:'14', //字體大小
+      fontsize:'', //字體大小
       fontcolor:'rgba(255, 0, 0, 1)',//字體顏色
-      opacity:50, //透明度
+      opacity:0.5, //透明度
       fillcolor:'rgba(197, 195, 195, 1)', //填充顏色
       strokecolor:'rgb(0, 0, 0)', //邊框顏色
       strokeDash:[0,0], //邊框
       strokeWidth:1, //邊框寬度
-
-      panning:false, //移動畫布
-      previousEvent:'', //移動畫布所需
 
       canvas: {},
       x: "",
@@ -131,7 +140,8 @@ export default {
       activeShape: false,
       activeLine: "",
       line: {},
-
+      imgFile: {},
+      imgSrc: "",
       predefineColors: [
             '#ff4500',
             '#ff8c00',
@@ -148,7 +158,8 @@ export default {
             'hsla(209, 100%, 56%, 0.73)',
             '#c7158577'
       ],
-      
+      panning:false,
+      previousEvent:'',
       copiedObjects:[],
     };
   },
@@ -204,12 +215,7 @@ export default {
         }
         
         this.canvas.add(canvasObject)
-    },
-    fontsize(){
-      if(this.canvas.getActiveObject()){
-        this.canvas.getActiveObject().set({ opacity:this.opacity })
-      }
-    },
+    },  
     opacity(){
         if(this.canvas.getActiveObject()){
             this.canvas.getActiveObject().set({ opacity:this.opacity })
@@ -224,236 +230,7 @@ export default {
       console.log('strokeDash=>'+this.strokeDash)
     }
   },
-  mounted() {
-    this.canvas = new fabric.Canvas("canvas");
-    this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
-    this.canvas.setHeight(600)
-
-    fabric.Image.fromURL(require("../../assets/image/5F_MAP.jpg"), (img) => {
-        img.set({
-        // 通過scale來設定圖片大小，這裡設定和畫布一樣大
-        scaleX: this.canvas.width / img.width,
-        scaleY: this.canvas.height / img.height,
-        });
-        // 設定背景
-        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas));
-        this.canvas.renderAll();
-    });
-    this.canvas.selectionColor = "rgba(0,0,0,0.3)"
-    this.canvas.selectionBorderColor ="black"
-    this.canvas.selectionDashArray = [5, 5]
-    this.canvas.on("drop", this.drop)
-    this.canvas.on("mouse:down", this.mousedown)
-    this.canvas.on("mouse:move", this.mousemove)
-    this.canvas.on("mouse:up", this.mouseup)
-    this.canvas.on("mouse:wheel",this.mousewheel)
-    this.canvas.on("object:moving",(e) => {
-        this.canvas.selection = false
-        this.objectaction(e,'moving')
-    })
-    this.canvas.on('object:modified', (e) => {
-      console.log(JSON.stringify(e))
-      if(e.target.type == "textbox"){
-        
-      }
-        console.log('modified=>'+e.target) // e.target為當前編輯的Object
-        //this.setAnimate(e.target)
-    })
-    
-    document.onkeydown = e => {
-      let key = window.event.keyCode;
-      if (e.keyCode == 46) {
-        this.deleteObj();
-      }
-      if(e.keyCode == 67 && e.ctrlKey){
-          this.copy()
-      }
-      if(e.keyCode == 86 && e.ctrlKey){
-          this.paste()
-      }
-    }
-  },
   methods: {
-    drawTypeChange(e) { //切換繪圖類別 選取-長方形-文字
-      if(this.drawType == 'text'){
-        this.textbox.exitEditing() //關閉文字框編輯
-      }
-      if(e == "polygon"){
-        this.polygonMode = true;
-        this.pointArray = new Array();
-        this.lineArray = new Array();
-      }
-      this.drawType = e;
-      this.canvas.isDrawingMode = false;
-    },
-    mousedown(e) { //滑鼠點擊
-        this.mouseFrom.x = this.getX(e)
-        this.mouseFrom.y = this.getY(e)
-        this.doDrawing = true;
-        if(e.e.altKey) { //移動畫布
-          this.panning = true;
-          this.canvas.selection = false;
-        }
-        if (this.drawType == "text") { 
-          this.drawing();
-        }
-        if (this.drawType == "polygon") {
-          try {
-            if (this.pointArray.length > 1) {
-              if (e.target && e.target.id == this.pointArray[0].id) {
-                this.generatePolygon();//最後一個點
-              }
-            }
-            if (this.polygonMode) {
-              this.addPoint(e);
-            }
-          } catch (error) {
-            console.log(error);
-          }
-      }
-    },
-    mousemove(e) {
-        if (this.moveCount % 2 && !this.doDrawing) { //減少繪製頻率
-          return;
-        }
-        //移動畫布
-        if (this.canvas.getActiveObjects().length === 0 && this.drawType === '' &&
-         this.panning && e && e.e) {
-            var x = e.e.movementX;
-            var y = e.e.movementY;
-            if(!x) {
-                x = e.e.screenX - this.previousEvent.e.screenX;
-                y = e.e.screenY - this.previousEvent.e.screenY;
-            }
-            var delta = new fabric.Point(x, y);
-            this.canvas.relativePan(delta);
-            this.relativeMouseX += e.e.movementX //累计每一次移动时候的偏差
-            this.relativeMouseY += e.e.movementY
-        }
-        this.previousEvent = e
-        this.moveCount++;
-        this.mouseTo.x = this.getX(e)
-        this.mouseTo.y = this.getY(e)
-        if (this.drawType == "rectangle") {
-          this.drawing();
-        }
-        if (this.drawType == "polygon") {
-          if (this.activeLine && this.activeLine.class == "line") {
-            var pointer = this.canvas.getPointer(e.e);
-            this.activeLine.set({ x2: pointer.x, y2: pointer.y });
-            var points = this.activeShape.get("points");
-            points[this.pointArray.length] = {
-              x: pointer.x,
-              y: pointer.y,
-              zIndex: 1
-            };
-            this.activeShape.set({
-              points: points
-            });
-            this.canvas.renderAll();
-          }
-          this.canvas.renderAll();
-        }
-    },
-    mouseup(e) {
-      this.mouseTo.x = this.getX(e)
-      this.mouseTo.y = this.getY(e)
-      if(this.drawingObject){
-        this.objectaction(e,'added') //廣播新增
-      }
-      this.drawingObject = null;
-      this.moveCount = 1;
-      this.panning = false;
-      this.canvas.selection = true;
-      if (this.drawType != "polygon") {
-        this.doDrawing = false;
-        this.sendAllobj()
-      }
-    },
-    drawing() {
-      if(this.canvas.getActiveObjects().length === 0){
-          if (this.drawingObject) {
-            this.canvas.remove(this.drawingObject);
-          }
-            var canvasObject = null;
-            var left = this.mouseFrom.x,
-                top = this.mouseFrom.y,
-                mouseFrom = this.mouseFrom,
-                mouseTo = this.mouseTo;
-            switch (this.drawType) {
-                case "rectangle": //长方形
-                  var path =
-                      "M " +
-                      mouseFrom.x +
-                      " " +
-                      mouseFrom.y +
-                      " L " +
-                      mouseTo.x +
-                      " " +
-                      mouseFrom.y +
-                      " L " +
-                      mouseTo.x +
-                      " " +
-                      mouseTo.y +
-                      " L " +
-                      mouseFrom.x +
-                      " " +
-                      mouseTo.y +
-                      " L " +
-                      mouseFrom.x +
-                      " " +
-                      mouseFrom.y +
-                      " z";
-                  canvasObject = new fabric.Path(path, {
-                      left: left,
-                      top: top,
-                      stroke: this.strokecolor,
-                      strokeWidth: this.drawWidth,
-                      fill: this.fillcolor,
-                      opacity:this.opacity,
-                      strokeDashArray:this.strokeDash
-                  });
-                break;
-                case "text": //文本框
-                  this.textbox = new fabric.Textbox("", {
-                    left: mouseFrom.x,
-                      top: mouseFrom.y - 10,
-                      fontSize: this.fontsize,
-                      borderColor: this.strokecolor,
-                      fill: this.fontcolor,
-                      opacity:this.opacity
-                  });
-                  
-                  this.canvas.add(this.textbox);
-                  this.textbox.enterEditing();
-                  this.textbox.hiddenTextarea.focus();
-                break;
-                default:
-                break;
-            }
-            if (canvasObject) {
-              this.canvas.add(canvasObject); 
-              this.drawingObject = canvasObject;
-              this.addCustomize(canvasObject)
-            }
-      }
-    },
-    addCustomize(canvasObject){
-        canvasObject.toObject = (function (toObject) {
-            return function () {
-                return fabric.util.object.extend(toObject.call(this), {
-                    id: this.id,
-                    name: this.name
-                });
-            };
-        })(canvasObject.toObject);
-        canvasObject.set("id",this.canvas.getObjects().indexOf(canvasObject))
-        canvasObject.set("name",this.objectname +'_'+ (new Date()).getTime())
-    },
-    sendAllobj(){
-      var item = this.canvas.getObjects()
-      this.$emit('subSelectOption',item)
-    },
     formatTooltip(val){
       return val / 100;
     },
@@ -536,6 +313,7 @@ export default {
       save_link.dispatchEvent(event);
     },
     copy(){
+        
         var _self = this;
         this.canvas.getActiveObject().clone(function(cloned){
             // let _clipboard = cloned;
@@ -567,7 +345,14 @@ export default {
             // canvas.requestRenderAll();
         });
     },
-    
+    drawTypeChange(e) {
+      this.drawType = e;
+      if (e == "pen") {
+        this.canvas.isDrawingMode = true;
+      } else {
+        this.canvas.isDrawingMode = false;
+      }
+    },
     setAnimate(obj){
         obj.animate('opacity', obj.opacity === 0.5 ? 1 : 0.5, {
             duration: 1000,
@@ -576,9 +361,122 @@ export default {
             easing: fabric.util.ease.easeInCubic
         });
     },
-    
-    
-    
+    mousedown(e) {
+      console.log('mousedown=>',e)
+        //var xy =e.pointer || this.transformMouse(e.e.offsetX, e.e.offsetY);
+        //this.mouseFrom.x = xy.x;
+        //this.mouseFrom.y = xy.y;
+        this.mouseFrom.x = this.getX(e)
+        this.mouseFrom.y = this.getY(e)
+        this.doDrawing = true;
+        if(e.e.altKey) {
+          this.panning = true;
+          this.canvas.selection = false;
+        }
+        if (this.drawType == "text") {
+            this.drawing();
+        }
+        if (this.drawType == "rectangle-text") {
+            this.textbox = new fabric.Textbox("", {
+            left: this.mouseFrom.x,
+            top: this.mouseFrom.y - 17,
+            // width: 150,
+            fontSize: 15,
+            hasBorders: false,
+            padding: 5,
+            borderColor: this.strokecolor,
+            fill: this.fillcolor,
+            hasControls: false,
+            textboxBorderColor: this.fillcolor,
+            showTextBoxBorder: true,
+            zIndex: 1,
+            text: this.rectangleLabel
+            });
+            this.canvas.add(this.textbox);
+        }
+        if (this.drawType == "polygon") {
+        try {
+          if (this.pointArray.length > 1) {
+            if (e.target && e.target.id == this.pointArray[0].id) {
+                //最後一個點
+                this.generatePolygon();
+            }
+          }
+          if (this.polygonMode) {
+                this.addPoint(e);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    },
+    mouseup(e) {
+      var xy =e.pointer || this.transformMouse(e.e.offsetX, e.e.offsetY);
+    //   this.mouseTo.x = xy.x;
+    //   this.mouseTo.y = xy.y;
+      this.mouseTo.x = this.getX(e)
+      this.mouseTo.y = this.getY(e)
+      // drawing();
+      if(this.drawingObject){
+        this.objectaction(e,'added')
+      }
+      this.drawingObject = null;
+      this.moveCount = 1;
+      this.panning = false;
+      this.canvas.selection = true;
+      if (this.drawType != "polygon") {
+        this.doDrawing = false;
+      }
+    },
+    mousemove(e) {
+        if (this.moveCount % 2 && !this.doDrawing) {
+                //减少绘制频率
+                return;
+        }
+        //移動畫布
+        if (this.canvas.getActiveObjects().length === 0 && this.drawType === '' &&
+         this.panning &&
+          e && e.e) {
+            var x = e.e.movementX;
+            var y = e.e.movementY;
+            if(!x) {
+                x = e.e.screenX - this.previousEvent.e.screenX;
+                y = e.e.screenY - this.previousEvent.e.screenY;
+            }
+            var delta = new fabric.Point(x, y);
+            this.canvas.relativePan(delta);
+            this.relativeMouseX += e.e.movementX //累计每一次移动时候的偏差
+            this.relativeMouseY += e.e.movementY
+        }
+        this.previousEvent = e
+      
+      this.moveCount++;
+      var xy =e.pointer || this.transformMouse(e.e.offsetX, e.e.offsetY);
+    //   this.mouseTo.x = xy.x;
+    //   this.mouseTo.y = xy.y;
+        this.mouseTo.x = this.getX(e)
+        this.mouseTo.y = this.getY(e)
+      if (this.drawType != "text" || this.drawType != "polygon") {
+        this.drawing();
+      }
+      if (this.drawType == "polygon") {
+        if (this.activeLine && this.activeLine.class == "line") {
+          var pointer = this.canvas.getPointer(e.e);
+          this.activeLine.set({ x2: pointer.x, y2: pointer.y });
+          var points = this.activeShape.get("points");
+          points[this.pointArray.length] = {
+            x: pointer.x,
+            y: pointer.y,
+            zIndex: 1
+          };
+          this.activeShape.set({
+            points: points
+          });
+          this.canvas.renderAll();
+        }
+        this.canvas.renderAll();
+      }
+    },
     mousewheel(e){
         this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom();
         this.zoom = Math.max(0.5, this.zoom); 
@@ -629,17 +527,32 @@ export default {
     },
     deleteObj() {
       this.canvas.getActiveObjects().map(item => {
-        console.log(JSON.stringify(item))
-          this.canvas.remove(item);
-          this.objectaction(item,'removed')
-      })
-      this.sendAllobj()
+            this.canvas.remove(item);
+            this.objectaction(item,'removed')
+      });
     },
-    
+    addcustomize(canvasObject){
+        canvasObject.toObject = (function (toObject) {
+            return function () {
+                return fabric.util.object.extend(toObject.call(this), {
+                    id: this.id,
+                    name: this.name
+                });
+            };
+        })(canvasObject.toObject);
+        canvasObject.set("id",this.canvas.getObjects().indexOf(canvasObject))
+        canvasObject.set("name",this.objectname +'_'+ (new Date()).getTime())
+    },
     transformMouse(mouseX, mouseY) {
       return { x: mouseX / 1, y: mouseY / 1 };
     },
-    
+    drawPolygon() {
+      this.drawType = "polygon";
+      this.polygonMode = true;
+      this.pointArray = new Array();
+      this.lineArray = new Array();
+      this.canvas.isDrawingMode = false;
+    },
     addPoint(e) {
       var random = Math.floor(Math.random() * 10000);
       var id = new Date().getTime() + random;
@@ -648,6 +561,8 @@ export default {
         fill: "#ffffff",
         stroke: "#333333",
         strokeWidth: 0.5,
+        // left: (e.pointer.x || e.e.layerX) / this.canvas.getZoom(),
+        // top: (e.pointer.y || e.e.layerY) / this.canvas.getZoom(),
         left:this.mouseFrom.x,
         top:this.mouseFrom.y,
         selectable: false,
@@ -664,6 +579,10 @@ export default {
         });
       }
       var points = [
+        // (e.pointer.x || e.e.layerX) / this.canvas.getZoom(),
+        // (e.pointer.y || e.e.layerY) / this.canvas.getZoom(),
+        // (e.pointer.x || e.e.layerX) / this.canvas.getZoom(),
+        // (e.pointer.y || e.e.layerY) / this.canvas.getZoom()
         this.mouseFrom.x,
         this.mouseFrom.y,
         this.mouseFrom.x,
@@ -708,6 +627,8 @@ export default {
       } else {
         var polyPoint = [
           {
+            // x: (e.pointer.x || e.e.layerX) / this.canvas.getZoom(),
+            // y: (e.pointer.y || e.e.layerY) / this.canvas.getZoom()
             x: this.mouseFrom.x,
             y: this.mouseFrom.y
           }
@@ -734,14 +655,14 @@ export default {
     },
     generatePolygon() {
       var points = new Array();
-      this.pointArray.map((point, index) => { //移除點
+      this.pointArray.map((point, index) => {
         points.push({
           x: point.left,
           y: point.top
         });
         this.canvas.remove(point);
       });
-      this.lineArray.map((line, index) => { //移除線
+      this.lineArray.map((line, index) => {
         this.canvas.remove(line);
       });
       this.canvas.remove(this.activeShape).remove(this.activeLine);
@@ -753,8 +674,7 @@ export default {
         hasBorders: true
       });
       this.canvas.add(polygon);
-      this.addCustomize(polygon)
-      this.sendAllobj()
+      this.addcustomize(polygon)
       this.drawingObject = polygon
       this.activeLine = null;
       this.activeShape = null;
@@ -762,10 +682,278 @@ export default {
       this.doDrawing = false;
       this.drawType = null;
     },
-    
-    
+    drawing() {
+      if(this.canvas.getActiveObjects().length === 0){
+          if (this.drawingObject) {
+                    this.canvas.remove(this.drawingObject);
+            }
+            var canvasObject = null;
+            var left = this.mouseFrom.x,
+                top = this.mouseFrom.y,
+                mouseFrom = this.mouseFrom,
+                mouseTo = this.mouseTo;
+            switch (this.drawType) {
+                case "arrow": //箭头
+                var x1 = mouseFrom.x,
+                    x2 = mouseTo.x,
+                    y1 = mouseFrom.y,
+                    y2 = mouseTo.y;
+                var w = x2 - x1,
+                    h = y2 - y1,
+                    sh = Math.cos(Math.PI / 4) * 16;
+                var sin = h / Math.sqrt(Math.pow(w, 2) + Math.pow(h, 2));
+                var cos = w / Math.sqrt(Math.pow(w, 2) + Math.pow(h, 2));
+                var w1 = (16 * sin) / 4,
+                    h1 = (16 * cos) / 4,
+                    centerx = sh * cos,
+                    centery = sh * sin;
+                /**
+                 * centerx,centery 表示起始点，终点连线与箭头尖端等边三角形交点相对x，y
+                 * w1 ，h1用于确定四个点
+                 */
+                var path = " M " + x1 + " " + y1;
+                path += " L " + (x2 - centerx + w1) + " " + (y2 - centery - h1);
+                path +=
+                    " L " + (x2 - centerx + w1 * 2) + " " + (y2 - centery - h1 * 2);
+                path += " L " + x2 + " " + y2;
+                path +=
+                    " L " + (x2 - centerx - w1 * 2) + " " + (y2 - centery + h1 * 2);
+                path += " L " + (x2 - centerx - w1) + " " + (y2 - centery + h1);
+                path += " Z";
+                canvasObject = new fabric.Path(path, {
+                    stroke: this.strokecolor,
+                    fill: this.fillcolor,
+                    strokeWidth: this.drawWidth,
+                    opacity:this.opacity
+                });
+                break;
+                case "pentagram": //五角星
+                var x1 = mouseFrom.x,
+                    x2 = mouseTo.x,
+                    y1 = mouseFrom.y,
+                    y2 = mouseTo.y;
+                /**
+                 * 实现思路  (x1,y1)表示鼠标起始的位置 (x2,y2)表示鼠标抬起的位置
+                 * r 表示五边形外圈圆的半径，这里建议自己画个图理解
+                 * 正五边形夹角为36度。计算出cos18°，sin18°备用
+                 */
+                var w = Math.abs(x2 - x1),
+                    h = Math.abs(y2 - y1),  
+                    r = Math.sqrt(w*w+h*h)
+                    var cos18 = Math.cos(18*Math.PI / 180)
+                    var sin18 = Math.sin(18*Math.PI / 180)
+                
+                /**
+                 * 算出对应五个点的坐标转化为路径
+                 */
+                var point1 = [x1,y1+r]
+                var point2 = [x1+2*r*(sin18),y1+r-2*r*(cos18)]
+                var point3 = [x1-r*(cos18),y1+r*(sin18)]
+                var point4 = [x1+r*(cos18),y1+r*(sin18)]
+                var point5 = [x1-2*r*(sin18),y1+r-2*r*(cos18)]
+                var path = " M " + point1[0] + " " + point1[1]
+                path += " L " + point2[0] + " " + point2[1]
+                path += " L " + point3[0] + " " + point3[1]
+                path += " L " + point4[0] + " " + point4[1]
+                path += " L " + point5[0] + " " + point5[1]
+                path += " Z";
+                canvasObject = new fabric.Path(path, {
+                    stroke: this.strokecolor,
+                    fill: this.fillcolor, 
+                    strokeWidth: this.drawWidth,
+                    opacity:this.opacity
+                    // angle:180,  //设置旋转角度
+                });
+                break;
+                case "ellipse": //椭圆
+                var radius =
+                    Math.sqrt(
+                    (mouseTo.x - left) * (mouseTo.x - left) +
+                        (mouseTo.y - top) * (mouseTo.y - top)
+                    ) / 2;
+                canvasObject = new fabric.Ellipse({
+                    left: (mouseTo.x - left) / 2 + left,
+                    top: (mouseTo.y - top) / 2 + top,
+                    stroke: this.strokecolor,
+                    fill: this.fillcolor,
+                    originX: "center",
+                    originY: "center",
+                    rx: Math.abs(left - mouseTo.x) / 2,
+                    ry: Math.abs(top - mouseTo.y) / 2,
+                    strokeWidth: this.drawWidth,
+                    opacity:this.opacity,
+                    strokeDashArray:this.strokeDash
+                });
+                break;
+                case "rectangle": //长方形
+                var path =
+                    "M " +
+                    mouseFrom.x +
+                    " " +
+                    mouseFrom.y +
+                    " L " +
+                    mouseTo.x +
+                    " " +
+                    mouseFrom.y +
+                    " L " +
+                    mouseTo.x +
+                    " " +
+                    mouseTo.y +
+                    " L " +
+                    mouseFrom.x +
+                    " " +
+                    mouseTo.y +
+                    " L " +
+                    mouseFrom.x +
+                    " " +
+                    mouseFrom.y +
+                    " z";
+                canvasObject = new fabric.Path(path, {
+                    left: left,
+                    top: top,
+                    stroke: this.strokecolor,
+                    strokeWidth: this.drawWidth,
+                    fill: this.fillcolor,
+                    opacity:this.opacity,
+                    strokeDashArray:this.strokeDash
+                });
+                //也可以使用fabric.Rect
+                break;
+                case "rectangle-text": //长方形带标注框
+                var path =
+                    "M " +
+                    mouseFrom.x +
+                    " " +
+                    mouseFrom.y +
+                    " L " +
+                    mouseTo.x +
+                    " " +
+                    mouseFrom.y +
+                    " L " +
+                    mouseTo.x +
+                    " " +
+                    mouseTo.y +
+                    " L " +
+                    mouseFrom.x +
+                    " " +
+                    mouseTo.y +
+                    " L " +
+                    mouseFrom.x +
+                    " " +
+                    mouseFrom.y +
+                    " z";
+                canvasObject = new fabric.Path(path, {
+                    left: left,
+                    top: top,
+                    stroke: this.strokecolor,
+                    strokeWidth: this.drawWidth,
+                    fill: this.fillcolor,
+                    opacity:this.opacity
+                });
+                // this.textbox.enterEditing();
+                // this.textbox.hiddenTextarea.focus();
+                //也可以使用fabric.Rect
+                break;
+                case "text": //文本框
+                this.textbox = new fabric.Textbox("", {
+                    left: mouseFrom.x,
+                    top: mouseFrom.y - 10,
+                    // width: 150,
+                    fontSize: 16,
+                    borderColor: this.strokecolor,
+                    fill: this.fillcolor,
+                    opacity:this.opacity
+                });
+                this.canvas.add(this.textbox);
+                this.textbox.enterEditing();
+                this.textbox.hiddenTextarea.focus();
+                console.log('Textbox=>'+JSON.stringify(this.textbox))
+                break;
+                default:
+                break;
+            }
+            if (canvasObject) {
+                this.canvas.add(canvasObject); //.setActiveObject(canvasObject)
+                this.drawingObject = canvasObject;
+                this.addcustomize(canvasObject)
+            }
+      }
+    }
   },
-  
+  mounted() {
+    this.canvas = new fabric.Canvas("canvas");
+    this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
+    this.canvas.setHeight(600)
+
+    fabric.Image.fromURL(require("../../assets/image/5F_MAP.jpg"), (img) => {
+        img.set({
+        // 通過scale來設定圖片大小，這裡設定和畫布一樣大
+        scaleX: this.canvas.width / img.width,
+        scaleY: this.canvas.height / img.height,
+        });
+        // 設定背景
+        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas));
+        this.canvas.renderAll();
+    });
+    this.canvas.selectionColor = "rgba(0,0,0,0.3)"
+    this.canvas.selectionBorderColor ="black"
+    this.canvas.selectionDashArray = [5, 5]
+    this.canvas.on("mouse:down", this.mousedown)
+    this.canvas.on("mouse:move", this.mousemove)
+    this.canvas.on("mouse:up", this.mouseup)
+    this.canvas.on("mouse:wheel",this.mousewheel)
+    this.canvas.on("object:moving",(e) => {
+        this.canvas.selection = false
+        this.objectaction(e,'moving')
+    })
+    this.canvas.on('object:modified', (e) => {
+        console.log('modified=>'+e.target) // e.target為當前編輯的Object
+        //this.setAnimate(e.target)
+    })
+    this.canvas.on('drop', this.drop)
+   
+    document.onkeydown = e => {
+      let key = window.event.keyCode;
+      if (e.keyCode == 46) {
+        this.deleteObj();
+      }
+      if (e.keyCode == 90 && e.ctrlKey) {
+        this.canvas.remove(
+          this.canvas.getObjects()[this.canvas.getObjects().length - 1]
+        );
+      }
+      if(e.keyCode == 67 && e.ctrlKey){
+          this.copy()
+      }
+      if(e.keyCode == 86 && e.ctrlKey){
+          this.paste()
+      }
+    };
+    // var originalRender = fabric.Textbox.prototype._render;
+    // fabric.Textbox.prototype._render = function(ctx) {
+    //   originalRender.call(this, ctx);
+    //   //Don't draw border if it is active(selected/ editing mode)
+    //   if (this.active) return;
+    //   if(this.showTextBoxBorder){
+    //     var w = this.width,
+    //       h = this.height,
+    //       x = -this.width / 2,
+    //       y = -this.height / 2;
+    //     ctx.beginPath();
+    //     ctx.moveTo(x, y);
+    //     ctx.lineTo(x + w, y);
+    //     ctx.lineTo(x + w, y + h);
+    //     ctx.lineTo(x, y + h);
+    //     ctx.lineTo(x, y);
+    //     ctx.closePath();
+    //     var stroke = ctx.strokeStyle;
+    //     ctx.strokeStyle = this.textboxBorderColor;
+    //     ctx.stroke();
+    //     ctx.strokeStyle = stroke;
+    //   }
+    // }
+    // fabric.Textbox.prototype.cacheProperties = fabric.Textbox.prototype.cacheProperties.concat('active');
+  }
 };
 </script>
 

@@ -123,7 +123,7 @@
                 ref="dataForm"  
                 :model="temp" 
                 :label-position="label" 
-                label-width="auto" >
+                label-width="auto">
                     <el-form-item 
                         v-for="(item, index) in config"
                         :key="index"
