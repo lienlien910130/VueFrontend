@@ -119,8 +119,8 @@ export default {
 
       },
       handleDragOption(e){
-        this.imgDragOffset.offsetX = e.clientX - e.target.offsetLeft
-        this.imgDragOffset.offsetY = e.clientY - e.target.offsetTop
+        this.imgDragOffset.offsetX = e.offsetX
+        this.imgDragOffset.offsetY = e.offsetY
         this.movingImage = e.target
       },
       handleChange(val) {

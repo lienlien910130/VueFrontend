@@ -252,11 +252,7 @@ export default {
         this.objectaction(e,'moving')
     })
     this.canvas.on('object:modified', (e) => {
-      console.log(JSON.stringify(e))
-      if(e.target.type == "textbox"){
-        
-      }
-        console.log('modified=>'+e.target) // e.target為當前編輯的Object
+      
         //this.setAnimate(e.target)
     })
     
@@ -274,7 +270,7 @@ export default {
     }
   },
   methods: {
-    drawTypeChange(e) { //切換繪圖類別 選取-長方形-文字
+    drawTypeChange(e) { //切換繪圖類別
       if(this.drawType == 'text'){
         this.textbox.exitEditing() //關閉文字框編輯
       }
@@ -286,10 +282,18 @@ export default {
       this.drawType = e;
       this.canvas.isDrawingMode = false;
     },
-    mousedown(e) { //滑鼠點擊
-        this.mouseFrom.x = this.getX(e)
-        this.mouseFrom.y = this.getY(e)
-        this.doDrawing = true;
+    mousewheel(e){ //放大縮小
+        this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom();
+        this.zoom = Math.max(0.5, this.zoom); 
+        this.zoom = Math.min(3, this.zoom); 
+        this.zoomPoint = new fabric.Point(event.pageX, event.pageY);
+        this.canvas.zoomToPoint(this.zoomPoint, this.zoom);
+        this.resetOriginAfterZoom()
+    },
+    mousedown(e) { 
+      this.mouseFrom.x = this.getX(e)
+      this.mouseFrom.y = this.getY(e)
+      this.doDrawing = true;
         if(e.e.altKey) { //移動畫布
           this.panning = true;
           this.canvas.selection = false;
@@ -316,8 +320,7 @@ export default {
         if (this.moveCount % 2 && !this.doDrawing) { //減少繪製頻率
           return;
         }
-        //移動畫布
-        if (this.canvas.getActiveObjects().length === 0 && this.drawType === '' &&
+        if (this.canvas.getActiveObjects().length === 0 && this.drawType === '' && //移動畫布
          this.panning && e && e.e) {
             var x = e.e.movementX;
             var y = e.e.movementY;
@@ -380,6 +383,7 @@ export default {
                 top = this.mouseFrom.y,
                 mouseFrom = this.mouseFrom,
                 mouseTo = this.mouseTo;
+            console.log(left,top,mouseFrom,mouseTo)
             switch (this.drawType) {
                 case "rectangle": //长方形
                   var path =
@@ -416,8 +420,8 @@ export default {
                 break;
                 case "text": //文本框
                   this.textbox = new fabric.Textbox("", {
-                    left: mouseFrom.x,
-                      top: mouseFrom.y - 10,
+                      left: left,
+                      top: top - 10,
                       fontSize: this.fontsize,
                       borderColor: this.strokecolor,
                       fill: this.fontcolor,
@@ -454,16 +458,12 @@ export default {
       var item = this.canvas.getObjects()
       this.$emit('subSelectOption',item)
     },
-    formatTooltip(val){
-      return val / 100;
-    },
     sendObj(id,type,content){
         const msg = {
             type: type,
             content: JSON.stringify(content),
             id:id
         }
-        console.log('send=>'+JSON.stringify(msg))
         if (this.$socket.$ws && this.$socket.$ws.readyState == 1) {
             this.$socket.$ws.send(JSON.stringify(msg));
         }else{
@@ -471,6 +471,7 @@ export default {
         }
     },
     getX(o) {
+        console.log(o)
         return (
           this.lastzoomPoint.x +
           (o.pointer.x - this.zoomPoint.x - this.relativeMouseX) /
@@ -518,12 +519,10 @@ export default {
             a.push(b)  
             }
         })
-        console.log(JSON.stringify(a))
         var canvas = document.getElementById('canvas')
         var imgData = canvas.toDataURL('png');
         imgData = imgData.replace('image/png','image/octet-stream');
-        // 下载后的问题名
-        var filename = 'drawingboard_' + (new Date()).getTime() + '.' + 'png';
+        var filename = 'drawingboard_' + (new Date()).getTime() + '.' + 'png'; // 下載後的檔名
         this.saveFile(imgData,filename);
     },
     saveFile(data, filename){
@@ -579,28 +578,24 @@ export default {
     
     
     
-    mousewheel(e){
-        this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom();
-        this.zoom = Math.max(0.5, this.zoom); 
-        this.zoom = Math.min(3, this.zoom); 
-        this.zoomPoint = new fabric.Point(event.pageX, event.pageY);
-        this.canvas.zoomToPoint(this.zoomPoint, this.zoom);
-        this.resetOriginAfterZoom()
-    },
+    
     drop(e){
       console.log(e)
       const {offsetX, offsetY} = e.e
-      console.log(offsetX)
+      
       const image = new fabric.Image(this.movingImage, {
         width: this.movingImage.naturalWidth,
         height: this.movingImage.naturalHeight,
-        scaleX: 100 / this.movingImage.naturalWidth,
-        scaleY: 100 / this.movingImage.naturalHeight,
-        top: this.getY(e),
-        left: this.getX(e) 
+        scaleX: 0.1,
+        scaleY: 0.1,
+        top: offsetY - this.imgDragOffset.offsetY*0.1,
+        left: offsetX - this.imgDragOffset.offsetX*0.1
         // top: this.mouseFrom.y - this.imgDragOffset.offsetY, // 计算起始位置
         // left: this.mouseFrom.x - this.imgDragOffset.offsetX
       })
+      console.log(this.getX(e))
+      console.log(offsetY,this.imgDragOffset.offsetY,image.top)
+      console.log(offsetX,this.imgDragOffset.offsetX,image.left)
       this.canvas.add(image)
     },
     objectaction(e,action){
@@ -629,7 +624,6 @@ export default {
     },
     deleteObj() {
       this.canvas.getActiveObjects().map(item => {
-        console.log(JSON.stringify(item))
           this.canvas.remove(item);
           this.objectaction(item,'removed')
       })
