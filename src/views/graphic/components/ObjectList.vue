@@ -1,7 +1,7 @@
 <template>
 <div>
     <div v-for="(element,index) in list" :key="element.id" class="list-complete-item">
-        <div class="list-complete-item-handle">
+        <div class="list-complete-item-handle" @click="selectEle(element)">
             {{ index+1 }}[{{ element.name }}] 
         </div>
         <div style="position:absolute;right:0px;">
@@ -20,6 +20,14 @@ export default {
             default() {
                 return []
             }
+        }
+    },
+    methods:{
+        deleteEle(element){
+            this.$emit('subSelectOption','del',element)
+        },
+        selectEle(element){
+            this.$emit('subSelectOption','sel',element)
         }
     }
 }

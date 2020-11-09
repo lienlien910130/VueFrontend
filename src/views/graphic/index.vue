@@ -15,6 +15,7 @@
                   <el-collapse-item title="圖層" name="2">
                     <ObjectList
                     v-bind="objectListAttrs"
+                    v-on="objectListEvent"
                     ></ObjectList>
                   </el-collapse-item>
                   <el-collapse-item title="圖例" name="3">
@@ -81,7 +82,9 @@ export default {
       graphicAttrs(){
         return{
           movingImage:this.movingImage,
-          imgDragOffset:this.imgDragOffset
+          imgDragOffset:this.imgDragOffset,
+          deleteObject:this.deleteObject,
+          selectObject:this.selectObject
         }
       },
       graphicEvent(){
@@ -96,7 +99,9 @@ export default {
             movingImage:null,
             imgDragOffset:{offsetX: 0,offsetY: 0},
             activeNames:['1','2'],
-            objectlist:[]
+            objectlist:[],
+            deleteObject:null,
+            selectObject:null
         }
     },
     mounted(){
@@ -119,6 +124,7 @@ export default {
 
       },
       handleDragOption(e){
+        console.log(e.target)
         this.imgDragOffset.offsetX = e.offsetX
         this.imgDragOffset.offsetY = e.offsetY
         this.movingImage = e.target
@@ -126,8 +132,13 @@ export default {
       handleChange(val) {
         
       },
-      handleObjSelectOption(){
-
+      handleObjSelectOption(index,val){
+        if(index == "del"){
+          this.deleteObject = val
+        }else{
+          this.selectObject = val
+        }
+        
       },
       handleGraphicObjSelectOption(val){
         this.objectlist = val
