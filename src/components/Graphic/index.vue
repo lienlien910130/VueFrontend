@@ -113,6 +113,8 @@ export default {
       lastzoomPoint: { x: 0, y: 0 }, //初始时，前一次缩放原点同样为(0,0)
       lastmousePoint: { x: 0, y: 0 }, //进行缩放，需要对此刻缩放位置进行保存，来计算出缩放原点，此刻初始时设为0,0
       lastzoom: 1, //表示为上一次的缩放倍数，此刻设为1
+
+      lastMovePos:{x:0, y:0},
       relativeMouseX: 0, //表示相对的鼠标位移，用来记录画布的绝对移动距离
       relativeMouseY: 0, //表示相对的鼠标位移，用来记录画布的绝对移动距离
       
@@ -246,16 +248,14 @@ export default {
     this.canvas.on("mouse:down", this.mousedown)
     this.canvas.on("mouse:move", this.mousemove)
     this.canvas.on("mouse:up", this.mouseup)
-    this.canvas.on("mouse:wheel",this.mousewheel)
+    //this.canvas.on("mouse:wheel",this.mousewheel)
     this.canvas.on("object:moving",(e) => {
         this.canvas.selection = false
         this.objectaction(e,'moving')
     })
-    this.canvas.on('object:modified', (e) => {
-      
-        //this.setAnimate(e.target)
-    })
-    
+    // this.canvas.on('object:modified', (e) => {
+    //   this.setAnimate(e.target)
+    // })
     document.onkeydown = e => {
       let key = window.event.keyCode;
       if (e.keyCode == 46) {
@@ -266,6 +266,9 @@ export default {
       }
       if(e.keyCode == 86 && e.ctrlKey){
           this.paste()
+      }
+      if(e.keyCode == 107 || e.keyCode == 109){
+          this.mousewheel(e)
       }
     }
   },
@@ -283,20 +286,28 @@ export default {
       this.canvas.isDrawingMode = false;
     },
     mousewheel(e){ //放大縮小
-        this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom();
+    console.log(e)
+        //this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom(); 
+        this.zoom = (e.key =="+" ? 0.1 : -0.1) + this.canvas.getZoom();
         this.zoom = Math.max(0.5, this.zoom); 
         this.zoom = Math.min(3, this.zoom); 
-        this.zoomPoint = new fabric.Point(event.pageX, event.pageY);
+        //this.zoomPoint = new fabric.Point(e.e.offsetX, e.e.offsetY);
+        // this.canvas.zoomToPoint(this.zoomPoint, this.zoom);
+        const center = this.canvas.getCenter()
+        this.zoomPoint = new fabric.Point(center.left, center.top);
         this.canvas.zoomToPoint(this.zoomPoint, this.zoom);
         this.resetOriginAfterZoom()
     },
     mousedown(e) { 
       this.mouseFrom.x = this.getX(e)
       this.mouseFrom.y = this.getY(e)
+      console.log('down',this.mouseFrom)
       this.doDrawing = true;
         if(e.e.altKey) { //移動畫布
-          this.panning = true;
-          this.canvas.selection = false;
+          this.panning = true
+          this.canvas.selection = false
+          this.lastMovePos.x = e.e.clientX
+          this.lastMovePos.y = e.e.clientY
         }
         if (this.drawType == "text") { 
           this.drawing();
@@ -317,6 +328,7 @@ export default {
       }
     },
     mousemove(e) {
+      
         if (this.moveCount % 2 && !this.doDrawing) { //減少繪製頻率
           return;
         }
@@ -361,6 +373,7 @@ export default {
     mouseup(e) {
       this.mouseTo.x = this.getX(e)
       this.mouseTo.y = this.getY(e)
+      console.log('up',this.mouseTo)
       if(this.drawingObject){
         this.objectaction(e,'added') //廣播新增
       }
@@ -383,7 +396,6 @@ export default {
                 top = this.mouseFrom.y,
                 mouseFrom = this.mouseFrom,
                 mouseTo = this.mouseTo;
-            console.log(left,top,mouseFrom,mouseTo)
             switch (this.drawType) {
                 case "rectangle": //长方形
                   var path =
@@ -471,30 +483,39 @@ export default {
         }
     },
     getX(o) {
-        console.log(o)
-        return (
-          this.lastzoomPoint.x +
-          (o.pointer.x - this.zoomPoint.x - this.relativeMouseX) /
-            this.canvas.getZoom()
-        )
+      var x = ""
+      if(o.pointer == undefined){
+        x = o.e.offsetX
+      }else{
+        x = o.pointer.x
+      }
+      return (
+        this.lastzoomPoint.x +
+        (x - this.zoomPoint.x - this.relativeMouseX) /
+          this.canvas.getZoom()
+      )
     },
     getY(o) {
-        return (
-          this.lastzoomPoint.y +
-          (o.pointer.y - this.zoomPoint.y - this.relativeMouseY) /
-            this.canvas.getZoom()
-        )
+      var y = ""
+      if(o.pointer == undefined){
+        y = o.e.offsetY
+      }else{
+        y = o.pointer.y
+      }
+      return (
+        this.lastzoomPoint.y +
+        (y - this.zoomPoint.y - this.relativeMouseY) /
+          this.canvas.getZoom()
+      )
     },
       // 缩放后重置原点
     resetOriginAfterZoom() {
         this.lastzoomPoint.x =
           this.lastzoomPoint.x +
-          (this.zoomPoint.x - this.lastmousePoint.x - this.relativeMouseX) /
-            this.lastzoom
+          (this.zoomPoint.x - this.lastmousePoint.x - this.relativeMouseX) / this.lastzoom
         this.lastzoomPoint.y =
           this.lastzoomPoint.y +
-          (this.zoomPoint.y - this.lastmousePoint.y - this.relativeMouseY) /
-            this.lastzoom
+          (this.zoomPoint.y - this.lastmousePoint.y - this.relativeMouseY) / this.lastzoom
 
         this.lastmousePoint.x = this.zoomPoint.x
         this.lastmousePoint.y = this.zoomPoint.y
@@ -580,22 +601,14 @@ export default {
     
     
     drop(e){
-      console.log(e)
-      const {offsetX, offsetY} = e.e
-      
       const image = new fabric.Image(this.movingImage, {
         width: this.movingImage.naturalWidth,
         height: this.movingImage.naturalHeight,
         scaleX: 0.1,
         scaleY: 0.1,
-        top: offsetY - this.imgDragOffset.offsetY*0.1,
-        left: offsetX - this.imgDragOffset.offsetX*0.1
-        // top: this.mouseFrom.y - this.imgDragOffset.offsetY, // 计算起始位置
-        // left: this.mouseFrom.x - this.imgDragOffset.offsetX
+        top: this.getY(e) - this.imgDragOffset.offsetY*0.05,
+        left: this.getX(e) - this.imgDragOffset.offsetX*0.05
       })
-      console.log(this.getX(e))
-      console.log(offsetY,this.imgDragOffset.offsetY,image.top)
-      console.log(offsetX,this.imgDragOffset.offsetX,image.left)
       this.canvas.add(image)
     },
     objectaction(e,action){
@@ -764,6 +777,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+
 .form-inline{
   margin-top: 5px;
 }

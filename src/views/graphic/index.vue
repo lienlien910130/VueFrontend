@@ -124,7 +124,7 @@ export default {
         this.movingImage = e.target
       },
       handleChange(val) {
-        console.log(val);
+        
       },
       handleObjSelectOption(){
 
@@ -137,6 +137,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
 .graphic-editor-container {
   padding: 32px;
   background-color: rgb(209, 226, 236);

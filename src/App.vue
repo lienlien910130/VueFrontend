@@ -47,3 +47,11 @@ export default {
     
 }
 </script>
+<style scoped>
+#app::-webkit-scrollbar {  
+width: 0 !important;  
+}  
+#app::-webkit-scrollbar {  
+width: 0 !important;height: 0;  
+}  
+</style>

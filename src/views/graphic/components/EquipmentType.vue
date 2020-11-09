@@ -61,7 +61,6 @@ export default {
             this.type = type;
         },
         handleImage(e){
-            console.log(e.offsetX,e.offsetY)
             if(e.target.localName == 'img'){
                 this.$emit('subDragOption',e)
             }
