@@ -19,8 +19,8 @@
     v-if="type =='icon'"
     >
         <el-image
-        class="icon"
         v-for="(item,index) in temp"
+        :class="[{active:select==item},{icon:true}]"
         :key="index"
         :src="item.imgSrc"
         :alt="item.name"
@@ -50,7 +50,8 @@ export default {
             viewlist:constant.Equipment,
             type:'icon',
             search:'',
-            temp:[]
+            temp:[],
+            select:null
         }
     },
     mounted(){
@@ -61,7 +62,9 @@ export default {
             this.type = type;
         },
         handleImage(e){
+            console.log(e)
             if(e.target.localName == 'img'){
+                this.select = e
                 this.$emit('subDragOption',e)
             }
         },

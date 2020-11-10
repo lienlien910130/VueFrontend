@@ -162,6 +162,11 @@ export default {
       this.canvas.discardActiveObject()
       this.canvas.setActiveObject(this.selectObject)
       this.objectname = this.selectObject.name
+      this.selectObject.set({
+          borderColor: 'red',
+          cornerColor: 'green',
+          cornerSize: 6
+        })
     },
     deleteObject(){
       this.canvas.remove(this.deleteObject)
@@ -228,11 +233,9 @@ export default {
 
     fabric.Image.fromURL(require("../../assets/image/5F_MAP.jpg"), (img) => {
         img.set({
-        // 通過scale來設定圖片大小，這裡設定和畫布一樣大
         scaleX: this.canvas.width / img.width,
         scaleY: this.canvas.height / img.height,
         });
-        // 設定背景
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas));
         this.canvas.renderAll();
     });
@@ -268,7 +271,6 @@ export default {
     }
   },
   methods: {
-    
     drawTypeChange(e) { //切換繪圖類別
       if(this.drawType == 'text'){
         this.textbox.exitEditing() //關閉文字框編輯
@@ -429,7 +431,9 @@ export default {
         top: this.getY(e) - this.imgDragOffset.offsetY*0.05,
         left: this.getX(e) - this.imgDragOffset.offsetX*0.05
       })
+      this.objectname = this.movingImage.alt
       this.canvas.add(image)
+      this.addCustomize(image)
       this.sendAllobj()
     },
     reset(){ //重置
@@ -649,7 +653,7 @@ export default {
             };
         })(canvasObject.toObject);
         canvasObject.set("id",this.canvas.getObjects().indexOf(canvasObject))
-        canvasObject.set("name",this.objectname +'_'+ (new Date()).getTime())
+        canvasObject.set("name",this.objectname) //+'_'+ (new Date()).getTime()
     },
     sendAllobj(){ //傳給父元件
       var item = this.canvas.getObjects()
@@ -794,7 +798,8 @@ font-size:20px
   height: 100%;
 
   canvas {
-  border: 1px dashed black;
+    border: 1px dashed black;
+    
   }
 }
 img,

@@ -2,11 +2,11 @@
 <div>
     <div v-for="(element,index) in list" :key="element.id" class="list-complete-item">
         <div class="list-complete-item-handle" @click="selectEle(element)">
-            {{ index+1 }}[{{ element.name }}] 
+            {{ index+1 }}.  {{ element.name }}  
         </div>
         <div style="position:absolute;right:0px;">
-            <span style="float: right ;margin-top: -20px;margin-right:5px;" @click="deleteEle(element)">
-                <i style="color:#ff4949" class="el-icon-delete" />
+            <span style="float: right ;margin-top: -20px;margin-right:5px" @click="deleteEle(element)">
+                <i style="color:#ff4949" class="el-icon-delete"/>
             </span>
         </div>
     </div>
@@ -48,5 +48,6 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-right: 50px;
+  font-size: 18px;
 }
 </style>
