@@ -27,6 +27,7 @@ export default {
             this.$emit('subSelectOption','del',element)
         },
         selectEle(element){
+            console.log('ee')
             this.$emit('subSelectOption','sel',element)
         }
     }

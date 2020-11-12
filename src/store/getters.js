@@ -12,7 +12,7 @@ const getters = {
   verlogo: state => state.version.logo,
   vercom: state => state.version.components,
   msg: state => state.websocket.msg,
-  buildingid : state => state.building.buildingid
-
+  buildingid : state => state.building.buildingid,
+  json: state => state.graphic.json
 }
 export default getters

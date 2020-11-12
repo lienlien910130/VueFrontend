@@ -54,6 +54,7 @@
                 </el-col>
                 <Dialog v-bind="dialogAttrs" v-on="dialogEvent"></Dialog>
             </el-row>
+            
         </div>
     </div>
 </template>
@@ -538,8 +539,9 @@ export default {
   padding: 32px;
   background-color: rgb(209, 226, 236);
   position: relative;
-  min-height: calc(100vh - 125px);
-
+  max-height: calc(100vh - 125px);
+  overflow: auto;
+  
   .block-wrapper {
     background: #fff;
     padding: 0px 16px 15px;

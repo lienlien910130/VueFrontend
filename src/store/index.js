@@ -8,6 +8,7 @@ import user from './modules/user'
 import version from './modules/version'
 import websocket from './modules/websocket'
 import building from './modules/building'
+import graphic from './modules/graphic'
 
 
 Vue.use(Vuex)
@@ -20,7 +21,8 @@ const store = new Vuex.Store({
     user,
     version,
     websocket,
-    building
+    building,
+    graphic
   },
   getters
 })

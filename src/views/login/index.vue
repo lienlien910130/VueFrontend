@@ -57,7 +57,8 @@
           </span>
         </el-form-item>
           
-        <el-button class="btn" :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登入</el-button>
+        <el-button class="btn" :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" 
+        @click.native.prevent="handleLogin">登入</el-button>
         
       </el-form>
       <!-- <div class="register">
@@ -78,9 +79,14 @@ export default {
   name: 'Login',
   components: { SIdentify },
   mounted() {
-    this.identifyCode = "";
-    this.makeCode(this.identifyCodes, 4);
-    this.getVersion();
+    this.identifyCode = ""
+    this.makeCode(this.identifyCodes, 4)
+    this.getVersion()
+    document.onkeydown = e => {
+      if (e.keyCode == 13) {
+        this.handleLogin()
+      }
+    }
   },
   data() {
     const validateUsername = (rule, value, callback) => {

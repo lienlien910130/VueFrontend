@@ -77,11 +77,6 @@ export default {
             return{
                 subChangeOption: this.handleSelectOption
             }
-        },
-        optionData(){
-            return{
-                optionData: this.optionData
-            }
         }
     },
     data() {
@@ -95,40 +90,26 @@ export default {
     },
     watch: {
         buildingid: function(val){
-            this.getbuInfo()
+            
         },
     },
     mounted() {
-        this.getbuInfo()
+        this.getfloors()
     },
     methods: {
-        getbuInfo() {
-            getbuInfo(this.id,this.buildingid).then(response => {
-                this.setfloor(response.result[0].floorsOfAboveGround,response.result[0].floorsOfUnderground)
-            }).catch(error => {
-                console.log('error=>'+error)
+        getfloors() {
+            this.selectData = []
+            this.$api.building.apiGetFloors().then(response => {
+            response.result.forEach(element => {
+                var _temp = {
+                id:element.id,
+                label:element.floors>0 ? element.floors+'F' : '地下'+element.floors.substr(1)+'F'
+                }
+                this.selectData.push(_temp)
+            });
             })
         },
-        setfloor(upval,downval){
-            for(var i=1; i<=upval; i++){
-                let _array = { 
-                    id : i, 
-                    label: i+'F', 
-                    value: i
-                }
-                this.options.push(_array)  
-            }
-            for(var i=1; i<=downval; i++){
-                let _array = { 
-                    id : i, 
-                    label: 'B'+i+'F', 
-                    value: -i
-                }
-                this.options.push(_array)  
-            }
-            this.selectData = this.options
-            console.log('selectData=>'+JSON.stringify(this.selectData))
-        },
+        
         handleSelectOption(content){
             this.isChose = true
         }
