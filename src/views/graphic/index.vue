@@ -150,7 +150,7 @@ export default {
     methods:{
       getfloors() {
         this.selectData = []
-        this.$api.building.apiGetFloors().then(response => {
+        this.$api.building.apiGetBuildingFloors().then(response => {
           response.result.forEach(element => {
             var _temp = {
               id:element.id,

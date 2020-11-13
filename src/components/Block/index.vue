@@ -5,13 +5,13 @@
             <div>
                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <p v-if="isChoose == false && title === 'floor'">請選擇樓層</p>
-                <el-button v-else 
-                class="filter-item" 
-                style="" 
-                type="primary" 
-                @click="handleCreate">
-                    新增
-                </el-button>
+                    <el-button v-else 
+                    class="filter-item" 
+                    style="" 
+                    type="primary" 
+                    @click="handleCreate">
+                        新增
+                    </el-button>
                 </el-col>
             </div>
 
@@ -32,7 +32,8 @@
                     >
                         <span 
                         v-if="option.format == 'YYYY' | option.format === 'YYYY-MM-DD'">
-                            {{ option.label }} : {{ dataStr(item[option.prop],option.format) }}
+                        <span>{{ option.label }} :</span>
+                              {{ dataStr(item[option.prop],option.format) }}
                         </span>
                         
                         <span 
@@ -74,7 +75,8 @@
 
                         <span 
                         v-else-if="option.format == 'manageselect' ">
-                        {{ option.label }} : {{ labelchange(item[option.prop]) }}
+                        <span>{{ option.label }} :</span>
+                         {{ labelchange(item[option.prop]) }}
                         </span>
 
                         <span 
@@ -90,15 +92,16 @@
 
                     </div>
                     
-                    <div v-if="isHasButtons">
+                    
+                    <div v-if="isHasButtons" style="float:right">
                         <span
                         v-for="(button, index) in buttonsName"
                         :key="index"
                         >
                         <el-button
-                        size="small"
-                        :type="index == 0 ? 'primary' : ''"
+                        :type="index == 0 ? 'primary' : 'info'"
                         @click="handleClickOption(index,item,button)"
+                        :style="index == 1 ? 'margin-left:10px' : ''"
                         >
                         <span >{{ button }}</span>
                         </el-button>
@@ -236,7 +239,7 @@
                     @click="createuser()">
                     新增用戶資料
                     </el-button>
-                    <el-button @click="cancelData()">
+                    <el-button type="info" @click="cancelData()">
                     取消
                     </el-button>
                     <el-button type="primary" @click="sendData()">
@@ -284,9 +287,7 @@ export default {
         isChoose:{
             type: Boolean
         },
-        originFiles:{
-
-        }
+        originFiles:{}
     },
     computed: {
         label() {

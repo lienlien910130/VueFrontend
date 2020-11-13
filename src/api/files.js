@@ -12,7 +12,9 @@ const files = {
     //樓層檔案
     apiGetFloorFiles(floorofhouseId){ return req('get','/basic/usageOfFloors/'+floorofhouseId+'/filesList') } ,
     apiPostFloorFiles(floorofhouseId,data){ return req('post','/basic/'+this.getUid()+'/usageOfFloors/'+floorofhouseId+'/fileUpload',data,true) } ,
-    
+    //樓層平面圖檔案
+    apiGetFloorImage(filesId){ return req('get','/basic/fileDownload/'+filesId+'/r',null,true) } ,
+
     //門牌檔案
     apiGetFloorOfHouseFiles(floorId){ return req('get','/basic/Floors/'+floorId+'/filesList') } ,
     apiPostFloorOfHouseFiles(floorId,data){ return req('post','/basic/'+this.getUid()+'/Floors/'+floorId+'/fileUpload',data,true) } ,

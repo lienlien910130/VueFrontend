@@ -66,12 +66,16 @@
       </el-form-item>
       <el-form-item label="檢視文件">
         <div class="files">
-          <div v-for="(item,index) in originFiles" :key="item.id">
-            <el-link class="link" :href="downloadbufile(item.id)" target="_blank">{{ index+1 }}.{{ item.fileOriginalName }}
-            </el-link>
-            <span>
-              <i class="el-icon-delete del" style="float:right;" @click="delbufile(item.id)" />
-            </span>
+          <div 
+          v-for="(item,index) in originFiles" :key="item.id" class="filesdiv">
+          <el-link 
+          class="link" 
+          :href="downloadbufile(item.id)" target="_blank" style="width:80%">
+          【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
+          </el-link>
+          <span>
+            <i class="el-icon-delete del" style="float:right;font-size: 25px;margin-top:5px;width:20%" @click="delfile(item.id)" />
+          </span>
           </div>
         </div>
         <!-- :href="downloadbufile(item.id)" target="_blank" -->
@@ -79,12 +83,12 @@
       <el-form-item>
         <Upload v-on="uploadEvent"></Upload>
       </el-form-item>
-      <el-form-item>
-        <el-button style="background:rgb(0,140,214);color:white" @click="onEdit" v-if="type === 'view' ">修改</el-button>
-        <el-button style="background:rgb(0,140,214);color:white" @click="onSubmit" v-if="type === 'edit' ">儲存</el-button>
-        <el-button style="background:white;color:black" @click="onCancel" v-if="type === 'edit' ">取消</el-button>
-      </el-form-item>
     </el-form>
+    <div style="float:right">
+      <el-button type="primary" @click="onEdit" v-if="type === 'view' ">修改</el-button>
+        <el-button type="primary" @click="onSubmit" v-if="type === 'edit' ">儲存</el-button>
+        <el-button type="info" @click="onCancel" v-if="type === 'edit' ">取消</el-button>
+    </div>
   </div>
 </template>
 <script>
@@ -260,11 +264,12 @@ export default {
       this.$api.files.apiGetBuildingFiles().then(response => {
         response.result.forEach(item => {
           this.originFiles.push(item)
+
         })
       })
     },
     getbufloor() {
-      this.$api.building.apiGetFloors().then(response => {
+      this.$api.building.apiGetBuildingFloors().then(response => {
         if (response.result.length == 0) {
           if (this.form.floorsOfAboveGround !== 0) {
             this.crefloor("up", this.form.floorsOfAboveGround)
@@ -288,9 +293,9 @@ export default {
           _array.push(floor)
         }
       }
-      this.$api.building.apiPostFloors().then(response => {
-        console.log('ok=>' + JSON.stringify(response))
-      })
+      // this.$api.building.apiPostFloors().then(response => {
+      //   console.log('ok=>' + JSON.stringify(response))
+      // })
     },
     downloadbufile(fileid) {
       return "http://192.168.88.65:59119/basic/fileDownload/" + fileid
@@ -305,7 +310,7 @@ export default {
         this.getbufiles()
       })
     },
-    delbufile(fileid) {
+    delfile(fileid) {
       this.$confirm('是否確定刪除該筆資料?', '提示', {
           confirmButtonText: '確定',
           cancelButtonText: '取消',
@@ -331,10 +336,16 @@ export default {
   width: 100%;
   max-height: 200px;
   overflow: auto;
+  .filesdiv{
+    line-height: 40px;
+  }
 }
 
 .del {
   cursor: pointer;
 }
-
+.el-link{
+  display:inline;
+}
 </style>
+

@@ -10,13 +10,12 @@
           :on-change="handleChange"
           :auto-upload="false"
           >
-          <el-button slot="trigger"  style="background:rgb(0,140,214);color:white">選取文件</el-button>
-          <el-button 
-          style="background:rgb(171,205,3);color:white"
+            <el-button slot="trigger"  type="primary" icon="el-icon-folder-opened" >選取文件</el-button>
+            <el-button type="success"
+            :disabled="isDisabled" 
+            @click="submitupload"
+            style="margin-left:10px" icon="el-icon-upload">上傳</el-button>
           
-          type="success"
-          :disabled="isDisabled" 
-          @click="submitupload">上傳</el-button>
         </el-upload>
  
 </div>

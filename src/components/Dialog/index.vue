@@ -87,15 +87,16 @@
         </keep-alive>
         
         <div slot="footer" class="dialog-footer">
-            <el-button v-if="dialogStatus == 'update'" @click="createData()">
+            <el-button v-if="dialogStatus == 'update'" type="primary" @click="createData()">
                 新增用戶資料
-            </el-button>
-            <el-button @click="cancelData()">
-                取消
             </el-button>
             <el-button type="primary" @click="sendData()">
                 儲存
             </el-button>
+            <el-button type="info" @click="cancelData()">
+                取消
+            </el-button>
+            
         </div> 
     </el-dialog>
 </template>

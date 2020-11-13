@@ -26,9 +26,10 @@ const building = {
     apiPatchContactUnitOption(data){ return req('patch','/basic/options',data) },
     apiDeleteContactUnitOption(optionId){ return req('delete','/basic/'+optionId+'/options') },
     //樓層
-    apiGetFloors(){ return req('get','/basic/building/'+this.getBid()+'/a/floors') },
+    apiGetBuildingFloors(){ return req('get','/basic/building/'+this.getBid()+'/a/floors') },
+    apiGetFloor(floorId){ return req('get','/basic/floors/'+floorId) },
     apiPostFloors(data){ return req('post','/basic/building/'+this.getBid()+'/floors',data) },
-    apiPatchFloors(data){ return req('patch','/basic/community-management-committee',data) },
+    apiPatchFloors(data){ return req('patch','/basic/floors',data) },
     apiDeleteFloors(floorId){ return req('delete','/basic/floors/'+floorId) },
     //門牌資料
     apiGetBuildingOfHouse(){ return req('get','/basic/buildingId/'+this.getBid()+'/floors/a/usage-of-floors') },

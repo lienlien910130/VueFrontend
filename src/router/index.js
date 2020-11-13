@@ -145,6 +145,12 @@ export const constantRoutes = [
     meta: { title: '歷史分析', icon: 'icon', needLogin: true  },
     children: [
       {
+        path: 'index',
+        name: 'Index',
+        component: () => import('@/views/analysis/index.vue'),
+        meta: { title: '總覽', icon: 'icon', needLogin: true }
+      },
+      {
         path: 'fire',
         name: 'Fire',
         component: () => import('@/views/analysis/fireana/index.vue'),

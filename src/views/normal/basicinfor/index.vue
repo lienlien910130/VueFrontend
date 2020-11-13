@@ -39,16 +39,24 @@
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
                     <div class="block-wrapper">
                         <el-tabs v-model="activeFloor" style="margin-top:15px;margin-bottom:15px;" type="border-card">
-                            <el-tab-pane v-for="item in FloorOptions" :key="item.key" :label="item.label" :name="item.key">
-                                <keep-alive>
-                                  <component 
-                                  v-bind:is="tabView" 
-                                  v-bind="floorAttrs" 
-                                  v-on="floorEvent"
-                                  :image="image"
-                                  ></component>  
-                                </keep-alive>
-                            </el-tab-pane>
+                          <el-tab-pane label="基本資料" name="IN" >
+                            <FloorBlock 
+                            v-if="activeFloor == 'IN'"
+                            v-bind="floorAttrs" 
+                            v-on="floorEvent"></FloorBlock>
+                          </el-tab-pane>
+                          <el-tab-pane label="樓層平面圖" name="IM" >
+                            <Floor 
+                            v-if="activeFloor == 'IM'"
+                            v-bind="floorAttrs" 
+                            v-on="floorEvent"></Floor>
+                          </el-tab-pane>
+                          <el-tab-pane label="相關資料" name="OT">
+                            <Other 
+                            v-if="activeFloor == 'OT'"
+                            v-bind="floorAttrs" 
+                            v-on="floorEvent"></Other>
+                          </el-tab-pane>
                         </el-tabs>
                     </div>
                 </el-col>
@@ -60,8 +68,6 @@
 </template>
 
 <script>
-import { floorImage } from '@/api/building'
- 
 import { mapGetters } from 'vuex'
 
 export default {
@@ -100,7 +106,10 @@ export default {
         selectData: this.userselectData,
         isChoose:this.isChoose,
         originFiles:this.originFiles,
-        selectfloor:this.selectfloor
+        selectfloor:this.selectfloor,
+        floorImage:this.floorImage,
+        imagesrc:this.imagesrc,
+        loading:this.loading
       }
     },
     floorEvent(){
@@ -170,9 +179,7 @@ export default {
       ],
       activeName: 'MC',
       activeFloor:'IN',
-      tabView:'FloorBlock',
       allfloor:'',
-      image:'',
       tableConfig: [
           { label:'所屬單位' , prop:'usageOfFloorId',format:'manageselect', mandatory:true, message:'請選擇單位',trigger:'change' },
           { label:'職稱' , prop:'title',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur'},
@@ -204,36 +211,37 @@ export default {
       selectfloor:'',
       title:'',
       originFiles:[],
-      floorsFiles:[]
+      floorsFiles:[],
+      floorImage:'',
+      imagesrc:'',
+      loading:false
     }
   },
   watch: {
     buildingid: function(val){
       this.init() 
     },
-    activeFloor(val){ 
+    async activeFloor(val){ 
+      await this.getfloorimageid()
       if(val == 'IN'){
-        this.tabView = 'FloorBlock'
         this.getfloorList()
       }else if(val == 'IM'){
-        this.tabView = 'Floor'
         this.getFloorImage()
       }else {
-        this.tabView = 'Other'
         this.getfloorfiles()
       }
     }
   },
-  mounted() {
-    this.init()
+  async mounted() {
+    await this.init()
   },
-  methods: {
-    init(){
+  methods: { 
+    async init(){
       this.activeName = 'MC'
-      this.getManagementList()
-      this.gethouseOption()
+      await this.gethouseOption()
+      await this.getManagementList()
     },
-    handleClick(tab, event){
+    async handleClick(tab, event){
       if(tab.index == 0){
          this.tableConfig= [
           { label:'所屬單位' , prop:'usageOfFloorId',format:'manageselect', mandatory:true, message:'請選擇單位',trigger:'change' },
@@ -243,7 +251,7 @@ export default {
           { label:'緊急電話' , prop:'emergencyNumber',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur',pattern:'^[0-9]{10}$',errorMsg:'請輸入10位數',isPattern: true},
           { label:'備註' , prop:'note',type:'string', mandatory:false}]
         this.getManagementList()
-        this.gethouseOption()
+        await this.gethouseOption()
       }else{
         this.tableConfig = [
           { label:'公司名稱' , prop:'name',type:'string', mandatory:true, message:'請輸入內容'},
@@ -257,9 +265,9 @@ export default {
         this.getcontactunitOption()
       }
     },
-    getManagementList() { //取得管委會
+    async getManagementList() { //取得管委會
       this.blockData = []
-      this.$api.building.apiGetCommittee().then(response => {
+      await this.$api.building.apiGetCommittee().then(response => {
         this.blockData = response.result
         this.origin = JSON.stringify(this.blockData)
         this.title = 'Management'
@@ -275,9 +283,9 @@ export default {
         this.$forceUpdate()
       })
     },
-    gethouseOption(){ //取得大樓所有門牌
+    async gethouseOption(){ //取得大樓所有門牌
       this.options = []
-      this.$api.building.apiGetBuildingOfHouse().then(response=>{
+      await this.$api.building.apiGetBuildingOfHouse().then(response=>{
         response.result.forEach(item => {
           let _array = {
             id:item.id,
@@ -388,7 +396,7 @@ export default {
         this.dialogStatus = 'update'
       }
     },
-    handleBlockOption(index, content) { //管委會、廠商資料相關操作
+    async handleBlockOption(index, content) { //管委會、廠商資料相關操作
       console.log(index,JSON.stringify(content))
       if (index === 'update') {
         if(this.activeName === 'MC'){
@@ -397,7 +405,7 @@ export default {
           }
           this.$delete(content,'linkUsageOfFloors')
           this.$set(content,"linkUsageOfFloors",unit)
-          this.$api.building.apiPatchCommittee(content).then(response => {
+          await this.$api.building.apiPatchCommittee(content).then(response => {
             this.$message('更新成功')
             this.getManagementList()
           })
@@ -415,7 +423,7 @@ export default {
           this.$set(content,"linkUsageOfFloors",unit)
           this.$delete(content,'unit')
           this.$delete(content,'usageOfFloorId')
-          this.$api.building.apiPostCommittee(content).then(response => {
+          await this.$api.building.apiPostCommittee(content).then(response => {
             this.$message('新增成功')
             this.getManagementList()
           })
@@ -427,7 +435,7 @@ export default {
         }
       }else{
         if(this.activeName === 'MC'){
-          this.$api.building.apiDeleteCommittee(content).then(response => {
+          await this.$api.building.apiDeleteCommittee(content).then(response => {
             this.$message('刪除成功')
             this.getManagementList()
           })
@@ -457,11 +465,11 @@ export default {
           this.getfloorList()
           })
       }else if(index === 'create') {
-        this.$api.building.apiPostFloorOfHouse(this.selectfloor,content).then(response => {
+        await this.$api.building.apiPostFloorOfHouse(this.selectfloor,content).then(response => {
             this.$message('新增成功')
             this.getfloorList()
             this.gethouseOption()
-          })
+        })
       }else if (index === 'createUser'){
           this.userdata = []
           this.innerVisible = true
@@ -489,7 +497,7 @@ export default {
       }else if(index == 'floorfile'){
         this.getfloorfiles()
       }else{
-        this.$api.building.apiDeleteFloorOfHouse(content).then(response=>{
+        await this.$api.building.apiDeleteFloorOfHouse(content).then(response=>{
             this.$message('刪除成功')
             this.getfloorList()
             this.gethouseOption()
@@ -518,15 +526,37 @@ export default {
         })
       }
     },
-    handleRangeOption(content){ //選擇樓層後的操作
+    async handleRangeOption(content){ //選擇樓層後的操作
       this.isChoose = true
       this.selectfloor = content
+      await this.getfloorimageid()
       if(this.activeFloor == 'IN'){
         this.getfloorList()
       }else if(this.activeFloor == 'IM'){
-        this.getFloorImage()
+        await this.getFloorImage()
       }else {
         this.getfloorfiles()
+      }
+    },
+    async getfloorimageid(){
+      await this.$api.building.apiGetFloor(this.selectfloor).then(response=> {
+          if(response.result[0].floorPlanID !== null){
+            this.floorImage = (response.result[0].floorPlanID).toString()
+          }else{
+            this.floorImage = null
+          }
+      })
+    },
+    async getFloorImage(){
+      if(this.floorImage == null){
+        this.imagesrc = -1
+      }else{
+        this.loading = true
+        await this.$api.files.apiGetFloorImage(this.floorImage).then(response=> {
+            const bufferUrl = btoa(new Uint8Array(response).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+            this.imagesrc = 'data:image/png;base64,' + bufferUrl;
+        }) 
+        this.loading = false
       }
     }
     
@@ -536,7 +566,7 @@ export default {
 
 <style lang="scss" scoped>
 .basicinfor-editor-container {
-  padding: 32px;
+  padding: 20px;
   background-color: rgb(209, 226, 236);
   position: relative;
   max-height: calc(100vh - 125px);

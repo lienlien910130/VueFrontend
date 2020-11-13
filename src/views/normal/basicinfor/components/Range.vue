@@ -49,7 +49,7 @@ export default {
       this.RangeOptions = []
       this.Upfloors = []
       this.Downfloors = []
-      this.$api.building.apiGetFloors().then(response =>{
+      this.$api.building.apiGetBuildingFloors().then(response =>{
         response.result.forEach(element => {
           if(element.floors > 0){
             this.Upfloors.push(element)

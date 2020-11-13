@@ -54,4 +54,20 @@ width: 0 !important;
 #app::-webkit-scrollbar {  
 width: 0 !important;height: 0;  
 }  
+
+</style>
+
+<style>
+.el-button--primary{
+  background:rgb(0,140,214);
+  color:white;
+}
+.el-button--info{
+  background:white;
+  color:black;
+}
+.el-button--success{
+  background:rgb(171,205,3);
+  color:white;
+}
 </style>

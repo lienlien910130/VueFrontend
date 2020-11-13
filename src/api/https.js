@@ -63,7 +63,7 @@ service.interceptors.response.use(
   error => {
       if(error) {
           //成功發出請求且收到resp，但有error
-          errorHandle(error.response.status,error.response.data.error)
+          //errorHandle(error.response.status,error.response.data.error)
           return Promise.reject(error)
       } else {
         if(!window.navigator.onLine) {
@@ -92,7 +92,15 @@ export default function(method,url,data = null,isHeader = false) {
             return service.post(url,data)
         }
     }else if(method == 'get'){
-        return service.get(url)
+        if(isHeader !== false){ //檔案上傳
+            return service.request({
+                url: url,
+                method: 'get',
+                responseType: 'arraybuffer'
+            })
+        } else{
+            return service.get(url)
+        }
     }else if(method == 'delete'){
         return service.delete(url)
     }else if(method == 'put'){
