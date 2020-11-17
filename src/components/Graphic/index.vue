@@ -5,8 +5,8 @@
       <el-col :xs="24" :sm="24" :md="24" :lg="24"
       v-if="title == 'edit'"
       >
-            <div>
-              <el-form :inline="true"  class="form-inline">
+        <div>
+          <el-form :inline="true"  class="form-inline">
                 <el-form-item label="工具列">
                   <div class="draw-btn-group">
                   <div :class="{active:drawType==''}" @click="drawTypeChange('')">
@@ -66,13 +66,13 @@
                 <el-form-item>
                   <el-button type="primary" @click="sendObj">sendObj</el-button>
                 </el-form-item>
-              </el-form>
-            </div>
+          </el-form>
+        </div>
       </el-col>
       <el-col :xs="24" :sm="24" :md="24" :lg="24">
-          <div ref="canvasdiv" class="canvasdiv">
-            <canvas id="canvas"></canvas>
-          </div>
+        <div ref="canvasdiv" class="canvasdiv">
+          <canvas id="canvas"></canvas>
+        </div>
       </el-col>
     </el-row>
   </div>
@@ -306,7 +306,8 @@ export default {
       this.canvas.renderAll()
     })
     this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
-    this.canvas.setHeight(this.title != 'edit' ? 800 : 600)
+    this.canvas.setHeight(800)
+
     fabric.Image.fromURL(require("../../assets/image/5F_MAP.jpg"), (img) => {
         img.set({
         scaleX: this.canvas.width / img.width,

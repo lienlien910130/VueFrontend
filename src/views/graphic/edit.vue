@@ -1,8 +1,12 @@
 <template>
     <el-row :gutter="32">
         <el-col :xs="24" :sm="24" :md="24" :lg="6">
-            <div class="block-wrapper">
-                <el-collapse v-model="activeNames">
+            <div class="collapse-wrapper">
+                <ObjectList
+                    v-bind="objectListAttrs"
+                    v-on="objectListEvent"
+                ></ObjectList>
+                <!-- <el-collapse v-model="activeNames">
                   <el-collapse-item title="圖層" name="1">
                     <ObjectList
                     v-bind="objectListAttrs"
@@ -14,16 +18,23 @@
                       v-on="equipmentTypeEvent">
                     </EquipmentType>
                   </el-collapse-item>
-                </el-collapse>
+                </el-collapse> -->
               </div>
-            </el-col>
-            <el-col :xs="24" :sm="24" :md="24" :lg="18">
-                <div class="block-wrapper">
-                    <GraphicEdit
+        </el-col>
+        <el-col :xs="24" :sm="24" :md="24" :lg="6">
+            <div class="collapse-wrapper">
+                <EquipmentType
+                    v-on="equipmentTypeEvent">
+                </EquipmentType>
+            </div>
+        </el-col>
+        <el-col :xs="24" :sm="24" :md="24" :lg="24">
+            <div class="block-wrapper">
+                <GraphicEdit
                     v-bind="graphicAttrs_edit"
                     v-on="graphicEvent"></GraphicEdit>
-                </div>
-            </el-col>
+            </div>
+        </el-col>
     </el-row>
 </template>
 <script>
@@ -79,7 +90,6 @@ export default {
         return {
             movingImage:null,
             imgDragOffset:{offsetX: 0,offsetY: 0},
-            activeNames:['1','2'],
             objectlist:[],
             deleteObject:null,
             selectObject:null,
@@ -118,3 +128,15 @@ export default {
     }
 }
 </script>
+
+<style lang="scss" scoped>
+.collapse-wrapper{
+    background: snow;
+    padding: 0px 16px 15px;
+    margin-bottom: 32px;
+    margin-top: 10px;
+    height: 400px;
+    overflow-x:hidden;
+    overflow-y:auto;
+}
+</style>

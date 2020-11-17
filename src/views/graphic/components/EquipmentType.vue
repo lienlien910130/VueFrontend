@@ -1,5 +1,6 @@
 <template>
 <div>
+    <h3>圖例</h3>
     <el-row :gutter="32">
         <el-col :xs="24" :sm="24" :md="8" :lg="24">
             <!-- <div

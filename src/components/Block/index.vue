@@ -51,11 +51,11 @@
 
                         <el-button 
                         v-else-if="option.format == 'hide-f' "
-                        type="text" @click="openfile(item['id'])"> {{ option.label }}</el-button>
+                        type="text" @click="openInspectionfile(item['id'])"> {{ option.label }}</el-button>
 
                         <el-button 
                         v-else-if="option.format == 'hide-l' "
-                        type="text" @click="open"> {{ option.label }}</el-button>
+                        type="text" @click="openInspectionLackfile(item['id'])"> {{ option.label }}</el-button>
                         
                         <el-button 
                         v-else-if="option.format == 'link' "
@@ -478,8 +478,11 @@ export default {
         open(id) {
             this.$emit('subOpitonButton', 'openUser', id)
         },
-        openfile(id){
-            this.$emit('subOpitonButton', 'openfile', id)
+        openInspectionfile(id){
+            this.$emit('subOpitonButton', 'inspectionfile', id)
+        },
+        openInspectionLackfile(id){
+            this.$emit('subOpitonButton', 'inspectionLackfile', id)
         },
         handleUploadOption(index,file){
             var _array = { 

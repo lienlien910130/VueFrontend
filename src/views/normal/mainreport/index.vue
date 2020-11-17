@@ -2,7 +2,7 @@
     <div class="mainreport-container">
         <div class="mainreport-editor-container">
             <div class="left">
-              <el-form  class="report-form" :model="form" label-width="120px">
+              <el-form  class="report-form" :model="form" label-width="auto" :label-position="label">
                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
                     <div class="chart-wrapper">
                       <el-form-item label="場所名稱">
@@ -17,16 +17,18 @@
                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
                     <div class="chart-wrapper">
                         <el-form-item label="管理權人">
-                            <span>{{ form.owner }}</span>
-                        </el-form-item>
-                        <el-form-item label="電話">
-                            <span>{{ form.ownerphone }}</span>
+                            <div
+                            v-for="(item,index) in form.owner"
+                            :key="index">
+                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
+                              </div>
                         </el-form-item>
                         <el-form-item label="防火管理人">
-                            <span>{{ form.firemanager }}</span>
-                        </el-form-item>
-                        <el-form-item label="電話">
-                            <span>{{ form.firemanagerphone }}</span>
+                            <div
+                            v-for="(item,index) in form.firemanager"
+                            :key="index">
+                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
+                              </div>
                         </el-form-item>
                     </div>
                 </el-col>
@@ -42,24 +44,26 @@
                     </div>
                 </el-col>
             </div>
-
-            <Report v-bind="dialogAttrs" v-on="dialogEvent"></Report>
-
+            <div
+            v-if="reportVisible == true">
+              <Report v-bind="dialogAttrs" v-on="dialogEvent"></Report>
+            </div>
+            <div
+            v-if="lackVisible == true">
+              <Lack v-bind="lackAttrs" v-on="lackEvent"></Lack>
+            </div>
         </div>
     </div>
 </template>
 <script>
 import { mapGetters } from 'vuex'
-import { getbuInfo, 
-getinspection, editinspection, creinspection, delinspection,
-uploadinspection,getinspectionfiles } from '@/api/building'
-
 
 export default {
     name:'',
     components:{ 
-     Block: () => import('@/components/Block/index.vue'),
-     Report: () => import('@/components/Dialog/report.vue')
+      Block: () => import('@/components/Block/index.vue'),
+      Report: () => import('@/components/Dialog/report.vue'),
+      Lack:() => import('@/components/Dialog/lackcontent.vue')
     },
     data(){
         return{
@@ -126,9 +130,11 @@ export default {
             blockData: [],
             buttonsName: ['編輯','刪除'],
             form:{},
-            innerVisible:false,
+            reportVisible:false,
+            lackVisible:false,
             originFiles:[],
-            createfileid:''
+            inspectionid:'',
+            imported:false
         }
     },
     watch: {
@@ -146,6 +152,13 @@ export default {
         'id',
         'buildingid'
       ]),
+      label() {
+            if (this.$store.state.app.device === 'mobile') {
+                return 'top'
+            } else {
+                return 'left'
+            }
+        },
       blockAttrs() {
         return {
           blockData: this.blockData,
@@ -163,92 +176,143 @@ export default {
       dialogAttrs(){
         return{
           originFiles: this.originFiles,
-          visible: this.innerVisible
+          visible: this.reportVisible
         }
       },
       dialogEvent(){
         return{
           subReportButton: this.handleReportOption
         }
+      },
+      lackAttrs(){
+        return{
+          imported: this.imported,
+          lackVisible: this.lackVisible,
+          inspectionid : this.inspectionid,
+          tableData:this.tableData
+        }
+      },
+      lackEvent(){
+        return{
+          subReportLackButton : this.handleLackOption
+        }
       }
   },
   methods: {
     getbuInfo() {
-      getbuInfo(this.id,this.buildingid).then(response => {
-          console.log(JSON.stringify(response.result[0]))
-          let array = {
+      this.$api.building.apiGetBuildingInfo().then(response => {
+        let array = {
               name:response.result[0].buildingName,
               repair:'2020/10/10',
-              owner:response.result[0].linkOwners[0].name,
-              ownerphone:response.result[0].linkOwners[0].cellPhoneNumber,
-              firemanager:response.result[0].linkFireManagers[0].name,
-              firemanagerphone:response.result[0].linkFireManagers[0].cellPhoneNumber
+              owner:response.result[0].linkOwners,
+              firemanager:response.result[0].linkFireManagers
           }
           this.form = array
       })
     },
     async reportList() {
-      try {
-        getinspection(this.buildingid).then( response => {
-           this.blockData = response.result.sort((x,y) => y.isImproved - x.isImproved)
-        }).catch(error => {
-          console.log(error)
-        })
-      } catch (error) {
-        console.log(error)
-      }
+      await this.$api.report.apiGetInspection().then(response => {
+        this.blockData = response.result.sort((x,y) => y.isImproved - x.isImproved)
+      })
     },  
     handleBlockOption(index, content) {
-      console.log(JSON.stringify(content))
+      console.log(index,JSON.stringify(content))
       if (index === 'update'){
-        editinspection(JSON.stringify(content)).then(response=>{
+        this.$api.report.apiPatchInspection(JSON.stringify(content)).then(response => {
           this.$message('更新成功')
           this.reportList()
         }).catch(error=>{
           console.log(error)
         })
       }else if(index === 'create'){
-        creinspection(this.buildingid,JSON.stringify(content)).then(response=>{
+        this.$api.report.apiPostInspection(JSON.stringify(content)).then(response => {
           this.$message('新增成功')
           this.reportList()
         }).catch(error=>{
           console.log(error)
         })
       }else if(index === 'delete'){
-        delinspection(content).then(response=>{
+        this.$api.report.apiDeleteInspection().then(response => {
           this.$message('刪除成功')
           this.reportList()
         }).catch(error=>{
           console.log(error)
         })
-      }else if (index === 'openfile'){
-        this.innerVisible = true
-        this.createfileid = content
+      }else if (index === 'inspectionfile'){
         this.getinspectionfiles(content)
-      }else {
+      }else{ // inspectionLackfile
+        this.getinspectionlack(content)
         
       }
     },
     handleReportOption(index,content){
+      if(index == 'fileupload'){
         const formData = new FormData();
           content.forEach(item => {
             formData.append('file', item.raw)
         })
-        uploadinspection(this.createfileid,this.id,formData).then(respone => {
-          this.$message('上傳成功')
-          this.getinspectionfiles(this.createfileid)
+        this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(response =>{
+            this.$message('上傳成功')
+            this.getinspectionfiles(this.inspectionid)
         }).catch(error =>{
-          console.log('error=>'+error)
+            console.log('error=>'+error)
         })
+      }else if(index == 'cancel'){
+        this.reportVisible = false
+      }
+    },
+    handleLackOption(index,content){
+      if(index == 'fileupload'){
+        const formData = new FormData();
+          content.forEach(item => {
+            formData.append('file', item.raw)
+        })
+        this.$api.files.apiPostInspectionLackFiles(this.inspectionid,formData).then(response =>{
+            this.$message('上傳成功')
+        }).catch(error =>{
+            console.log('error=>'+error)
+        })
+      }else if(index == 'cancel'){
+        this.lackVisible = false
+      }else if (index == 'create'){
+        this.lackVisible = false
+        this.$api.report.apiPostInspectionLack(this.inspectionid,content).then(response => {
+            this.$message('新增成功')
+            this.getinspectionlack(this.inspectionid)
+        })
+      }else if(index == 'delete'){
+        this.lackVisible = false
+        this.$api.report.apiDeleteInspectionLack(this.inspectionid).then(response => {
+            this.$message('刪除成功')
+            this.getinspectionlack(this.inspectionid)
+        })
+      }else if(index == 'update'){
+        this.lackVisible = false
+        this.$api.report.apiPatchInspectionLack(content).then(response => {
+            this.$message('更新成功')
+            this.getinspectionlack(this.inspectionid)
+        })
+      }
+        
     },
     getinspectionfiles(id){
-      getinspectionfiles(id).then( respone => {
-        console.log(JSON.stringify(respone.result))
-        this.originFiles = respone.result
-      }).catch(error=> {
-          console.log('error=>'+error)
+      this.inspectionid = id
+      this.$api.files.apiGetInspectionFiles(id).then(response =>{
+        this.originFiles = response.result
+        this.reportVisible = true
+      }).catch(error =>{
+        console.log('error=>'+error)
       })
-    }
+    },
+    getinspectionlack(id){
+      this.inspectionid = id
+      this.$api.report.apiGetInspectionLack(id).then(response =>{
+          this.tableData = response.result
+          this.lackVisible = true
+      }).catch(error =>{
+            console.log('error=>'+error)
+      })
+    },
   },
 }
 </script>

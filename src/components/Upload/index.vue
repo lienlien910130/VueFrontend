@@ -4,7 +4,7 @@
           ref="upload"
           action="upload"
           accept="image/jpeg,image/gif,image/png,application/pdf"
-          multiple
+          :multiple="multiple"
           :file-list="fileList"
           :before-remove="beforeRemove"
           :on-change="handleChange"
@@ -24,7 +24,10 @@
 <script>
 export default {
     props:{
-
+        multiple: {
+            type: Boolean,
+            default: true
+        }
     },
     data(){
         return{

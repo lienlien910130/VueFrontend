@@ -1,5 +1,6 @@
 <template>
 <div>
+    <h3>圖層</h3>
     <div v-for="(element,index) in list" :key="element.id" class="list-complete-item">
         <div class="list-complete-item-handle" @click="selectEle(element)">
             {{ index+1 }}.  {{ element.name }}  

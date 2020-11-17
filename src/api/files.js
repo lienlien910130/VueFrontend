@@ -19,6 +19,13 @@ const files = {
     apiGetFloorOfHouseFiles(floorId){ return req('get','/basic/Floors/'+floorId+'/filesList') } ,
     apiPostFloorOfHouseFiles(floorId,data){ return req('post','/basic/'+this.getUid()+'/Floors/'+floorId+'/fileUpload',data,true) } ,
     
+    //檢修申報
+    apiGetInspectionFiles(inspectionId){ return req('get','/report/'+inspectionId+'/filesList/inspection') } ,
+    apiPostInspectionFiles(inspectionId,data){ 
+        return req('post','/report/'+this.getUid()+'/inspection/'+inspectionId+'/fileUpload',data,true) } ,
+    apiPostInspectionLackFiles(inspectionId,data){ 
+        return req('post','/reportLack/'+inspectionId+'/inspectionLack',data,true) } ,
+
     //共用方法 刪除/下載
     apiDeleteFile(fileId){ return req('delete','/basic/fileDelete/'+fileId) },
     apiGetFile(fileId){ return req('get','/basic/fileDownload/'+fileId) },

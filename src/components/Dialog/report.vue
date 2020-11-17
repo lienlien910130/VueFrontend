@@ -1,22 +1,24 @@
 <template>
     <el-dialog
-        width="40%"
+        width="30%"
         title="檢附文件"
-        :visible.sync="visible"
+        :visible="visible"
         :close-on-click-modal='false'
-        append-to-body>
+        @close="cancelData"
+        append-to-body
+        center>
         <div class="files">
-          <div
-            v-for="(item,index) in originFiles"
-            :key="item.id"
-          >
-              <el-link 
-              class="link"
-              :href="downloadfile(item.id)" target="_blank">{{ index+1 }}.{{ item.fileOriginalName }}
-              </el-link>
-              <span>
-                <i class="el-icon-delete del" style="float:right;" @click="delbufile(item.id)" />
-              </span>
+          <div 
+          v-for="(item,index) in originFiles" :key="item.id" class="filesdiv">
+            <el-link 
+            class="link" 
+            :href="downloadfile(item.id)" target="_blank" style="width:80%">
+            【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
+            </el-link>
+            <span>
+                <i class="el-icon-delete del" style="float:right;font-size: 25px;margin-top:5px;width:20%" 
+                @click="delfile(item.id)" />
+            </span>
           </div>
         </div>
         <Upload
@@ -52,7 +54,29 @@ export default {
         },
         handleUploadOption(index,content){
             this.$emit('subReportButton', 'fileupload', content)
-        }
+        },
+        cancelData(){
+            this.$emit('subReportButton', 'cancel', '')
+            
+        },
     },
 }
 </script>
+<style lang="scss" scoped>
+.files {
+  width: 100%;
+  max-height: 200px;
+  overflow: auto;
+  margin-bottom: 20px;
+  
+  .filesdiv{
+    line-height: 40px;
+  }
+  .del {
+    cursor: pointer;
+  }
+  .el-link{
+    display:inline;
+  }
+}
+</style>
