@@ -1,11 +1,11 @@
 <template>
     <el-row :gutter="32">
         <el-col :xs="24" :sm="24" :md="24" :lg="24">
-            <div class="block-wrapper">
+            
               <GraphicView
                 v-bind="graphicAttrs_view"
                 v-on="graphicEvent"></GraphicView>
-            </div>
+            
         </el-col>
     </el-row>
 </template>

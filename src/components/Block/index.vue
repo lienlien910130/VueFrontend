@@ -148,18 +148,15 @@
                     v-model="temp[item.prop]" value-format="yyyy-MM-dd" type="date" /> 
 
                     <span v-else-if="item.format == 'range'">
-                        <el-date-picker 
-                            type="date" 
-                            v-model="temp['checkStartDate']" 
-                            value-format="yyyy-MM-dd"
-                            style="width: 50%;">
-                        </el-date-picker>
-
-                        <el-date-picker 
-                            type="date" 
-                            v-model="temp['checkEndDate']" 
-                            value-format="yyyy-MM-dd"
-                            style="width: 50%;">
+                        <el-date-picker
+                            ref="picker"
+                            v-model="rangevalue"
+                            type="daterange"
+                            range-separator="至"
+                            start-placeholder="開始日期"
+                            end-placeholder="結束日期"
+                            format="yyyy-MM-dd"
+                            value-format="yyyy-MM-dd">
                         </el-date-picker>
                     </span>
 
@@ -254,6 +251,7 @@
 
 <script>
 import moment from 'moment';
+import api from '@/api';
 
 export default {
     components:{
@@ -395,6 +393,7 @@ export default {
             origin:[],
             loadlist:[],
             innerdata:{},
+            rangevalue: []
         }
     },
 
@@ -425,6 +424,7 @@ export default {
                 });
             }else{
                 this.dialogStatus = 'create'
+                this.rangevalue = []
                 this.dialogFormVisible = true
                 this.$nextTick(() => {
                     this.$refs['dataForm'].clearValidate()
@@ -449,8 +449,13 @@ export default {
                 this.dialogStatus = 'update'
                 this.dialogFormVisible = true
                 this.$nextTick(() => {
-                    this.$refs['dataForm'].clearValidate()
+                   this.$refs['dataForm'].clearValidate()
                 })
+                if(this.title == 'ReportInspectio'){
+                    if(row['checkStartDate'] !== null){
+                        this.rangevalue = [row['checkStartDate'],row['checkEndDate'],]
+                    }
+                }
                 this.temp = Object.assign({}, row)
                 if(this.title == 'floor'){
                     this.$emit('subOpitonButton', 'getfiles', row.id)
@@ -462,6 +467,10 @@ export default {
         },
         //新增或更新的操作
         sendData(){
+            if(this.title == 'ReportInspectio'){
+                this.temp['checkStartDate'] = this.rangevalue[0]
+                this.temp['checkEndDate'] = this.rangevalue[1]
+            }
             const tempData = Object.assign({}, this.temp)
             this.$refs.dataForm.validate(valid =>{
               if(valid){

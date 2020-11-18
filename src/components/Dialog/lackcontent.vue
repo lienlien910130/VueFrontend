@@ -18,9 +18,23 @@
         
          <el-table
             :data="tableData"
+            :key="tableKey"
             border
             highlight-current-row
             style="width: 100%">
+
+            <!-- <template v-for="item in floorcollist">
+                <el-table-column 
+                align="center" 
+                :label="item.name" 
+                :key="item.key" 
+                :prop="item.value" 
+                >
+                    <template slot-scope="scope">
+                        <span>{{  scope.row[scope.column.property] }}</span>
+                    </template>
+                </el-table-column>
+            </template> -->
             <el-table-column
             fixed
             type="index">
@@ -61,6 +75,11 @@ export default {
         InsertLack: () => import('@/components/Dialog/insertlack.vue')
     },
     props:['imported','lackVisible','inspectionid','tableData'],
+    watch:{
+        tableData(){
+            console.log('aaa')
+        }
+    },
     computed:{
         uploadEvent(){
             return {
@@ -93,14 +112,11 @@ export default {
             multiple:false,
             insertvisible:false,
             dialogStatus:'',
-            lackData:[]
+            lackData:[],
+            tableKey:0
         }
     },
-    mounted(){
-        
-    },
     methods: {
-        
         handleUploadOption(index,content){
             this.$emit('subReportLackButton', 'fileupload', content)
         },

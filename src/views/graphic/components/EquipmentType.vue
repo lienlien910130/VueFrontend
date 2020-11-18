@@ -33,7 +33,6 @@
             @input="handleSearch"
             clearable
             ></el-input>
-            <el-button type="primary" @click="handleSearch">搜尋</el-button>
             <el-button v-if="type=='icon'" type="success" @click="handleChange('text')">轉換成文字</el-button>
             <el-button v-if="type=='text'" type="success" @click="handleChange('icon')">轉換成圖例</el-button>
         </el-col>

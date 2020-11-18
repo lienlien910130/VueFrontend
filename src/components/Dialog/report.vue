@@ -57,15 +57,25 @@ export default {
         },
         cancelData(){
             this.$emit('subReportButton', 'cancel', '')
-            
         },
+        delfile(id){
+            this.$confirm('是否確定刪除該筆資料?', '提示', {
+                confirmButtonText: '確定',
+                cancelButtonText: '取消',
+                type: 'warning',
+                center: true
+            }).then(() => {
+                this.$emit('subReportButton', 'delete', id)
+            })
+            
+        }
     },
 }
 </script>
 <style lang="scss" scoped>
 .files {
   width: 100%;
-  max-height: 200px;
+  max-height: 500px;
   overflow: auto;
   margin-bottom: 20px;
   

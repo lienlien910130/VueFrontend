@@ -90,7 +90,7 @@ export default {
                 label: '檢測日期',
                 prop: 'rangeDate',
                 format:'range',
-                mandatory:true, message:'請選擇日期'
+                // mandatory:true, message:'請選擇日期'
               },
               {
                 label: '專技人員',
@@ -212,10 +212,11 @@ export default {
     },
     async reportList() {
       await this.$api.report.apiGetInspection().then(response => {
+        console.log(JSON.stringify(response))
         this.blockData = response.result.sort((x,y) => y.isImproved - x.isImproved)
       })
     },  
-    handleBlockOption(index, content) {
+    async handleBlockOption(index, content) {
       console.log(index,JSON.stringify(content))
       if (index === 'update'){
         this.$api.report.apiPatchInspection(JSON.stringify(content)).then(response => {
@@ -241,8 +242,8 @@ export default {
       }else if (index === 'inspectionfile'){
         this.getinspectionfiles(content)
       }else{ // inspectionLackfile
-        this.getinspectionlack(content)
-        
+        await this.getinspectionlack(content)
+        this.lackVisible = true
       }
     },
     handleReportOption(index,content){
@@ -259,43 +260,56 @@ export default {
         })
       }else if(index == 'cancel'){
         this.reportVisible = false
+      }else if(index == 'delete'){
+        this.$api.files.apiDeleteFile(content).then(response =>{
+            this.$message('刪除成功')
+            this.getinspectionfiles(this.inspectionid)
+        }).catch(error =>{
+            console.log('error=>'+error)
+        })
       }
     },
-    handleLackOption(index,content){
+    async handleLackOption(index,content){
       if(index == 'fileupload'){
         const formData = new FormData();
           content.forEach(item => {
             formData.append('file', item.raw)
         })
-        this.$api.files.apiPostInspectionLackFiles(this.inspectionid,formData).then(response =>{
+        this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(response =>{
             this.$message('上傳成功')
+            this.settinglackfile(response.result[0].id)
         }).catch(error =>{
             console.log('error=>'+error)
         })
       }else if(index == 'cancel'){
         this.lackVisible = false
       }else if (index == 'create'){
-        this.lackVisible = false
-        this.$api.report.apiPostInspectionLack(this.inspectionid,content).then(response => {
+        await this.$api.report.apiPostInspectionLack(this.inspectionid,content).then(response => {
             this.$message('新增成功')
-            this.getinspectionlack(this.inspectionid)
         })
+        await this.getinspectionlack(this.inspectionid)
       }else if(index == 'delete'){
-        this.lackVisible = false
-        this.$api.report.apiDeleteInspectionLack(this.inspectionid).then(response => {
+        await this.$api.report.apiDeleteInspectionLack(content).then(response => {
             this.$message('刪除成功')
-            this.getinspectionlack(this.inspectionid)
         })
+        await this.getinspectionlack(this.inspectionid)
       }else if(index == 'update'){
-        this.lackVisible = false
-        this.$api.report.apiPatchInspectionLack(content).then(response => {
+        await this.$api.report.apiPatchInspectionLack(content).then(response => {
             this.$message('更新成功')
-            this.getinspectionlack(this.inspectionid)
         })
+        await this.getinspectionlack(this.inspectionid)
       }
         
     },
+    settinglackfile(fileid){
+      this.$api.report.apiPostInspectionLackFiles(this.inspectionid,fileid).then(response =>{
+        console.log(response)
+      }).catch(error =>{
+        console.log('error=>'+error)
+      })
+    },
     getinspectionfiles(id){
+      
       this.inspectionid = id
       this.$api.files.apiGetInspectionFiles(id).then(response =>{
         this.originFiles = response.result
@@ -304,11 +318,11 @@ export default {
         console.log('error=>'+error)
       })
     },
-    getinspectionlack(id){
+    async getinspectionlack(id){
       this.inspectionid = id
-      this.$api.report.apiGetInspectionLack(id).then(response =>{
-          this.tableData = response.result
-          this.lackVisible = true
+      await this.$api.report.apiGetInspectionLack(id).then(response =>{
+        console.log('response=>'+JSON.stringify(response))
+        this.tableData = response.result.sort((x,y) => x.id - y.id)
       }).catch(error =>{
             console.log('error=>'+error)
       })

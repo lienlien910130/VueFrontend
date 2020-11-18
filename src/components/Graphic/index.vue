@@ -1,6 +1,6 @@
 <template>
   <div class="maintenancePlanAdd">
-    <el-row :gutter="32">
+    <el-row :gutter="32" class="row">
       
       <el-col :xs="24" :sm="24" :md="24" :lg="24"
       v-if="title == 'edit'"
@@ -21,9 +21,9 @@
                   <div :class="{active:drawType=='polygon'}" @click="drawTypeChange('polygon')">
                     <i class="draw-icon icon-polygon"></i>
                   </div>
-                  <div @click="save">
+                  <!-- <div @click="save">
                     <i class="draw-icon icon-save"></i>
-                  </div>
+                  </div> -->
                   <div @click="deleteObj">
                     <i class="draw-icon icon-delete"></i>
                   </div>
@@ -70,7 +70,7 @@
         </div>
       </el-col>
       <el-col :xs="24" :sm="24" :md="24" :lg="24">
-        <div ref="canvasdiv" class="canvasdiv">
+        <div ref="canvasdiv" class="canvasdiv" >
           <canvas id="canvas"></canvas>
         </div>
       </el-col>
@@ -90,7 +90,14 @@ export default {
     ]),
     getWsMsg() {
         return this.$store.state.websocket.msg
-    }
+    },
+    // divwidth(){
+    //   if (this.$store.state.app.device === 'mobile') {
+    //     return '500px'
+    //   } else {
+    //     return '1550px'
+    //   }
+    // }
   },
   data() {
     return {
@@ -147,7 +154,8 @@ export default {
       activeLine: "",
       line: {},
 
-      clipboard:null
+      clipboard:null,
+      drawer:false
     }
   },
   watch: {
@@ -305,7 +313,8 @@ export default {
     this.canvas.loadFromJSON(this.json, () => {
       this.canvas.renderAll()
     })
-    this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
+    //this.$refs.canvasdiv.clientWidth
+    this.canvas.setWidth(1550)
     this.canvas.setHeight(800)
 
     fabric.Image.fromURL(require("../../assets/image/5F_MAP.jpg"), (img) => {
@@ -317,8 +326,9 @@ export default {
         this.canvas.renderAll()
     })
     //this.canvas.selectionColor = 'rgba(0,255,0,0.3)'
-    this.canvas.selectionColor = "rgba(0,0,0,0.3)"
-    this.canvas.selectionBorderColor ="black"
+    //this.canvas.selectionColor = "rgba(0,0,0,0.3)"
+    this.canvas.selectionBorderColor ="red"
+    this.canvas.selectionLineWidth = 2
     this.canvas.selectionDashArray = [5, 5]
     this.canvas.on("drop", this.drop)
     this.canvas.on("mouse:down", this.mousedown)
@@ -331,6 +341,9 @@ export default {
     })
     this.canvas.on('selection:created', (e) => {
       this.objectname = e.target.name
+      var item = this.canvas.getActiveObject()
+      item.set({borderColor:'#fbb802',
+      cornerColor:'#fbb802',cornerSize: 18,transparentCorners: false})
     })
     this.canvas.on('selection:updated', (e) => {
       this.objectname = e.target.name
@@ -448,6 +461,7 @@ export default {
       this.mouseFrom.x = this.getX(e)
       this.mouseFrom.y = this.getY(e)
       this.doDrawing = true
+      console.log(this.mouseFrom)
       if(this.canvas.getActiveObject() == null && this.movingImage !== null && this.drawType == ""){ //可以點選圖片新增
         this.drop(e)
       }else if(e.e.altKey && this.drawType == ""){ //移動畫布
@@ -928,9 +942,21 @@ font-size:20px
   width: 100%;
   height: 100%;
 
-  canvas {
+  .canvasdiv{
+    width: 1550px;
+    margin: auto;
+    text-align: center;
+    
+  }
+
+  canvas {  
     border: 1px dashed black;
     margin-top: 20px;
+  }
+
+  .row{
+    padding-left: 30px;
+    padding-right: 30px;
   }
 }
 img,

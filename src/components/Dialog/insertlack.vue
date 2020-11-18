@@ -24,6 +24,7 @@
                     <el-input  
                     ref="lackContent"
                     name="lackContent"
+                    :autosize="{ minRows: 4, maxRows: 8}"
                     v-model="temp.lackContent"
                     type="textarea">
                     </el-input>
@@ -32,6 +33,7 @@
                     <el-input  
                     ref="improveContent"
                     name="improveContent"
+                    :autosize="{ minRows: 4, maxRows: 8}"
                     v-model="temp.improveContent"
                     type="textarea">
                     </el-input>
@@ -79,7 +81,7 @@ export default {
             if (this.$store.state.app.device === 'mobile') {
                 return "90%"
             } else {
-                return "600px"
+                return "800px"
             }
         }
     },

@@ -15,7 +15,9 @@ const report = {
     apiPostInspectionLack(inspectionId,data){ return req('post','/reportLack/'+inspectionId+'/inspectionLack',data) },
     apiPatchInspectionLack(data){ return req('patch','/reportLack/inspectionLack',data) },
     apiDeleteInspectionLack(inspectionLackId){ return req('delete','/reportLack/'+inspectionLackId+'/inspectionLack') },
-    
+    apiPostInspectionLackFiles(inspectionId,fileId){ return req('post','/reportLack/'+inspectionId+'/inspectionLack/load/'+fileId) },
+
+
 }
 
 export default report

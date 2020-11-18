@@ -23,9 +23,7 @@ const files = {
     apiGetInspectionFiles(inspectionId){ return req('get','/report/'+inspectionId+'/filesList/inspection') } ,
     apiPostInspectionFiles(inspectionId,data){ 
         return req('post','/report/'+this.getUid()+'/inspection/'+inspectionId+'/fileUpload',data,true) } ,
-    apiPostInspectionLackFiles(inspectionId,data){ 
-        return req('post','/reportLack/'+inspectionId+'/inspectionLack',data,true) } ,
-
+    
     //共用方法 刪除/下載
     apiDeleteFile(fileId){ return req('delete','/basic/fileDelete/'+fileId) },
     apiGetFile(fileId){ return req('get','/basic/fileDownload/'+fileId) },
