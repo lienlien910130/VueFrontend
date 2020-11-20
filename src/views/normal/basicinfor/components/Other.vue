@@ -28,7 +28,7 @@
                 </el-form-item>
                 
                 <el-form-item label="">
-                    <el-button type="primary" @click="changefloorimage">儲存</el-button>
+                    <el-button type="primary" @click="changefloorimage">設定為平面圖</el-button>
                 </el-form-item>
         </el-form>
     </div>
@@ -88,17 +88,25 @@ export default {
             return "http://192.168.88.65:59119/basic/fileDownload/"+fileid
         },
         delfile(fileid){
-            this.$confirm('是否確定刪除該筆資料?', '提示', {
-                confirmButtonText: '確定',
-                cancelButtonText: '取消',
-                type: 'warning',
-                center: true
-            }).then(() => {
-                this.$api.files.apiDeleteFile(fileid).then(response => {
-                    this.$message('刪除成功')
-                    this.$emit('subOpitonButton', 'floorfile', '')
+            if(fileid == this.choose){
+                this.$message({
+                    message: '此檔為平面圖設定，請先設定其他檔為平面圖再進行刪除',
+                    type: 'warning'
+                });
+            }else{
+                this.$confirm('是否確定刪除該筆資料?', '提示', {
+                    confirmButtonText: '確定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                }).then(() => {
+                    this.$api.files.apiDeleteFile(fileid).then(response => {
+                        this.$message('刪除成功')
+                        this.$emit('subOpitonButton', 'floorfile', '')
+                    })
                 })
-            })
+            }
+            
         },
         changefloorimage(){
             var _temp = {
@@ -113,3 +121,9 @@ export default {
     }
 }
 </script>
+
+<style lang="scss" scoped>
+.del {
+  cursor: pointer;
+}
+</style>

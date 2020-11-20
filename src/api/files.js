@@ -24,6 +24,11 @@ const files = {
     apiPostInspectionFiles(inspectionId,data){ 
         return req('post','/report/'+this.getUid()+'/inspection/'+inspectionId+'/fileUpload',data,true) } ,
     
+    //公安申報
+    apiGetPublicSafeFiles(publicSafeId){ return req('get','/report/'+publicSafeId+'/filesList/publicSafe') } ,
+    apiPostPublicSafeFiles(publicSafeId,data){ 
+        return req('post','/report/'+this.getUid()+'/publicSafe/'+publicSafeId+'/fileUpload',data,true) } ,
+    
     //共用方法 刪除/下載
     apiDeleteFile(fileId){ return req('delete','/basic/fileDelete/'+fileId) },
     apiGetFile(fileId){ return req('get','/basic/fileDownload/'+fileId) },

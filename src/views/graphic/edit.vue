@@ -7,13 +7,13 @@
                     v-on="graphicEvent"></GraphicEdit>
             </div>
         </el-col>
-        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+        <!-- <el-col :xs="24" :sm="24" :md="24" :lg="8">
             <div class="collapse-wrapper">
                 <EquipmentType
                     v-on="equipmentTypeEvent">
                 </EquipmentType>
               </div>
-        </el-col>
+        </el-col> -->
         <el-col :xs="24" :sm="24" :md="24" :lg="8">
             <div class="collapse-wrapper">
                 <ObjectList

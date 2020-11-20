@@ -9,7 +9,6 @@
         center>
         
         <Upload
-        v-if="imported == undefined || imported == false"
         v-bind="multiple"
         v-on="uploadEvent"
         ></Upload>
@@ -17,40 +16,33 @@
         <el-button type="primary" @click="handleCreate" style="margin-top:20px;margin-bottom:20px">新增</el-button>
         
          <el-table
+         
             :data="tableData"
-            :key="tableKey"
+            :key="itemkey"
             border
             highlight-current-row
-            style="width: 100%">
+            style="width: 100%"
+            empty-text="暫無資料">
 
-            <!-- <template v-for="item in floorcollist">
+            <el-table-column
+            fixed
+            type="index">
+            </el-table-column>
+
+            <template v-for="(item,index) in lackconfig">
                 <el-table-column 
                 align="center" 
-                :label="item.name" 
-                :key="item.key" 
-                :prop="item.value" 
+                :label="item.label" 
+                :key="index" 
+                :prop="item.prop" 
+                sortable
                 >
                     <template slot-scope="scope">
                         <span>{{  scope.row[scope.column.property] }}</span>
                     </template>
                 </el-table-column>
-            </template> -->
-            <el-table-column
-            fixed
-            type="index">
-            </el-table-column>
-            <el-table-column
-            prop="lackItem"
-            label="缺失項目">
-            </el-table-column>
-            <el-table-column
-            prop="lackContent"
-            label="缺失內容">
-            </el-table-column>
-            <el-table-column
-            prop="improveContent"
-            label="改善況狀">
-            </el-table-column>
+            </template>
+            
             <el-table-column
             fixed="right"
             label="操作">
@@ -59,6 +51,7 @@
                 <el-button type="info" size="small" @click="handleDelete(scope.row)">刪除</el-button>
             </template>
             </el-table-column>
+
         </el-table>
 
         <InsertLack
@@ -74,12 +67,7 @@ export default {
         Upload: () => import('@/components/Upload/index.vue'),
         InsertLack: () => import('@/components/Dialog/insertlack.vue')
     },
-    props:['imported','lackVisible','inspectionid','tableData'],
-    watch:{
-        tableData(){
-            console.log('aaa')
-        }
-    },
+    props:['lackVisible','tableData','lackconfig','itemkey'],
     computed:{
         uploadEvent(){
             return {
@@ -112,8 +100,8 @@ export default {
             multiple:false,
             insertvisible:false,
             dialogStatus:'',
-            lackData:[],
-            tableKey:0
+            lackData:[]
+
         }
     },
     methods: {

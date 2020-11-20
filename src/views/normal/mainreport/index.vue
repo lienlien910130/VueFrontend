@@ -127,6 +127,20 @@ export default {
                 format:'hide-l'
               }
             ],
+            lackconfig:[
+              {
+                label: '缺失項目',
+                prop: 'lackItem'
+              },
+              {
+                label: '缺失內容',
+                prop: 'lackContent'
+              },
+              {
+                label: '改善狀況',
+                prop: 'improveContent'
+              }
+            ],
             blockData: [],
             buttonsName: ['編輯','刪除'],
             form:{},
@@ -134,7 +148,9 @@ export default {
             lackVisible:false,
             originFiles:[],
             inspectionid:'',
-            imported:false
+            lackfileid:'',
+            tableData:[],
+            list:[]
         }
     },
     watch: {
@@ -176,7 +192,8 @@ export default {
       dialogAttrs(){
         return{
           originFiles: this.originFiles,
-          visible: this.reportVisible
+          visible: this.reportVisible,
+          lackfileid:this.lackfileid
         }
       },
       dialogEvent(){
@@ -186,10 +203,10 @@ export default {
       },
       lackAttrs(){
         return{
-          imported: this.imported,
           lackVisible: this.lackVisible,
-          inspectionid : this.inspectionid,
-          tableData:this.tableData
+          tableData:this.list,
+          lackconfig:this.lackconfig,
+          itemkey:this.itemkey
         }
       },
       lackEvent(){
@@ -211,12 +228,11 @@ export default {
       })
     },
     async reportList() {
-      await this.$api.report.apiGetInspection().then(response => {
-        console.log(JSON.stringify(response))
+      await this.$api.report.apiGetBuildingInspection().then(response => {
         this.blockData = response.result.sort((x,y) => y.isImproved - x.isImproved)
       })
     },  
-    async handleBlockOption(index, content) {
+    async handleBlockOption(index, content) { //檢修申報的操作
       console.log(index,JSON.stringify(content))
       if (index === 'update'){
         this.$api.report.apiPatchInspection(JSON.stringify(content)).then(response => {
@@ -240,13 +256,13 @@ export default {
           console.log(error)
         })
       }else if (index === 'inspectionfile'){
-        this.getinspectionfiles(content)
+        await this.getinspectionfiles(content)
       }else{ // inspectionLackfile
         await this.getinspectionlack(content)
         this.lackVisible = true
       }
     },
-    handleReportOption(index,content){
+    handleReportOption(index,content){ //附件文檔的操作
       if(index == 'fileupload'){
         const formData = new FormData();
           content.forEach(item => {
@@ -269,18 +285,32 @@ export default {
         })
       }
     },
-    async handleLackOption(index,content){
+    async handleLackOption(index,content){ //缺失內容的操作
       if(index == 'fileupload'){
         const formData = new FormData();
           content.forEach(item => {
             formData.append('file', item.raw)
         })
-        this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(response =>{
-            this.$message('上傳成功')
-            this.settinglackfile(response.result[0].id)
-        }).catch(error =>{
-            console.log('error=>'+error)
-        })
+        await this.getinspectionofID(this.inspectionid)
+        if(this.lackfileid !== 0){
+          this.$confirm('缺失內容檔案已上傳過，重新上傳會將舊有資料全部刪除，請問是否確認上傳?', '提示', {
+            confirmButtonText: '確定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(response =>{
+                this.settinglackfile(response.result[0].id,true)
+            }).catch(error =>{
+                console.log('error=>'+error)
+            })
+          })
+        }else{
+          this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(response =>{
+              this.settinglackfile(response.result[0].id,false)
+          }).catch(error =>{
+              console.log('error=>'+error)
+          })
+        }
       }else if(index == 'cancel'){
         this.lackVisible = false
       }else if (index == 'create'){
@@ -299,30 +329,46 @@ export default {
         })
         await this.getinspectionlack(this.inspectionid)
       }
-        
     },
-    settinglackfile(fileid){
-      this.$api.report.apiPostInspectionLackFiles(this.inspectionid,fileid).then(response =>{
-        console.log(response)
+    settinglackfile(fileid,cover){ //設定缺失檔案
+      var _int = parseInt(fileid)
+      this.$api.report.apiPostInspectionLackFiles(this.inspectionid,_int,cover).then(response =>{
+        this.$message('上傳成功')
+        this.getinspectionofID(this.inspectionid)
       }).catch(error =>{
         console.log('error=>'+error)
       })
     },
-    getinspectionfiles(id){
-      
+    async getinspectionfiles(id){ //取得檢修申報的附件文檔
       this.inspectionid = id
+      await this.getinspectionofID(this.inspectionid)
       this.$api.files.apiGetInspectionFiles(id).then(response =>{
-        this.originFiles = response.result
+        this.originFiles = response.result.sort((x,y) => x.id - y.id)
         this.reportVisible = true
       }).catch(error =>{
         console.log('error=>'+error)
       })
     },
-    async getinspectionlack(id){
+    async getinspectionofID(id){ //取得import檔案id
+      await this.$api.report.apiGetInspection(id).then(response =>{
+          this.lackfileid = response.result[0].imported
+      }).catch(error =>{
+          console.log('error=>'+error)
+      })
+    },
+    async getinspectionlack(id){ //取得缺失內容
       this.inspectionid = id
+      this.tableData = []
+      this.list = []
       await this.$api.report.apiGetInspectionLack(id).then(response =>{
-        console.log('response=>'+JSON.stringify(response))
+        this.itemkey = Math.random()
         this.tableData = response.result.sort((x,y) => x.id - y.id)
+        this.list = this.tableData.map(v => {
+          this.$set(v, 'lackItem', v.lackItem) 
+          this.$set(v, 'lackContent', v.lackContent) 
+          this.$set(v, 'improveContent', v.improveContent) 
+          return v
+        })
       }).catch(error =>{
             console.log('error=>'+error)
       })

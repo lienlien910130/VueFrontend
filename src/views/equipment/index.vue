@@ -48,7 +48,10 @@
                 </el-col>
             </el-row>
         </div>
+
+        
     </div>
+    
 </div>
 </template>
 <script>
@@ -60,7 +63,8 @@ export default {
     components:{
         FloorSelect: () => import('@/components/Select/index.vue'),
         Canvas: () => import('./components/Canvas.vue'),
-        Checkbox: () => import('./components/Checkbox.vue')
+        Checkbox: () => import('./components/Checkbox.vue'),
+        Window: () => import('@/components/Window/index.vue')
     },
     computed:{
         ...mapGetters([

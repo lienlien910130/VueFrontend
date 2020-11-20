@@ -32,6 +32,16 @@
                 <el-form-item label="圖層標題">
                   <el-input v-model="objectname"  placeholder="請輸入標題" @input="textchange"></el-input>
                 </el-form-item>
+                <el-form-item label="區塊類型">
+                   <el-select v-model="blocktype" placeholder="請選擇">
+                    <el-option
+                      v-for="item in options"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
                 <el-form-item label="字體大小">
                   <el-input-number v-model="fontsize" controls-position="right" :min="8" :max="72"></el-input-number>
                 </el-form-item>
@@ -66,6 +76,9 @@
                 <el-form-item>
                   <el-button type="primary" @click="sendObj">sendObj</el-button>
                 </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="openimages">開啟圖例</el-button>
+                </el-form-item>
           </el-form>
         </div>
       </el-col>
@@ -75,15 +88,40 @@
         </div>
       </el-col>
     </el-row>
+
+    <el-dialog 
+    
+    :visible.sync="dialogTableVisible" 
+    title="圖例" 
+    @dragDialog="handleDrag"
+    :modal="false"
+    :close-on-click-modal="false"
+    class="dialog"
+    style="width:230px"
+    width="230px"
+    top="0px">
+      
+            <div class="collapse-wrapper">
+                <EquipmentType v-on="equipmentTypeEvent">
+                </EquipmentType>
+              </div>
+      
+    </el-dialog>
+
   </div>
 </template>
 <script>
 
 import { mapGetters } from 'vuex'
+import elDragDialog from '@/directive/el-drag-dialog' 
 
 export default {
   name: "App",
-  props:['movingImage','imgDragOffset','deleteObject','selectObject','reset','title','saveimg'],
+  props:['deleteObject','selectObject','reset','title','saveimg'],
+  directives: { elDragDialog },
+  components:{
+    EquipmentType: () => import('../../views/graphic/components/EquipmentType.vue'),
+  },
   computed: {
      ...mapGetters([
         'json'
@@ -91,6 +129,19 @@ export default {
     getWsMsg() {
         return this.$store.state.websocket.msg
     },
+    equipmentTypeEvent(){
+        return{
+          subDragOption: this.handleDragOption,
+          subSelectionOption : this.handleSelectionOption
+        }
+    },
+    // dialogwidth(){
+    //   if(this.startdrag == true){
+    //     return '200px'
+    //   }else{
+    //     return '100%'
+    //   }
+    // }
     // divwidth(){
     //   if (this.$store.state.app.device === 'mobile') {
     //     return '500px'
@@ -155,7 +206,25 @@ export default {
       line: {},
 
       clipboard:null,
-      drawer:false
+      drawer:false,
+      dialogTableVisible:false,
+      movingImage:null,
+      imgDragOffset:{offsetX: 0,offsetY: 0},
+
+      options: [{
+          value: '1',
+          label: '警戒區'
+        }, {
+          value: '2',
+          label: '防護區'
+        }, {
+          value: '3',
+          label: '放射區'
+        }, {
+          value: '4',
+          label: '撒水區'
+        }],
+      blocktype: ''
     }
   },
   watch: {
@@ -305,6 +374,11 @@ export default {
         }
       }
       this.canvas.renderAll()
+    },
+    blocktype(val){
+      if(this.canvas.getActiveObject() !== undefined ){
+        this.canvas.getActiveObject().set("blocktype",this.blocktype)
+      }
     }
   },
   mounted() {
@@ -347,6 +421,19 @@ export default {
     })
     this.canvas.on('selection:updated', (e) => {
       this.objectname = e.target.name
+      // this.opacity = parseInt(e.selected.opacity) *100
+      // switch(e.selected.type){
+      //   case 'path':
+
+      //     break;
+      //   case 'polygon':
+      //     break;
+      //   case 'textbox':
+      //     break;
+      //   case 'image':
+      //     break;
+      // }
+
     })
     this.canvas.on('selection:cleared', (e) => {
       this.objectname = ""
@@ -788,12 +875,14 @@ export default {
             return function () {
                 return fabric.util.object.extend(toObject.call(this), {
                     id: this.id,
-                    name: this.name
+                    name: this.name,
+                    blocktype: this.blocktype
                 })
             }
         })(canvasObject.toObject)
         canvasObject.set("id",this.canvas.getObjects().indexOf(canvasObject))
         canvasObject.set("name",name) //+'_'+ (new Date()).getTime()
+        canvasObject.set("blocktype",this.blocktype == '' ? '' : this.blocktype)
     },
     sendAllobj(){ //傳給父元件
       this.$emit('subObjectListOption',this.canvas.getObjects())
@@ -924,6 +1013,28 @@ export default {
             easing: fabric.util.ease.easeInCubic
         })
     },
+
+    openimages(){
+      this.dialogTableVisible = true
+    },
+    handleDrag() {
+      console.log('drag')
+    },
+    handleDragOption(e){
+        if(e !== null){
+          this.imgDragOffset.offsetX = e.offsetX
+          this.imgDragOffset.offsetY = e.offsetY
+          this.movingImage = e.target
+        }else{
+          this.movingImage = null
+        }
+    },
+    handleSelectionOption(content){
+      console.log('content'+content)
+      this.canvas.forEachObject(function(object){ 
+            object.selectable = content
+      });
+    }
   }
 }
 </script>
@@ -951,7 +1062,7 @@ font-size:20px
 
   canvas {  
     border: 1px dashed black;
-    margin-top: 20px;
+    margin-top: 10px;
   }
 
   .row{
@@ -1021,6 +1132,12 @@ input {
   }
   .active {
     background: rgb(194, 193, 193);
+  }
+}
+.dialog{
+  margin-top: 307px;
+  .el-dialog{
+    margin: 0px 0px 0px 0px;
   }
 }
 </style>

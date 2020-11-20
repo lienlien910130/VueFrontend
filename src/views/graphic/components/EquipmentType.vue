@@ -1,6 +1,5 @@
 <template>
 <div>
-    <h3>圖例</h3>
     <el-row :gutter="32">
         <el-col :xs="24" :sm="24" :md="8" :lg="24">
             <!-- <div
@@ -52,6 +51,7 @@
             :src="item.imgSrc"
             :alt="item.name"
             @mousedown="handleImage(item,$event)"
+            
             draggable
             >
             </el-image>
@@ -123,16 +123,13 @@ export default {
                     this.temp.push(item);
                 }
             }) 
-        },
-        changeImg(){
-
         }
     }
 }
 </script>
 <style lang="scss" scoped>
 .leftcontent{
-    height:650px;
+    height:400px;
     overflow: auto;
     width: 100%;
     

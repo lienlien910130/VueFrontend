@@ -71,11 +71,11 @@ export const constantRoutes = [
         component: () => import('@/views/equipment/index.vue'),
         meta: { title: '設備管理', icon: 'icon', needLogin: true }
       },
-      // { 消防設備
+      // { 
       //   path: 'construction',
       //   name: 'Construction',
       //   component: () => import('@/views/equipment/index'),
-      //   meta: { title: '建築設備', icon: 'tree', needLogin: true }
+      //   meta: { title: '測試頁面', icon: 'tree', needLogin: true }
       // },
       // {
       //   path: 'prevention',

@@ -10,15 +10,27 @@
         <div class="files">
           <div 
           v-for="(item,index) in originFiles" :key="item.id" class="filesdiv">
-            <el-link 
-            class="link" 
-            :href="downloadfile(item.id)" target="_blank" style="width:80%">
-            【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
-            </el-link>
-            <span>
-                <i class="el-icon-delete del" style="float:right;font-size: 25px;margin-top:5px;width:20%" 
-                @click="delfile(item.id)" />
-            </span>
+            <el-row>
+                <el-col :xs="24" :sm="24" :md="12" :lg="15">
+                    <span
+                    v-if="lackfileid == item.id" style="color:red">*</span>
+                    <el-link 
+                    class="link" 
+                    :href="downloadfile(item.id)" target="_blank" >
+                    【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
+                    </el-link>
+                </el-col>
+                <el-col :xs="24" :sm="24" :md="12" :lg="9">
+                    <span style="margin-right:10px">
+                    上傳時間：{{ date(item.uploadTime) }}
+                    </span>
+                    <span>
+                    <i class="el-icon-delete del" style="font-size: 25px;margin-top:5px;" 
+                        @click="delfile(item.id)" />
+                    </span> 
+                </el-col>
+            </el-row>
+            
           </div>
         </div>
         <Upload
@@ -28,18 +40,26 @@
 </template>
 
 <script>
+import moment from 'moment';
+
 export default {
     components:{
         Upload: () => import('@/components/Upload/index.vue')
     },
-    props:{
-        originFiles: {},
-        visible: {}
-    },
+    props:['originFiles','visible','lackfileid'],
     computed:{
         uploadEvent(){
             return {
                 subOpitonButton: this.handleUploadOption
+            }
+        },
+        date(){
+            return function (a,b) {
+                if(a != null){
+                    return moment(a).format('YYYY-MM-DD')
+                }else{
+                    return ''
+                }
             }
         }
     },
@@ -59,15 +79,22 @@ export default {
             this.$emit('subReportButton', 'cancel', '')
         },
         delfile(id){
-            this.$confirm('是否確定刪除該筆資料?', '提示', {
-                confirmButtonText: '確定',
-                cancelButtonText: '取消',
-                type: 'warning',
-                center: true
-            }).then(() => {
-                this.$emit('subReportButton', 'delete', id)
-            })
-            
+            if(this.lackfileid == id){
+                this.$message({
+                showClose: true,
+                message: '此為缺失內容檔案，不可刪除',
+                type: 'warning'
+                });
+            }else{
+                this.$confirm('是否確定刪除該筆資料?', '提示', {
+                    confirmButtonText: '確定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                }).then(() => {
+                    this.$emit('subReportButton', 'delete', id)
+                })
+            }
         }
     },
 }
@@ -81,6 +108,7 @@ export default {
   
   .filesdiv{
     line-height: 40px;
+    width: 100%;
   }
   .del {
     cursor: pointer;
