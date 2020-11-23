@@ -10,31 +10,30 @@
         center>
 
         <el-form 
-        ref="insertdataForm"  :model="temp" :rules="formRules"  
+        ref="insertdataForm"  :model="temp"  
         :label-position="label" label-width="auto" >
-                <el-form-item label="缺失項目"  prop="lackItem">
+                <el-form-item 
+                    v-for="(item, index) in lackconfig"
+                    :key="index"
+                    :prop="item.prop"
+                    :label="item.label"
+                    :rules="[
+                        { required: item.mandatory, message: item.message}
+                    ]"
+                >
                     <el-input  
-                    ref="lackItem"
-                    name="lackItem"
-                    v-model="temp.lackItem"
+                    v-if="item.textarea == false"
+                    :ref="item.prop"
+                    :name="item.prop"
+                    v-model="temp[item.prop]"
                     type="string">
                     </el-input>
-                </el-form-item>
-                <el-form-item label="缺失內容"  prop="lackContent">
                     <el-input  
-                    ref="lackContent"
-                    name="lackContent"
+                    v-else
+                    :ref="item.prop"
+                    :name="item.prop"
                     :autosize="{ minRows: 4, maxRows: 8}"
-                    v-model="temp.lackContent"
-                    type="textarea">
-                    </el-input>
-                </el-form-item>
-                <el-form-item label="改善狀況" prop="improveContent">
-                    <el-input  
-                    ref="improveContent"
-                    name="improveContent"
-                    :autosize="{ minRows: 4, maxRows: 8}"
-                    v-model="temp.improveContent"
+                    v-model="temp[item.prop]"
                     type="textarea">
                     </el-input>
                 </el-form-item>
@@ -62,7 +61,8 @@ export default {
         },
         dialogStatus:{
             type: String
-        }
+        },
+        lackconfig:{}
     },
     watch:{
         insertvisible(){
@@ -90,11 +90,6 @@ export default {
             textMap: {
                 update: '編輯',
                 create: '新增'
-            },
-            formRules: {
-                lackItem: [{ required: true, trigger: 'blur', message:'請輸入內容'}],
-                lackContent: [{ required: true, trigger: 'blur', message:'請輸入內容'}],
-                improveContent: [{ required: false, trigger: 'blur', message:'請輸入內容'}]
             },
             temp:{}
         }

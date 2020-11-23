@@ -6,11 +6,13 @@
 import building from '@/api/build';
 import files from '@/api/files';
 import report from '@/api/report';
+import setting from '@/api/setting';
 // 其他模块的接口……
 
 // 导出接口
 export default {    
   building,
   files,
-  report
+  report,
+  setting
 }

@@ -1,6 +1,6 @@
 <template>
     <el-dialog
-        width="30%"
+        :width="dialogWidth"
         title="檢附文件"
         :visible="visible"
         :close-on-click-modal='false'
@@ -60,6 +60,13 @@ export default {
                 }else{
                     return ''
                 }
+            }
+        },
+        dialogWidth(){
+            if (this.$store.state.app.device === 'mobile') {
+                return "90%"
+            } else {
+                return "70%"
             }
         }
     },

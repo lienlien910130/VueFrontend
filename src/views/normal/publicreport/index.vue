@@ -9,7 +9,7 @@
                         <span>{{ form.name }}</span>
                       </el-form-item>
                       <el-form-item label="下次檢修時間">
-                        <br><br>
+                        <br>
                         <span class="report">{{ form.repair }}</span>
                       </el-form-item>
                     </div>
@@ -105,7 +105,7 @@ export default {
                 prop: 'declareResult'
               },
               {
-                label: '申報改善期限',
+                label: '改善期限',
                 prop: 'declarationImproveDate',
                 format:'YYYY-MM-DD'
               },
@@ -130,15 +130,26 @@ export default {
             lackconfig:[
               {
                 label: '缺失項目',
-                prop: 'lackItem'
+                prop: 'lackItem',
+                mandatory:true, message:'請輸入缺失項目',textarea:false
               },
               {
                 label: '缺失內容',
-                prop: 'lackContent'
+                prop: 'lackContent',
+                mandatory:true, message:'請輸入缺失內容',textarea:true
               },
               {
-                label: '改善狀況',
-                prop: 'improveContent'
+                label: '無法合格理由',
+                prop: 'notPassReason',
+                mandatory:true, message:'請輸入無法合格理由',textarea:true
+              },
+              {
+                label: '法令依據',
+                prop: 'accordLaws', mandatory:false,textarea:true
+              },
+              {
+                label: '改善計劃',
+                prop: 'improvePlan', mandatory:false,textarea:true
               }
             ],
             blockData: [],
@@ -148,7 +159,6 @@ export default {
             lackVisible:false,
             originFiles:[],
             publicSafeid:'',
-            lackfileid:'',
             tableData:[],
             list:[]
         }
@@ -180,7 +190,7 @@ export default {
           blockData: this.blockData,
           buttonsName: this.buttonsName,
           config: this.tableConfig,
-          title:'ReportInspectio',
+          title:'ReportPublicSafe',
           selectData: []
         }
       },
@@ -193,7 +203,7 @@ export default {
         return{
           originFiles: this.originFiles,
           visible: this.reportVisible,
-          lackfileid:this.lackfileid
+          lackfileid:0
         }
       },
       dialogEvent(){
@@ -206,7 +216,8 @@ export default {
           lackVisible: this.lackVisible,
           tableData:this.list,
           lackconfig:this.lackconfig,
-          itemkey:this.itemkey
+          itemkey:this.itemkey,
+          title:'ReportPublicSafe',
         }
       },
       lackEvent(){
@@ -255,11 +266,10 @@ export default {
         }).catch(error=>{
           console.log(error)
         })
-      }else if (index === 'publicSafefile'){
+      }else if (index === 'ReportPublicSafe'){
         await this.getpublicSafefiles(content)
-      }else{ // publicSafeLackfile
+      }else{ // ReportPublicSafeLack
         await this.getpublicSafelack(content)
-        await this.getpublicSafeofID(content)
         this.lackVisible = true
       }
     },
@@ -287,32 +297,7 @@ export default {
       }
     },
     async handleLackOption(index,content){ //缺失內容的操作
-      if(index == 'fileupload'){
-        const formData = new FormData();
-          content.forEach(item => {
-            formData.append('file', item.raw)
-        })
-        await this.getpublicSafeofID(this.publicSafeid)
-        if(this.lackfileid !== 0){
-          this.$confirm('缺失內容檔案已上傳過，重新上傳會將舊有資料全部刪除，請問是否確認上傳?', '提示', {
-            confirmButtonText: '確定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            this.$api.files.apiPostPublicSafeFiles(this.publicSafeid,formData).then(response =>{
-                this.settinglackfile(response.result[0].id,true)
-            }).catch(error =>{
-                console.log('error=>'+error)
-            })
-          })
-        }else{
-          this.$api.files.apiPostPublicSafeFiles(this.publicSafeid,formData).then(response =>{
-              this.settinglackfile(response.result[0].id,false)
-          }).catch(error =>{
-              console.log('error=>'+error)
-          })
-        }
-      }else if(index == 'cancel'){
+      if(index == 'cancel'){
         this.lackVisible = false
       }else if (index == 'create'){
         await this.$api.report.apiPostPublicSafeLack(this.publicSafeid,content).then(response => {
@@ -331,31 +316,13 @@ export default {
         await this.getpublicSafelack(this.publicSafeid)
       }
     },
-    settinglackfile(fileid,cover){ //設定缺失檔案
-      var _int = parseInt(fileid)
-      this.$api.report.apiPostPublicSafeLackFiles(this.publicSafeid,_int,cover).then(response =>{
-        this.$message('上傳成功')
-        this.getpublicSafeofID(this.publicSafeid)
-      }).catch(error =>{
-        console.log('error=>'+error)
-      })
-    },
     async getpublicSafefiles(id){ //取得申報的附件文檔
       this.publicSafeid = id
-      await this.getpublicSafeofID(this.publicSafeid)
       this.$api.files.apiGetPublicSafeFiles(id).then(response =>{
         this.originFiles = response.result.sort((x,y) => x.id - y.id)
         this.reportVisible = true
       }).catch(error =>{
         console.log('error=>'+error)
-      })
-    },
-    async getpublicSafeofID(id){ //取得import檔案id
-      await this.$api.report.apiGetPublicSafe(id).then(response =>{
-        console.log('lackfileid=>'+JSON.stringify(response.result[0]))
-          this.lackfileid = response.result[0].imported
-      }).catch(error =>{
-          console.log('error=>'+error)
       })
     },
     async getpublicSafelack(id){ //取得缺失內容
@@ -368,7 +335,9 @@ export default {
         this.list = this.tableData.map(v => {
           this.$set(v, 'lackItem', v.lackItem) 
           this.$set(v, 'lackContent', v.lackContent) 
-          this.$set(v, 'improveContent', v.improveContent) 
+          this.$set(v, 'notPassReason', v.notPassReason) 
+          this.$set(v, 'accordLaws', v.accordLaws) 
+          this.$set(v, 'improvePlan', v.improvePlan) 
           return v
         })
       }).catch(error =>{
@@ -381,7 +350,7 @@ export default {
 <style lang="scss" scoped>
     
 .mainreport-editor-container {
-  padding: 32px;
+  padding: 20px;
   background-color: rgb(240, 242, 245);
   position: relative;
   min-height: calc(100vh - 125px);

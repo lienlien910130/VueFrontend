@@ -70,4 +70,10 @@ width: 0 !important;height: 0;
   background:rgb(171,205,3);
   color:white;
 }
+.el-button+.el-button{
+  margin-left: 5px;
+}
+.el-button{
+  margin: 5px;
+}
 </style>

@@ -31,9 +31,7 @@ const report = {
     apiPostPublicSafeLack(publicSafeId,data){ return req('post','/reportLack/'+publicSafeId+'/publicSafeLack',data) },
     apiPatchPublicSafeLack(data){ return req('patch','/reportLack/publicSafeLack',data) },
     apiDeletePublicSafeLack(publicSafeLackId){ return req('delete','/reportLack/'+publicSafeLackId+'/publicSafeLack') },
-    apiPostPublicSafeLackFiles(publicSafeId,fileId,cover){ 
-        return req('post','/reportLack/'+publicSafeId+'/publicSafeLack/load/'+fileId+'/'+cover) },
-        
+   
 }
 
 export default report

@@ -9,20 +9,21 @@
         center>
         
         <Upload
+        v-if="title=='ReportInspectio'"
         v-bind="multiple"
         v-on="uploadEvent"
         ></Upload>
         
-        <el-button type="primary" @click="handleCreate" style="margin-top:20px;margin-bottom:20px">新增</el-button>
+        <el-button type="primary" @click="handleCreate">新增</el-button>
         
          <el-table
-         
             :data="tableData"
             :key="itemkey"
             border
             highlight-current-row
-            style="width: 100%"
-            empty-text="暫無資料">
+            style="width: 100%;"
+            empty-text="暫無資料"
+            >
 
             <el-table-column
             fixed
@@ -31,15 +32,19 @@
 
             <template v-for="(item,index) in lackconfig">
                 <el-table-column 
-                align="center" 
+                align="left" 
                 :label="item.label" 
                 :key="index" 
                 :prop="item.prop" 
                 sortable
+                header-align="center"
+                :width="item.width"
                 >
-                    <template slot-scope="scope">
-                        <span>{{  scope.row[scope.column.property] }}</span>
-                    </template>
+                <template slot-scope="scope">
+                    <div v-if="scope.column.property == 'lackContent'"
+                    v-html="stringToBr(scope.row[scope.column.property])"></div>
+                    <span v-else>{{  scope.row[scope.column.property] }}</span>
+                </template>
                 </el-table-column>
             </template>
             
@@ -67,8 +72,13 @@ export default {
         Upload: () => import('@/components/Upload/index.vue'),
         InsertLack: () => import('@/components/Dialog/insertlack.vue')
     },
-    props:['lackVisible','tableData','lackconfig','itemkey'],
+    props:['lackVisible','tableData','lackconfig','itemkey','title'],
     computed:{
+        stringToBr(){
+            return function (a) {
+                return a.replace(/{ln}/g, "<br/>");
+            }
+        },
         uploadEvent(){
             return {
                 subOpitonButton: this.handleUploadOption
@@ -85,7 +95,8 @@ export default {
             return{
                 insertvisible: this.insertvisible,
                 dialogStatus:this.dialogStatus,
-                lackData:this.lackData
+                lackData:this.lackData,
+                lackconfig:this.lackconfig
             }
         },
         insertLackEvent(){

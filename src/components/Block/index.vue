@@ -5,7 +5,7 @@
             <div>
                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <p v-if="isChoose == false && title === 'floor'">請選擇樓層</p>
-                    <el-button v-else 
+                <el-button v-else 
                     class="filter-item" 
                     style="" 
                     type="primary" 
@@ -29,67 +29,62 @@
                     <div 
                     v-for="(option,index) in config"
                     :key="index"
+                    width="100%"
                     >
-                        <span 
-                        v-if="option.format == 'YYYY' | option.format === 'YYYY-MM-DD'">
-                        <span>{{ option.label }} :</span>
-                              {{ dataStr(item[option.prop],option.format) }}
-                        </span>
-                        
-                        <span 
-                        v-else-if="option.format == 'range' | option.format === 'YYYY-MM-DD'">
-                            {{ option.label }} : 
-                            {{ dataStr(item['checkStartDate'],'YYYY-MM-DD') }} ~ 
-                            {{ dataStr(item['checkEndDate'],'YYYY-MM-DD') }}
-                        </span>
+                        <div :style="{display:'inline-block',width:labelstyle}">
+                            <span>{{ option.label }} :</span>
+                        </div>
+                        <div :style="{display:'inline-block',width:itemstyle}">
+                            <span 
+                            v-if="option.format == 'YYYY' | option.format === 'YYYY-MM-DD'">
+                            {{ dataStr(item[option.prop],option.format) }}
+                            </span>
+                            
+                            <span 
+                            v-else-if="option.format == 'range' | option.format === 'YYYY-MM-DD'">
+                                {{ dataStr(item['checkStartDate'],'YYYY-MM-DD') }} ~ 
+                                {{ dataStr(item['checkEndDate'],'YYYY-MM-DD') }}
+                            </span>
 
-                        <el-tag 
-                        v-else-if="option.format == 'tag' "
-                        :type=" item[option.prop] === false ? 'danger' : '' "> 
-                            {{ tagChange(item[option.prop]) }}
-                        </el-tag>
+                            <el-tag 
+                            v-else-if="option.format == 'tag' "
+                            :type=" item[option.prop] === false ? 'danger' : '' "
+                            > 
+                                {{ tagChange(item[option.prop]) }}
+                            </el-tag>
 
-                        <el-button 
-                        v-else-if="option.format == 'hide-f' "
-                        type="text" @click="openInspectionfile(item['id'])"> {{ option.label }}</el-button>
+                            <el-button 
+                            v-else-if="option.format == 'hide-f' "
+                            type="text" @click="openReportfile(item['id'])" style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
-                        <el-button 
-                        v-else-if="option.format == 'hide-l' "
-                        type="text" @click="openInspectionLackfile(item['id'])"> {{ option.label }}</el-button>
-                        
-                        <el-button 
-                        v-else-if="option.format == 'link' "
-                        type="text" @click="open"> {{ option.label }}</el-button>
+                            <el-button 
+                            v-else-if="option.format == 'hide-l' "
+                            type="text" @click="openReportLackfile(item['id'])" style="padding-top:0px;padding-bottom:0px">查看</el-button>
+                            
+                            <el-button 
+                            v-else-if="option.format == 'userselect' "
+                            type="text" @click="open(item[option.prop])" style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
-                        <el-button 
-                        v-else-if="option.format == 'userselect' "
-                        type="text" @click="open(item[option.prop])"> 
-                        {{ option.label }}
-                        </el-button>
+                            <el-button 
+                            v-else-if="option.format == 'ownerselect' "
+                            type="text" @click="open(item[option.prop])" style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
-                        <el-button 
-                        v-else-if="option.format == 'ownerselect' "
-                        type="text" @click="open(item[option.prop])"> 
-                        {{ option.label }}
-                        </el-button>
+                            <span 
+                            v-else-if="option.format == 'manageselect' ">
+                            {{ labelchange(item[option.prop]) }}
+                            </span>
 
-                        <span 
-                        v-else-if="option.format == 'manageselect' ">
-                        <span>{{ option.label }} :</span>
-                         {{ labelchange(item[option.prop]) }}
-                        </span>
+                            <span 
+                            v-else-if="option.format == 'contactunitselect' ">
+                            {{ selectStr(item[option.prop]) }}
+                            </span>
 
-                        <span 
-                        v-else-if="option.format == 'contactunitselect' ">
-                            {{ option.label }} : {{ selectStr(item[option.prop]) }}
-                        </span>
-
-                        <span
-                        v-else-if="option.format == 'floor' ">
-                        </span>
-                         
-                        <span v-else>{{ option.label }} : {{ item[option.prop] }}</span>
-
+                            <span
+                            v-else-if="option.format == 'floor' ">
+                            </span>
+                            
+                            <span v-else>{{ item[option.prop] }}</span>
+                        </div>
                     </div>
                     
                     
@@ -101,7 +96,6 @@
                         <el-button
                         :type="index == 0 ? 'primary' : 'info'"
                         @click="handleClickOption(index,item,button)"
-                        :style="index == 1 ? 'margin-left:10px' : ''"
                         >
                         <span >{{ button }}</span>
                         </el-button>
@@ -193,7 +187,15 @@
                         >
                         {{ checkboxChange(temp[item.prop]) }}
                     </el-checkbox>
-                    
+
+                    <el-input v-else-if="item.format =='textarea'"
+                    :ref="item.prop"
+                    :name="item.prop"
+                    v-model="temp[item.prop]" 
+                    :autosize="{ minRows: 4, maxRows: 8}"
+                    type="textarea">
+                    </el-input>
+
                     <el-input v-else
                     :ref="item.prop"
                     :name="item.prop"
@@ -302,6 +304,20 @@ export default {
                 return "700px"
             }
         },
+        labelstyle(){
+            if (this.$store.state.app.device === 'mobile') {
+                return '40%'
+            } else {
+                return '30%'
+            }
+        },
+        itemstyle(){
+            if (this.$store.state.app.device === 'mobile') {
+                return '60%'
+            } else {
+                return '70%'
+            }
+        },
         uploadEvent(){
             return {
                 subOpitonButton: this.handleUploadOption
@@ -324,7 +340,7 @@ export default {
         },
         tagChange(){
             return function (a) {
-                if(this.title == 'ReportInspectio' | this.title == 'ReportPublic'){
+                if(this.title == 'ReportInspectio' | this.title == 'ReportPublicSafe'){
                     switch(a){
                         case false:
                             return '未改善'
@@ -487,11 +503,11 @@ export default {
         open(id) {
             this.$emit('subOpitonButton', 'openUser', id)
         },
-        openInspectionfile(id){
-            this.$emit('subOpitonButton', 'inspectionfile', id)
+        openReportfile(id){
+            this.$emit('subOpitonButton', this.title , id)
         },
-        openInspectionLackfile(id){
-            this.$emit('subOpitonButton', 'inspectionLackfile', id)
+        openReportLackfile(id){
+            this.$emit('subOpitonButton', this.title+'Lack', id)
         },
         handleUploadOption(index,file){
             var _array = { 
@@ -520,7 +536,6 @@ export default {
 	overflow: auto; // 2. 内容超过指定高度 出现滚动条
 	width: 100%;
     .filter-item{
-        margin: 10px 20px;
         float: right;
     }
 }

@@ -105,7 +105,7 @@ export default {
                 prop: 'declareResult'
               },
               {
-                label: '申報改善期限',
+                label: '改善期限',
                 prop: 'declarationImproveDate',
                 format:'YYYY-MM-DD'
               },
@@ -130,15 +130,18 @@ export default {
             lackconfig:[
               {
                 label: '缺失項目',
-                prop: 'lackItem'
+                prop: 'lackItem',
+                mandatory:true, message:'請輸入缺失項目',textarea:false,width:'250px'
               },
               {
                 label: '缺失內容',
-                prop: 'lackContent'
+                prop: 'lackContent',
+                mandatory:true, message:'請輸入缺失內容',textarea:true,width:'500px'
               },
               {
                 label: '改善狀況',
-                prop: 'improveContent'
+                prop: 'improveContent',
+                mandatory:false, textarea:true,width:'300px'
               }
             ],
             blockData: [],
@@ -206,7 +209,8 @@ export default {
           lackVisible: this.lackVisible,
           tableData:this.list,
           lackconfig:this.lackconfig,
-          itemkey:this.itemkey
+          itemkey:this.itemkey,
+          title:'ReportInspectio',
         }
       },
       lackEvent(){
@@ -255,20 +259,20 @@ export default {
         }).catch(error=>{
           console.log(error)
         })
-      }else if (index === 'inspectionfile'){
+      }else if (index === 'ReportInspectio'){
         await this.getinspectionfiles(content)
-      }else{ // inspectionLackfile
+      }else{ // ReportInspectioLack
         await this.getinspectionlack(content)
         this.lackVisible = true
       }
     },
-    handleReportOption(index,content){ //附件文檔的操作
+    async handleReportOption(index,content){ //附件文檔的操作
       if(index == 'fileupload'){
         const formData = new FormData();
           content.forEach(item => {
             formData.append('file', item.raw)
         })
-        this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(response =>{
+        await this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(response =>{
             this.$message('上傳成功')
             this.getinspectionfiles(this.inspectionid)
         }).catch(error =>{
@@ -297,19 +301,21 @@ export default {
             confirmButtonText: '確定',
             cancelButtonText: '取消',
             type: 'warning'
-          }).then(() => {
-            this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(response =>{
-                this.settinglackfile(response.result[0].id,true)
+          }).then(async() => {
+            await this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(async(response) =>{
+                await this.settinglackfile(response.result[0].id,true)
             }).catch(error =>{
                 console.log('error=>'+error)
             })
+            await this.getinspectionlack(this.inspectionid)
           })
         }else{
-          this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(response =>{
-              this.settinglackfile(response.result[0].id,false)
+          await this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(async(response) =>{
+              await this.settinglackfile(response.result[0].id,false)
           }).catch(error =>{
               console.log('error=>'+error)
           })
+          await this.getinspectionlack(this.inspectionid)
         }
       }else if(index == 'cancel'){
         this.lackVisible = false
@@ -330,14 +336,14 @@ export default {
         await this.getinspectionlack(this.inspectionid)
       }
     },
-    settinglackfile(fileid,cover){ //設定缺失檔案
+    async settinglackfile(fileid,cover){ //設定缺失檔案
       var _int = parseInt(fileid)
-      this.$api.report.apiPostInspectionLackFiles(this.inspectionid,_int,cover).then(response =>{
+      await this.$api.report.apiPostInspectionLackFiles(this.inspectionid,_int,cover).then(response =>{
         this.$message('上傳成功')
-        this.getinspectionofID(this.inspectionid)
       }).catch(error =>{
         console.log('error=>'+error)
       })
+      await this.getinspectionofID(this.inspectionid)
     },
     async getinspectionfiles(id){ //取得檢修申報的附件文檔
       this.inspectionid = id
@@ -379,7 +385,7 @@ export default {
 <style lang="scss" scoped>
     
 .mainreport-editor-container {
-  padding: 32px;
+  padding: 20px;
   background-color: rgb(240, 242, 245);
   position: relative;
   min-height: calc(100vh - 125px);

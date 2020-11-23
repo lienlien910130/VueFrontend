@@ -186,14 +186,14 @@ export default {
           { label:'姓名' , prop:'userName',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur'},
           { label:'電話' , prop:'callNumber',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur',pattern:'^[0-9]{10}$',errorMsg:'請輸入10位數',isPattern: true},
           { label:'緊急電話' , prop:'emergencyNumber',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur',pattern:'^[0-9]{10}$',errorMsg:'請輸入10位數',isPattern: true},
-          { label:'備註' , prop:'note',type:'string', mandatory:false}],
+          { label:'備註' , prop:'note',type:'string',format:'textarea', mandatory:false}],
       floorConfig: [
           { label:'戶號' , prop:'houseNumber',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur'},
           { label:'場所名稱' , prop:'placeName',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur'},
           { label:'緊急連絡人' , prop:'name',format:'hide'},
           { label:'電話' , prop:'cellphonenumber',format:'hide'},
           { label:'收容人數' , prop:'capacity',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur'},
-          { label:'備註' , prop:'note',type:'string',mandatory:false},
+          { label:'備註' , prop:'note',type:'string',format:'textarea',mandatory:false},
           { label:'所有人資料' , prop:'linkOwners',format:'ownerselect', mandatory:true, message:'請選擇用戶',trigger:'change'},
           { label:'使用人資料' , prop:'linkUsers',format:'userselect', mandatory:true, message:'請選擇用戶',trigger:'change'} ],
       floorData:[],
@@ -249,7 +249,7 @@ export default {
           { label:'姓名' , prop:'userName',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur'},
           { label:'電話' , prop:'callNumber',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur',pattern:'^[0-9]{10}$',errorMsg:'請輸入10位數',isPattern: true},
           { label:'緊急電話' , prop:'emergencyNumber',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur',pattern:'^[0-9]{10}$',errorMsg:'請輸入10位數',isPattern: true},
-          { label:'備註' , prop:'note',type:'string', mandatory:false}]
+          { label:'備註' , prop:'note',type:'string',format:'textarea', mandatory:false}]
         this.getManagementList()
         await this.gethouseOption()
       }else{
@@ -258,7 +258,7 @@ export default {
           { label:'類別' , prop:'type', format:'contactunitselect', mandatory:true, message:'請選擇類別'},
           { label:'電話' , prop:'contactNumber',type:'string', mandatory:true, message:'請輸入內容',pattern:'^[0-9]{10}$',errorMsg:'請輸入10位數',isPattern: true},
           { label:'地址' , prop:'address',type:'string', mandatory:true, message:'請輸入內容'},
-          { label:'備註' , prop:'note',type:'string', mandatory:false},
+          { label:'備註' , prop:'note',type:'string',format:'textarea', mandatory:false},
           { label:'狀態' , prop:'collaborate', format:'tag', type:'boolean', mandatory:false, message:'請輸入內容',typemessage:'',isPattern: false }
         ]
         this.getcontactunitList()
