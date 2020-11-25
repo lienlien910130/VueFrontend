@@ -34,7 +34,7 @@
             @keyup.enter.native="handleLogin"
           />
           <span class="show-pwd" @click="showPwd" style="padding-right:10px">
-            <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+            <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" style="font-size: 25px;"/>
           </span>
         </el-form-item>
 
@@ -49,11 +49,11 @@
             auto-complete="off"
             style="width:65%"
           />
-          <span class="get-code" style="position:absolute;right:40px;top:5px"> 
+          <span class="get-code" style="position:absolute;right:55px;top:5px"> 
             <s-identify :identifyCode="identifyCode"></s-identify>
           </span>
           <span style="position:absolute;right:20px;top:7px" @click="refreshCode">
-            <i class="el-icon-refresh"/>
+            <i class="el-icon-refresh" style="font-size: 25px;cursor:pointer"/>
           </span>
         </el-form-item>
           
@@ -362,7 +362,6 @@ $light_gray:#eee;
     right: 10px;
     top: 7px;
     font-size: 16px;
-    color: $dark_gray;
     cursor: pointer;
     user-select: none;
   }

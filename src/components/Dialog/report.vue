@@ -21,13 +21,15 @@
                     </el-link>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="12" :lg="9">
-                    <span style="margin-right:10px">
-                    上傳時間：{{ date(item.uploadTime) }}
-                    </span>
-                    <span>
-                    <i class="el-icon-delete del" style="font-size: 25px;margin-top:5px;" 
-                        @click="delfile(item.id)" />
-                    </span> 
+                    <div style="float:right">
+                        <span style="margin-right:10px">
+                        上傳時間：{{ date(item.uploadTime) }}
+                        </span>
+                        <span>
+                        <i class="el-icon-delete del" style="font-size: 25px;margin-top:5px;" 
+                            @click="delfile(item.id)" />
+                        </span> 
+                    </div>
                 </el-col>
             </el-row>
             
@@ -66,7 +68,7 @@ export default {
             if (this.$store.state.app.device === 'mobile') {
                 return "90%"
             } else {
-                return "70%"
+                return "40%"
             }
         }
     },

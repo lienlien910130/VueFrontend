@@ -1,7 +1,7 @@
 <template>
 <div class="setting-container">
         <div class="setting-editor-container">
-            <el-row :gutter="32">
+            <el-row :gutter="20">
                 <el-col :xs="24" :sm="24" :md="24" :lg="8">
                     <ContactUnit
                     v-bind="contactUnitAttrs"
@@ -20,16 +20,16 @@
                     v-on="settingBlockEvent"
                     ></MaintainContent>
                 </el-col>
-                
             </el-row>
 
-            <el-row>
+            <el-row :gutter="20">
                 <el-col :xs="24" :sm="24" :md="24" :lg="8">
                     <Brand
                     v-bind="brandAttrs"
                     v-on="settingBlockEvent"
                     ></Brand>
                 </el-col>
+                
             </el-row>
         </div>
     </div>
@@ -52,6 +52,7 @@ export default {
             contactunitoption:[],
             deviceoption:[],
             maintaincontentoption:[],
+            brandoption:[],
             type:'view',
             current:'',
             temp:[]
@@ -64,7 +65,7 @@ export default {
         ]),
         contactUnitAttrs(){
             return{
-                title:'廠商類別',
+                title:'ContactUnitOptions',
                 option:this.contactunitoption,
                 type:this.type,
                 current:this.current
@@ -72,7 +73,7 @@ export default {
         },
         deviceAttrs(){
             return{
-                title:'設備類別',
+                title:'DeviceOptions',
                 option:this.deviceoption,
                 type:this.type,
                 current:this.current
@@ -80,7 +81,7 @@ export default {
         },
         maintainContentAttrs(){
             return{
-                title:'維護內容',
+                title:'MaintainContentOptions',
                 option:this.maintaincontentoption,
                 type:this.type,
                 current:this.current
@@ -88,8 +89,8 @@ export default {
         },
         brandAttrs(){
             return{
-                title:'廠牌名稱&類型',
-                option:this.maintaincontentoption,
+                title:'BrandOptions',
+                option:this.brandoption,
                 type:this.type,
                 current:this.current
             }
@@ -102,12 +103,16 @@ export default {
     },
     async mounted(){
         await this.getcontactunitOption()
+        await this.getdeviceOption()
+        await this.getmaintaincontentOption()
+        await this.getbrandOption()
     },
     methods:{
         async getcontactunitOption(){ //取得大樓的廠商分類
             this.contactunitoption = []
             var _temp = []
-            await this.$api.setting.apiGetContactUnitOption().then(response => {
+            await this.$api.setting.apiGetOptions('ContactUnitOptions').then(response => {
+                console.log(JSON.stringify(response))
                 _temp = response.result.sort((x,y) => x.id - y.id)
                 this.contactunitoption = _temp.map(v => {
                 this.$set(v, 'textName', v.textName) 
@@ -117,175 +122,179 @@ export default {
             })
         },
         async getdeviceOption(){ //取得大樓的廠商分類
-            
+            this.deviceoption = []
+            var _temp = []
+            await this.$api.setting.apiGetOptions('DeviceOptions').then(response => {
+                console.log(JSON.stringify(response))
+                _temp = response.result.sort((x,y) => x.id - y.id)
+                this.deviceoption = _temp.map(v => {
+                this.$set(v, 'textName', v.textName) 
+                this.$set(v, 'id', v.id) 
+                return v
+                })
+            })
         },
         async getmaintaincontentOption(){ //取得大樓的廠商分類
-            
+            this.maintaincontentoption = []
+            var _temp = []
+            await this.$api.setting.apiGetOptions('MaintainContentOptions').then(response => {
+                console.log(JSON.stringify(response))
+                _temp = response.result.sort((x,y) => x.id - y.id)
+                this.maintaincontentoption = _temp.map(v => {
+                this.$set(v, 'textName', v.textName) 
+                this.$set(v, 'id', v.id) 
+                return v
+                })
+            })
         },
-        async handleButtonOption(index,operation,content){
-            console.log(index,operation,content)
+        async getbrandOption(){ //取得大樓的廠商分類
+            this.brandoption = []
+            var _temp = []
+            await this.$api.setting.apiGetOptions('BrandOptions').then(response => {
+                console.log(JSON.stringify(response))
+                _temp = response.result.sort((x,y) => x.id - y.id)
+                this.brandoption = _temp.map(v => {
+                    this.$set(v, 'value', v.value) 
+                    this.$set(v, 'textName', v.textName) 
+                    this.$set(v, 'id', v.id) 
+                return v
+                })
+            })
+        },
+        async handleButtonOption(index,operation,content,value){
+            console.log(index,operation,content,value)
+            switch(operation){
+                case 'create':
+                    await this.PostData(index,content,value)
+                    break;
+                case 'update':
+                    await this.UpdateData(index,content)
+                    break;
+                case 'delete':
+                    await this.DeleteData(index,content)
+                    break;
+                case 'cancelEdit':
+                    this.type='view'
+                    this.current = ''
+                    await this.Temp(index,false)
+                    break;
+                case 'changeEdit':
+                    this.type='edit'
+                    this.current = content.id
+                    await this.Temp(index,true)
+                    break;
+                case 'checkDelete':
+                    await this.CheckDelete(index,content)
+                    break;
+                default:
+                    break;
+            }
+        },
+        async Temp(index,isSave){
+            if(isSave){
+                switch(index){
+                    case 'ContactUnitOptions':
+                        this.temp = JSON.stringify(this.contactunitoption)
+                        break;
+                    case 'DeviceOptions':
+                        this.temp = JSON.stringify(this.deviceoption)
+                        break;
+                    case 'MaintainContentOptions':
+                        this.temp = JSON.stringify(this.maintaincontentoption)
+                        break;
+                    case 'BrandOptions':
+                        this.temp = JSON.stringify(this.brandoption)
+                        break;
+                }
+            }else{
+                switch(index){
+                    case 'ContactUnitOptions':
+                        this.contactunitoption = JSON.parse(this.temp)
+                        break;
+                    case 'DeviceOptions':
+                        this.deviceoption = JSON.parse(this.temp)
+                        break;
+                    case 'MaintainContentOptions':
+                        this.maintaincontentoption = JSON.parse(this.temp)
+                        break;
+                    case 'BrandOptions':
+                        this.brandoption = JSON.parse(this.temp)
+                        break;
+                }
+            }
+        },
+        async DirectToReloadData(index){
+            console.log(index)
             switch(index){
-                case '廠商類別':
-                    await this.ContactUnitOption(operation,content)
-                    break;
-                case '設備類別':
-                    await this.DeviceOption(operation,content)
-                    break;
-                case '維護內容':
-                    await this.MaintainContentOption(operation,content)
-                    break;    
-            }
-        },
-        async ContactUnitOption(operation,content){
-            if(operation == 'create'){
-                var temp ={
-                    classType :"ContactUnitOptions",
-                    textName:content
-                }
-                await this.$api.setting.apiPostContactUnitOption(temp).then(async(response) =>{
-                    this.$message("新增成功")
+                case 'ContactUnitOptions':
                     await this.getcontactunitOption()
-                })
-            }else if(operation == 'update'){
-                await this.$api.setting.apiPatchContactUnitOption(content).then(response =>{
-                    this.$message("更新成功")
-                    this.type='view'
-                    this.current = ''
-                })
-            }else if(operation == 'delete'){
-                await this.$api.setting.apiDeleteContactUnitOption(content).then(async(response) =>{
-                    this.$message("刪除成功")
-                    await this.getcontactunitOption()
-                })
-            }else if(operation == 'cancel'){
-                this.type='view'
-                this.current = ''
-                this.contactunitoption = JSON.parse(this.temp)
-            }else if(operation == 'changeEdit'){
-                this.type='edit'
-                this.current = content.id
-                this.temp = JSON.stringify(this.contactunitoption)
-            }else if (operation == 'checkDelete'){
-                var array = []
-                await this.$api.building.apiGetContactUnit().then(async(response) => {
-                    this.array = response.result.filter((item, index) => 
-                        item.type == content )
-                    if(this.array.length){ //有資料
-                        this.$message({
-                            showClose: true,
-                            message: '該類別尚有廠商資料，請先刪除廠商資料!',
-                            type: 'warning'
-                        });
-                    }else{
-                        await this.$api.setting.apiDeleteContactUnitOption(content).then(async(response) =>{
-                            this.$message("刪除成功")
-                            await this.getcontactunitOption()
-                        })
-                    }
-                })
-            }
-        },
-        async DeviceOption(operation,content){
-            if(operation == 'create'){
-                var temp ={
-                    classType :"DeviceOptions",
-                    textName:content
-                }
-                await this.$api.setting.apiPostDeviceOption(temp).then(async(response) =>{
-                    this.$message("新增成功")
-                    await this.getdeivceOption()
-                })
-            }else if(operation == 'update'){
-                await this.$api.setting.apiPatchDeviceOption(content).then(response =>{
-                    this.$message("更新成功")
-                    this.type='view'
-                    this.current = ''
-                })
-            }else if(operation == 'delete'){
-                await this.$api.setting.apiDeleteDeviceOption(content).then(async(response) =>{
-                    this.$message("刪除成功")
-                    await this.getdeivceOption()
-                })
-            }else if(operation == 'cancel'){
-                this.type='view'
-                this.current = ''
-                this.contactunitoption = JSON.parse(this.temp)
-            }else if(operation == 'changeEdit'){
-                this.type='edit'
-                this.current = content.id
-                this.temp = JSON.stringify(this.contactunitoption)
-            }else if (operation == 'checkDelete'){
-                var array = []
-                await this.$api.building.apiGetContactUnit().then(async(response) => {
-                    this.array = response.result.filter((item, index) => 
-                        item.type == content )
-                    if(this.array.length){ //有資料
-                        this.$message({
-                            showClose: true,
-                            message: '該類別尚有廠商資料，請先刪除廠商資料!',
-                            type: 'warning'
-                        });
-                    }else{
-                        await this.$api.setting.apiDeleteDeviceOption(content).then(async(response) =>{
-                            this.$message("刪除成功")
-                            await this.getdeivceOption()
-                        })
-                    }
-                })
-            }
-        },
-        async MaintainContentOption(operation,content){
-            if(operation == 'create'){
-                var temp ={
-                    classType :"MaintainContentOptions",
-                    textName:content
-                }
-                await this.$api.setting.apiPostMaintainContentOption(temp).then(async(response) =>{
-                    this.$message("新增成功")
+                    break;
+                case 'DeviceOptions':
+                    await this.getdeviceOption()
+                    break;
+                case 'MaintainContentOptions':
                     await this.getmaintaincontentOption()
-                })
-            }else if(operation == 'update'){
-                await this.$api.setting.apiPatchMaintainContentOption(content).then(response =>{
-                    this.$message("更新成功")
-                    this.type='view'
-                    this.current = ''
-                })
-            }else if(operation == 'delete'){
-                await this.$api.setting.apiDeleteMaintainContentOption(content).then(async(response) =>{
-                    this.$message("刪除成功")
-                    await this.getmaintaincontentOption()
-                })
-            }else if(operation == 'cancel'){
-                this.type='view'
-                this.current = ''
-                this.contactunitoption = JSON.parse(this.temp)
-            }else if(operation == 'changeEdit'){
-                this.type='edit'
-                this.current = content.id
-                this.temp = JSON.stringify(this.contactunitoption)
-            }else if (operation == 'checkDelete'){
-                var array = []
-                await this.$api.building.apiGetContactUnit().then(async(response) => {
-                    this.array = response.result.filter((item, index) => 
-                        item.type == content )
-                    if(this.array.length){ //有資料
-                        this.$message({
-                            showClose: true,
-                            message: '該類別尚有廠商資料，請先刪除廠商資料!',
-                            type: 'warning'
-                        });
-                    }else{
-                        await this.$api.setting.apiDeleteMaintainContentOption(content).then(async(response) =>{
-                            this.$message("刪除成功")
-                            await this.getmaintaincontentOption()
-                        })
-                    }
-                })
+                    break;
+                case 'BrandOptions':
+                    await this.getbrandOption()
+                    break;
+                
             }
         },
-
-
-
+        async PostData(index,content,value){
+            var temp = {
+                    classType:index,
+                    textName:content,
+                    value:value
+            }
+            await this.$api.setting.apiPostOption(temp).then(response =>{
+                    this.$message("新增成功")
+            })
+            await this.DirectToReloadData(index)
+        },
+        async UpdateData(index,content){
+            await this.$api.setting.apiPatchOption(content).then(response =>{
+                this.$message("更新成功")
+                this.type='view'
+                this.current = ''
+            })
+            await this.DirectToReloadData(index)
+        },
+        async DeleteData(index,content){
+            await this.$api.setting.apiDeleteOption(content).then(response =>{
+                this.$message("刪除成功")
+            })
+            await this.DirectToReloadData(index)
+        },
+        async CheckDelete(index,content){
+            switch(index){
+                case 'ContactUnitOptions':
+                    var array = []
+                    await this.$api.building.apiGetContactUnit().then(async(response) => {
+                        this.array = response.result.filter((item, index) => 
+                            item.type == content )
+                        if(this.array.length){ //有資料
+                            this.$message({
+                                showClose: true,
+                                message: '該類別尚有廠商資料，請先刪除廠商資料!',
+                                type: 'warning'
+                            });
+                        }else{
+                            await this.DeleteData(index,content)
+                        }
+                    })
+                    break;
+                case 'DeviceOptions':
+                    await this.DeleteData(index,content)
+                    break;
+                case 'MaintainContentOptions':
+                    
+                    break;
+                case 'BrandOptions':
+                    
+                    break;
+            }
+        }
     }
 }
 </script>

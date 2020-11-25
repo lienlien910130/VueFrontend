@@ -5,24 +5,14 @@ const setting = {
   getUid(){ return store.getters.id},
   getBid(){ return store.getters.buildingid},
 
-  //廠商類別
-  apiGetContactUnitOption(){ return req('get','/basic/'+this.getBid()+'/options/cuos') },
-  apiPostContactUnitOption(data){ return req('post','/basic/'+this.getBid()+'/options',data) },
-  apiPatchContactUnitOption(data){ return req('patch','/basic/options',data) },
-  apiDeleteContactUnitOption(optionId){ return req('delete','/basic/'+optionId+'/options') },
+  //取得所有類別
+  apiGetBuildingOptions(){ return req('get','/settings/'+this.getBid()+'/options/a') },
+  //取得指定的分類選單
+  apiGetOptions(optionName){ return req('get','/settings/'+this.getBid()+'/options/'+optionName) },
+  apiPostOption(data){ return req('post','/settings/'+this.getBid()+'/options ',data) },
+  apiPatchOption(data){ return req('patch','/settings/options',data) },
+  apiDeleteOption(optionId){ return req('delete','/settings/'+optionId+'/options') },
 
-  //設備種類
-  apiGetDeviceOption(){ return req('get','/basic/'+this.getBid()+'/options/cuos') },
-  apiPostDeviceOption(data){ return req('post','/basic/'+this.getBid()+'/options',data) },
-  apiPatchDeviceOption(data){ return req('patch','/basic/options',data) },
-  apiDeleteDeviceOption(optionId){ return req('delete','/basic/'+optionId+'/options') },
-
-  //維護內容
-  apiGetMaintainContentOption(){ return req('get','/basic/'+this.getBid()+'/options/cuos') },
-  apiPostMaintainContentOption(data){ return req('post','/basic/'+this.getBid()+'/options',data) },
-  apiPatchMaintainContentOption(data){ return req('patch','/basic/options',data) },
-  apiDeleteMaintainContentOption(optionId){ return req('delete','/basic/'+optionId+'/options') },
-  
 }
 
 export default setting

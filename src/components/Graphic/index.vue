@@ -74,7 +74,7 @@
                   <el-input-number v-model="strokeWidth" controls-position="right" :min="0" :max="10"></el-input-number>
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" @click="sendObj">sendObj</el-button>
+                  <el-button type="primary" @click="sendObj">廣播</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button type="primary" @click="openimages">開啟圖例</el-button>
@@ -117,7 +117,7 @@ import elDragDialog from '@/directive/el-drag-dialog'
 
 export default {
   name: "App",
-  props:['deleteObject','selectObject','reset','title','saveimg'],
+  props:['deleteObject','selectObject','reset','title','saveimg','deletesuccess'],
   directives: { elDragDialog },
   components:{
     EquipmentType: () => import('../../views/graphic/components/EquipmentType.vue'),
@@ -224,7 +224,8 @@ export default {
           value: '4',
           label: '撒水區'
         }],
-      blocktype: ''
+      blocktype: '',
+       id:0
     }
   },
   watch: {
@@ -242,14 +243,28 @@ export default {
       }
     },
     selectObject(){
-      this.canvas.discardActiveObject()
-      this.canvas.setActiveObject(this.selectObject)
-      this.objectname = this.selectObject.name
-      this.canvas.renderAll()
+      if(this.selectObject !== null){
+        this.canvas.discardActiveObject()
+        this.canvas.setActiveObject(this.selectObject)
+        this.objectname = this.selectObject.name
+        this.canvas.renderAll()
+      }
     },
     deleteObject(){
-      this.canvas.remove(this.deleteObject)
-      this.sendAllobj()
+      if(this.deleteObject !== null){
+        this.canvas.remove(this.deleteObject)
+        this.$emit('subResetDeleteOption')
+        this.canvas.renderAll()
+      }
+    },
+    deletesuccess(){
+      if(this.deletesuccess !== null){
+        var item = this.canvas.getActiveObjects()
+        item.forEach(obj => {
+          this.canvas.remove(obj)
+          this.$emit('subResetDeleteOption')
+        })
+      }
     },
     getWsMsg: function (data, val) {
         console.log('getWsMsg=>'+JSON.stringify(JSON.parse(JSON.parse(JSON.parse(data)).content).target))
@@ -383,8 +398,7 @@ export default {
   },
   mounted() {
     this.canvas = new fabric.Canvas("canvas")
-    console.log(this.json)
-    this.canvas.loadFromJSON(this.json, () => {
+    this.canvas.loadFromJSON(this.$store.state.graphic.json, () => {
       this.canvas.renderAll()
     })
     //this.$refs.canvasdiv.clientWidth
@@ -408,35 +422,13 @@ export default {
     this.canvas.on("mouse:down", this.mousedown)
     this.canvas.on("mouse:move", this.mousemove)
     this.canvas.on("mouse:up", this.mouseup)
+    this.canvas.on("selection:created", this.selectioncreated)
+    this.canvas.on("selection:updated", this.selectionupdated)
+    this.canvas.on("selection:cleared", this.selectioncleared)
     //this.canvas.on("mouse:wheel",this.mousewheel)
     this.canvas.on("object:moving",(e) => {
         this.canvas.selection = false
         //this.objectaction(e,'moving')
-    })
-    this.canvas.on('selection:created', (e) => {
-      this.objectname = e.target.name
-      var item = this.canvas.getActiveObject()
-      item.set({borderColor:'#fbb802',
-      cornerColor:'#fbb802',cornerSize: 18,transparentCorners: false})
-    })
-    this.canvas.on('selection:updated', (e) => {
-      this.objectname = e.target.name
-      // this.opacity = parseInt(e.selected.opacity) *100
-      // switch(e.selected.type){
-      //   case 'path':
-
-      //     break;
-      //   case 'polygon':
-      //     break;
-      //   case 'textbox':
-      //     break;
-      //   case 'image':
-      //     break;
-      // }
-
-    })
-    this.canvas.on('selection:cleared', (e) => {
-      this.objectname = ""
     })
     // this.canvas.on('object:modified', (e) => {
     //   this.setAnimate(e.target)
@@ -480,10 +472,23 @@ export default {
     
   },
   methods: {
+    selectioncreated(e){
+      this.objectname = e.target.name
+      var item = this.canvas.getActiveObject()
+      item.set({borderColor:'#fbb802',
+      cornerColor:'#fbb802',cornerSize: 18,transparentCorners: false})
+    },
+    selectionupdated(e){
+       this.objectname = e.target.name
+    },
+    selectioncleared(e){
+      this.objectname = ""
+      this.$emit('subResetSelectOption')
+    },
     drawTypeChange(e) { //切換繪圖類別
       if(this.drawType == 'text' && this.textbox !== null){
         this.textbox.exitEditing() //關閉文字框編輯
-        this.deleteblankTextibj()
+        this.deleteblankTextobj() 
         this.textbox = null
       }
       if(e == "polygon"){
@@ -548,7 +553,6 @@ export default {
       this.mouseFrom.x = this.getX(e)
       this.mouseFrom.y = this.getY(e)
       this.doDrawing = true
-      console.log(this.mouseFrom)
       if(this.canvas.getActiveObject() == null && this.movingImage !== null && this.drawType == ""){ //可以點選圖片新增
         this.drop(e)
       }else if(e.e.altKey && this.drawType == ""){ //移動畫布
@@ -719,6 +723,7 @@ export default {
                   this.textbox.enterEditing()
                   this.textbox.hiddenTextarea.focus()
                   this.addCustomize(this.textbox,this.objectname)
+                 
                 break
                 default:
                 break
@@ -856,19 +861,19 @@ export default {
     deleteObj() { //刪除物件
       var item = this.canvas.getActiveObjects()
       item.forEach(obj => {
-        this.canvas.remove(obj)
+        //this.canvas.remove(obj)
+        this.$emit('subObjectDeleteOption',obj)
       })
       //this.objectaction(item,'removed')
-      this.sendAllobj()
     },
-    deleteblankTextibj(){ //刪除空白文字的物件
+    deleteblankTextobj(){ //刪除空白文字的物件
       let _temp = this.canvas.getObjects().filter((item, index) =>
         item.text == "" && item.type == "textbox"
       )
       _temp.forEach(item => {
         this.canvas.remove(item)
+        this.$emit('subObjectDeleteOption',item)
       })
-      this.sendAllobj()
     },
     addCustomize(canvasObject,name){ //新增客製化元素
         canvasObject.toObject = (function (toObject) {
@@ -880,7 +885,7 @@ export default {
                 })
             }
         })(canvasObject.toObject)
-        canvasObject.set("id",this.canvas.getObjects().indexOf(canvasObject))
+        canvasObject.set("id",this.id++)
         canvasObject.set("name",name) //+'_'+ (new Date()).getTime()
         canvasObject.set("blocktype",this.blocktype == '' ? '' : this.blocktype)
     },

@@ -2,30 +2,55 @@
     <div class="setting-wrapper">
             <el-card class="box-card">
                 <div slot="header" class="clearfix">
-                    <span>{{title}}</span>
-                    <el-input style="float: right; padding: 10px 0" v-model="input" placeholder="請輸入內容"></el-input>
-                    <el-button style="float: right; padding: 3px 0" type="text" 
+                    <span>{{ titleToch }}</span>
+                    
+                    <div style="margin-top:10px">
+                        <el-input :style="{float: 'left', margin: '5px',width:inputstyle}" v-model="input" placeholder="請輸入名稱"></el-input>
+                        <el-input 
+                        v-if="title =='BrandOptions'"
+                        :style="{float: 'left', margin: '5px',width:inputstyle}" v-model="value" placeholder="請輸入型號"></el-input>
+                        <el-button style="float: right;" type="primary" 
                         @click="onSubmit">新增</el-button>
-                </div>
-                <div v-for="(item,index) in option" :key="index" class="text item">
-                    <div v-if="type == 'edit' && current == item.id" >
-                        <span >
-                            {{ index+1 }}.
-                        </span>
-                        <el-input v-model="item.textName" style="width:80%"></el-input>
-                        <i class="el-icon-circle-close" style="float: right;font-size: 30px;margin-top:5px" @click="onCancel()"></i>
-                        <i class="el-icon-circle-check" style="float: right;font-size: 30px;margin-top:5px" @click="onEdit(item)"></i>
-                    </div>
-                    <div v-else >
-                        <span >
-                            {{ index+1 }}.{{ item.textName }}
-                        </span>
-                        <span v-if="current == ''">
-                            <i class="el-icon-delete" style="float: right;font-size: 25px;" @click="checkDelete(item.id)"></i>
-                            <i class="el-icon-edit" style="float: right;font-size: 25px;" @click="changeEdit(item)"></i>
-                        </span>
                     </div>
                 </div>
+                <div class="settingbody">
+                    <div v-for="(item,index) in option" :key="index" class="text" :style="itemtext">
+                        <div v-if="type == 'edit' && current == item.id" >
+                            <span >
+                                名稱：
+                            </span>
+                            <el-input v-model="item.textName" style="width:60%"></el-input>
+                            <span v-if="title =='BrandOptions'">
+                                <br>
+                                型號：
+                            </span>
+                            <el-input v-if="title =='BrandOptions'" v-model="item.value" style="width:60%"></el-input>
+                            <i class="el-icon-circle-close" style="float: right;font-size: 30px;margin-top:5px" @click="onCancel()"></i>
+                            <i class="el-icon-circle-check" style="float: right;font-size: 30px;margin-top:5px" @click="onEdit(item)"></i>
+                        </div>
+                        <div v-else >
+                            <div :style="{display:'inline-block',width:labelstyle}">
+                                 <span>
+                                    {{ index+1 }}. 
+                                    <span v-if="title =='BrandOptions'">
+                                        廠牌
+                                    </span> 
+                                    {{ item.textName }} 
+                                </span>
+                            </div>
+                            <div v-if="title =='BrandOptions'" style="display:inline-block;width:30%">
+                                <span >
+                                    型號：{{ item.value }} 
+                                </span>
+                            </div>
+                            <span v-if="current == ''">
+                                <i class="el-icon-delete" style="float: right;font-size: 25px;" @click="checkDelete(item.id)"></i>
+                                <i class="el-icon-edit" style="float: right;font-size: 25px;" @click="changeEdit(item)"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
             </el-card>
     </div>
 </template>
@@ -34,7 +59,50 @@ export default {
     props:['title','option','type','current'],
     data(){
         return{
-            input:''
+            input:'',
+            value:''
+        }
+    },
+    computed:{
+        titleToch(){
+            switch(this.title){
+                case 'ContactUnitOptions':
+                    return '廠商類別'
+                    break;
+                case 'DeviceOptions':
+                    return '設備種類'
+                    break;
+                case 'MaintainContentOptions':
+                    return '維護內容'
+                    break;
+                case 'BrandOptions':
+                    return '廠牌名稱&型號'
+                    break;
+            }
+        },
+        inputstyle(){
+            if (this.$store.state.app.device === 'mobile') {
+                return '60%'
+            } else {
+                return '80%'
+            }
+        },
+        labelstyle(){
+            if (this.$store.state.app.device === 'mobile') {
+                return '80%'
+            } else {
+                if(this.title == 'BrandOptions'){
+                    return '40%'
+                }
+                return '60%'
+            }
+        },
+        itemtext(){
+            if (this.$store.state.app.device === 'mobile') {
+                return 'font-size:14px'
+            } else {
+                return 'font-size:18px'
+            }
         }
     },
     methods:{
@@ -45,11 +113,11 @@ export default {
                     type: 'warning'
                 })
             }else{
-                this.$emit('subButton', this.title, 'create' , this.input)
+                this.$emit('subButton', this.title, 'create' , this.input,this.value)
             }
         },
         onCancel(){
-            this.$emit('subButton', this.title, 'cancel' , '')
+            this.$emit('subButton', this.title, 'cancelEdit' , '')
         },
         onEdit(item){
             this.$emit('subButton', this.title, 'update' , item)
@@ -58,23 +126,40 @@ export default {
             this.$emit('subButton', this.title, 'changeEdit' , item)
         },
         checkDelete(id){
-            this.$emit('subButton', this.title, 'checkDelete' , id)
+             this.$confirm('是否確定刪除該筆資料?', '提示', {
+                confirmButtonText: '確定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.$emit('subButton', this.title, 'checkDelete' , id)
+            })
         },
     }
 }
 </script>
 <style lang="scss" scoped>
-.text {
-    font-size: 18px;
+.setting-wrapper{
+    margin: 10px;
+    
+    .text {
     line-height: 25px;
-  }
-
-  .item {
     margin-bottom: 10px;
   }
-i{
-    cursor: pointer;
+  
+  .settingbody{
+    height: 200px;
+    overflow: auto;
+  }
+   
 }
+
+
+  
+
+    i{
+        cursor: pointer;
+    }
+
   .clearfix:before,
   .clearfix:after {
     display: table;
@@ -84,7 +169,4 @@ i{
     clear: both
   }
 
-  .box-card {
-    width: 480px;
-  }
 </style>

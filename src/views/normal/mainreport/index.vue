@@ -211,6 +211,7 @@ export default {
           lackconfig:this.lackconfig,
           itemkey:this.itemkey,
           title:'ReportInspectio',
+          lackfileid:this.lackfileid
         }
       },
       lackEvent(){
@@ -297,18 +298,12 @@ export default {
         })
         await this.getinspectionofID(this.inspectionid)
         if(this.lackfileid !== 0){
-          this.$confirm('缺失內容檔案已上傳過，重新上傳會將舊有資料全部刪除，請問是否確認上傳?', '提示', {
-            confirmButtonText: '確定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(async() => {
-            await this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(async(response) =>{
+          await this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(async(response) =>{
                 await this.settinglackfile(response.result[0].id,true)
             }).catch(error =>{
                 console.log('error=>'+error)
             })
             await this.getinspectionlack(this.inspectionid)
-          })
         }else{
           await this.$api.files.apiPostInspectionFiles(this.inspectionid,formData).then(async(response) =>{
               await this.settinglackfile(response.result[0].id,false)
@@ -366,6 +361,7 @@ export default {
       this.inspectionid = id
       this.tableData = []
       this.list = []
+      await this.getinspectionofID(this.inspectionid)
       await this.$api.report.apiGetInspectionLack(id).then(response =>{
         this.itemkey = Math.random()
         this.tableData = response.result.sort((x,y) => x.id - y.id)

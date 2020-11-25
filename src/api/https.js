@@ -63,7 +63,7 @@ service.interceptors.response.use(
   error => {
       if(error) {
           //成功發出請求且收到resp，但有error
-          //errorHandle(error.response.status,error.response.data.error)
+          errorHandle(error.response.status,error.response.data.error)
           return Promise.reject(error)
       } else {
         if(!window.navigator.onLine) {

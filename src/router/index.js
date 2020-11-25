@@ -203,7 +203,27 @@ export const constantRoutes = [
       }
     ]
   },
-
+  {
+    path: '/authority',
+    component: Layout,
+    redirect: '/authority/roles',
+    name: 'Roles',
+    meta: { title: '權限設定', icon: 'icon', needLogin: true  },
+    children: [
+      {
+        path: 'roles',
+        name: 'Roles',
+        component: () => import('@/views/authority/roles/index.vue'),
+        meta: { title: '角色管理', icon: 'icon', needLogin: true  }
+      },
+      {
+        path: 'users',
+        name: 'Users',
+        component: () => import('@/views/authority/users/index.vue'),
+        meta: { title: '用戶管理', icon: 'icon', needLogin: true  }
+      }
+    ]
+  },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

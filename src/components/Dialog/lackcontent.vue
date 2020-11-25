@@ -10,7 +10,7 @@
         
         <Upload
         v-if="title=='ReportInspectio'"
-        v-bind="multiple"
+        v-bind="uploadAttrs"
         v-on="uploadEvent"
         ></Upload>
         
@@ -72,11 +72,17 @@ export default {
         Upload: () => import('@/components/Upload/index.vue'),
         InsertLack: () => import('@/components/Dialog/insertlack.vue')
     },
-    props:['lackVisible','tableData','lackconfig','itemkey','title'],
+    props:['lackVisible','tableData','lackconfig','itemkey','title','lackfileid'],
     computed:{
         stringToBr(){
             return function (a) {
                 return a.replace(/{ln}/g, "<br/>");
+            }
+        },
+        uploadAttrs(){
+            return {
+                limit: this.limit,
+                lackfileid:this.lackfileid
             }
         },
         uploadEvent(){
@@ -108,7 +114,7 @@ export default {
     },
     data() {
         return {
-            multiple:false,
+            limit:1,
             insertvisible:false,
             dialogStatus:'',
             lackData:[]

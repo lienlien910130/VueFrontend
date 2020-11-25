@@ -299,7 +299,7 @@ export default {
     },
     getcontactunitOption(){ //取得大樓的廠商分類
       this.options = []
-      this.$api.building.apiGetContactUnitOption().then(response => {
+      this.$api.setting.apiGetOptions('ContactUnitOptions').then(response => {
         response.result.forEach(item => {
               let _array = { 
                   id : item.id, 

@@ -154,7 +154,7 @@
                         </el-date-picker>
                     </span>
 
-                    <el-select
+                    <!-- <el-select
                     v-else-if="item.format =='manageselect' "
                     filterable 
                     v-model="temp[item.prop]"
@@ -163,13 +163,53 @@
                         v-for="(item,index) in selectData"
                         :key="index"
                         :label="item.label"
-                        :value="item.value"
+                        :value="item.id"
                         >
                         </el-option>        
-                    </el-select>
-                    
+                    </el-select> -->
                     <el-select
-                    v-else-if="item.format =='userselect' || item.format =='ownerselect' || item.format =='contactunitselect' "
+                    v-else-if="item.format =='reasonselect' "
+                    v-model="temp[item.prop]"
+                    >
+                        <el-option
+                        v-for="(item,index) in maintaincontentoption"
+                        :key="index"
+                        :label="item.label"
+                        :value="item.id"
+                        >
+                        </el-option>  
+                    </el-select>
+
+                    <el-select
+                    v-else-if="item.format =='deviceselect' "
+                    v-model="temp[item.prop]"
+                    >
+                        <el-option
+                        v-for="(item,index) in devicelist"
+                        :key="index"
+                        :label="item.label"
+                        :value="item.id"
+                        >
+                        </el-option>  
+                    </el-select>
+
+                    <el-select
+                    v-else-if="item.format =='processselect' "
+                    v-model="temp[item.prop]"
+                    >
+                        <el-option
+                        v-for="(item,index) in processdata"
+                        :key="index"
+                        :label="item.label"
+                        :value="item.id"
+                        >
+                        </el-option>  
+                    </el-select>
+
+                    <el-select
+                    v-else-if="item.format =='manageselect' || 
+                    item.format =='userselect' || item.format =='ownerselect' 
+                    || item.format =='contactunitselect' "
                     v-model="temp[item.prop]"
                     >
                         <el-option
@@ -287,7 +327,10 @@ export default {
         isChoose:{
             type: Boolean
         },
-        originFiles:{}
+        originFiles:{},
+        maintaincontentoption:{},
+        devicelist:{},
+        processdata:{}
     },
     computed: {
         label() {
@@ -301,7 +344,7 @@ export default {
             if (this.$store.state.app.device === 'mobile') {
                 return "90%"
             } else {
-                return "700px"
+                return "30%"
             }
         },
         labelstyle(){
@@ -554,5 +597,13 @@ export default {
   max-height: 200px;
   overflow: auto;
 }
-
+.el-select{
+    width: 100%;
+}
+.el-date-editor.el-input{
+    width: 100%;
+}
+.el-range-editor{
+    width: 100%;
+}
 </style>

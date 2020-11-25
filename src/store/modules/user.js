@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '../../api/user'
+import { login, getInfo } from '../../api/user'
 import { getToken, setToken, removeToken, 
   setID, getID, removeID, removeVersion,
   removeBuildingid } from '../../utils/auth'

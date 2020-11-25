@@ -34,59 +34,31 @@
         <el-button type="primary" @click="resetcanvas">復原位置</el-button>
         <el-button type="primary" @click="savetoimage">匯出圖片</el-button>
 
-        <div class="block-wrapper">
-            <component 
-            v-bind:is="tabView" 
-            v-bind="graphicAttrs" 
-            v-on="graphicEvent"
-          ></component>  
-        </div>
-        
 
-        <!-- <div
-        v-if="edit"
-        >
-        <el-row :gutter="32">
-            <el-col :xs="24" :sm="24" :md="24" :lg="6">
-              <div class="block-wrapper">
-                <el-collapse v-model="activeNames" @change="handleChange">
-                  <el-collapse-item title="圖層" name="1">
-                    <ObjectList
-                    v-bind="objectListAttrs"
-                    v-on="objectListEvent"
-                    ></ObjectList>
-                  </el-collapse-item>
-                  <el-collapse-item title="圖例" name="2">
-                    <EquipmentType
-                      v-on="equipmentTypeEvent">
-                    </EquipmentType>
-                  </el-collapse-item>
-                </el-collapse>
+         <div class="block-wrapper">
+          <el-row>
+             <el-col :xs="24" :sm="24" :md="24" :lg="24">
+                
+                    <Graphic
+                        v-bind="graphicAttrs"
+                        v-on="graphicEvent"></Graphic>
+               
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :xs="24" :sm="24" :md="24" :lg="8">
+              <div class="collapse-wrapper" v-if="type =='edit'">
+                  <ObjectList
+                  
+                      v-bind="objectListAttrs"
+                      v-on="objectListEvent"
+                  ></ObjectList>
               </div>
             </el-col>
-            <el-col :xs="24" :sm="24" :md="24" :lg="18">
-                <div class="block-wrapper">
-                    <Graphic
-                    v-bind="graphicAttrs_edit"
-                    v-on="graphicEvent"></Graphic>
-                </div>
-            </el-col>
-        </el-row>
-        </div>
-        <div
-        v-else>
-          <el-row :gutter="32">
-          <el-col :xs="24" :sm="24" :md="24" :lg="24">
-            <div class="block-wrapper">
-              <Graphic
-                v-bind="graphicAttrs_view"
-                v-on="graphicEvent"></Graphic>
-            </div>
-          </el-col>
-        </el-row>
-        </div> -->
+          </el-row>
+         </div>
         
-           
+
       </div>
        
   </div>
@@ -98,8 +70,8 @@ import { mapGetters } from 'vuex'
 export default {
     components:{
       FloorSelect: () => import('@/components/Select/index.vue'),
-      GraphicView: () => import('./view.vue'),
-      GraphicEdit: () => import('./edit.vue'),
+      ObjectList: () => import('./components/ObjectList'),
+      Graphic: () => import('@/components/Graphic/index.vue'),
     },
     computed:{
       ...mapGetters([
@@ -119,29 +91,56 @@ export default {
       },
       graphicAttrs(){
         return{
-          type:this.type,
-          canvasreset:this.reset,
-          save:this.save,
-          canjson:this.canjson
-        }
+                movingImage:this.movingImage,
+                imgDragOffset:this.imgDragOffset,
+                deleteObject:this.deleteObject,
+                selectObject:this.selectObject,
+                deletesuccess:this.deletesuccess,
+                reset:this.reset,
+                saveimg:this.save,
+                title:this.type
+            }
       },
       graphicEvent(){
         return{
-          subResetOption: this.handleResetOption,
-          subSaveOption: this.handleSaveOption,
-          subJsonOption: this.handleJsonOption,
-        }
-      }
+              subObjectListOption: this.handleGraphicObjListOption,
+              subResetOption: this.handleGraphicResetOption,
+              subSaveOption: this.handleGraphicSaveOption,
+              subJsonOption: this.handleGraphicJsonOption,
+              subResetSelectOption: this.handleResetSelectOption,
+              subResetDeleteOption: this.handleResetDeleteOption,
+              subObjectDeleteOption:this.handleGraphicObjDeleteOption
+          }
+      },
+      objectListAttrs(){
+            return {
+              list: this.objectlist,
+              objectDelete:this.objectDelete
+            }
+        },
+      objectListEvent(){
+            return {
+              subSelectOption: this.handleObjSelectOption,
+              subDeleteReturnOption: this.handleDeleteReturnOption,
+            }
+      },
     },
     data() {
         return {
           selectData:[],
           visible:false,
           reset:false,
-          tabView:'GraphicView',
           type:'view',
           save:false,
-          canjson:''
+          canjson:'',
+          objectlist:[],
+          deleteObject:null,
+          selectObject:null,
+          objectDelete:null,
+          deletesuccess:null,
+          movingImage:null,
+          imgDragOffset:{offsetX: 0,offsetY: 0},
+          addobject:null
         }
     },
     mounted(){
@@ -163,19 +162,38 @@ export default {
       handleSelectOption(){
 
       },
-      handleResetOption(){
+      handleResetSelectOption(){
+        this.selectObject = null
+      },
+      handleResetDeleteOption(){
+        this.deleteObject = null
+        this.deletesuccess = null
+      },
+      handleObjSelectOption(index,val){
+          if(index == "del"){
+            this.deleteObject = val
+          }else{
+            this.selectObject = val
+          }
+      },
+      handleDeleteReturnOption(){
+        this.deletesuccess = true
+      },
+      handleGraphicObjListOption(val){
+        this.objectlist = val
+      },
+      handleGraphicObjDeleteOption(val){
+        this.objectDelete = val
+      },
+      handleGraphicResetOption(){
         this.reset = false
       },
-      handleSaveOption(){
+      handleGraphicSaveOption(){
         this.save = false
       },
-      handleJsonOption(val){
+      handleGraphicJsonOption(val){
+        console.log('store=>'+JSON.stringify(this.$store.state.graphic.json))
         this.canjson = val
-        if(this.type == 'view'){
-          this.tabView = 'GraphicView'
-        }else{
-          this.tabView = 'GraphicEdit'
-        }
       },
       resetcanvas(){
         this.reset = true
@@ -185,11 +203,6 @@ export default {
       },
       changetype(type){
         this.type = type
-        // if(type == 'view'){
-        //   this.tabView = 'GraphicView'
-        // }else{
-        //   this.tabView = 'GraphicEdit'
-        // }
       },
       
     }
@@ -211,14 +224,22 @@ export default {
     background: #fff;
     padding: 0px 16px 15px;
     margin-bottom: 32px;
-    height: 850px;
-    overflow-x:hidden;
-    overflow-y:auto;
+    
   }
 
 }
 i{
   cursor: pointer;
+}
+.collapse-wrapper{
+    background: snow;
+    padding: 0px 16px 15px;
+    margin-bottom: 32px;
+    margin-top: 32px;
+    margin-left: 32px;
+    height: 400px;
+    overflow-x:hidden;
+    overflow-y:auto;
 }
 </style>
 

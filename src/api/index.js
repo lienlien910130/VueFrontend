@@ -3,7 +3,7 @@
  */
 
 // 文章模块接口
-import building from '@/api/build';
+import building from '@/api/building';
 import files from '@/api/files';
 import report from '@/api/report';
 import setting from '@/api/setting';
