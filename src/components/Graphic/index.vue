@@ -212,16 +212,16 @@ export default {
       imgDragOffset:{offsetX: 0,offsetY: 0},
 
       options: [{
-          value: '1',
+          value: '警戒區',
           label: '警戒區'
         }, {
-          value: '2',
+          value: '防護區',
           label: '防護區'
         }, {
-          value: '3',
+          value: '放射區',
           label: '放射區'
         }, {
-          value: '4',
+          value: '撒水區',
           label: '撒水區'
         }],
       blocktype: '',
@@ -259,11 +259,10 @@ export default {
     },
     deletesuccess(){
       if(this.deletesuccess !== null){
-        var item = this.canvas.getActiveObjects()
-        item.forEach(obj => {
+         this.deletesuccess.forEach(obj => {
           this.canvas.remove(obj)
-          this.$emit('subResetDeleteOption')
         })
+        this.$emit('subResetDeleteOption')
       }
     },
     getWsMsg: function (data, val) {
@@ -422,8 +421,8 @@ export default {
     this.canvas.on("mouse:down", this.mousedown)
     this.canvas.on("mouse:move", this.mousemove)
     this.canvas.on("mouse:up", this.mouseup)
-    this.canvas.on("selection:created", this.selectioncreated)
-    this.canvas.on("selection:updated", this.selectionupdated)
+    this.canvas.on("selection:created", this.selectioncreatedandupdated)
+    this.canvas.on("selection:updated", this.selectioncreatedandupdated)
     this.canvas.on("selection:cleared", this.selectioncleared)
     //this.canvas.on("mouse:wheel",this.mousewheel)
     this.canvas.on("object:moving",(e) => {
@@ -437,9 +436,9 @@ export default {
     // ctrl+c ctrl+v ctrl+z
     // alt+q alt+w
     // alt+s alt+t alt+r alr+a
-    document.onkeydown = e => {
+    document.onkeydown = async(e) => {
       if (e.keyCode == 46) {
-        this.deleteObj()
+        await this.deleteObj()
       }
       if (e.keyCode == 45) {
         this.save()
@@ -450,17 +449,20 @@ export default {
       if(e.keyCode == 86 && e.ctrlKey){
         this.paste()
       }
+      if(e.keyCode == 90 && e.ctrlKey){
+        
+      }
       if(e.keyCode == 83 && e.altKey){
-        this.drawTypeChange('')
+        await this.drawTypeChange('')
       }
       if(e.keyCode == 84 && e.altKey){
-        this.drawTypeChange('text')
+        await this.drawTypeChange('text')
       }
       if(e.keyCode == 82 && e.altKey){
-        this.drawTypeChange('rectangle')
+        await this.drawTypeChange('rectangle')
       }
       if(e.keyCode == 65 && e.altKey){
-        this.drawTypeChange('polygon')
+        await this.drawTypeChange('polygon')
       }
       if(e.keyCode == 81 && e.altKey){
         this.mousewheel(e)
@@ -472,23 +474,27 @@ export default {
     
   },
   methods: {
-    selectioncreated(e){
+    selectioncreatedandupdated(e){
+      console.log('selectioncreatedandupdated')
       this.objectname = e.target.name
-      var item = this.canvas.getActiveObject()
-      item.set({borderColor:'#fbb802',
-      cornerColor:'#fbb802',cornerSize: 18,transparentCorners: false})
-    },
-    selectionupdated(e){
-       this.objectname = e.target.name
+      var items = this.canvas.getActiveObjects()
+      items.forEach(item=>{
+        item.set({borderColor:'#fbb802',
+        cornerColor:'#fbb802',cornerSize: 18,transparentCorners: false})
+        
+      })
+      this.$emit('subObjectSelectOption',items)
     },
     selectioncleared(e){
+      console.log('selectioncleared')
       this.objectname = ""
+      this.$emit('subObjectSelectOption',null)
       this.$emit('subResetSelectOption')
     },
-    drawTypeChange(e) { //切換繪圖類別
+    async drawTypeChange(e) { //切換繪圖類別
       if(this.drawType == 'text' && this.textbox !== null){
         this.textbox.exitEditing() //關閉文字框編輯
-        this.deleteblankTextobj() 
+        await this.deleteblankTextobj() 
         this.textbox = null
       }
       if(e == "polygon"){
@@ -858,22 +864,15 @@ export default {
       this.doDrawing = false
       this.drawType = null
     },
-    deleteObj() { //刪除物件
+    async deleteObj() { //刪除物件
       var item = this.canvas.getActiveObjects()
-      item.forEach(obj => {
-        //this.canvas.remove(obj)
-        this.$emit('subObjectDeleteOption',obj)
-      })
-      //this.objectaction(item,'removed')
+      await this.$emit('subObjectDeleteOption',item)
     },
-    deleteblankTextobj(){ //刪除空白文字的物件
+    async deleteblankTextobj(){ //刪除空白文字的物件
       let _temp = this.canvas.getObjects().filter((item, index) =>
         item.text == "" && item.type == "textbox"
       )
-      _temp.forEach(item => {
-        this.canvas.remove(item)
-        this.$emit('subObjectDeleteOption',item)
-      })
+      await this.$emit('subObjectDeleteOption',_temp)
     },
     addCustomize(canvasObject,name){ //新增客製化元素
         canvasObject.toObject = (function (toObject) {

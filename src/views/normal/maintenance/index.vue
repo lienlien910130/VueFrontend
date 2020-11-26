@@ -143,7 +143,7 @@ export default {
     },
     async mounted() {
       await this.getbuInfo()
-      await this.getcontactunitOption()
+      await this.getcontactunitList()
       await this.getmaintaincontentOption()
       //await this.getdevice()
     },
@@ -159,19 +159,20 @@ export default {
                 this.form = array
             })
         },
-        async getcontactunitOption(){
+        async getcontactunitList(){
             this.selectData = []
             var _temp = []
-            await this.$api.setting.apiGetOptions('ContactUnitOptions').then(response => {
-                console.log(JSON.stringify(response))
-                _temp = response.result.sort((x,y) => x.id - y.id)
-                this.selectData = _temp.map(v => {
+            this.$api.building.apiGetContactUnit().then(response => {
+              console.log(JSON.stringify(response))
+              _temp = response.result.sort((x,y) => x.id - y.id)
+               this.selectData = _temp.map(v => {
                     this.$set(v, 'value', v.id) 
-                    this.$set(v, 'label', v.textName) 
+                    this.$set(v, 'label', v.name) 
                     this.$set(v, 'id', v.id) 
                     return v
-                })
+              })
             })
+            
         },
         async getmaintaincontentOption(){ 
             this.maintaincontentoption = []

@@ -112,7 +112,7 @@ export default {
           this.count = this.viewlist.length
         }
         this.loading = false;
-      }, 2000);
+      }, 2000)
     },
     settypelist(val) {
       this.typelist = val

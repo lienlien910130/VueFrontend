@@ -20,11 +20,12 @@
             <p class="tipck">5.【Alt】+【T】：文字</p>
             <p class="tipck">6.【Alt】+【R】：矩形</p>
             <p class="tipck">7.【Alt】+【A】：多邊形</p>
-            <p class="tipck">8.【Ctrl】+【C】：複製</p>
-            <p class="tipck">9.【Ctrl】+【V】：貼上</p>
-            <p class="tipck">10.【Ctrl】+【Z】：返回上一步</p>
-            <p class="tipck">11.【Delete】：刪除</p>
-            <p class="tipck">12.【Insert】：下載圖片</p>
+            <p class="tipck">8.【Alt】+【Z】：取消拖曳圖片</p>
+            <p class="tipck">9.【Ctrl】+【C】：複製</p>
+            <p class="tipck">10.【Ctrl】+【V】：貼上</p>
+            <p class="tipck">11.【Ctrl】+【Z】：返回上一步</p>
+            <p class="tipck">12.【Delete】：刪除</p>
+            <p class="tipck">13.【Insert】：下載圖片</p>
             <i class="el-icon-warning" slot="reference" @click="visible = !visible"
             style="font-size:40px" type="button"/>
         </el-popover>
@@ -109,13 +110,15 @@ export default {
               subJsonOption: this.handleGraphicJsonOption,
               subResetSelectOption: this.handleResetSelectOption,
               subResetDeleteOption: this.handleResetDeleteOption,
-              subObjectDeleteOption:this.handleGraphicObjDeleteOption
+              subObjectDeleteOption:this.handleGraphicObjDeleteOption,
+              subObjectSelectOption:this.handleGraphicObjSelectOption
           }
       },
       objectListAttrs(){
             return {
               list: this.objectlist,
-              objectDelete:this.objectDelete
+              objectDelete:this.objectDelete,
+              objectSelect:this.objectSelect
             }
         },
       objectListEvent(){
@@ -164,10 +167,12 @@ export default {
       },
       handleResetSelectOption(){
         this.selectObject = null
+        this.objectSelect = null
       },
       handleResetDeleteOption(){
         this.deleteObject = null
         this.deletesuccess = null
+        this.objectDelete = null
       },
       handleObjSelectOption(index,val){
           if(index == "del"){
@@ -176,14 +181,17 @@ export default {
             this.selectObject = val
           }
       },
-      handleDeleteReturnOption(){
-        this.deletesuccess = true
+      handleDeleteReturnOption(val){
+        this.deletesuccess = val
       },
       handleGraphicObjListOption(val){
         this.objectlist = val
       },
       handleGraphicObjDeleteOption(val){
         this.objectDelete = val
+      },
+      handleGraphicObjSelectOption(val){
+        this.objectSelect = val
       },
       handleGraphicResetOption(){
         this.reset = false

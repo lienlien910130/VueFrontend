@@ -99,10 +99,16 @@ export default {
     },
     mounted(){
         this.temp = Object.assign({}, this.viewlist)
+        document.onkeydown = async(e) => {
+            if (e.keyCode == 90 && e.altKey) {
+                this.select = null
+                this.$emit('subDragOption',null)
+            }
+        }
     },
     methods:{
         handleChange(type){
-            this.type = type;
+            this.type = type
         },
         handleImage(item,e){
             if(e.target.localName == 'img'){
