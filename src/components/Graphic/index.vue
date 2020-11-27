@@ -110,6 +110,7 @@
 
   </div>
 </template>
+
 <script>
 
 import { mapGetters } from 'vuex'
@@ -1044,12 +1045,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.el-alert{
-  margin-bottom: 5px;
-}
-.el-alert__title {
-font-size:20px
-}
+
 .form-inline{
   margin-top: 5px;
 }
@@ -1061,12 +1057,11 @@ font-size:20px
     width: 1550px;
     margin: auto;
     text-align: center;
-    
+    margin-top: 10px;
   }
 
   canvas {  
     border: 1px dashed black;
-    margin-top: 10px;
   }
 
   .row{

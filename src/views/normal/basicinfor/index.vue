@@ -218,8 +218,10 @@ export default {
     }
   },
   watch: {
-    buildingid: function(val){
-      this.init() 
+    buildingid:async function(val){
+      this.activeName = 'MC'
+      await this.gethouseOption()
+      await this.getManagementList()
     },
     async activeFloor(val){ 
       await this.getfloorimageid()
@@ -233,14 +235,11 @@ export default {
     }
   },
   async mounted() {
-    await this.init()
+    this.activeName = 'MC'
+    await this.gethouseOption()
+    await this.getManagementList()
   },
   methods: { 
-    async init(){
-      this.activeName = 'MC'
-      await this.gethouseOption()
-      await this.getManagementList()
-    },
     async handleClick(tab, event){
       if(tab.index == 0){
          this.tableConfig= [
@@ -250,8 +249,8 @@ export default {
           { label:'電話' , prop:'callNumber',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur',pattern:'^[0-9]{10}$',errorMsg:'請輸入10位數',isPattern: true},
           { label:'緊急電話' , prop:'emergencyNumber',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur',pattern:'^[0-9]{10}$',errorMsg:'請輸入10位數',isPattern: true},
           { label:'備註' , prop:'note',type:'string',format:'textarea', mandatory:false}]
-        this.getManagementList()
         await this.gethouseOption()
+        await this.getManagementList()
       }else{
         this.tableConfig = [
           { label:'公司名稱' , prop:'name',type:'string', mandatory:true, message:'請輸入內容'},
@@ -261,8 +260,8 @@ export default {
           { label:'備註' , prop:'note',type:'string',format:'textarea', mandatory:false},
           { label:'狀態' , prop:'collaborate', format:'tag', type:'boolean', mandatory:false, message:'請輸入內容',typemessage:'',isPattern: false }
         ]
-        this.getcontactunitList()
-        this.getcontactunitOption()
+        await this.getcontactunitOption()
+        await this.getcontactunitList()
       }
     },
     async getManagementList() { //取得管委會
@@ -271,16 +270,14 @@ export default {
         this.blockData = response.result
         this.origin = JSON.stringify(this.blockData)
         this.title = 'Management'
-        this.$forceUpdate()
       })
     },
-    getcontactunitList(){ //取得廠商資料
+    async getcontactunitList(){ //取得廠商資料
       this.blockData = []
-      this.$api.building.apiGetContactUnit().then(response => {
+      await this.$api.building.apiGetContactUnit().then(response => {
         this.blockData = response.result.sort((x,y) => y.collaborate - x.collaborate)
         this.origin = JSON.stringify(this.blockData)
         this.title = 'ContactUnit'
-        this.$forceUpdate()
       })
     },
     async gethouseOption(){ //取得大樓所有門牌
@@ -297,9 +294,9 @@ export default {
         this.selectData = this.options
       })
     },
-    getcontactunitOption(){ //取得大樓的廠商分類
+    async getcontactunitOption(){ //取得大樓的廠商分類
       this.options = []
-      this.$api.setting.apiGetOptions('ContactUnitOptions').then(response => {
+      await this.$api.setting.apiGetOptions('ContactUnitOptions').then(response => {
         response.result.forEach(item => {
               let _array = { 
                   id : item.id, 
@@ -311,9 +308,9 @@ export default {
           this.selectData = this.options
       })
     },
-    getBuildinguser(){ //取得大樓的所有用戶資料
+    async getBuildinguser(){ //取得大樓的所有用戶資料
       this.useroptions = []
-      this.$api.building.apiGetAllBuildingOfUser().then(response=>{
+      await this.$api.building.apiGetAllBuildingOfUser().then(response=>{
         response.result.forEach(item => {
           let _array = {
             id:item.id,
@@ -330,9 +327,9 @@ export default {
         this.userdata.push(response.result[0])
       })
     },
-    getfloorList(){ //取得樓層資料
+    async getfloorList(){ //取得樓層資料
       this.floorData = []
-      this.$api.building.apiGetFloorOfHouse(this.selectfloor).then(response => {
+      await this.$api.building.apiGetFloorOfHouse(this.selectfloor).then(response => {
         response.result.forEach( item => {
             let content = {
                 id:item.id,
@@ -350,9 +347,9 @@ export default {
         })
       })
     },
-    getusageofFloorfiles(usageofFloorid){ //取得門牌檔案
+    async getusageofFloorfiles(usageofFloorid){ //取得門牌檔案
       var _originFiles = []
-      this.$api.files.apiGetFloorOfHouseFiles(usageofFloorid).then(response=>{
+      await this.$api.files.apiGetFloorOfHouseFiles(usageofFloorid).then(response=>{
         response.result.forEach( item => {
           _originFiles.push(item)
         })
@@ -360,9 +357,9 @@ export default {
         console.log('originFiles=>'+JSON.stringify(this.originFiles))
       })
     },
-    getfloorfiles(){ //取得樓層檔案
+    async getfloorfiles(){ //取得樓層檔案
       this.originFiles = []
-      this.$api.files.apiGetFloorFiles(this.selectfloor).then(response =>{
+      await this.$api.files.apiGetFloorFiles(this.selectfloor).then(response =>{
           response.result.forEach( item => {
               this.originFiles.push(item)
           })
@@ -370,7 +367,7 @@ export default {
     },
 
 
-    handleSelectOption(content){ //廠商分類相關操作
+    async handleSelectOption(content){ //廠商分類相關操作
       const array =  JSON.parse(this.origin)
       if(content !== undefined){
         this.blockData = array.filter((item, index) => 
@@ -381,7 +378,7 @@ export default {
     },
     async handleFormOption(index, content){ //基本資料相關操作
       if(index == 'edit' || index == 'refreshUser'){
-        this.getBuildinguser()
+        await this.getBuildinguser()
       }else if (index == 'createUser'){
         this.userdata = []
         this.dialogStatus = 'create'
@@ -405,14 +402,14 @@ export default {
           }
           this.$delete(content,'linkUsageOfFloors')
           this.$set(content,"linkUsageOfFloors",unit)
-          await this.$api.building.apiPatchCommittee(content).then(response => {
+          await this.$api.building.apiPatchCommittee(content).then(async(response) => {
             this.$message('更新成功')
-            this.getManagementList()
+            await this.getManagementList()
           })
         }else{
-          this.$api.building.apiPatchContactUnit(content).then(response => {
+          this.$api.building.apiPatchContactUnit(content).then(async(response) => {
             this.$message('更新成功')
-            this.getcontactunitList()
+            await this.getcontactunitList()
           })
         }
       }else if(index === 'create') {
@@ -423,26 +420,26 @@ export default {
           this.$set(content,"linkUsageOfFloors",unit)
           this.$delete(content,'unit')
           this.$delete(content,'usageOfFloorId')
-          await this.$api.building.apiPostCommittee(content).then(response => {
+          await this.$api.building.apiPostCommittee(content).then(async(response) => {
             this.$message('新增成功')
-            this.getManagementList()
+            await this.getManagementList()
           })
         }else{
-          this.$api.building.apiPostContactUnit(content).then(response => {
+          this.$api.building.apiPostContactUnit(content).then(async(response) => {
             this.$message('新增成功')
-            this.getcontactunitList()
+            await this.getcontactunitList()
           })
         }
       }else{
         if(this.activeName === 'MC'){
-          await this.$api.building.apiDeleteCommittee(content).then(response => {
+          await this.$api.building.apiDeleteCommittee(content).then(async(response) => {
             this.$message('刪除成功')
-            this.getManagementList()
+            await this.getManagementList()
           })
         }else{
-          this.$api.building.apiDeleteContactUnit(content).then(response => {
+          this.$api.building.apiDeleteContactUnit(content).then(async(response) => {
             this.$message('刪除成功')
-            this.getcontactunitList()
+            await this.getcontactunitList()
           })
         }
       }
@@ -460,15 +457,15 @@ export default {
         this.$set(content,'linkUsers',linkUsers)
       }
       if (index === 'update') {
-        this.$api.building.apiPatchFloorOfHouse(content).then(response => {
+        await this.$api.building.apiPatchFloorOfHouse(content).then(async(response) => {
           this.$message('更新成功')
-          this.getfloorList()
+          await this.getfloorList()
           })
       }else if(index === 'create') {
-        await this.$api.building.apiPostFloorOfHouse(this.selectfloor,content).then(response => {
+        await this.$api.building.apiPostFloorOfHouse(this.selectfloor,content).then(async(response) => {
             this.$message('新增成功')
-            this.getfloorList()
-            this.gethouseOption()
+            await this.gethouseOption()
+            await this.getfloorList()
         })
       }else if (index === 'createUser'){
           this.userdata = []
@@ -480,31 +477,31 @@ export default {
           this.innerVisible = true
           this.dialogStatus = 'update'
       }else if(index === 'getfiles'){
-        this.getusageofFloorfiles(content)
+        await this.getusageofFloorfiles(content)
       }else if(index === 'fileupload'){ 
           const formData = new FormData()
           content.file.forEach(item => {
             formData.append('file', item.raw)
           })
-          this.$api.files.apiPostFloorOfHouseFiles(content.id,formData).then(response=>{
-            this.getusageofFloorfiles(content.id)
+          await this.$api.files.apiPostFloorOfHouseFiles(content.id,formData).then(async(response)=>{
+            await this.getusageofFloorfiles(content.id)
           })
       }else if(index == 'deletefile'){
-        this.$api.files.apiDeleteFile(content.fileid).then(response =>{
+        await this.$api.files.apiDeleteFile(content.fileid).then(async(response) =>{
           this.$message('刪除成功')
-          this.getusageofFloorfiles(content.id)
+          await this.getusageofFloorfiles(content.id)
         })
       }else if(index == 'floorfile'){
-        this.getfloorfiles()
+        await this.getfloorfiles()
       }else{
-        await this.$api.building.apiDeleteFloorOfHouse(content).then(response=>{
+        await this.$api.building.apiDeleteFloorOfHouse(content).then(async(response)=>{
             this.$message('刪除成功')
-            this.getfloorList()
-            this.gethouseOption()
+            await this.gethouseOption()
+            await this.getfloorList()
           })
       }
     },
-    handleUserOption(index, content){ //大樓住戶相關操作
+    async handleUserOption(index, content){ //大樓住戶相關操作
       if(index === 'cancel'){
         this.innerVisible = false
       }else if(index === 'create'){
@@ -512,17 +509,17 @@ export default {
           this.userdata = []
           this.dialogStatus = 'create'
         }else{
-          this.$api.building.apiPostUser(content).then(response => {
+          await this.$api.building.apiPostUser(content).then(async(response) => {
             this.$message('新增成功')
             this.innerVisible = false
-            this.getBuildinguser()
+            await this.getBuildinguser()
           })
         }
       }else{
-        this.$api.building.apiPatchUser(content).then(response => {
+        await this.$api.building.apiPatchUser(content).then(async(response) => {
           this.$message('更新成功')
           this.innerVisible = false
-          this.getBuildinguser()
+          await this.getBuildinguser()
         })
       }
     },
@@ -531,11 +528,11 @@ export default {
       this.selectfloor = content
       await this.getfloorimageid()
       if(this.activeFloor == 'IN'){
-        this.getfloorList()
+        await this.getfloorList()
       }else if(this.activeFloor == 'IM'){
         await this.getFloorImage()
       }else {
-        this.getfloorfiles()
+        await this.getfloorfiles()
       }
     },
     async getfloorimageid(){

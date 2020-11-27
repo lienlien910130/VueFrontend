@@ -39,21 +39,19 @@
          <div class="block-wrapper">
           <el-row>
              <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                
-                    <Graphic
-                        v-bind="graphicAttrs"
-                        v-on="graphicEvent"></Graphic>
-               
+                <Graphic
+                  v-bind="graphicAttrs"
+                  v-on="graphicEvent">
+                </Graphic>
             </el-col>
           </el-row>
           <el-row>
             <el-col :xs="24" :sm="24" :md="24" :lg="8">
               <div class="collapse-wrapper" v-if="type =='edit'">
-                  <ObjectList
-                  
-                      v-bind="objectListAttrs"
-                      v-on="objectListEvent"
-                  ></ObjectList>
+                <ObjectList
+                  v-bind="objectListAttrs"
+                  v-on="objectListEvent">
+                </ObjectList>
               </div>
             </el-col>
           </el-row>

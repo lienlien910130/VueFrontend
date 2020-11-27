@@ -1,6 +1,13 @@
 <template>
   <div class="navbar">
-    <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+    <div class="left-menu">
+      <router-link to="/">
+         <svg-icon  icon-class="indexlogo"
+          style="width:200px;height:90px" />       
+      </router-link>
+    </div>
+
+    <!-- <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" /> -->
 
     <div class="right-menu">
       <template v-if="device!=='mobile'">
@@ -152,9 +159,7 @@ export default {
     }
   },
   methods: {
-    toggleSideBar() {
-      this.$store.dispatch('app/toggleSideBar')
-    },
+    
     async logout() {
       await this.$store.dispatch('user/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
@@ -191,23 +196,17 @@ export default {
   background-size: 100% 100%;
   background-repeat: no-repeat;
 
-  .hamburger-container {
+  .breadcrumb-container {
+    float: left;
+  }
+  .left-menu {
+    
     line-height: 46px;
     height: 100%;
     float: left;
     cursor: pointer;
-    transition: background .3s;
-    -webkit-tap-highlight-color:transparent;
-
-    &:hover {
-      background: rgba(0, 0, 0, .025)
-    }
+    
   }
-
-  .breadcrumb-container {
-    float: left;
-  }
-
   .right-menu {
     float: right;
     height: 100%;

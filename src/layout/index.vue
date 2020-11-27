@@ -1,12 +1,18 @@
 <template>
   <div :class="classObj" class="app-wrapper">
     <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside" />
-    <div :class="{'fixed-header':fixedHeader}">
+    <div>
       <navbar />
     </div>
     
     <div class="main-container">
       <sidebar class="sidebar-container" />
+      <div class="hamburger-container" >
+        <hamburger :is-active="sidebar.opened" 
+        style="padding:0px" @toggleClick="toggleSideBar" :class="{close:!sidebar.opened}" />
+      </div>
+      <!-- <hamburger :is-active="sidebar.opened" class="hamburger-container" 
+      style="padding:0px" @toggleClick="toggleSideBar" :class="{close:!sidebar.opened}" /> -->
       <app-main />
     </div>
 
@@ -26,7 +32,8 @@ export default {
     Navbar,
     Sidebar,
     AppMain,
-    Footer
+    Footer,
+    Hamburger: () => import('@/components/Hamburger'), 
   },
   mixins: [ResizeMixin],
   computed: {
@@ -35,9 +42,6 @@ export default {
     },
     device() {
       return this.$store.state.app.device
-    },
-    fixedHeader() {
-      return this.$store.state.settings.fixedHeader
     },
     classObj() {
       return {
@@ -51,6 +55,9 @@ export default {
   methods: {
     handleClickOutside() {
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
+    },
+    toggleSideBar() {
+      this.$store.dispatch('app/toggleSideBar')
     }
   }
 }
@@ -95,5 +102,15 @@ export default {
 
   .mobile .fixed-header {
     width: 100%;
+  }
+
+  .hamburger-container{
+    min-height: calc(100vh - 125px);
+    float: left;
+    margin-left: 180px;
+    transition: margin-left 0.28s;
+    width:30px;
+    background-color: #d1e2ec;
+
   }
 </style>

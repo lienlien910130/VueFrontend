@@ -89,15 +89,11 @@ export default {
         },
         objectSelect(val){
             if(val !== null){
-                var _temp =[]
                 val.sort((x,y) => y.id - x.id).forEach(item =>{
-                    console.log(item.id)
-                    _temp.push(item.id)
+                    this.$refs.tree.setCurrentKey(item.id)
                 })
-                console.log(_temp)
-                this.$refs.tree.setCheckedKeys([_temp])
             }else{
-                this.$refs.tree.setCheckedKeys([])
+                this.$refs.tree.setCurrentKey(null)
             }
         }
     },
@@ -170,11 +166,14 @@ export default {
 
  
 /* 改变被点击节点背景颜色，字体颜色 */
-.el-tree-node:focus > .el-tree-node__content {
-  background-color:rgb(147, 180 , 197);
-  color: black;
+// .el-tree-node:focus > .el-tree-node__content {
+//   background-color:rgb(147, 180 , 197);
+//   color: black;
+// }
+.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
+    background-color: lightgray;
+  color:black;
 }
-
 .el-tree-node .is-focusable .is-checked{
 background-color:rgb(147, 180 , 197);
   color: black;

@@ -170,6 +170,7 @@
                     <el-select
                     v-else-if="item.format =='reasonselect' "
                     v-model="temp[item.prop]"
+                    placeholder="請選擇"
                     >
                         <el-option
                         v-for="(item,index) in maintaincontentoption"
@@ -183,6 +184,7 @@
                     <el-select
                     v-else-if="item.format =='deviceselect' "
                     v-model="temp[item.prop]"
+                    placeholder="請選擇"
                     >
                         <el-option
                         v-for="(item,index) in devicelist"
@@ -196,6 +198,7 @@
                     <el-select
                     v-else-if="item.format =='processselect' "
                     v-model="temp[item.prop]"
+                    placeholder="請選擇"
                     >
                         <el-option
                         v-for="(item,index) in processdata"
@@ -211,6 +214,7 @@
                     item.format =='userselect' || item.format =='ownerselect' 
                     || item.format =='contactunitselect' "
                     v-model="temp[item.prop]"
+                    placeholder="請選擇"
                     >
                         <el-option
                         v-for="(item,index) in selectData"

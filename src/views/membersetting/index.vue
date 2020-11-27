@@ -224,7 +224,6 @@ export default {
             }
         },
         async DirectToReloadData(index){
-            console.log(index)
             switch(index){
                 case 'ContactUnitOptions':
                     await this.getcontactunitOption()
@@ -302,7 +301,7 @@ export default {
 <style lang="scss" scoped>
 .setting-editor-container {
   padding: 20px;
-  background-color: rgb(240, 242, 245);
+  background-color: #d1e2ec;
   position: relative;
   min-height: calc(100vh - 125px);
 }

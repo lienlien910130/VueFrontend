@@ -36,6 +36,8 @@ export const constantRoutes = [
   {
     path: '/graphic',
     component: Layout,
+    redirect: '/graphic/index',
+    //meta: { title: '圖控系統', icon: 'icon', needLogin: true  },
     children: [
       {
         path: 'index',
@@ -210,6 +212,12 @@ export const constantRoutes = [
     name: 'Roles',
     meta: { title: '權限設定', icon: 'icon', needLogin: true  },
     children: [
+      {
+        path: 'auth',
+        name: 'Auth',
+        component: () => import('@/views/authority/auth/index.vue'),
+        meta: { title: '權限管理', icon: 'icon', needLogin: true  }
+      },
       {
         path: 'roles',
         name: 'Roles',

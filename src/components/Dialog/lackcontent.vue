@@ -16,7 +16,7 @@
         
         <el-button type="primary" @click="handleCreate">新增</el-button>
         
-         <el-table
+        <el-table
             :data="tableData"
             :key="itemkey"
             border

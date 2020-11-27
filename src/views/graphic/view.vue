@@ -1,41 +1,48 @@
 <template>
-    <el-row :gutter="32">
-        <el-col :xs="24" :sm="24" :md="24" :lg="24">
-            
-              <GraphicView
-                v-bind="graphicAttrs_view"
-                v-on="graphicEvent"></GraphicView>
-            
-        </el-col>
-    </el-row>
+    
+        <el-row>
+             <el-col :xs="24" :sm="24" :md="24" :lg="24">
+                <Graphic
+                  v-bind="graphicAttrs"
+                  v-on="graphicEvent">
+                </Graphic>
+            </el-col>
+          </el-row>
+        
+    
 </template>
 
 <script>
 export default {
     props:['type','canvasreset','save'],
     components:{
-      GraphicView: () => import('@/components/Graphic/index.vue'),
+      Graphic: () => import('@/components/Graphic/old.vue'),
     },
     computed:{
-        graphicAttrs_view(){
-            return{
+        graphicAttrs(){
+        return{
                 movingImage:this.movingImage,
                 imgDragOffset:this.imgDragOffset,
                 deleteObject:this.deleteObject,
                 selectObject:this.selectObject,
-                reset:this.canvasreset,
+                deletesuccess:this.deletesuccess,
+                reset:this.reset,
                 saveimg:this.save,
                 title:this.type
             }
-        },
-        graphicEvent(){
-            return{
-                subObjectListOption: this.handleGraphicObjSelectOption,
-                subResetOption: this.handleGraphicResetOption,
-                subSaveOption: this.handleGraphicSaveOption,
-                subJsonOption: this.handleGraphicJsonOption,
-            }
-        }
+      },
+      graphicEvent(){
+        return{
+              subObjectListOption: this.handleGraphicObjListOption,
+              subResetOption: this.handleGraphicResetOption,
+              subSaveOption: this.handleGraphicSaveOption,
+              subJsonOption: this.handleGraphicJsonOption,
+              subResetSelectOption: this.handleResetSelectOption,
+              subResetDeleteOption: this.handleResetDeleteOption,
+              subObjectDeleteOption:this.handleGraphicObjDeleteOption,
+              subObjectSelectOption:this.handleGraphicObjSelectOption
+          }
+      },
     },
     watch:{
     },
@@ -46,21 +53,41 @@ export default {
             deleteObject:null,
             selectObject:null,
             objectlist:[],
+            reset:false,
+            deletesuccess:null,
+            save:false,
+            type:'view',
         }
     },
     methods:{
-        handleGraphicObjSelectOption(val){
+        handleGraphicObjListOption(val){
             this.objectlist = val
         },
         handleGraphicResetOption(){
-            this.$emit('subResetOption',false)
+            this.reset = false
         },
         handleGraphicSaveOption(){
-            this.$emit('subSaveOption',false)
+            this.save = false
         },
         handleGraphicJsonOption(val){
-            this.$emit('subJsonOption',val)
+            this.canjson = val
+        },
+        handleResetSelectOption(){
+            this.selectObject = null
+            this.objectSelect = null
+        },
+        handleResetDeleteOption(){
+            this.deleteObject = null
+            this.deletesuccess = null
+            this.objectDelete = null
+        },
+        handleGraphicObjDeleteOption(val){
+            this.objectDelete = val
+        },
+        handleGraphicObjSelectOption(val){
+            this.objectSelect = val
         }
+    
     }
 
 }

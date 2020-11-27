@@ -218,9 +218,11 @@ export default {
     
 .maintain-editor-container {
   padding: 20px;
-  background-color: rgb(240, 242, 245);
+  background-color: #d1e2ec;
   position: relative;
+  max-height: calc(100vh - 125px);
   min-height: calc(100vh - 125px);
+  overflow: auto;
    
     .chart-wrapper {
         background: #fff;
