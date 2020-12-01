@@ -303,6 +303,7 @@ export default {
   padding: 20px;
   background-color: #d1e2ec;
   position: relative;
-  min-height: calc(100vh - 125px);
+  max-height: calc(100vh - 125px);
+  overflow: auto;
 }
 </style>

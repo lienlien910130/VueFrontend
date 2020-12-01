@@ -228,7 +228,7 @@ export const constantRoutes = [
         path: 'users',
         name: 'Users',
         component: () => import('@/views/authority/users/index.vue'),
-        meta: { title: '用戶管理', icon: 'icon', needLogin: true  }
+        meta: { title: '帳號管理', icon: 'icon', needLogin: true  }
       }
     ]
   },
