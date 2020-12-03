@@ -11,7 +11,7 @@
                     type="primary" 
                     @click="handleCreate">
                         新增
-                    </el-button>
+                </el-button>
                 </el-col>
             </div>
 
@@ -153,20 +153,6 @@
                             value-format="yyyy-MM-dd">
                         </el-date-picker>
                     </span>
-
-                    <!-- <el-select
-                    v-else-if="item.format =='manageselect' "
-                    filterable 
-                    v-model="temp[item.prop]"
-                    >
-                        <el-option
-                        v-for="(item,index) in selectData"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.id"
-                        >
-                        </el-option>        
-                    </el-select> -->
                     <el-select
                     v-else-if="item.format =='reasonselect' "
                     v-model="temp[item.prop]"
@@ -579,8 +565,7 @@ export default {
 
 <style lang="scss" scoped>
 .infinite-list-wrapper {
-    height:680px; // 1. 指定高度
-	overflow: auto; // 2. 内容超过指定高度 出现滚动条
+    
 	width: 100%;
     .filter-item{
         float: right;

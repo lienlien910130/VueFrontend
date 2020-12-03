@@ -1,20 +1,19 @@
 <template>
     <div class="mainreport-container">
         <div class="mainreport-editor-container">
-            <div class="left">
-              <el-form  class="report-form" :model="form" label-width="auto" :label-position="label">
-                <el-col :xs="24" :sm="24" :md="24" :lg="24">
+          <el-row :gutter="32">
+              <el-form  class="report-form" :inline="true" :model="form" label-width="auto" :label-position="label">
+                <el-col :xs="24" :sm="24" :md="24" :lg="12">
                     <div class="chart-wrapper">
                       <el-form-item label="場所名稱">
                         <span>{{ form.name }}</span>
                       </el-form-item>
                       <el-form-item label="下次檢修時間">
-                        <br>
                         <span class="report">{{ form.repair }}</span>
                       </el-form-item>
                     </div>
                 </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="24">
+                <el-col :xs="24" :sm="24" :md="24" :lg="12">
                     <div class="chart-wrapper">
                         <el-form-item label="管理權人">
                             <div
@@ -33,25 +32,25 @@
                     </div>
                 </el-col>
               </el-form>
-                
-                
-            </div>
-
-            <div class="right">
-                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                    <div class="chart-wrapper">
-                        <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
-                    </div>
-                </el-col>
-            </div>
-            <div
+          </el-row>    
+          <el-row :gutter="32">
+            <el-col :xs="24" :sm="24" :md="24" :lg="24">
+                <div class="wrapper">
+                  <div class="block-wrapper">
+                      <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
+                  </div>
+                </div>
+            </el-col>
+          </el-row>      
+          
+          <div
             v-if="reportVisible == true">
               <Report v-bind="dialogAttrs" v-on="dialogEvent"></Report>
-            </div>
-            <div
+          </div>
+          <div
             v-if="lackVisible == true">
               <Lack v-bind="lackAttrs" v-on="lackEvent"></Lack>
-            </div>
+          </div>
         </div>
     </div>
 </template>
@@ -115,6 +114,12 @@ export default {
                 format:'tag',
                 type:'boolean',
                 mandatory:false, isPattern:false,trigger:'change'
+              },
+              {
+                label: '備註',
+                prop: 'note',
+                format:'textarea',
+                mandatory:false, isPattern:false
               },
               {
                 label: '檢附文件',
@@ -240,7 +245,14 @@ export default {
     },
     async reportList() {
       await this.$api.report.apiGetBuildingPublicSafe().then(response => {
-        this.blockData = response.result.sort((x,y) => y.isImproved - x.isImproved)
+        this.blockData = response.result.sort(function(x,y){
+            var a = x.isImproved
+            var b = y.isImproved
+            if(a == b){
+              return y.id - x.id
+            }
+            return y.isImproved - x.isImproved
+          })
       })
     },  
     async handleBlockOption(index, content) { //區塊的操作
@@ -353,35 +365,40 @@ export default {
   padding: 20px;
   background-color: #d1e2ec;
   position: relative;
-  max-height: calc(100vh - 125px);
-  min-height: calc(100vh - 125px);
-  overflow: auto;
-   
+  min-height: calc(100vh - 155px);
+  max-height: calc(100vh - 155px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+   .el-form--inline .el-form-item{
+     margin-right:40px
+   }
     .chart-wrapper {
         background: #fff;
-        padding: 5px 16px 0;
+        padding: 10px 16px 0;
         margin-bottom: 32px;
-        height: 280px;
-        overflow-x:hidden;
-        overflow-y:auto;
+        height: 110px;
         width: 100%;
     }
+    .wrapper{
+      background: #fff;
+      padding: 10px;
+      height: 720px;
+      
+      .block-wrapper {
+        margin-bottom: 32px;
+        height: 700px;
+        width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+    }
+
     .top{
         width: 100%;
     }
-    .left {
-        float: left;
-        width: 520px;
-    }
-    .right {
-        overflow: hidden;
-        padding-left: 32px;
-        .chart-wrapper{
-            height: 700px;
-        }
-    }
     .report{
-        font-size: 70px;
+        font-size: 60px;
         color: red;
     }
 }
@@ -391,21 +408,9 @@ export default {
   .chart-wrapper {
     padding: 8px;
   }
-
-  .mainreport-editor-container {
-    .left{
-      float: none;
-      width: 100%;
-    }
-    .right{
-      float: none;
-      width: 100%;
-      padding-left:0px;
-    }
-
+  .block-wrapper {
+    padding: 8px;
   }
-  
-  
 }
 
 </style>

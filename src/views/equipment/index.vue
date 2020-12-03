@@ -125,7 +125,10 @@ export default {
   padding: 32px;
   background-color: rgb(240, 242, 245);
   position: relative;
-  min-height: calc(100vh - 125px);
+  min-height: calc(100vh - 155px);
+  max-height: calc(100vh - 155px);
+  overflow-y: auto;
+  overflow-x: hidden;
 
   .block-wrapper {
     background: #fff;

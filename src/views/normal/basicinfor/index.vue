@@ -12,26 +12,42 @@
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
                     <div class="block-wrapper">
-                        <el-tabs v-model="activeName" style="margin-top:15px;margin-bottom:15px;" type="border-card" 
-                        @tab-click="handleClick">
-                            <el-tab-pane 
-                            v-for="(item,index) in InforOptions" 
-                            :key="item.key" :label="item.label" :name="item.key"
-                            >
-                                <Select style="margin-bottom: 20px;" 
-                                v-if="index !== 0"
+                        <el-tabs v-model="activeName" type="border-card" 
+                        >
+                        <el-tab-pane label="管委會" name="MC" >
+                            <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
+                          </el-tab-pane>
+                          <el-tab-pane label="廠商資料" name="Vender" >
+                            <Select style="margin-bottom: 20px;" 
                                 v-bind="selectAttrs" v-on="selectEvent"
-                                />
-
-                                <keep-alive>
-                                 <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
-                                </keep-alive>
-                            </el-tab-pane>
+                            />
+                            <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
+                          </el-tab-pane>
+                          <el-tab-pane label="相關資料" name="BOT" >
+                            <div class="files">
+                              <div 
+                              v-for="(item,index) in buildingFiles" :key="item.id" class="filesdiv">
+                              <el-link 
+                              class="link" 
+                              :href="downloadbufile(item.id)" target="_blank" style="width:80%">
+                              【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
+                              </el-link>
+                              <span>
+                                <i class="el-icon-delete del" 
+                                style="float:right;font-size: 25px;margin-top:5px;width:20%" 
+                                @click="delfile(item.id)" />
+                              </span>
+                              </div>
+                            </div>
+                             <Upload
+                              v-on="uploadEvent"
+                              ></Upload>
+                          </el-tab-pane>
                         </el-tabs>
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="7">
-                    <div class="block-wrapper" >
+                    <div :class="floorwrapper">
                         <p>大樓樓層</p>
                         <Range v-bind="rangeAttrs" v-on="rangeEvent"></Range>
                     </div>
@@ -81,7 +97,8 @@ export default {
     Range: () => import('./components/Range'),
     FloorBlock: () => import('@/components/Block/index.vue'),
     Other: () => import('./components/Other'),
-    Dialog:() => import('@/components/Dialog/index.vue')
+    Dialog:() => import('@/components/Dialog/index.vue'),
+    Upload:() => import('@/components/Upload/index.vue')
   },
   computed: {
     ...mapGetters([
@@ -89,7 +106,7 @@ export default {
     ]),
     formAttrs() {
       return {
-        selectData: this.userselectData
+        selectData: this.useroptions
       }
     },
     formEvent(){
@@ -103,7 +120,7 @@ export default {
         buttonsName: this.buttonsName,
         config: this.floorConfig,
         title:'floor',
-        selectData: this.userselectData,
+        selectData: this.useroptions,
         isChoose:this.isChoose,
         originFiles:this.originFiles,
         selectfloor:this.selectfloor,
@@ -123,7 +140,7 @@ export default {
         buttonsName: this.buttonsName,
         config: this.tableConfig,
         title:this.title,
-        selectData: this.selectData
+        selectData: this.options
       }
     },
     blockEvent() {
@@ -164,19 +181,22 @@ export default {
       return{
         subRangeButton: this.handleRangeOption
       }
-    }
+    },
+    floorwrapper(){
+      if (this.$store.state.app.device === 'mobile') {
+        return 'floorMobile'
+      } else {
+        return 'floornotMobile'
+      }
+    },
+    uploadEvent(){
+      return {
+        subOpitonButton: this.handleUploadOption
+      }
+    },
   },
   data() {
     return {
-      InforOptions: [
-        { label: '管委會', key: 'MC' },
-        { label: '廠商資料', key: 'vender' }
-      ],
-      FloorOptions:[
-        { label: '基本資料', key: 'IN' },
-        { label: '樓層平面圖', key: 'IM' },
-        { label: '相關資料', key: 'OT' }
-      ],
       activeName: 'MC',
       activeFloor:'IN',
       allfloor:'',
@@ -211,6 +231,7 @@ export default {
       selectfloor:'',
       title:'',
       originFiles:[],
+      buildingFiles:[],
       floorsFiles:[],
       floorImage:'',
       imagesrc:'',
@@ -232,16 +253,12 @@ export default {
       }else {
         this.getfloorfiles()
       }
-    }
-  },
-  async mounted() {
-    this.activeName = 'MC'
-    await this.gethouseOption()
-    await this.getManagementList()
-  },
-  methods: { 
-    async handleClick(tab, event){
-      if(tab.index == 0){
+    },
+    async activeName(val){ 
+      this.blockData = []
+      this.options = []
+      this.selectData = []
+      if(val == 'MC'){
          this.tableConfig= [
           { label:'所屬單位' , prop:'usageOfFloorId',format:'manageselect', mandatory:true, message:'請選擇單位',trigger:'change' },
           { label:'職稱' , prop:'title',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur'},
@@ -251,7 +268,7 @@ export default {
           { label:'備註' , prop:'note',type:'string',format:'textarea', mandatory:false}]
         await this.gethouseOption()
         await this.getManagementList()
-      }else{
+      }else if(val == 'Vender'){
         this.tableConfig = [
           { label:'公司名稱' , prop:'name',type:'string', mandatory:true, message:'請輸入內容'},
           { label:'類別' , prop:'type', format:'contactunitselect', mandatory:true, message:'請選擇類別'},
@@ -262,7 +279,24 @@ export default {
         ]
         await this.getcontactunitOption()
         await this.getcontactunitList()
+      }else{ //BOT
+        await this.getbufiles()
       }
+    }
+  },
+  async mounted() {
+    this.activeName = 'MC'
+    await this.gethouseOption()
+    await this.getManagementList()
+  },
+  methods: { 
+    async getbufiles() {
+      this.buildingFiles = []
+      await this.$api.files.apiGetBuildingFiles().then(response => {
+        response.result.forEach(item => {
+          this.buildingFiles.push(item)
+        })
+      })
     },
     async getManagementList() { //取得管委會
       this.blockData = []
@@ -273,53 +307,52 @@ export default {
       })
     },
     async getcontactunitList(){ //取得廠商資料
-      this.blockData = []
       await this.$api.building.apiGetContactUnit().then(response => {
-        this.blockData = response.result.sort((x,y) => y.collaborate - x.collaborate)
+        this.blockData = response.result.sort(function(x,y){
+            var a = x.collaborate
+            var b = y.collaborate
+            if(a == b){
+              return y.id - x.id
+            }
+            return y.collaborate - x.collaborate
+          })
         this.origin = JSON.stringify(this.blockData)
         this.title = 'ContactUnit'
       })
     },
     async gethouseOption(){ //取得大樓所有門牌
-      this.options = []
       await this.$api.building.apiGetBuildingOfHouse().then(response=>{
-        response.result.forEach(item => {
-          let _array = {
-            id:item.id,
-            label:item.houseNumber,
-            value:item.id
-          }
-          this.options.push(_array)
+        this.selectData = response.result.sort((x,y) => x.id - y.id)
+        this.options = this.selectData.map(v => {
+          this.$set(v, 'id', v.id) 
+          this.$set(v, 'label', v.houseNumber) 
+          this.$set(v, 'value', v.id) 
+          return v
         })
-        this.selectData = this.options
       })
     },
     async getcontactunitOption(){ //取得大樓的廠商分類
-      this.options = []
       await this.$api.setting.apiGetOptions('ContactUnitOptions').then(response => {
-        response.result.forEach(item => {
-              let _array = { 
-                  id : item.id, 
-                  label: item.textName, 
-                  value: item.id
-              }
-              this.options.push(_array)  
-            })
-          this.selectData = this.options
+        this.selectData = response.result.sort((x,y) => x.id - y.id)
+        this.options = this.selectData.map(v => {
+          this.$set(v, 'id', v.id) 
+          this.$set(v, 'label', v.textName) 
+          this.$set(v, 'value', v.id) 
+          return v
+        })
       })
     },
     async getBuildinguser(){ //取得大樓的所有用戶資料
       this.useroptions = []
+      this.userselectData= []
       await this.$api.building.apiGetAllBuildingOfUser().then(response=>{
-        response.result.forEach(item => {
-          let _array = {
-            id:item.id,
-            label:item.name,
-            value:item.id
-          }
-          this.useroptions.push(_array)
+        this.userselectData = response.result.sort((x,y) => x.id - y.id)
+        this.useroptions = this.userselectData.map(v => {
+          this.$set(v, 'id', v.id) 
+          this.$set(v, 'label', v.name) 
+          this.$set(v, 'value', v.id) 
+          return v
         })
-        this.userselectData = this.useroptions
       })
     },
     async getuser(userid){ //取得特定用戶資料
@@ -354,7 +387,6 @@ export default {
           _originFiles.push(item)
         })
         this.originFiles = _originFiles
-        console.log('originFiles=>'+JSON.stringify(this.originFiles))
       })
     },
     async getfloorfiles(){ //取得樓層檔案
@@ -555,6 +587,32 @@ export default {
         }) 
         this.loading = false
       }
+    },
+    downloadbufile(fileid) {
+      return "http://192.168.88.65:59119/basic/fileDownload/" + fileid
+    },
+    async handleUploadOption(index, file) {
+      const formData = new FormData();
+      file.forEach(item => {
+        formData.append('file', item.raw)
+      })
+      await this.$api.files.apiPostBuildingFiles(formData).then(async(response) => {
+        this.$message('上傳成功')
+        await this.getbufiles()
+      })
+    },
+    async delfile(fileid) {
+      this.$confirm('是否確定刪除該筆資料?', '提示', {
+          confirmButtonText: '確定',
+          cancelButtonText: '取消',
+          type: 'warning',
+          center: true
+      }).then(async() => {
+          await this.$api.files.apiDeleteFile(fileid).then(async(response) => {
+            this.$message('刪除成功')
+            await this.getbufiles()
+          })
+       })
     }
     
   }
@@ -563,20 +621,60 @@ export default {
 
 <style lang="scss" scoped>
 .basicinfor-editor-container {
-  padding: 20px;
+  padding: 15px;
   background-color: rgb(209, 226, 236);
   position: relative;
-  max-height: calc(100vh - 125px);
-  overflow: auto;
+  min-height: calc(100vh - 155px);
+  max-height: calc(100vh - 155px);
+  overflow-y: auto;
+  overflow-x: hidden;
   
   .block-wrapper {
     background: #fff;
+    padding: 10px;
+    margin-bottom: 32px;
+    height: 750px;
+
+    .el-tab-pane{
+      height:600px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+  }
+
+  .floornotMobile {
+    background: #fff;
     padding: 0px 16px 15px;
     margin-bottom: 32px;
-    height: 850px;
+    height: 700px;
     overflow-x:hidden;
     overflow-y:auto;
   }
+
+  .floorMobile {
+    background: #fff;
+    padding: 0px 16px 15px;
+    margin-bottom: 32px;
+    height: 100px;
+    p{
+      padding-top:10px
+    }
+  }
+
+.files {
+  width: 50%;
+  max-height: 200px;
+  overflow: auto;
+  .filesdiv{
+    line-height: 40px;
+    .del {
+      cursor: pointer;
+    }
+    .el-link{
+      display:inline;
+    }
+  }
+}
 
 }
 

@@ -30,23 +30,26 @@
             type="index">
             </el-table-column>
 
-            <template v-for="(item,index) in lackconfig">
-                <el-table-column 
+            <el-table-column 
+                v-for="(item,index) in lackconfig"
                 align="left" 
                 :label="item.label" 
                 :key="index" 
                 :prop="item.prop" 
                 sortable
                 header-align="center"
-                :width="item.width"
                 >
                 <template slot-scope="scope">
+                    
                     <div v-if="scope.column.property == 'lackContent'"
                     v-html="stringToBr(scope.row[scope.column.property])"></div>
-                    <span v-else>{{  scope.row[scope.column.property] }}</span>
+                    <!-- <span v-else-if="item.format == 'status'">
+                        {{  changelabel(scope.row[item.prop]) }}
+                    </span>
+                    <span v-else>{{  scope.row[item.prop] }}</span> -->
                 </template>
-                </el-table-column>
-            </template>
+            </el-table-column>
+            
             
             <el-table-column
             fixed="right"
@@ -67,16 +70,34 @@
 </template>
 
 <script>
+import app from '@/store/modules/app'
 export default {
     components:{
         Upload: () => import('@/components/Upload/index.vue'),
         InsertLack: () => import('@/components/Dialog/insertlack.vue')
     },
     props:['lackVisible','tableData','lackconfig','itemkey','title','lackfileid'],
+    watch:{
+        tableData:function(val) 
+        {
+            console.log('tabledata')
+        }
+    },
     computed:{
         stringToBr(){
             return function (a) {
-                return a.replace(/{ln}/g, "<br/>");
+                console.log(a)
+                return a
+                //return a.replace(/{ln}/g, "<br/>")
+            }
+        },
+        changelabel(){
+            return function (a) {
+                var text = ""
+                this.$api.setting.apiGetOptionById(a).then(response => {
+                    text = response.result[0].textName
+                    return text
+                })
             }
         },
         uploadAttrs(){
@@ -102,7 +123,8 @@ export default {
                 insertvisible: this.insertvisible,
                 dialogStatus:this.dialogStatus,
                 lackData:this.lackData,
-                lackconfig:this.lackconfig
+                lackconfig:this.lackconfig,
+                selectData:this.lackstatusoption
             }
         },
         insertLackEvent(){
@@ -117,7 +139,8 @@ export default {
             limit:1,
             insertvisible:false,
             dialogStatus:'',
-            lackData:[]
+            lackData:[],
+            lackstatusoption:[]
 
         }
     },
@@ -133,7 +156,8 @@ export default {
             this.$emit('subReportLackButton', this.dialogStatus, content)
             this.insertvisible = false
         },
-        handleUpdata(content){
+        async handleUpdata(content){
+            await this.getstatusOption()
             this.dialogStatus = 'update'
             this.lackData = content
             this.insertvisible = true
@@ -152,11 +176,26 @@ export default {
                     this.$emit('subReportLackButton', this.dialogStatus, row.id)
                 })
         },
-        handleCreate(){
+        async handleCreate(){
             this.lackData = []
+            await this.getstatusOption()
             this.dialogStatus = 'create'
             this.insertvisible = true
-        }
+        },
+        async getstatusOption(){ 
+            this.lackstatusoption = []
+            var _temp = []
+            await this.$api.setting.apiGetOptions('LackStatusOptions').then(response => {
+                console.log(JSON.stringify(response))
+                _temp = response.result.sort((x,y) => x.id - y.id)
+                this.lackstatusoption = _temp.map(v => {
+                    this.$set(v, 'value', v.id) 
+                    this.$set(v, 'label', v.textName) 
+                    this.$set(v, 'id', v.id) 
+                    return v
+                })
+            })
+        },
     },
 }
 </script>

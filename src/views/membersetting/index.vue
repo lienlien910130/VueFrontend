@@ -29,7 +29,12 @@
                     v-on="settingBlockEvent"
                     ></Brand>
                 </el-col>
-                
+                <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                    <LackStatus
+                    v-bind="lackstatusAttrs"
+                    v-on="settingBlockEvent"
+                    ></LackStatus>
+                </el-col>
             </el-row>
         </div>
     </div>
@@ -45,6 +50,7 @@ export default {
         Device: () => import('./components/SettingBlock.vue'),
         MaintainContent: () => import('./components/SettingBlock.vue'),
         Brand: () => import('./components/SettingBlock.vue'),
+        LackStatus: () => import('./components/SettingBlock.vue'),
     },
     data(){
         return{
@@ -53,6 +59,7 @@ export default {
             deviceoption:[],
             maintaincontentoption:[],
             brandoption:[],
+            lackstatusoption:[],
             type:'view',
             current:'',
             temp:[]
@@ -95,6 +102,14 @@ export default {
                 current:this.current
             }
         },
+        lackstatusAttrs(){
+            return{
+                title:'LackStatusOptions',
+                option:this.lackstatusoption,
+                type:this.type,
+                current:this.current
+            }
+        },
         settingBlockEvent(){
             return{
                 subButton: this.handleButtonOption
@@ -106,6 +121,7 @@ export default {
         await this.getdeviceOption()
         await this.getmaintaincontentOption()
         await this.getbrandOption()
+        await this.getlackstatusOption()
     },
     methods:{
         async getcontactunitOption(){ //取得大樓的廠商分類
@@ -121,7 +137,7 @@ export default {
                 })
             })
         },
-        async getdeviceOption(){ //取得大樓的廠商分類
+        async getdeviceOption(){ //取得大樓的設備種類
             this.deviceoption = []
             var _temp = []
             await this.$api.setting.apiGetOptions('DeviceOptions').then(response => {
@@ -134,7 +150,7 @@ export default {
                 })
             })
         },
-        async getmaintaincontentOption(){ //取得大樓的廠商分類
+        async getmaintaincontentOption(){ //取得大樓的維護內容
             this.maintaincontentoption = []
             var _temp = []
             await this.$api.setting.apiGetOptions('MaintainContentOptions').then(response => {
@@ -147,13 +163,27 @@ export default {
                 })
             })
         },
-        async getbrandOption(){ //取得大樓的廠商分類
+        async getbrandOption(){ //取得大樓的廠牌名稱&型號
             this.brandoption = []
             var _temp = []
             await this.$api.setting.apiGetOptions('BrandOptions').then(response => {
                 console.log(JSON.stringify(response))
                 _temp = response.result.sort((x,y) => x.id - y.id)
                 this.brandoption = _temp.map(v => {
+                    this.$set(v, 'value', v.value) 
+                    this.$set(v, 'textName', v.textName) 
+                    this.$set(v, 'id', v.id) 
+                return v
+                })
+            })
+        },
+        async getlackstatusOption(){ //取得大樓的缺失改善狀況
+            this.lackstatusoption = []
+            var _temp = []
+            await this.$api.setting.apiGetOptions('LackStatusOptions').then(response => {
+                console.log(JSON.stringify(response))
+                _temp = response.result.sort((x,y) => x.id - y.id)
+                this.lackstatusoption = _temp.map(v => {
                     this.$set(v, 'value', v.value) 
                     this.$set(v, 'textName', v.textName) 
                     this.$set(v, 'id', v.id) 
@@ -205,6 +235,9 @@ export default {
                     case 'BrandOptions':
                         this.temp = JSON.stringify(this.brandoption)
                         break;
+                    case 'LackStatusOptions':
+                        this.temp = JSON.stringify(this.lackstatusoption)
+                        break;
                 }
             }else{
                 switch(index){
@@ -219,6 +252,9 @@ export default {
                         break;
                     case 'BrandOptions':
                         this.brandoption = JSON.parse(this.temp)
+                        break;
+                    case 'LackStatusOptions':
+                        this.lackstatusoption = JSON.parse(this.temp)
                         break;
                 }
             }
@@ -237,7 +273,9 @@ export default {
                 case 'BrandOptions':
                     await this.getbrandOption()
                     break;
-                
+                case 'LackStatusOptions':
+                    await this.getlackstatusOption()
+                    break;
             }
         },
         async PostData(index,content,value){
@@ -292,6 +330,9 @@ export default {
                 case 'BrandOptions':
                     
                     break;
+                case 'LackStatusOptions':
+                    
+                    break;
             }
         }
     }
@@ -303,7 +344,9 @@ export default {
   padding: 20px;
   background-color: #d1e2ec;
   position: relative;
-  max-height: calc(100vh - 125px);
-  overflow: auto;
+  min-height: calc(100vh - 155px);
+  max-height: calc(100vh - 155px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 </style>

@@ -70,9 +70,10 @@ export default {
   padding: 20px;
   background-color: #d1e2ec;
   position: relative;
-  max-height: calc(100vh - 125px);
-  min-height: calc(100vh - 125px);
-  overflow: auto;
+  min-height: calc(100vh - 155px);
+  max-height: calc(100vh - 155px);
+  overflow-y: auto;
+  overflow-x: hidden;
    
     .chart-wrapper {
         background: #fff;

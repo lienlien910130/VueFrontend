@@ -8,7 +8,7 @@
                       <el-form-item label="場所名稱">
                         <span>{{ form.name }}</span>
                       </el-form-item>
-                      <el-form-item label="下次檢修時間">
+                      <el-form-item label="下次維護保養日期">
                         <br><br>
                         <span class="report">{{ form.repair }}</span>
                       </el-form-item>
@@ -220,9 +220,10 @@ export default {
   padding: 20px;
   background-color: #d1e2ec;
   position: relative;
-  max-height: calc(100vh - 125px);
-  min-height: calc(100vh - 125px);
-  overflow: auto;
+  min-height: calc(100vh - 155px);
+  max-height: calc(100vh - 155px);
+  overflow-y: auto;
+  overflow-x: hidden;
    
     .chart-wrapper {
         background: #fff;

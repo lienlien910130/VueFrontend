@@ -5,12 +5,18 @@
                     <span>{{ titleToch }}</span>
                     
                     <div style="margin-top:10px">
-                        <el-input :style="{float: 'left', margin: '5px',width:inputstyle}" v-model="input" placeholder="請輸入名稱"></el-input>
-                        <el-input 
-                        v-if="title =='BrandOptions'"
-                        :style="{float: 'left', margin: '5px',width:inputstyle}" v-model="value" placeholder="請輸入型號"></el-input>
-                        <el-button style="float: right;" type="primary" 
-                        @click="onSubmit">新增</el-button>
+                        <el-row v-if="title =='BrandOptions'">
+                            <el-input :style="{float: 'left', margin: '5px',width:'30%'}" v-model="input" placeholder="請輸入名稱"></el-input>
+                            <el-input 
+                            :style="{float: 'left', margin: '5px',width:'45%'}" v-model="value" placeholder="請輸入型號"></el-input>
+                            <el-button style="float: right;" type="primary" 
+                            @click="onSubmit">新增</el-button>
+                        </el-row>
+                        <el-row v-else>
+                            <el-input :style="{float: 'left', margin: '5px',width:inputstyle}" v-model="input" placeholder="請輸入名稱"></el-input>
+                            <el-button style="float: right;" type="primary" 
+                            @click="onSubmit">新增</el-button>
+                        </el-row>
                     </div>
                 </div>
                 <div class="settingbody">
@@ -78,6 +84,9 @@ export default {
                 case 'BrandOptions':
                     return '廠牌名稱&型號'
                     break;
+                case 'LackStatusOptions':
+                    return '缺失內容改善狀況'
+                    break;
             }
         },
         inputstyle(){
@@ -140,14 +149,16 @@ export default {
 <style lang="scss" scoped>
 .setting-wrapper{
     margin: 10px;
-    
+    .el-card{
+        height: 400px;
+    }
     .text {
     line-height: 25px;
     margin-bottom: 10px;
   }
   
   .settingbody{
-    height: 200px;
+    height: 240px;
     overflow: auto;
   }
    

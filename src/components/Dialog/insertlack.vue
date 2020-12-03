@@ -22,20 +22,34 @@
                     ]"
                 >
                     <el-input  
-                    v-if="item.textarea == false"
+                    v-if="item.format == 'input'"
                     :ref="item.prop"
                     :name="item.prop"
                     v-model="temp[item.prop]"
                     type="string">
                     </el-input>
                     <el-input  
-                    v-else
+                    v-else-if="item.format == 'textarea'"
                     :ref="item.prop"
                     :name="item.prop"
                     :autosize="{ minRows: 4, maxRows: 8}"
                     v-model="temp[item.prop]"
                     type="textarea">
                     </el-input>
+                    <el-select
+                    v-else-if="item.format =='select' "
+                    v-model="temp[item.prop]"
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                        <el-option
+                        v-for="(item,index) in selectData"
+                        :key="index"
+                        :label="item.label"
+                        :value="item.id"
+                        >
+                        </el-option>  
+                    </el-select>
                 </el-form-item>
         </el-form>                        
         
@@ -62,7 +76,7 @@ export default {
         dialogStatus:{
             type: String
         },
-        lackconfig:{}
+        lackconfig:{},selectData:{}
     },
     watch:{
         insertvisible(){
@@ -106,6 +120,7 @@ export default {
             this.temp = {}
         },
         sendData(){
+            this.temp.status = parseInt(this.temp.status)
             const tempData = Object.assign({}, this.temp)
             this.$refs.insertdataForm.validate(valid =>{
                 if(valid){

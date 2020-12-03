@@ -64,25 +64,6 @@
           </template>
         </el-input>
       </el-form-item>
-      <el-form-item label="檢視文件">
-        <div class="files">
-          <div 
-          v-for="(item,index) in originFiles" :key="item.id" class="filesdiv">
-          <el-link 
-          class="link" 
-          :href="downloadbufile(item.id)" target="_blank" style="width:80%">
-          【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
-          </el-link>
-          <span>
-            <i class="el-icon-delete del" style="float:right;font-size: 25px;margin-top:5px;width:20%" @click="delfile(item.id)" />
-          </span>
-          </div>
-        </div>
-        <!-- :href="downloadbufile(item.id)" target="_blank" -->
-      </el-form-item>
-      <el-form-item>
-        <Upload v-on="uploadEvent"></Upload>
-      </el-form-item>
     </el-form>
     <div style="float:right">
       <el-button type="primary" @click="onEdit" v-if="type === 'view' ">修改</el-button>
@@ -112,11 +93,6 @@ export default {
         return 'top'
       } else {
         return 'left'
-      }
-    },
-    uploadEvent() {
-      return {
-        subOpitonButton: this.handleUploadOption
       }
     },
     change() {
@@ -190,7 +166,6 @@ export default {
         ownerId: [{ required: true, trigger: 'change', message: '請選擇所有權人' }],
         fireManagerId: [{ required: true, trigger: 'change', message: '請選擇防火管理人' }]
       },
-      originFiles: [],
       linkOwners: ''
     }
   },
@@ -206,9 +181,6 @@ export default {
     init(){
       this.getbuInfo()
       this.getbufloor()
-      this.$nextTick(() => {
-        this.getbufiles()
-      })
     },
     opendialog() {
       this.$emit('subOpitonButton', 'createUser', '')
@@ -296,32 +268,6 @@ export default {
       // this.$api.building.apiPostFloors().then(response => {
       //   console.log('ok=>' + JSON.stringify(response))
       // })
-    },
-    downloadbufile(fileid) {
-      return "http://192.168.88.65:59119/basic/fileDownload/" + fileid
-    },
-    handleUploadOption(index, file) {
-      const formData = new FormData();
-      file.forEach(item => {
-        formData.append('file', item.raw)
-      })
-      this.$api.files.apiPostBuildingFiles(formData).then(response => {
-        this.$message('上傳成功')
-        this.getbufiles()
-      })
-    },
-    delfile(fileid) {
-      this.$confirm('是否確定刪除該筆資料?', '提示', {
-          confirmButtonText: '確定',
-          cancelButtonText: '取消',
-          type: 'warning',
-          center: true
-      }).then(() => {
-          this.$api.files.apiDeleteFile(fileid).then(response => {
-            this.$message('刪除成功')
-            this.getbufiles()
-          })
-       })
     }
   }
 }

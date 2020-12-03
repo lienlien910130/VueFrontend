@@ -2,7 +2,6 @@
 <el-upload
     ref="upload"
     action="upload"
-    accept="image/jpeg,image/gif,image/png,application/pdf"
     :on-preview="handlePreview"
     :on-remove="handleRemove"
     :on-change="handleChange"
@@ -18,6 +17,7 @@
         @click="submitupload"
     style="margin-left:10px" icon="el-icon-upload">上傳</el-button>
 </el-upload>
+<!-- accept="image/jpeg,image/gif,image/png,application/pdf" -->
 </template>
 
 <script>

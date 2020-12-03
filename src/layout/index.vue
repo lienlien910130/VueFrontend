@@ -7,16 +7,17 @@
     
     <div class="main-container">
       <sidebar class="sidebar-container" />
+      
       <div class="hamburger-container" >
         <hamburger :is-active="sidebar.opened" 
-        style="padding:0px" @toggleClick="toggleSideBar" :class="{close:!sidebar.opened}" />
+        style="padding:0px" @toggleClick="toggleSideBar" />
       </div>
       <!-- <hamburger :is-active="sidebar.opened" class="hamburger-container" 
       style="padding:0px" @toggleClick="toggleSideBar" :class="{close:!sidebar.opened}" /> -->
       <app-main />
     </div>
 
-    <div class="fixed-footer">
+    <div>
       <Footer/>
     </div>
   </div>
@@ -50,7 +51,7 @@ export default {
         withoutAnimation: this.sidebar.withoutAnimation,
         mobile: this.device === 'mobile'
       }
-    }
+    },
   },
   methods: {
     handleClickOutside() {
@@ -105,12 +106,15 @@ export default {
   }
 
   .hamburger-container{
-    min-height: calc(100vh - 125px);
-    float: left;
-    margin-left: 180px;
-    transition: margin-left 0.28s;
-    width:30px;
+    height: 30px;
+    margin-left: 0px;
+    position: relative;
     background-color: #d1e2ec;
-
   }
+
+  .openSidebar .hamburger-container{
+    margin-left: 180px;
+  }
+
+
 </style>

@@ -1,7 +1,7 @@
 #app {
 
   .main-container {
-    min-height: calc(100vh - 125px);
+    min-height: calc(100vh - 125px); // 90+35-30
     transition: margin-left .28s;
     //margin-left: $sideBarWidth;
     position: relative;
@@ -9,7 +9,7 @@
   
 
   .sidebar-container {
-    transition: width 0.28s;
+    transition: width 0.1s;
     width: $sideBarWidth !important;
     background-color: $menuBg;
     //min-height: calc(100vh - 90px);
@@ -95,11 +95,9 @@
 
   .hideSidebar {
     .sidebar-container {
-      width: 54px !important;
+      width: 0px !important;
     }
-    .hamburger-container{
-      margin-left: 54px !important;
-    }
+    
     .main-container {
       margin-left: 0px;
     }
@@ -168,6 +166,11 @@
     
     .app-main{
       margin-left: 0px;
+    }
+
+    .hamburger-container{
+      margin-left: 0px;
+      min-width: calc(100vw - 0px);
     }
 
     .sidebar-container {
