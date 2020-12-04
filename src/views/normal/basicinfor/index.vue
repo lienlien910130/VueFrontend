@@ -4,7 +4,7 @@
             <el-row :gutter="32">
                 <el-col :xs="24" :sm="24" :md="24" :lg="7">
                     <div class="block-wrapper">
-                        <p>基本資料</p>
+                        <h3>基本資料</h3>
                         <Form 
                         v-bind="formAttrs" v-on="formEvent"
                         />
@@ -48,7 +48,7 @@
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="7">
                     <div :class="floorwrapper">
-                        <p>大樓樓層</p>
+                        <h3>大樓樓層</h3>
                         <Range v-bind="rangeAttrs" v-on="rangeEvent"></Range>
                     </div>
                 </el-col>
@@ -644,9 +644,9 @@ export default {
 
   .floornotMobile {
     background: #fff;
-    padding: 0px 16px 15px;
+    padding: 10px;
     margin-bottom: 32px;
-    height: 700px;
+    height: 750px;
     overflow-x:hidden;
     overflow-y:auto;
   }

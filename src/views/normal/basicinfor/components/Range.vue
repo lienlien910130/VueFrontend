@@ -162,7 +162,7 @@ export default {
     border: 1px solid black;
     text-align: center;
     vertical-align: middle;
-    color: white;
+    color: #606266;
     font-weight:bold;
     font-size: 30px;
     line-height:50px;
@@ -187,5 +187,6 @@ export default {
   }
   .select {
     background: rgb(147, 180 , 197);
+    color: white;
   }
 </style>

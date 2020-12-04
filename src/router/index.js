@@ -28,7 +28,7 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index.vue'),
-      meta: { title: 'Dashboard', icon: 'dashboard', needLogin: true }
+      meta: { title: '首頁', icon: 'dashboard', needLogin: true }
     }],
     hidden: true
   },
@@ -111,7 +111,7 @@ export const constantRoutes = [
         path: 'basic',
         name: 'Basic',
         component: () => import('@/views/normal/basicinfor/index.vue'),
-        meta: { title: '基本資料', icon: 'icon', needLogin: true }
+        meta: { title: '基本資料', icon: 'one', needLogin: true }
       },
       // {
       //   path: 'history',
@@ -123,7 +123,7 @@ export const constantRoutes = [
         path: 'maintenance',
         name: 'Maintenance',
         component: () => import('@/views/normal/maintenance/index.vue'),
-        meta: { title: '維護保養', icon: 'icon', needLogin: true }
+        meta: { title: '維護保養', icon: 'two', needLogin: true }
       },
       {
         path: 'maintenancereport',

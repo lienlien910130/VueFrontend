@@ -76,4 +76,13 @@ width: 0 !important;height: 0;
 .el-button{
   margin: 5px;
 }
+.el-tabs--border-card>.el-tabs__header{
+  background-color:rgb(237,237,237);
+}
+.el-link{
+  font-size: 16px;
+}
+/* .el-form-item__label{
+  font-size: 16px;
+} */
 </style>

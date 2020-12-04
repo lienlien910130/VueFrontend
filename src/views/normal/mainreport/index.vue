@@ -136,22 +136,22 @@ export default {
               {
                 label: '缺失項目',
                 prop: 'lackItem',
-                mandatory:true, message:'請輸入缺失項目',format:'lackItem'
+                mandatory:true, message:'請輸入缺失項目',format:'input'
               },
               {
                 label: '缺失內容',
                 prop: 'lackContent',
-                mandatory:true, message:'請輸入缺失內容',format:'lackContent'
+                mandatory:true, message:'請輸入缺失內容',format:'textarea'
               },
               {
                 label: '改善狀況',
                 prop: 'improveContent',
-                mandatory:false, format:'improveContent'
+                mandatory:false, format:'textarea'
               },
               {
                 label: '改善狀態',
                 prop: 'status',
-                mandatory:false, format:'status'
+                mandatory:false, format:'select'
               },
             ],
             blockData: [],

@@ -2,7 +2,7 @@
 <div class="fireequ-container">
     <div class="fireequ-editor-container">
         
-        <FloorSelect 
+        <!-- <FloorSelect 
             style="margin-bottom: 20px;"
             v-bind="floorselectAttrs" 
             v-on="floorselectEvent">
@@ -47,83 +47,46 @@
                     </div>
                 </el-col>
             </el-row>
-        </div>
+        </div> -->
 
-        
+        <el-row>
+            <el-col :xs="24" :sm="24" :md="24" :lg="24">
+                <div class="block-wrapper">
+                    <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
+                </div>
+            </el-col>
+        </el-row>
     </div>
     
 </div>
 </template>
 <script>
 import { mapGetters } from 'vuex'
-import { getbuInfo } from '@/api/building'
 
 export default {
     name:'Device',
     components:{
-        FloorSelect: () => import('@/components/Select/index.vue'),
-        Canvas: () => import('./components/Canvas.vue'),
-        Checkbox: () => import('./components/Checkbox.vue'),
-        Window: () => import('@/components/Window/index.vue')
     },
     computed:{
-        ...mapGetters([
-            'id',
-            'buildingid'
-        ]),
-        floorselectAttrs() {
-            return {
-                selectData: this.selectData,
-                title:'Device'
-            }
-        },
-        floorselectEvent(){
-            return{
-                subChangeOption: this.handleSelectOption
-            }
-        }
+        
     },
     data() {
         return {
-            options:[],
-            selectData:[],
-            optionData:[],
-            isChose:false,
-            title:''
+           
         }
     },
     watch: {
-        buildingid: function(val){
-            
-        },
     },
     mounted() {
-        this.getfloors()
     },
     methods: {
-        getfloors() {
-            this.selectData = []
-            this.$api.building.apiGetBuildingFloors().then(response => {
-            response.result.forEach(element => {
-                var _temp = {
-                id:element.id,
-                label:element.floors>0 ? element.floors+'F' : '地下'+element.floors.substr(1)+'F'
-                }
-                this.selectData.push(_temp)
-            });
-            })
-        },
-        
-        handleSelectOption(content){
-            this.isChose = true
-        }
     }
 }
 </script>
 <style lang="scss" scoped>
 .fireequ-editor-container {
-  padding: 32px;
-  background-color: rgb(240, 242, 245);
+  padding: 15px;
+  background-color: rgb(209, 226, 236);
   position: relative;
   min-height: calc(100vh - 155px);
   max-height: calc(100vh - 155px);
@@ -132,11 +95,9 @@ export default {
 
   .block-wrapper {
     background: #fff;
-    padding: 0px 16px 15px;
+    padding: 10px;
     margin-bottom: 32px;
-    height: 700px;
-    overflow-x:hidden;
-    overflow-y:auto;
+    height: 720px;
   }
 }
 </style>

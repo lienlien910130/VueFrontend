@@ -4,6 +4,7 @@
 
 // 文章模块接口
 import building from '@/api/building';
+import device from '@/api/device';
 import files from '@/api/files';
 import report from '@/api/report';
 import setting from '@/api/setting';
@@ -12,6 +13,7 @@ import setting from '@/api/setting';
 // 导出接口
 export default {    
   building,
+  device,
   files,
   report,
   setting

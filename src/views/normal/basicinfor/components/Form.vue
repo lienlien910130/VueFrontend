@@ -278,20 +278,6 @@ export default {
   text-align: center;
 }
 
-.files {
-  width: 100%;
-  max-height: 200px;
-  overflow: auto;
-  .filesdiv{
-    line-height: 40px;
-  }
-}
 
-.del {
-  cursor: pointer;
-}
-.el-link{
-  display:inline;
-}
 </style>
 

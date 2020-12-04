@@ -24,7 +24,7 @@
               v-for="(item,index) in loadlist" 
               :key="index"
               >
-              <el-col :xs="24" :sm="12" :md="8" :lg="8">
+              <el-col :xs="24" :sm="12" :md="6" :lg="6">
                 <div class="dashboard-wrapper">
                     <div 
                     v-for="(option,index) in config"
@@ -48,7 +48,7 @@
 
                             <el-tag 
                             v-else-if="option.format == 'tag' "
-                            :type=" item[option.prop] === false ? 'danger' : '' "
+                            :class="item[option.prop] === false ? 'tag-co' : 'tag-noco' "
                             > 
                                 {{ tagChange(item[option.prop]) }}
                             </el-tag>
@@ -88,7 +88,7 @@
                     </div>
                     
                     
-                    <div v-if="isHasButtons" style="float:right">
+                    <div v-if="isHasButtons" style="float:right;margin-top:5px">
                         <span
                         v-for="(button, index) in buttonsName"
                         :key="index"
@@ -341,14 +341,14 @@ export default {
             if (this.$store.state.app.device === 'mobile') {
                 return '40%'
             } else {
-                return '30%'
+                return '40%'
             }
         },
         itemstyle(){
             if (this.$store.state.app.device === 'mobile') {
                 return '60%'
             } else {
-                return '70%'
+                return '60%'
             }
         },
         uploadEvent(){
@@ -573,12 +573,21 @@ export default {
 }
 
 .dashboard-wrapper{
-    background: #DEDEDE;
+    background-color: rgb(219,231,237);
     padding: 16px 16px;
     margin-bottom: 32px;
     overflow-x:hidden;
     overflow-y:auto;
     line-height: 25px;
+
+    .tag-co{
+        background-color:rgb(237,237,237);
+        color: red;
+    }
+    .tag-noco{
+        background-color:rgb(237,237,237);
+        color: #409EFF;
+    }
 }
 
 .files {

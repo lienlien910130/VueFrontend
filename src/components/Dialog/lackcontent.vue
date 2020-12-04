@@ -43,10 +43,10 @@
                     
                     <div v-if="scope.column.property == 'lackContent'"
                     v-html="stringToBr(scope.row[scope.column.property])"></div>
-                    <!-- <span v-else-if="item.format == 'status'">
+                    <span v-else-if="scope.column.property == 'status'">
                         {{  changelabel(scope.row[item.prop]) }}
                     </span>
-                    <span v-else>{{  scope.row[item.prop] }}</span> -->
+                    <span v-else>{{  scope.row[item.prop] }}</span>
                 </template>
             </el-table-column>
             
@@ -78,26 +78,22 @@ export default {
     },
     props:['lackVisible','tableData','lackconfig','itemkey','title','lackfileid'],
     watch:{
-        tableData:function(val) 
-        {
-            console.log('tabledata')
-        }
     },
     computed:{
         stringToBr(){
             return function (a) {
-                console.log(a)
-                return a
-                //return a.replace(/{ln}/g, "<br/>")
+                return a.replace(/{ln}/g, "<br/>")
             }
         },
         changelabel(){
             return function (a) {
-                var text = ""
-                this.$api.setting.apiGetOptionById(a).then(response => {
-                    text = response.result[0].textName
-                    return text
-                })
+                if(a !== null){
+                    var temp = this.lackstatusoption.filter((item, index) => 
+                    item.id == a 
+                )
+                    return temp[0].label
+                }
+                return ""
             }
         },
         uploadAttrs(){
@@ -140,9 +136,13 @@ export default {
             insertvisible:false,
             dialogStatus:'',
             lackData:[],
-            lackstatusoption:[]
+            lackstatusoption:[],
+            options:[]
 
         }
+    },
+    async mounted(){
+        await this.getstatusOption()
     },
     methods: {
         handleUploadOption(index,content){
@@ -195,7 +195,7 @@ export default {
                     return v
                 })
             })
-        },
+        }
     },
 }
 </script>
