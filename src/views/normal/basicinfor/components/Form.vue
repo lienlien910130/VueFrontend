@@ -174,13 +174,13 @@ export default {
       this.init()
     }
   },
-  mounted() {
-    this.init()
+  async mounted() {
+    await this.init()
   },
   methods: {
-    init(){
-      this.getbuInfo()
-      this.getbufloor()
+    async init(){
+      await this.getbuInfo()
+      await this.getbufloor()
     },
     opendialog() {
       this.$emit('subOpitonButton', 'createUser', '')
@@ -201,19 +201,19 @@ export default {
       var array2 = this.form.fireManagerId.split(',')
       this.form.fireManagerId = array2
     },
-    onSubmit() {
+    async onSubmit() {
       //把陣列轉換成字串
       this.$set(this.form, 'ownerId', this.form.ownerId.join(','))
       this.$set(this.form, 'fireManagerId', this.form.fireManagerId.join(','))
       var _array = []
       this.$set(this.form, 'linkOwners', _array)
       this.$set(this.form, 'linkFireManagers', _array)
-      this.$refs.form.validate(valid => {
+      this.$refs.form.validate(async(valid) => {
         if (valid) {
-          this.$api.building.apiPatchBuildingInfo(this.form).then(response => {
+          await this.$api.building.apiPatchBuildingInfo(this.form).then(async(response) => {
             this.$message('更新成功')
             this.type = 'view'
-            this.getbuInfo()
+            await this.getbuInfo()
           })
         }
       })
@@ -225,23 +225,14 @@ export default {
         this.$refs.form.clearValidate()
       })
     },
-    getbuInfo() {
-      this.$api.building.apiGetBuildingInfo().then(response => {
+    async getbuInfo() {
+      await this.$api.building.apiGetBuildingInfo().then(response => {
         this.refreshUser()
         this.form = response.result[0]
       })
     },
-    getbufiles() {
-      this.originFiles = []
-      this.$api.files.apiGetBuildingFiles().then(response => {
-        response.result.forEach(item => {
-          this.originFiles.push(item)
-
-        })
-      })
-    },
-    getbufloor() {
-      this.$api.building.apiGetBuildingFloors().then(response => {
+    async getbufloor() {
+      await this.$api.building.apiGetBuildingFloors().then(response => {
         if (response.result.length == 0) {
           if (this.form.floorsOfAboveGround !== 0) {
             this.crefloor("up", this.form.floorsOfAboveGround)

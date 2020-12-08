@@ -66,7 +66,7 @@ export default {
               },
               {
                 label: '設備',
-                prop: 'deviceNameID',
+                prop: 'deviceID',
                 format:'deviceselect',
                 mandatory:true, message:'請選擇設備'
               },
@@ -89,12 +89,6 @@ export default {
                 mandatory:true, message:'請選擇叫修日期'
               },
               {
-                label: '保固日期',
-                prop: 'dateOfWarranty',
-                format:'YYYY-MM-DD',
-                mandatory:true, message:'請選擇保固日期'
-              },
-              {
                 label: '處理進度',
                 prop: 'processStatus',
                 format:'processselect',
@@ -112,7 +106,7 @@ export default {
             maintaincontentoption:[],
             selectData:[],
             devicelist:[],
-            processdata:[]
+            processoption:[]
         }
     },
     computed: {
@@ -132,7 +126,7 @@ export default {
                 selectData: this.selectData,
                 maintaincontentoption:this.maintaincontentoption,
                 devicelist:this.devicelist,
-                processdata:this.processdata
+                processoption:this.processoption
             }
         },
         blockEvent() {
@@ -144,8 +138,11 @@ export default {
     async mounted() {
       await this.getbuInfo()
       await this.getcontactunitList()
-      await this.getmaintaincontentOption()
-      //await this.getdevice()
+      await this.getprocessoption()
+      await this.getmaintaincontentoption()
+      await this.getbuildingdevicesmanage()
+      await this.getbuildingmaintain()
+
     },
     methods:{
         async getbuInfo() {
@@ -157,6 +154,14 @@ export default {
                     firemanager:response.result[0].linkFireManagers
                 }
                 this.form = array
+            })
+        },
+        async getbuildingmaintain(){
+            this.blockData = []
+            var _temp = []
+            await this.$api.device.apiGetBuildingMaintains().then(response =>{
+                console.log(JSON.stringify(response))
+                this.blockData = response.result.sort((x,y) => y.id - x.id)
             })
         },
         async getcontactunitList(){
@@ -172,9 +177,8 @@ export default {
                     return v
               })
             })
-            
         },
-        async getmaintaincontentOption(){ 
+        async getmaintaincontentoption(){ 
             this.maintaincontentoption = []
             var _temp = []
             await this.$api.setting.apiGetOptions('MaintainContentOptions').then(response => {
@@ -188,27 +192,60 @@ export default {
                 })
             })
         },
-        async getdevice(){ 
-            this.devicelist = []
+        async getprocessoption(){ 
+            this.processoption = []
             var _temp = []
-            await this.$api.setting.apiGetOptions('MaintainContentOptions').then(response => {
+            await this.$api.setting.apiGetOptions('MaintainProcessOptions').then(response => {
                 console.log(JSON.stringify(response))
                 _temp = response.result.sort((x,y) => x.id - y.id)
-                this.devicelist = _temp.map(v => {
-                this.$set(v, 'textName', v.textName) 
-                this.$set(v, 'id', v.id) 
-                return v
+                this.processoption = _temp.map(v => {
+                    this.$set(v, 'value', v.id) 
+                    this.$set(v, 'label', v.textName) 
+                    this.$set(v, 'id', v.id) 
+                    return v
                 })
             })
         },
+        async getbuildingdevicesmanage(){
+            this.devicelist = []
+            var _temp = []
+            await this.$api.device.apiGetBuildingDevicesManagement().then(response =>{
+                console.log(JSON.stringify(response))
+                _temp = response.result.sort((x,y) => x.id - y.id)
+                this.devicelist = _temp.map(v => {
+                    this.$set(v, 'value', v.id) 
+                    this.$set(v, 'label', v.name) 
+                    this.$set(v, 'id', v.id) 
+                    return v
+                })
+            })
+        },
+
         async handleBlockOption(index, content) { //維護保養的操作
             console.log(index,JSON.stringify(content))
             if (index === 'update'){
-                
+                this.$api.device.apiPatchMaintains(JSON.stringify(content)).then(async(response) => {
+                    this.$message('更新成功')
+                    await this.getbuildingmaintain()
+                }).catch(error=>{
+                    console.log(error)
+                })
             }else if(index === 'create'){
-                
+                this.$api.device.apiPostMaintains(JSON.stringify(content)).then(async(response) => {
+                    this.$message('新增成功')
+                    await this.getbuildingmaintain()
+                }).catch(error=>{
+                    console.log(error)
+                })
             }else if(index === 'delete'){
-                
+                this.$api.device.apiDeleteMaintains(content).then(async(response) => {
+                    this.$message('刪除成功')
+                    await this.getbuildingmaintain()
+                }).catch(error=>{
+                    console.log(error)
+                })
+            }else if(index == 'opendialog'){
+              
             }
         },
     }

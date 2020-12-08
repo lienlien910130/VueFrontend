@@ -67,13 +67,6 @@ export default {
        this.choose = this.floorImage
     },
     methods:{
-        getFloorImagId(){
-            this.$api.building.apiGetFloor(this.selectfloor).then(response=> {
-                if(response.result[0].floorPlanID !== null){
-                    this.choose = (response.result[0].floorPlanID).toString()
-                }
-            })
-        },
         handleUploadOption(index,file){
             const formData = new FormData()
             file.forEach(item => {

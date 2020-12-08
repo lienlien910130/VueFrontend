@@ -35,6 +35,12 @@
                     v-on="settingBlockEvent"
                     ></LackStatus>
                 </el-col>
+                <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                    <MaintainProcess
+                    v-bind="processAttrs"
+                    v-on="settingBlockEvent"
+                    ></MaintainProcess>
+                </el-col>
             </el-row>
         </div>
     </div>
@@ -51,6 +57,7 @@ export default {
         MaintainContent: () => import('./components/SettingBlock.vue'),
         Brand: () => import('./components/SettingBlock.vue'),
         LackStatus: () => import('./components/SettingBlock.vue'),
+        MaintainProcess: () => import('./components/SettingBlock.vue'),
     },
     data(){
         return{
@@ -60,6 +67,7 @@ export default {
             maintaincontentoption:[],
             brandoption:[],
             lackstatusoption:[],
+            maintainprocessoption:[],
             type:'view',
             current:'',
             temp:[]
@@ -110,6 +118,14 @@ export default {
                 current:this.current
             }
         },
+        processAttrs(){
+            return{
+                title:'MaintainProcessOptions',
+                option:this.maintainprocessoption,
+                type:this.type,
+                current:this.current
+            }
+        },
         settingBlockEvent(){
             return{
                 subButton: this.handleButtonOption
@@ -122,6 +138,7 @@ export default {
         await this.getmaintaincontentOption()
         await this.getbrandOption()
         await this.getlackstatusOption()
+        await this.getmaintainprocessOption()
     },
     methods:{
         async getcontactunitOption(){ //取得大樓的廠商分類
@@ -191,6 +208,20 @@ export default {
                 })
             })
         },
+        async getmaintainprocessOption(){ //取得大樓的維護處理狀況
+            this.maintainprocessoption = []
+            var _temp = []
+            await this.$api.setting.apiGetOptions('MaintainProcessOptions').then(response => {
+                console.log(JSON.stringify(response))
+                _temp = response.result.sort((x,y) => x.id - y.id)
+                this.maintainprocessoption = _temp.map(v => {
+                    this.$set(v, 'value', v.value) 
+                    this.$set(v, 'textName', v.textName) 
+                    this.$set(v, 'id', v.id) 
+                return v
+                })
+            })
+        },
         async handleButtonOption(index,operation,content,value){
             console.log(index,operation,content,value)
             switch(operation){
@@ -238,6 +269,9 @@ export default {
                     case 'LackStatusOptions':
                         this.temp = JSON.stringify(this.lackstatusoption)
                         break;
+                    case 'MaintainProcessOptions':
+                        this.temp = JSON.stringify(this.maintainprocessoption)
+                        break;
                 }
             }else{
                 switch(index){
@@ -255,6 +289,9 @@ export default {
                         break;
                     case 'LackStatusOptions':
                         this.lackstatusoption = JSON.parse(this.temp)
+                        break;
+                    case 'MaintainProcessOptions':
+                        this.maintainprocessoption = JSON.parse(this.temp)
                         break;
                 }
             }
@@ -275,6 +312,9 @@ export default {
                     break;
                 case 'LackStatusOptions':
                     await this.getlackstatusOption()
+                    break;
+                case 'MaintainProcessOptions':
+                    await this.getmaintainprocessOption()
                     break;
             }
         },
@@ -331,6 +371,9 @@ export default {
                     
                     break;
                 case 'LackStatusOptions':
+                    
+                    break;
+                case 'MaintainProcessOptions':
                     
                     break;
             }

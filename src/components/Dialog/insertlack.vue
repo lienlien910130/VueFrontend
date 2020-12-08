@@ -28,6 +28,7 @@
                     v-model="temp[item.prop]"
                     type="string">
                     </el-input>
+
                     <el-input  
                     v-else-if="item.format == 'textarea'"
                     :ref="item.prop"
@@ -36,6 +37,7 @@
                     v-model="temp[item.prop]"
                     type="textarea">
                     </el-input>
+
                     <el-select
                     v-else-if="item.format =='select' "
                     v-model="temp[item.prop]"
@@ -50,6 +52,7 @@
                         >
                         </el-option>  
                     </el-select>
+
                 </el-form-item>
         </el-form>                        
         
@@ -114,6 +117,7 @@ export default {
     methods: {
         init(){
             this.temp = Object.assign({}, this.lackData)
+            console.log(JSON.stringify(this.selectData))
         },
         cancelData(){
             this.$emit('subCancelButton', 'cancel', '')

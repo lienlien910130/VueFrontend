@@ -41,7 +41,7 @@
                             </span>
                             
                             <span 
-                            v-else-if="option.format == 'range' | option.format === 'YYYY-MM-DD'">
+                            v-else-if="option.format == 'range' ">
                                 {{ dataStr(item['checkStartDate'],'YYYY-MM-DD') }} ~ 
                                 {{ dataStr(item['checkEndDate'],'YYYY-MM-DD') }}
                             </span>
@@ -70,13 +70,23 @@
                             type="text" @click="open(item[option.prop])" style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
                             <span 
-                            v-else-if="option.format == 'manageselect' ">
-                            {{ labelchange(item[option.prop]) }}
+                            v-else-if="option.format == 'manageselect' || option.format == 'contactunitselect' ">
+                            {{ selectStr(item[option.prop]) }}
+                            </span>
+
+                            <!-- <span 
+                            v-else-if="option.format == 'contactunitselect' ">
+                            {{ selectStr(item[option.prop]) }}
+                            </span> -->
+
+                            <span 
+                            v-else-if="option.format == 'deviceoptionselect' ">
+                            {{ deviceoptionselectStr(item[option.prop]) }}
                             </span>
 
                             <span 
-                            v-else-if="option.format == 'contactunitselect' ">
-                            {{ selectStr(item[option.prop]) }}
+                            v-else-if="option.format == 'brandselect' ">
+                            {{ brandselectselectStr(item[option.prop]) }}
                             </span>
 
                             <span
@@ -168,6 +178,20 @@
                     </el-select>
 
                     <el-select
+                    v-else-if="item.format =='brandselect' "
+                    v-model="temp[item.prop]"
+                    placeholder="請選擇"
+                    >
+                        <el-option
+                        v-for="(item,index) in brandoption"
+                        :key="index"
+                        :label="item.label"
+                        :value="item.id"
+                        >
+                        </el-option>  
+                    </el-select>
+
+                    <el-select
                     v-else-if="item.format =='deviceselect' "
                     v-model="temp[item.prop]"
                     placeholder="請選擇"
@@ -182,12 +206,26 @@
                     </el-select>
 
                     <el-select
+                    v-else-if="item.format =='deviceoptionselect' "
+                    v-model="temp[item.prop]"
+                    placeholder="請選擇"
+                    >
+                        <el-option
+                        v-for="(item,index) in devicetypeoption"
+                        :key="index"
+                        :label="item.label"
+                        :value="item.id"
+                        >
+                        </el-option>  
+                    </el-select>
+
+                    <el-select
                     v-else-if="item.format =='processselect' "
                     v-model="temp[item.prop]"
                     placeholder="請選擇"
                     >
                         <el-option
-                        v-for="(item,index) in processdata"
+                        v-for="(item,index) in processoption"
                         :key="index"
                         :label="item.label"
                         :value="item.id"
@@ -319,8 +357,10 @@ export default {
         },
         originFiles:{},
         maintaincontentoption:{},
+        devicetypeoption:{},
+        brandoption:{},
         devicelist:{},
-        processdata:{}
+        processoption:{}
     },
     computed: {
         label() {
@@ -405,11 +445,39 @@ export default {
         },
         selectStr(){
             return function (a) {
-                let _array = this.selectData.filter((item, index) => 
-                    item.id == a 
-                )
-                return _array[0].label
+                if(a !== null ){
+                    let _array = this.selectData.filter((item, index) => 
+                        item.id == a 
+                    )
+                    return _array[0].label
+                }else{
+                    return ""
+                }
             }   
+        },
+        deviceoptionselectStr(){
+            return function (a) {
+                if(a !== null ){
+                    let _array = this.devicetypeoption.filter((item, index) => 
+                        item.id == a 
+                    )
+                    return _array[0].label
+                }else{
+                    return ""
+                }
+            } 
+        },
+        brandselectselectStr(){
+            return function (a) {
+                if(a !== null ){
+                    let _array = this.brandoption.filter((item, index) => 
+                        item.id == a 
+                    )
+                    return _array[0].label
+                }else{
+                    return ""
+                }
+            } 
         },
         labelchange(){
             return function (a){

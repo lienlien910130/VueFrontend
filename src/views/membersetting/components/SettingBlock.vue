@@ -79,13 +79,16 @@ export default {
                     return '設備種類'
                     break;
                 case 'MaintainContentOptions':
-                    return '維護內容'
+                    return '維護保養內容'
                     break;
                 case 'BrandOptions':
                     return '廠牌名稱&型號'
                     break;
                 case 'LackStatusOptions':
                     return '缺失內容改善狀況'
+                    break;
+                case 'MaintainProcessOptions':
+                    return '維護保養處理狀況'
                     break;
             }
         },

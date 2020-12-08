@@ -24,24 +24,31 @@
                             <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
                           </el-tab-pane>
                           <el-tab-pane label="相關資料" name="BOT" >
-                            <div class="files">
-                              <div 
-                              v-for="(item,index) in buildingFiles" :key="item.id" class="filesdiv">
-                              <el-link 
-                              class="link" 
-                              :href="downloadbufile(item.id)" target="_blank" style="width:80%">
-                              【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
-                              </el-link>
-                              <span>
-                                <i class="el-icon-delete del" 
-                                style="float:right;font-size: 25px;margin-top:5px;width:20%" 
-                                @click="delfile(item.id)" />
-                              </span>
-                              </div>
-                            </div>
-                             <Upload
-                              v-on="uploadEvent"
-                              ></Upload>
+                            <el-form
+                              label-position="left" 
+                              label-width="auto" 
+                              >
+                              <el-form-item label="上傳檔案">
+                                  <Upload v-on="uploadEvent"></Upload>
+                              </el-form-item>
+                              <el-form-item label="檔案">
+                                  <div class="files">
+                                      <div 
+                                        v-for="(item,index) in buildingFiles" :key="item.id" class="filesdiv">
+                                        <el-link 
+                                            class="link" 
+                                            :href="downloadbufile(item.id)" target="_blank" >
+                                            【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
+                                        </el-link>
+                                        <span>
+                                              <i class="el-icon-delete del" 
+                                              style="float:right;font-size: 25px;margin-top:5px" 
+                                              @click="delfile(item.id)" />
+                                            </span>
+                                            </div>
+                                          </div>
+                                      </el-form-item>
+                            </el-form>
                           </el-tab-pane>
                         </el-tabs>
                     </div>
@@ -242,7 +249,7 @@ export default {
     buildingid:async function(val){
       this.activeName = 'MC'
       await this.gethouseOption()
-      await this.getManagementList()
+      await this.getmanagementList()
     },
     async activeFloor(val){ 
       await this.getfloorimageid()
@@ -251,7 +258,7 @@ export default {
       }else if(val == 'IM'){
         this.getFloorImage()
       }else {
-        this.getfloorfiles()
+        this.getfloorFiles()
       }
     },
     async activeName(val){ 
@@ -267,7 +274,7 @@ export default {
           { label:'緊急電話' , prop:'emergencyNumber',type:'string', mandatory:true, message:'請輸入內容', trigger: 'blur',pattern:'^[0-9]{10}$',errorMsg:'請輸入10位數',isPattern: true},
           { label:'備註' , prop:'note',type:'string',format:'textarea', mandatory:false}]
         await this.gethouseOption()
-        await this.getManagementList()
+        await this.getmanagementList()
       }else if(val == 'Vender'){
         this.tableConfig = [
           { label:'公司名稱' , prop:'name',type:'string', mandatory:true, message:'請輸入內容'},
@@ -287,7 +294,7 @@ export default {
   async mounted() {
     this.activeName = 'MC'
     await this.gethouseOption()
-    await this.getManagementList()
+    await this.getmanagementList()
   },
   methods: { 
     async getbufiles() {
@@ -298,7 +305,7 @@ export default {
         })
       })
     },
-    async getManagementList() { //取得管委會
+    async getmanagementList() { //取得管委會
       this.blockData = []
       await this.$api.building.apiGetCommittee().then(response => {
         this.blockData = response.result
@@ -318,6 +325,26 @@ export default {
           })
         this.origin = JSON.stringify(this.blockData)
         this.title = 'ContactUnit'
+      })
+    },
+    async getfloorList(){ //取得樓層資料
+      this.floorData = []
+      await this.$api.building.apiGetFloorOfHouse(this.selectfloor).then(response => {
+        response.result.forEach( item => {
+            let content = {
+                id:item.id,
+                floor: item.floor,
+                houseNumber: item.houseNumber,
+                placeName:item.placeName,
+                name:item.linkUsers[0].name,
+                cellphonenumber:item.linkUsers[0].cellPhoneNumber,
+                capacity:item.capacity,
+                note:item.note,
+                linkOwners:item.linkOwners[0].id,
+                linkUsers:item.linkUsers[0].id
+            }
+            this.floorData.push(content)
+        })
       })
     },
     async gethouseOption(){ //取得大樓所有門牌
@@ -360,26 +387,6 @@ export default {
         this.userdata.push(response.result[0])
       })
     },
-    async getfloorList(){ //取得樓層資料
-      this.floorData = []
-      await this.$api.building.apiGetFloorOfHouse(this.selectfloor).then(response => {
-        response.result.forEach( item => {
-            let content = {
-                id:item.id,
-                floor: item.floor,
-                houseNumber: item.houseNumber,
-                placeName:item.placeName,
-                name:item.linkUsers[0].name,
-                cellphonenumber:item.linkUsers[0].cellPhoneNumber,
-                capacity:item.capacity,
-                note:item.note,
-                linkOwners:item.linkOwners[0].id,
-                linkUsers:item.linkUsers[0].id
-            }
-            this.floorData.push(content)
-        })
-      })
-    },
     async getusageofFloorfiles(usageofFloorid){ //取得門牌檔案
       var _originFiles = []
       await this.$api.files.apiGetFloorOfHouseFiles(usageofFloorid).then(response=>{
@@ -389,7 +396,7 @@ export default {
         this.originFiles = _originFiles
       })
     },
-    async getfloorfiles(){ //取得樓層檔案
+    async getfloorFiles(){ //取得樓層檔案
       this.originFiles = []
       await this.$api.files.apiGetFloorFiles(this.selectfloor).then(response =>{
           response.result.forEach( item => {
@@ -436,7 +443,7 @@ export default {
           this.$set(content,"linkUsageOfFloors",unit)
           await this.$api.building.apiPatchCommittee(content).then(async(response) => {
             this.$message('更新成功')
-            await this.getManagementList()
+            await this.getmanagementList()
           })
         }else{
           this.$api.building.apiPatchContactUnit(content).then(async(response) => {
@@ -454,7 +461,7 @@ export default {
           this.$delete(content,'usageOfFloorId')
           await this.$api.building.apiPostCommittee(content).then(async(response) => {
             this.$message('新增成功')
-            await this.getManagementList()
+            await this.getmanagementList()
           })
         }else{
           this.$api.building.apiPostContactUnit(content).then(async(response) => {
@@ -462,11 +469,11 @@ export default {
             await this.getcontactunitList()
           })
         }
-      }else{
+      }else if(index == 'delete'){
         if(this.activeName === 'MC'){
           await this.$api.building.apiDeleteCommittee(content).then(async(response) => {
             this.$message('刪除成功')
-            await this.getManagementList()
+            await this.getmanagementList()
           })
         }else{
           this.$api.building.apiDeleteContactUnit(content).then(async(response) => {
@@ -474,6 +481,9 @@ export default {
             await this.getcontactunitList()
           })
         }
+      }else if(index == 'opendialog'){
+        await this.gethouseOption()
+        await this.getcontactunitOption()
       }
     },
     async handleFloorTableOption(index, content) { //樓層門牌相關操作
@@ -496,9 +506,15 @@ export default {
       }else if(index === 'create') {
         await this.$api.building.apiPostFloorOfHouse(this.selectfloor,content).then(async(response) => {
             this.$message('新增成功')
-            await this.gethouseOption()
+            //await this.gethouseOption()
             await this.getfloorList()
         })
+      }else if(index == 'delete'){
+        await this.$api.building.apiDeleteFloorOfHouse(content).then(async(response)=>{
+            this.$message('刪除成功')
+            //await this.gethouseOption()
+            await this.getfloorList()
+          })
       }else if (index === 'createUser'){
           this.userdata = []
           this.innerVisible = true
@@ -524,13 +540,9 @@ export default {
           await this.getusageofFloorfiles(content.id)
         })
       }else if(index == 'floorfile'){
-        await this.getfloorfiles()
-      }else{
-        await this.$api.building.apiDeleteFloorOfHouse(content).then(async(response)=>{
-            this.$message('刪除成功')
-            await this.gethouseOption()
-            await this.getfloorList()
-          })
+        await this.getfloorFiles()
+      }else if(index == 'opendialog'){
+
       }
     },
     async handleUserOption(index, content){ //大樓住戶相關操作
@@ -564,10 +576,10 @@ export default {
       }else if(this.activeFloor == 'IM'){
         await this.getFloorImage()
       }else {
-        await this.getfloorfiles()
+        await this.getfloorFiles()
       }
     },
-    async getfloorimageid(){
+    async getfloorimageid(){ //儲存floorimageID
       await this.$api.building.apiGetFloor(this.selectfloor).then(response=> {
           if(response.result[0].floorPlanID !== null){
             this.floorImage = (response.result[0].floorPlanID).toString()
@@ -575,8 +587,8 @@ export default {
             this.floorImage = null
           }
       })
-    },
-    async getFloorImage(){
+    }, 
+    async getFloorImage(){ //載入平面圖
       if(this.floorImage == null){
         this.imagesrc = -1
       }else{
@@ -588,10 +600,7 @@ export default {
         this.loading = false
       }
     },
-    downloadbufile(fileid) {
-      return "http://192.168.88.65:59119/basic/fileDownload/" + fileid
-    },
-    async handleUploadOption(index, file) {
+    async handleUploadOption(index, file) { //大樓相關資料操作
       const formData = new FormData();
       file.forEach(item => {
         formData.append('file', item.raw)
@@ -613,7 +622,10 @@ export default {
             await this.getbufiles()
           })
        })
-    }
+    },
+    downloadbufile(fileid) {
+      return "http://192.168.88.65:59119/basic/fileDownload/" + fileid
+    },
     
   }
 }
@@ -662,7 +674,7 @@ export default {
   }
 
 .files {
-  width: 50%;
+  
   max-height: 200px;
   overflow: auto;
   .filesdiv{

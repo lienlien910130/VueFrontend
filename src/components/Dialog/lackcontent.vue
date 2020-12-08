@@ -178,7 +178,7 @@ export default {
         },
         async handleCreate(){
             this.lackData = []
-            await this.getstatusOption()
+            //await this.getstatusOption()
             this.dialogStatus = 'create'
             this.insertvisible = true
         },
