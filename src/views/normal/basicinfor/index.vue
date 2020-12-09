@@ -14,14 +14,15 @@
                     <div class="block-wrapper">
                         <el-tabs v-model="activeName" type="border-card" 
                         >
-                        <el-tab-pane label="管委會" name="MC" >
-                            <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
+                          <el-tab-pane label="管委會" name="MC" >
+                          <CommunityBlock v-bind="communityAttrs" v-on="communityEvent" ></CommunityBlock>
                           </el-tab-pane>
                           <el-tab-pane label="廠商資料" name="Vender" >
                             <Select style="margin-bottom: 20px;" 
                                 v-bind="selectAttrs" v-on="selectEvent"
                             />
-                            <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
+                            <ContactUnitBlock v-bind="contactunitAttrs" v-on="contactunitEvent">
+                            </ContactUnitBlock>
                           </el-tab-pane>
                           <el-tab-pane label="相關資料" name="BOT" >
                             <el-form
@@ -98,14 +99,15 @@ export default {
   components: { 
     Select: () => import('@/components/Select/index.vue'),
     Table: () => import('@/components/Table/Table.vue'),
-    Block: () => import('@/components/Block/index.vue'),
+    CommunityBlock: () => import('@/components/Block/index.vue'),
     Form: () => import('./components/Form'),
     Floor: () => import('./components/Floor'),
     Range: () => import('./components/Range'),
     FloorBlock: () => import('@/components/Block/index.vue'),
     Other: () => import('./components/Other'),
     Dialog:() => import('@/components/Dialog/index.vue'),
-    Upload:() => import('@/components/Upload/index.vue')
+    Upload:() => import('@/components/Upload/index.vue'),
+    ContactUnitBlock: () => import('@/components/Block/index.vue')
   },
   computed: {
     ...mapGetters([
@@ -133,7 +135,8 @@ export default {
         selectfloor:this.selectfloor,
         floorImage:this.floorImage,
         imagesrc:this.imagesrc,
-        loading:this.loading
+        loading:this.loading,
+        targetId:this.$route.params.block == 'fl' ? this.targetId : ''
       }
     },
     floorEvent(){
@@ -141,16 +144,33 @@ export default {
         subOpitonButton: this.handleFloorTableOption
       }
     },
-    blockAttrs() {
+    communityAttrs() {
       return {
         blockData: this.blockData,
         buttonsName: this.buttonsName,
         config: this.tableConfig,
         title:this.title,
-        selectData: this.options
+        selectData: this.options,
+        options:this.options
       }
     },
-    blockEvent() {
+    communityEvent() {
+      return {
+        subOpitonButton: this.handleBlockOption
+      }
+    },
+    contactunitAttrs() {
+      return {
+        blockData: this.blockData,
+        buttonsName: this.buttonsName,
+        config: this.tableConfig,
+        title:this.title,
+        selectData: this.options,
+        options:this.options,
+        targetId:this.$route.params.block == 'co' ? this.targetId : ''
+      }
+    },
+    contactunitEvent() {
       return {
         subOpitonButton: this.handleBlockOption
       }
@@ -224,7 +244,6 @@ export default {
           { label:'所有人資料' , prop:'linkOwners',format:'ownerselect', mandatory:true, message:'請選擇用戶',trigger:'change'},
           { label:'使用人資料' , prop:'linkUsers',format:'userselect', mandatory:true, message:'請選擇用戶',trigger:'change'} ],
       floorData:[],
-      buttonsName: ['編輯','刪除'],
       selectData:[],
       userselectData:[],
       options:[],
@@ -242,15 +261,16 @@ export default {
       floorsFiles:[],
       floorImage:'',
       imagesrc:'',
-      loading:false
+      loading:false,
+      targetId:''
     }
   },
   watch: {
-    buildingid:async function(val){
-      this.activeName = 'MC'
-      await this.gethouseOption()
-      await this.getmanagementList()
-    },
+    // buildingid:async function(val){
+    //   this.activeName = 'MC'
+    //   await this.gethouseOption()
+    //   await this.getmanagementList()
+    // },
     async activeFloor(val){ 
       await this.getfloorimageid()
       if(val == 'IN'){
@@ -278,7 +298,7 @@ export default {
       }else if(val == 'Vender'){
         this.tableConfig = [
           { label:'公司名稱' , prop:'name',type:'string', mandatory:true, message:'請輸入內容'},
-          { label:'類別' , prop:'type', format:'contactunitselect', mandatory:true, message:'請選擇類別'},
+          { label:'類別' , prop:'type', format:'ContactUnitOptions', mandatory:true, message:'請選擇類別'},
           { label:'電話' , prop:'contactNumber',type:'string', mandatory:true, message:'請輸入內容',pattern:'^[0-9]{10}$',errorMsg:'請輸入10位數',isPattern: true},
           { label:'地址' , prop:'address',type:'string', mandatory:true, message:'請輸入內容'},
           { label:'備註' , prop:'note',type:'string',format:'textarea', mandatory:false},
@@ -295,6 +315,29 @@ export default {
     this.activeName = 'MC'
     await this.gethouseOption()
     await this.getmanagementList()
+    if(this.$route.params.target !== undefined){
+            this.$nextTick(async() => {
+              console.log(this.$route.params.block,this.$route.params.target)
+               if(this.$route.params.block == 'co'){
+                 this.activeName = 'Vender'
+                  this.options = []
+                  this.selectData = []
+                  this.tableConfig = [
+                      { label:'公司名稱' , prop:'name',type:'string', mandatory:true, message:'請輸入內容'},
+                      { label:'類別' , prop:'type', format:'ContactUnitOptions', mandatory:true, message:'請選擇類別'},
+                      { label:'電話' , prop:'contactNumber',type:'string', mandatory:true, message:'請輸入內容',pattern:'^[0-9]{10}$',errorMsg:'請輸入10位數',isPattern: true},
+                      { label:'地址' , prop:'address',type:'string', mandatory:true, message:'請輸入內容'},
+                      { label:'備註' , prop:'note',type:'string',format:'textarea', mandatory:false},
+                      { label:'狀態' , prop:'collaborate', format:'tag', type:'boolean', mandatory:false, message:'請輸入內容',typemessage:'',isPattern: false }
+                    ]
+                    await this.getcontactunitOption()
+                    await this.getcontactunitList()
+               }else if(this.$route.params.block == 'fl'){
+
+               }
+               this.targetId = this.$route.params.target
+            })
+        } 
   },
   methods: { 
     async getbufiles() {
@@ -350,6 +393,7 @@ export default {
     async gethouseOption(){ //取得大樓所有門牌
       await this.$api.building.apiGetBuildingOfHouse().then(response=>{
         this.selectData = response.result.sort((x,y) => x.id - y.id)
+        console.log(JSON.stringify(this.selectData))
         this.options = this.selectData.map(v => {
           this.$set(v, 'id', v.id) 
           this.$set(v, 'label', v.houseNumber) 
@@ -482,8 +526,8 @@ export default {
           })
         }
       }else if(index == 'opendialog'){
-        await this.gethouseOption()
-        await this.getcontactunitOption()
+        // await this.gethouseOption()
+        // await this.getcontactunitOption()
       }
     },
     async handleFloorTableOption(index, content) { //樓層門牌相關操作

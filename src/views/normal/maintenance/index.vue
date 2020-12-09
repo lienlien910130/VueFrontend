@@ -44,6 +44,7 @@
                     </div>
                 </el-col>
             </div>
+            <Dialog v-bind="dialogAttrs" v-on="dialogEvent"></Dialog>
         </div>
     </div>
 </template>
@@ -51,8 +52,8 @@
 
 export default {
     components:{ 
-      Block: () => import('@/components/Block/index.vue')
-      
+      Block: () => import('@/components/Block/index.vue'),
+      Dialog:() => import('@/components/Dialog/normal.vue'),
     },
     data(){
         return{
@@ -61,7 +62,7 @@ export default {
               {
                 label: '原因',
                 prop: 'reason',
-                format:'reasonselect',
+                format:'MaintainContentOptions',
                 mandatory:true, message:'請選擇原因'
               },
               {
@@ -69,12 +70,6 @@ export default {
                 prop: 'deviceID',
                 format:'deviceselect',
                 mandatory:true, message:'請選擇設備'
-              },
-              {
-                label: '維護廠商',
-                prop: 'contactUnitID',
-                format:'contactunitselect',
-                mandatory:true, message:'請選擇維護廠商'
               },
               {
                 label: '故障日期',
@@ -91,7 +86,7 @@ export default {
               {
                 label: '處理進度',
                 prop: 'processStatus',
-                format:'processselect',
+                format:'MaintainProcessOptions',
                 mandatory:true, message:'請選擇處理進度'
               },
               {
@@ -101,12 +96,14 @@ export default {
                 mandatory:true, message:'請選擇處理內容'
               },
             ],
+            deviceconfig:[],
             blockData: [],
             buttonsName: ['編輯','刪除'],
-            maintaincontentoption:[],
             selectData:[],
             devicelist:[],
-            processoption:[]
+            options:[],
+            innerVisible:false,
+            dialogStatus:''
         }
     },
     computed: {
@@ -124,24 +121,35 @@ export default {
                 config: this.tableConfig,
                 title:'Maintain',
                 selectData: this.selectData,
-                maintaincontentoption:this.maintaincontentoption,
                 devicelist:this.devicelist,
-                processoption:this.processoption
+                options:this.options
             }
         },
         blockEvent() {
             return {
                 subOpitonButton: this.handleBlockOption
             }
+        },
+        dialogAttrs(){
+            return{
+                visible: this.innerVisible,
+                dialogStatus: this.dialogStatus,
+                buttonsName: this.buttonsName,
+                config: this.deviceconfig,
+            }
+        },
+        dialogEvent(){
+            return{
+                subDeviceButton: this.handleDeviceOption
+            }
         }
     },
     async mounted() {
-      await this.getbuInfo()
-      await this.getcontactunitList()
-      await this.getprocessoption()
-      await this.getmaintaincontentoption()
-      await this.getbuildingdevicesmanage()
-      await this.getbuildingmaintain()
+        await this.getbuInfo()
+        await this.getcontactunitList()
+        await this.getOptions()
+        await this.getbuildingdevicesmanage()
+        await this.getbuildingmaintain()
 
     },
     methods:{
@@ -156,7 +164,7 @@ export default {
                 this.form = array
             })
         },
-        async getbuildingmaintain(){
+        async getbuildingmaintain(){ //取得大樓維護保養
             this.blockData = []
             var _temp = []
             await this.$api.device.apiGetBuildingMaintains().then(response =>{
@@ -164,7 +172,7 @@ export default {
                 this.blockData = response.result.sort((x,y) => y.id - x.id)
             })
         },
-        async getcontactunitList(){
+        async getcontactunitList(){ //取得大樓廠商資料
             this.selectData = []
             var _temp = []
             this.$api.building.apiGetContactUnit().then(response => {
@@ -178,27 +186,13 @@ export default {
               })
             })
         },
-        async getmaintaincontentoption(){ 
-            this.maintaincontentoption = []
+        async getOptions(){
+            this.options = []
             var _temp = []
-            await this.$api.setting.apiGetOptions('MaintainContentOptions').then(response => {
+            await this.$api.setting.apiGetBuildingOptions().then(response => {
                 console.log(JSON.stringify(response))
                 _temp = response.result.sort((x,y) => x.id - y.id)
-                this.maintaincontentoption = _temp.map(v => {
-                    this.$set(v, 'value', v.id) 
-                    this.$set(v, 'label', v.textName) 
-                    this.$set(v, 'id', v.id) 
-                    return v
-                })
-            })
-        },
-        async getprocessoption(){ 
-            this.processoption = []
-            var _temp = []
-            await this.$api.setting.apiGetOptions('MaintainProcessOptions').then(response => {
-                console.log(JSON.stringify(response))
-                _temp = response.result.sort((x,y) => x.id - y.id)
-                this.processoption = _temp.map(v => {
+                this.options = _temp.map(v => {
                     this.$set(v, 'value', v.id) 
                     this.$set(v, 'label', v.textName) 
                     this.$set(v, 'id', v.id) 
@@ -244,10 +238,17 @@ export default {
                 }).catch(error=>{
                     console.log(error)
                 })
-            }else if(index == 'opendialog'){
-              
+            }else if(index == 'openDevice'){
+                this.innerVisible = true
+                this.dialogStatus = 'update'
             }
         },
+        async handleDeviceOption(index, content){
+            if(index == 'cancel'){
+                this.innerVisible = false
+                this.dialogStatus = ''
+            }
+        }
     }
 }
 </script>

@@ -70,23 +70,34 @@
                             type="text" @click="open(item[option.prop])" style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
                             <span 
-                            v-else-if="option.format == 'manageselect' || option.format == 'contactunitselect' ">
+                            v-else-if="option.format == 'manageselect' ">
                             {{ selectStr(item[option.prop]) }}
                             </span>
 
-                            <!-- <span 
-                            v-else-if="option.format == 'contactunitselect' ">
-                            {{ selectStr(item[option.prop]) }}
-                            </span> -->
+                            <router-link v-else-if="option.format == 'contactunitselect' " 
+                            :to="{ name: 'Basic', params: { block:'co',target: item[option.prop] }}" target='_blank'
+                            style="color:blue">
+                                {{ selectStr(item[option.prop]) }}
+                            </router-link>
 
-                            <span 
-                            v-else-if="option.format == 'deviceoptionselect' ">
-                            {{ deviceoptionselectStr(item[option.prop]) }}
-                            </span>
+                            <router-link v-else-if="option.format == 'deviceselect' " 
+                            :to="{ name: 'Equipment', params: { target: item[option.prop] }}" target='_blank'
+                            style="color:blue">
+                                {{ deviceStr(item[option.prop]) }}
+                            </router-link>
+                            
+                            <!-- <el-button 
+                            v-else-if="option.format == 'deviceselect' "
+                            type="text" @click="opendevice(item[option.prop])" 
+                            style="padding:0px;margin:0px;font-size:16px">
+                            {{ deviceStr(item[option.prop]) }}</el-button> -->
 
-                            <span 
-                            v-else-if="option.format == 'brandselect' ">
-                            {{ brandselectselectStr(item[option.prop]) }}
+                             <span 
+                            v-else-if="option.format == 'MaintainContentOptions' || 
+                            option.format == 'DeviceOptions' || 
+                            option.format == 'MaintainProcessOptions' || 
+                            option.format == 'BrandOptions' || option.format == 'ContactUnitOptions' ">
+                            {{ optionfilter(item[option.prop]) }}
                             </span>
 
                             <span
@@ -97,7 +108,6 @@
                         </div>
                     </div>
                     
-                    
                     <div v-if="isHasButtons" style="float:right;margin-top:5px">
                         <span
                         v-for="(button, index) in buttonsName"
@@ -105,7 +115,7 @@
                         >
                         <el-button
                         :type="index == 0 ? 'primary' : 'info'"
-                        @click="handleClickOption(index,item,button)"
+                        @click="handleClickOption(item,button)"
                         >
                         <span >{{ button }}</span>
                         </el-button>
@@ -164,26 +174,13 @@
                         </el-date-picker>
                     </span>
                     <el-select
-                    v-else-if="item.format =='reasonselect' "
+                    v-else-if="item.format =='DeviceOptions' || item.format =='BrandOptions' || 
+                    item.format =='MaintainContentOptions' || item.format =='MaintainProcessOptions' "
                     v-model="temp[item.prop]"
                     placeholder="請選擇"
                     >
                         <el-option
-                        v-for="(item,index) in maintaincontentoption"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.id"
-                        >
-                        </el-option>  
-                    </el-select>
-
-                    <el-select
-                    v-else-if="item.format =='brandselect' "
-                    v-model="temp[item.prop]"
-                    placeholder="請選擇"
-                    >
-                        <el-option
-                        v-for="(item,index) in brandoption"
+                        v-for="(item,index) in option(item.format)"
                         :key="index"
                         :label="item.label"
                         :value="item.id"
@@ -203,35 +200,7 @@
                         :value="item.id"
                         >
                         </el-option>  
-                    </el-select>
-
-                    <el-select
-                    v-else-if="item.format =='deviceoptionselect' "
-                    v-model="temp[item.prop]"
-                    placeholder="請選擇"
-                    >
-                        <el-option
-                        v-for="(item,index) in devicetypeoption"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.id"
-                        >
-                        </el-option>  
-                    </el-select>
-
-                    <el-select
-                    v-else-if="item.format =='processselect' "
-                    v-model="temp[item.prop]"
-                    placeholder="請選擇"
-                    >
-                        <el-option
-                        v-for="(item,index) in processoption"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.id"
-                        >
-                        </el-option>  
-                    </el-select>
+                    </el-select> 
 
                     <el-select
                     v-else-if="item.format =='manageselect' || 
@@ -333,7 +302,8 @@ export default {
             required: true
         },
         buttonsName: {
-            type: Array
+            type: Array,
+            default:['編輯','刪除']
         },
         isHasButtons: {
             type: Boolean,
@@ -342,9 +312,6 @@ export default {
         config: {
             type: Array,
             required: true
-        },
-        userconfig: {
-            type: Array
         },
         title: {
             type: String
@@ -356,11 +323,11 @@ export default {
             type: Boolean
         },
         originFiles:{},
-        maintaincontentoption:{},
-        devicetypeoption:{},
-        brandoption:{},
         devicelist:{},
-        processoption:{}
+        options:{},
+        targetId:{
+            default: ''
+        }
     },
     computed: {
         label() {
@@ -445,7 +412,8 @@ export default {
         },
         selectStr(){
             return function (a) {
-                if(a !== null ){
+                if(a !== null && a !== undefined){
+                    console.log(a,this.selectData)
                     let _array = this.selectData.filter((item, index) => 
                         item.id == a 
                     )
@@ -455,10 +423,22 @@ export default {
                 }
             }   
         },
-        deviceoptionselectStr(){
+        optionfilter(){
             return function (a) {
                 if(a !== null ){
-                    let _array = this.devicetypeoption.filter((item, index) => 
+                    let _array = this.options.filter((item, index) => 
+                        item.id == a 
+                    )
+                    return _array[0].label
+                }else{
+                    return ""
+                }
+            }   
+        },
+        deviceStr(){
+            return function (a) {
+                if(a !== null ){
+                    let _array = this.devicelist.filter((item, index) => 
                         item.id == a 
                     )
                     return _array[0].label
@@ -467,32 +447,33 @@ export default {
                 }
             } 
         },
-        brandselectselectStr(){
+        option(){
             return function (a) {
                 if(a !== null ){
-                    let _array = this.brandoption.filter((item, index) => 
-                        item.id == a 
+                    let _array = this.options.filter((item, index) => 
+                        item.classType == a 
                     )
-                    return _array[0].label
+                    return _array
                 }else{
                     return ""
                 }
-            } 
-        },
-        labelchange(){
-            return function (a){
-                let data = this.selectData.filter((item, index) => 
-                    item.id == a 
-                )
-                return data[0].label
             }
-        },
+        }
         
     },
     watch: {
         blockData:function(){
             this.loadlist = this.blockData.slice(0, 9);
             this.count = 9
+        },
+        targetId:function(){
+            console.log('targetId=>'+this.targetId,this.loadlist)
+            if(this.targetId !== '' && this.targetId !== ':target'){
+                let _array = this.loadlist.filter((item, index) => 
+                item.id == this.targetId 
+            )
+                this.handleClickOption(_array[0],"編輯")
+            }
         }
     },
     data() {
@@ -513,7 +494,6 @@ export default {
             rangevalue: []
         }
     },
-
     methods: {
         loadMore() {
             this.loading = true;
@@ -549,7 +529,7 @@ export default {
                 this.temp = {}
             }
         },
-        handleClickOption(index, row, button) {
+        handleClickOption(row, button) {
             if (button === '刪除') {
                 this.$confirm('是否確定刪除該筆資料?', '提示', {
                 confirmButtonText: '確定',
@@ -603,6 +583,9 @@ export default {
         },
         open(id) {
             this.$emit('subOpitonButton', 'openUser', id)
+        },
+        opendevice(deviceId){
+            this.$emit('subOpitonButton', 'openDevice', deviceId)
         },
         openReportfile(id){
             this.$emit('subOpitonButton', this.title , id)

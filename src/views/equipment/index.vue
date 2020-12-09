@@ -76,8 +76,8 @@ export default {
                 config: this.tableConfig,
                 title:'Device',
                 selectData: this.selectData,
-                devicetypeoption:this.devicetypeoption,
-                brandoption:this.brandoption
+                options:this.options,
+                targetId:this.targetId
             }
         },
         blockEvent() {
@@ -94,19 +94,18 @@ export default {
                     {
                         label: '設備種類',
                         prop: 'type',
-                        format:'deviceoptionselect',
+                        format:'DeviceOptions',
                         mandatory:true, message:'請選擇設備種類'
                     },
                     {
                         label: '廠牌名稱',
                         prop: 'brand',
-                        format:'brandselect',
+                        format:'BrandOptions',
                         mandatory:true, message:'請選擇廠牌名稱'
                     },
                     {
                         label: '設備型號',
                         prop: 'productId',
-                        format:'brand',
                         mandatory:true, message:'請選擇廠牌名稱'
                     },
                     {
@@ -156,17 +155,21 @@ export default {
                     
                 ],
             selectData:[],
-            devicetypeoption:[],
-            brandoption:[]
+            options:[],
+            targetId:''
         }
     },
     watch: {
     },
     async mounted() {
-        await this.getdevicetypeOption() //設備種類
-        await this.getbrandOption() //廠牌名稱
+        await this.getOptions() //取得所有分類
         await this.getcontactunitList() //廠商資料
         await this.getbuildingdevicesmanage() //大樓的所有設備
+        if(this.$route.params.target !== undefined){
+            this.$nextTick(() => {
+               this.targetId = this.$route.params.target
+            })
+        }   
     },
     methods: {
         async getbuildingdevicesmanage(){
@@ -176,29 +179,16 @@ export default {
                 console.log(JSON.stringify(response))
                 this.blockData = response.result.sort((x,y) => y.id - x.id)
             })
+            
         },
-        async getdevicetypeOption(){ 
-            this.devicetypeoption = []
+        async getOptions(){
+            this.options = []
             var _temp = []
-            await this.$api.setting.apiGetOptions('DeviceOptions').then(response => {
+            await this.$api.setting.apiGetBuildingOptions().then(response => {
                 console.log(JSON.stringify(response))
                 _temp = response.result.sort((x,y) => x.id - y.id)
-                this.devicetypeoption = _temp.map(v => {
+                this.options = _temp.map(v => {
                     this.$set(v, 'value', v.id) 
-                    this.$set(v, 'label', v.textName) 
-                    this.$set(v, 'id', v.id) 
-                    return v
-                })
-            })
-        },
-        async getbrandOption(){ 
-            this.brandoption = []
-            var _temp = []
-            await this.$api.setting.apiGetOptions('BrandOptions').then(response => {
-                console.log(JSON.stringify(response))
-                _temp = response.result.sort((x,y) => x.id - y.id)
-                this.brandoption = _temp.map(v => {
-                    this.$set(v, 'value', v.value) 
                     this.$set(v, 'label', v.textName) 
                     this.$set(v, 'id', v.id) 
                     return v

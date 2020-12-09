@@ -222,11 +222,11 @@ export default {
                 })
             })
         },
-        async handleButtonOption(index,operation,content,value){
-            console.log(index,operation,content,value)
+        async handleButtonOption(index,operation,content){
+            console.log(index,operation,content)
             switch(operation){
                 case 'create':
-                    await this.PostData(index,content,value)
+                    await this.PostData(index,content)
                     break;
                 case 'update':
                     await this.UpdateData(index,content)
@@ -318,11 +318,10 @@ export default {
                     break;
             }
         },
-        async PostData(index,content,value){
+        async PostData(index,content){
             var temp = {
                     classType:index,
-                    textName:content,
-                    value:value
+                    textName:content
             }
             await this.$api.setting.apiPostOption(temp).then(response =>{
                     this.$message("新增成功")

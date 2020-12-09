@@ -68,36 +68,11 @@ export const constantRoutes = [
     // meta: { title: '設備管理', icon: 'el-icon-s-help', needLogin: true  },
     children: [
       {
-        path: 'index',
+        path: 'index/:target?',
         name: 'Equipment',
         component: () => import('@/views/equipment/index.vue'),
         meta: { title: '設備管理', icon: 'icon', needLogin: true }
-      },
-      // { 
-      //   path: 'construction',
-      //   name: 'Construction',
-      //   component: () => import('@/views/equipment/index'),
-      //   meta: { title: '測試頁面', icon: 'tree', needLogin: true }
-      // },
-      // {
-      //   path: 'prevention',
-      //   name: 'Prevention',
-      //   component: () => import('@/views/equipment/index'),
-      //   meta: { title: '防火/防煙設備', icon: 'tree', needLogin: true }
-      // },
-      // {
-      //   path: 'general',
-      //   name: 'General',
-      //   component: () => import('@/views/equipment/index'),
-      //   meta: { title: '一般設備', icon: 'tree', needLogin: true }
-      // },
-      // {
-      //   path: 'other',
-      //   name: 'Other',
-      //   component: () => import('@/views/equipment/index'),
-      //   meta: { title: '其他設備', icon: 'tree', needLogin: true }
-      // }
-      
+      }
     ]
   },
   {
@@ -108,7 +83,7 @@ export const constantRoutes = [
     meta: { title: '平時管理', icon: 'icon', needLogin: true  },
     children: [
       {
-        path: 'basic',
+        path: 'basic/:block?/:target?',
         name: 'Basic',
         component: () => import('@/views/normal/basicinfor/index.vue'),
         meta: { title: '基本資料', icon: 'one', needLogin: true }

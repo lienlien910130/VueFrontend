@@ -5,14 +5,14 @@
                     <span>{{ titleToch }}</span>
                     
                     <div style="margin-top:10px">
-                        <el-row v-if="title =='BrandOptions'">
+                        <!-- <el-row v-if="title =='BrandOptions'">
                             <el-input :style="{float: 'left', margin: '5px',width:'30%'}" v-model="input" placeholder="請輸入名稱"></el-input>
                             <el-input 
                             :style="{float: 'left', margin: '5px',width:'45%'}" v-model="value" placeholder="請輸入型號"></el-input>
                             <el-button style="float: right;" type="primary" 
                             @click="onSubmit">新增</el-button>
-                        </el-row>
-                        <el-row v-else>
+                        </el-row> -->
+                        <el-row >
                             <el-input :style="{float: 'left', margin: '5px',width:inputstyle}" v-model="input" placeholder="請輸入名稱"></el-input>
                             <el-button style="float: right;" type="primary" 
                             @click="onSubmit">新增</el-button>
@@ -26,11 +26,11 @@
                                 名稱：
                             </span>
                             <el-input v-model="item.textName" style="width:60%"></el-input>
-                            <span v-if="title =='BrandOptions'">
+                            <!-- <span v-if="title =='BrandOptions'">
                                 <br>
                                 型號：
                             </span>
-                            <el-input v-if="title =='BrandOptions'" v-model="item.value" style="width:60%"></el-input>
+                            <el-input v-if="title =='BrandOptions'" v-model="item.value" style="width:60%"></el-input> -->
                             <i class="el-icon-circle-close" style="float: right;font-size: 30px;margin-top:5px" @click="onCancel()"></i>
                             <i class="el-icon-circle-check" style="float: right;font-size: 30px;margin-top:5px" @click="onEdit(item)"></i>
                         </div>
@@ -38,17 +38,17 @@
                             <div :style="{display:'inline-block',width:labelstyle}">
                                  <span>
                                     {{ index+1 }}. 
-                                    <span v-if="title =='BrandOptions'">
+                                    <!-- <span v-if="title =='BrandOptions'">
                                         廠牌
-                                    </span> 
+                                    </span>  -->
                                     {{ item.textName }} 
                                 </span>
                             </div>
-                            <div v-if="title =='BrandOptions'" style="display:inline-block;width:30%">
+                            <!-- <div v-if="title =='BrandOptions'" style="display:inline-block;width:30%">
                                 <span >
                                     型號：{{ item.value }} 
                                 </span>
-                            </div>
+                            </div> -->
                             <span v-if="current == ''">
                                 <i class="el-icon-delete" style="float: right;font-size: 25px;" @click="checkDelete(item.id)"></i>
                                 <i class="el-icon-edit" style="float: right;font-size: 25px;" @click="changeEdit(item)"></i>
@@ -65,8 +65,7 @@ export default {
     props:['title','option','type','current'],
     data(){
         return{
-            input:'',
-            value:''
+            input:''
         }
     },
     computed:{
@@ -103,9 +102,9 @@ export default {
             if (this.$store.state.app.device === 'mobile') {
                 return '80%'
             } else {
-                if(this.title == 'BrandOptions'){
-                    return '40%'
-                }
+                // if(this.title == 'BrandOptions'){
+                //     return '40%'
+                // }
                 return '60%'
             }
         },
@@ -125,7 +124,7 @@ export default {
                     type: 'warning'
                 })
             }else{
-                this.$emit('subButton', this.title, 'create' , this.input,this.value)
+                this.$emit('subButton', this.title, 'create' , this.input)
             }
         },
         onCancel(){
