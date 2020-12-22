@@ -4,7 +4,6 @@ import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
-import getPageTitle from '@/utils/get-page-title'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
@@ -13,7 +12,7 @@ const whiteList = ['/login'] // no redirect whitelist
 router.beforeEach(async(to, from, next) => {
 
   NProgress.start()
-  document.title = getPageTitle(to.meta.title)
+  document.title = `${to.meta.title} - 智慧消防管理平台`
   const hasToken = getToken()
 
   if(to.meta.needLogin == true){ //判斷頁面是否需要登入

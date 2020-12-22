@@ -3,6 +3,7 @@
  */
 
 // 文章模块接口
+import user from '@/api/user';
 import building from '@/api/building';
 import device from '@/api/device';
 import files from '@/api/files';
@@ -12,6 +13,7 @@ import setting from '@/api/setting';
 
 // 导出接口
 export default {    
+  user,
   building,
   device,
   files,

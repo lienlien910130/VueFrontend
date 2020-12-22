@@ -82,6 +82,15 @@ width: 0 !important;height: 0;
 .el-link{
   font-size: 16px;
 }
+.editor-container{
+  padding: 15px;
+  background-color: rgb(209, 226, 236);
+  position: relative;
+  min-height: calc(100vh - 155px);
+  max-height: calc(100vh - 155px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 /* .el-form-item__label{
   font-size: 16px;
 } */

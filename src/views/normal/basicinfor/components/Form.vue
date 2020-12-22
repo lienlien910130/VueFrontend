@@ -39,36 +39,36 @@
         <el-input ref="licenseNumber" name="licenseNumber" v-model="form.licenseNumber" :disabled="type === 'view' ? true : false" />
       </el-form-item>
       <el-form-item label="所有權人" prop="ownerId">
-        <el-select v-if="this.type === 'edit' && this.selectData.length" filterable multiple v-model="form.ownerId">
-          <el-option v-for="(item,index) in selectData" :key="index" :label="item.label" :value="item.id">
+        <el-select v-if="this.type === 'edit'" filterable multiple v-model="form.ownerId">
+          <el-option v-for="(item,index) in buildingUsers" :key="index" :label="item.label" :value="item.id">
           </el-option>
         </el-select>
-        <el-input v-else-if="this.type === 'view' && form.ownerId == null && this.selectData.length > 0" ref="linkOwners" name="linkOwners" placeholder="請設定所有權人" disabled></el-input>
-        <el-button v-else-if="this.selectData.length == 0" type="text" @click="opendialog">新增用戶</el-button>
+        <el-input v-else-if="this.type === 'view' && form.ownerId == null && this.buildingUsers.length > 0" ref="linkOwners" name="linkOwners" placeholder="請設定所有權人" disabled></el-input>
+        <el-button v-else-if="this.buildingUsers.length == 0" type="text" @click="openDialog">新增用戶</el-button>
         <el-input v-else-if="form.linkOwners.length" ref="linkOwners" name="linkOwners" :placeholder="change(form.ownerId)" disabled>
           <template slot="append">
-            <el-link :underline="false" @click="openuser(form.ownerId)">查看</el-link>
+            <el-link :underline="false" @click="openUser(form.ownerId)">查看</el-link>
           </template>
         </el-input>
       </el-form-item>
       <el-form-item label="防火管理人" prop="fireManagerId">
-        <el-select v-if="this.type === 'edit' && this.selectData.length" filterable multiple v-model="form.fireManagerId">
-          <el-option v-for="(item,index) in selectData" :key="index" :label="item.label" :value="item.id">
+        <el-select v-if="this.type === 'edit' " filterable multiple v-model="form.fireManagerId">
+          <el-option v-for="(item,index) in buildingUsers" :key="index" :label="item.label" :value="item.id">
           </el-option>
         </el-select>
-        <el-input v-else-if="this.type === 'view' && form.fireManagerId == null && this.selectData.length>0" ref="linkFireManagers" name="linkFireManagers" placeholder="請設定防火管理人" disabled></el-input>
-        <el-button v-else-if="this.selectData.length == 0" type="text" @click="opendialog">新增用戶</el-button>
+        <el-input v-else-if="this.type === 'view' && form.fireManagerId == null && this.buildingUsers.length>0" ref="linkFireManagers" name="linkFireManagers" placeholder="請設定防火管理人" disabled></el-input>
+        <el-button v-else-if="this.buildingUsers.length == 0" type="text" @click="openDialog">新增用戶</el-button>
         <el-input v-else-if="form.linkFireManagers.length" ref="linkFireManagers" name="linkFireManagers" :placeholder="change(form.fireManagerId)" disabled>
           <template slot="append">
-            <el-link :underline="false" @click="openuser(form.fireManagerId)">查看</el-link>
+            <el-link :underline="false" @click="openUser(form.fireManagerId)">查看</el-link>
           </template>
         </el-input>
       </el-form-item>
     </el-form>
     <div style="float:right">
       <el-button type="primary" @click="onEdit" v-if="type === 'view' ">修改</el-button>
-        <el-button type="primary" @click="onSubmit" v-if="type === 'edit' ">儲存</el-button>
-        <el-button type="info" @click="onCancel" v-if="type === 'edit' ">取消</el-button>
+      <el-button type="primary" :loading="loading"  @click="postBuildingInfo" v-if="type === 'edit' ">儲存</el-button>
+      <el-button type="info" @click="onCancel" v-if="type === 'edit' ">取消</el-button>
     </div>
   </div>
 </template>
@@ -76,11 +76,8 @@
 import { mapGetters } from 'vuex'
 
 export default {
-  components: {
-    Upload: () => import('@/components/Upload/index.vue')
-  },
   props: {
-    selectData: {
+    buildingUsers: {
       type: Array
     }
   },
@@ -101,7 +98,7 @@ export default {
           var str = ""
           var _array = a.split(',')
           _array.forEach(element => {
-            let data = this.selectData.filter((item, index) =>
+            let data = this.buildingUsers.filter((item, index) =>
               item.id == element
             )
             str = str.concat(data[0].label).concat(',')
@@ -109,7 +106,7 @@ export default {
           str = str.substring(0, str.length - 1)
           return str
         } else {
-          let data = this.selectData.filter((item, index) =>
+          let data = this.buildingUsers.filter((item, index) =>
             item.id == a
           )
           return data[0].label
@@ -166,7 +163,8 @@ export default {
         ownerId: [{ required: true, trigger: 'change', message: '請選擇所有權人' }],
         fireManagerId: [{ required: true, trigger: 'change', message: '請選擇防火管理人' }]
       },
-      linkOwners: ''
+      linkOwners: '',
+      loading:false
     }
   },
   watch:{
@@ -179,21 +177,19 @@ export default {
   },
   methods: {
     async init(){
-      await this.getbuInfo()
-      await this.getbufloor()
+      this.getUsers()
+      await this.getBuildingInfo()
+      await this.getBuildingFloor()
     },
-    opendialog() {
-      this.$emit('subOpitonButton', 'createUser', '')
+    openDialog() {
+      this.$emit('handleBuildingInfo', 'empty', '')
     },
-    refreshUser() {
-      this.$emit('subOpitonButton', 'refreshUser', '')
-    },
-    openuser(id) {
-      this.$emit('subOpitonButton', 'viewUser', id)
+    openUser(id) {
+      this.$emit('handleBuildingInfo', 'open', id)
     },
     onEdit() {
       //把字串轉換成陣列
-      this.$emit('subOpitonButton', 'edit', '')
+      this.$emit('handleBuildingInfo', 'readbuildingUsers', '')
       this.type = 'edit'
       this.origin = JSON.stringify(this.form)
       var array1 = this.form.ownerId.split(',')
@@ -201,8 +197,9 @@ export default {
       var array2 = this.form.fireManagerId.split(',')
       this.form.fireManagerId = array2
     },
-    async onSubmit() {
+    async postBuildingInfo() {
       //把陣列轉換成字串
+      this.loading = true
       this.$set(this.form, 'ownerId', this.form.ownerId.join(','))
       this.$set(this.form, 'fireManagerId', this.form.fireManagerId.join(','))
       var _array = []
@@ -212,8 +209,9 @@ export default {
         if (valid) {
           await this.$api.building.apiPatchBuildingInfo(this.form).then(async(response) => {
             this.$message('更新成功')
+            this.loading = false
             this.type = 'view'
-            await this.getbuInfo()
+            await this.getBuildingInfo()
           })
         }
       })
@@ -225,13 +223,15 @@ export default {
         this.$refs.form.clearValidate()
       })
     },
-    async getbuInfo() {
+    getUsers(id) {
+      this.$emit('handleBuildingInfo', 'readbuildingUsers', '')
+    },
+    async getBuildingInfo() {
       await this.$api.building.apiGetBuildingInfo().then(response => {
-        this.refreshUser()
         this.form = response.result[0]
       })
     },
-    async getbufloor() {
+    async getBuildingFloor() {
       await this.$api.building.apiGetBuildingFloors().then(response => {
         if (response.result.length == 0) {
           if (this.form.floorsOfAboveGround !== 0) {

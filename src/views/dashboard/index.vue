@@ -1,33 +1,32 @@
 <template>
-  <div class="dashboard-container">
-    <div class="dashboard-editor-container">
+    <div class="editor-container">
       <!-- <div class="dashboard-text">name: {{ name }} </div>
       <div class="dashboard-text">roles: <span v-for="role in roles" :key="role">{{ role }}</span></div> -->
-      <Select style="margin-bottom: 20px;" v-on:setselect="setselect"/>
+      <!-- <Select style="margin-bottom: 20px;" v-on:setselect="setselect"/> -->
 
       <el-row :gutter="32">
         <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
-            <pie-chart v-on:setcurrentnode="setcurrentnode" v-on:setloadtree="setloadtree" :selectbuild="selectbuild"/>
+            <pie-chart 
+            :percentage="deviceGroup"
+            v-on:handleChartClick="handleChartClick" 
+            v-on:setloadtree="setloadtree" 
+            />
           </div>
         </el-col>
         <el-col :xs="24" :sm="24" :md="16" :lg="16">
           <div class="chart-wrapper">
-            <Tree :currentnode="currentnode" :loadtree="loadtree" v-on:setvisible="setvisible"/> 
+            <Tree 
+            :treeData="deviceGroup"
+            :currentnode="currentnode" 
+            :loadtree="loadtree" 
+            v-on:setvisible="setvisible"/> 
           </div>
         </el-col>
       </el-row>
         <Dialog :dialogTableVisible="dialogTableVisible" :dialogData="dialogData" v-on:setvisible="setvisible"/>
 
- <!-- <div v-for="item in viewlist" :key="item.id">
-            <el-col :xs="24" :sm="24" :md="8" :lg="8">
-              <div class="chart-wrapper">
-                <p>{{ item.name }}</p>
-              </div>
-            </el-col>
-          </div> -->
-        
-        <el-row  :gutter="32">
+        <!-- <el-row  :gutter="32">
           <div class="infinite-list-wrapper">
             <div 
             class="list"  
@@ -49,16 +48,9 @@
             </div>
             <p v-if="loading">加載中...</p>
           </div>
-        </el-row>
-        <!-- <el-col 
-        :xs="24" :sm="24" :md="8" :lg="8">
-          <div class="chart-wrapper" @click="expand()">
-            <p>+</p>
-          </div>
-        </el-col> -->
-        
+        </el-row> -->
+
     </div>
-  </div>
 </template>
 
 <script>
@@ -68,7 +60,6 @@ import constant from '../../../src/constant';
 export default {
   name: 'Dashboard',
   components: {
-    Select: () => import('@/components/Select/index.vue'),
     PieChart: () => import('./components/PieChart'),
     Tree: () => import('./components/Tree'),
     Dialog: () => import('./components/Dialog'),
@@ -77,10 +68,6 @@ export default {
     Elevator: () =>  import('./components/Elevator'),
   },
   computed: {
-    ...mapGetters([
-      'account',
-      'roles'
-    ]),
     noMore () {
       return this.count >= this.viewlist.length 
     },
@@ -90,6 +77,9 @@ export default {
   },
   data() {
     return {
+      deviceData:[],
+      deviceGroup:[],
+
       typelist: '',
       currentnode: '',
       selectbuild:'',
@@ -101,10 +91,11 @@ export default {
       count: 9
     }
   },
-  mounted() {
+  async mounted() {
+    await this.getBuildingDevicesManage()
   },
   methods: {
-     loadMore() {
+    loadMore() {
       this.loading = true;
       setTimeout(() => {
         this.count += 3;
@@ -113,6 +104,21 @@ export default {
         }
         this.loading = false;
       }, 2000)
+    },
+    async getBuildingDevicesManage() { //取得設備
+      this.deviceData = []
+      var _temp = []
+      await this.$api.device.apiGetBuildingDevicesManagement().then(response => {
+        this.deviceData = response.result.sort((x,y) => x.id - y.id)
+        _temp.push(this.deviceData.filter((item, index) => 
+                        item.status == '良好'),this.deviceData.filter((item, index) => 
+                        item.status == '損壞'),this.deviceData.filter((item, index) => 
+                        item.status == '叫修中'))
+        this.deviceGroup = _temp
+      })
+    },
+    handleChartClick(type){
+
     },
     settypelist(val) {
       this.typelist = val
@@ -146,15 +152,7 @@ export default {
     line-height: 46px;
   }
 }
-.dashboard-editor-container {
-  padding: 20px;
-  background-color: #d1e2ec;
-  position: relative;
-  min-height: calc(100vh - 155px);
-  max-height: calc(100vh - 155px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  
+
   .chart-wrapper {
     background: #fff;
     padding: 5px 16px 0;
@@ -172,13 +170,12 @@ export default {
     overflow-x:hidden;
     overflow-y:auto;
   }
-}
+
 
 .infinite-list-wrapper {
     height:1000px; // 1. 指定高度
 	  overflow: auto; // 2. 内容超过指定高度 出现滚动条
 	  width: 100%;
-	  
 }
 
 @media (max-width:1024px) {

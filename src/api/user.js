@@ -1,36 +1,11 @@
-import request from '@/utils/request'
+import req from './https';
+import store from '../store'
 
-export function getversion(data) {
-  return request({
-    url: '/vue-admin-template/user/version',
-    method: 'get',
-    data
-  })
+const user = { 
+  getUid(){ return store.getters.id},
+  apiPostLogin(data){ return req('post','/users/login',data) },
+  apiPostLogout(data){ return req('post','/vue-admin-template/user/logout',data) },
+  apiGetUserInfo(){ return req('get','/users/'+this.getUid()+'/info') }
 }
 
-export function login(data) {
-  return request({
-    //url: '/vue-admin-template/user/login',
-    url: '/users/login',
-    method: 'post',
-    data
-  })
-}
-
-export function getInfo(id) {
-  return request({
-    //url: '/vue-admin-template/user/info',
-    url: '/users/'+ id+'/info',
-    method: 'get'
-    //params: { id }
-    
-  })
-}
-
-export function logout() {
-  return request({
-    url: '/vue-admin-template/user/logout',
-    method: 'post'
-  })
-}
-
+export default user

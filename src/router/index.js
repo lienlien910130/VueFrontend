@@ -9,17 +9,16 @@ export const constantRoutes = [
   {
     path: '/login',
     name: 'Login',
+    meta: { title: '登入'},
     component: () => import('@/views/login/index.vue'),
     hidden: true
   },
-
   {
     path: '/404',
     name: '404',
     component: () => import('@/views/404.vue'),
     hidden: true
   },
-
   {
     path: '/',
     component: Layout,
@@ -37,7 +36,6 @@ export const constantRoutes = [
     path: '/graphic',
     component: Layout,
     redirect: '/graphic/index',
-    //meta: { title: '圖控系統', icon: 'icon', needLogin: true  },
     children: [
       {
         path: 'index',
@@ -65,7 +63,6 @@ export const constantRoutes = [
     path: '/equipment',
     component: Layout,
     redirect: '/equipment/index',
-    // meta: { title: '設備管理', icon: 'el-icon-s-help', needLogin: true  },
     children: [
       {
         path: 'index/:target?',
@@ -88,12 +85,6 @@ export const constantRoutes = [
         component: () => import('@/views/normal/basicinfor/index.vue'),
         meta: { title: '基本資料', icon: 'one', needLogin: true }
       },
-      // {
-      //   path: 'history',
-      //   name: 'History',
-      //   component: () => import('@/views/normal/equhistory/index'),
-      //   meta: { title: '設備履歷', icon: 'table', needLogin: true }
-      // },
       {
         path: 'maintenance',
         name: 'Maintenance',
@@ -103,12 +94,12 @@ export const constantRoutes = [
       {
         path: 'maintenancereport',
         name: 'Maintenancereport',
-        component: () => import('@/views/normal/mainreport/index.vue'),
+        component: () => import('@/views/normal/maintenancereport/index.vue'),
         meta: { title: '檢修申報', icon: 'icon', needLogin: true }
       },
       {
-        path: 'public',
-        name: 'Public',
+        path: 'publicreport',
+        name: 'Publicreport',
         component: () => import('@/views/normal/publicreport/index.vue'),
         meta: { title: '公安申報', icon: 'icon', needLogin: true }
       }

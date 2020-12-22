@@ -11,13 +11,10 @@ import { equipment  } from '@/api/index'
 
 export default {
   mixins: [resize],
-  props:['selectbuild'],
-  computed: {
-    ...mapGetters([
-      'account',
-      'roles',
-      'id'
-    ])
+  props:{
+    percentage:{
+      type:Array
+    }
   },
   data() {
     return {
@@ -25,6 +22,7 @@ export default {
     }
   },
   mounted() {
+    //this.init()
   },
   beforeDestroy() {
     if (!this.chart) {
@@ -37,39 +35,45 @@ export default {
     seriesData(val) {
       this.setOptions({series:val})
     },
-    selectbuild: function() {
-        this.getEquipment(this.selectbuild)
-    },
+    percentage:{
+      handler:function(){
+        if(this.percentage.length > 0){
+           this.init()
+        }
+      },
+      immediate:true
+    }
   },
   methods: {
-    getEquipment(buildingid) {
-      equipment(buildingid).then( respone => {
-        this.$nextTick(() => {
-          this.chart = null
-          this.chart = echarts.init(this.$el, 'macarons')
-          this.setOption(respone.data.count)
-          this.$emit('setloadtree', buildingid)
-          this.chart.on('click',params => {
-            this.$emit('setcurrentnode', params.data.type)
-          })
-        })
-
-      }).catch( error => {
-          console.log('error=>' + error)
+    init(){
+      this.chart = null
+      this.chart = echarts.init(this.$el, 'macarons')
+      this.setOption(this.percentage[0].length,this.percentage[1].length,this.percentage[2].length)
+      this.$emit('handleChartClick', '損壞')
+      this.chart.on('click',params => {
+        this.$emit('handleChartClick', params.data.type)
       })
+      // this.$nextTick(() => {
+      //   this.chart = null
+      //   this.chart = echarts.init(this.$el, 'macarons')
+      //   this.setOption(this.percentage[0].length,this.percentage[1].length,this.percentage[2].length)
+      //   this.$emit('setloadtree', buildingid)
+      //   this.chart.on('click',params => {
+      //     this.$emit('setcurrentnode', params.data.type)
+      //   })
+      // })
     },
-    setOption(count) {
+    setOption(one,two,three) {
       this.chart.setOption({
         tooltip: {
           trigger: 'item',
           formatter: '{a} <br/>{b} : {c} ({d}%)',
           show: true
-
         },
         legend: {
           left: 'center',
           bottom: '15',
-          data: ['妥善', '損壞', '叫修'],
+          data: ['良好', '損壞', '叫修中'],
           textStyle:{ fontSize: 24 }
         },
         series: [
@@ -80,9 +84,9 @@ export default {
             radius: [15, 95],
             center: ['50%', '42%'],
             data: [
-              { value: count[0], name: '妥善',type:'good' },
-              { value: count[1], name: '損壞',type:'damage' },
-              { value: count[2], name: '叫修',type:'repair' }
+              { value: one, name: '良好',type:'良好' },
+              { value: two, name: '損壞',type:'損壞' },
+              { value: three, name: '叫修中',type:'叫修中' }
             ],
             animationEasing: 'cubicInOut',
             label:{
@@ -94,7 +98,6 @@ export default {
                     },
                     formatter: '{d}%',
                 },
-
             },
             itemStyle: {
                   emphasis: {
@@ -105,8 +108,8 @@ export default {
                   normal: {
                       borderWidth: 3,
                       borderColor: '#fff'
-                  },
-            },
+                  }
+            }
           }
         ]
       })

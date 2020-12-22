@@ -9,7 +9,6 @@ const building = {
     apiGetBuildingInfo(){ return req('get','/index/'+this.getUid()+'/buildings/'+this.getBid()+'/info') } , //取得該建築物的基本資料
     apiPatchBuildingInfo(data){ return req('patch','/basic/'+this.getUid()+'/buildings/info',data) }, //修改建築物資料
     apiDeleteBuildingInfo(){ return req('delete','/index/'+this.getUid()+'/buildings/'+this.getBid()+'/info') },
-    
     //管委會
     apiGetCommittee(){ return req('get','/basic/'+this.getBid()+'/community-management-committee') },
     apiPostCommittee(data){ return req('post','/basic/'+this.getBid()+'/community-management-committee',data) },
@@ -20,7 +19,6 @@ const building = {
     apiPostContactUnit(data){ return req('post','/basic/'+this.getBid()+'/contact-unit',data) },
     apiPatchContactUnit(data){ return req('patch','/basic/contact-unit',data) },
     apiDeleteContactUnit(contactunitId){ return req('delete','/basic/'+contactunitId+'/contact-unit') },
-
     //樓層
     apiGetBuildingFloors(){ return req('get','/basic/building/'+this.getBid()+'/a/floors') },
     apiGetFloor(floorId){ return req('get','/basic/floors/'+floorId) },
@@ -43,9 +41,6 @@ const building = {
     apiGetFloorOfHouseUser(floorofhouseId){ return req('get','/basic/usageOfFloors/'+floorofhouseId+'/house-holders') },
     apiPostFloorOfHouseUser(floorofhouseId,data){ return req('post','/basic/usageOfFloors/'+floorofhouseId+'/house-holders',data) },
     
-
-
-
 }
 
 export default building

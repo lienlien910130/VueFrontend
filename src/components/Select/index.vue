@@ -7,7 +7,7 @@
   filterable
   >
     <el-option
-    v-if="title=='ContactUnit' "
+    v-if="title=='contactunit' || title=='equipment' "
     label="全部"
     key=""
     value="all"
@@ -45,17 +45,16 @@ export default {
           if(this.title == 'Building'){
             this.defaultvalue = this.selectData[0].id
             this.$store.dispatch('building/setbuildingid',this.defaultvalue)
-          }else if(this.title == 'ContactUnit'){
+          }else if(this.title == 'contactunit' || this.title == 'equipment'){
             this.defaultvalue = 'all'
           }
-          
         }
     },
     methods: {
         currentSel(select){
           const tempData = this.selectData.filter((item, index) => 
               item.id == select )
-          this.$emit('subChangeOption', tempData.length>0 ? tempData : undefined)
+          this.$emit('handleSelect', tempData.length>0 ? tempData : undefined)
         }
     },
   }

@@ -1,11 +1,4 @@
-/**
- * Created by PanJiaChen on 16/11/18.
- */
 
-/**
- * @param {string} path
- * @returns {Boolean}
- */
 export function isExternal(path) {
   return /^(https?:|mailto:|tel:)/.test(path)
 }
@@ -18,6 +11,17 @@ export function isExternal(path) {
 export function validUsername(str) {
   const valid_map = ['admin', 'editor']
   return valid_map.indexOf(str.trim()) >= 0
+}
+
+export function isEmail(value,callback){
+  if (!value) {
+    return callback(new Error('輸入不可以為空'));
+  }
+  var pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/
+  if((pattern.test(value))){
+    return callback()
+  }
+  return callback(new Error('輸入的Email格式錯誤'))
 }
 
 export function isPhone(rule, value, callback) {
@@ -48,6 +52,17 @@ export function isInteger(rule, value, callback) {
       }
     }
   }, 1000);
+}
+
+export function isFloat(rule, value, callback) {
+  let numberReg = /^\d+$|^\d+[.]?\d+$/
+  if (!numberReg.test(value)) {
+    callback(new Error('請輸入正確格式'))
+  } else if (value == '') {
+    callback(new Error('請輸入內容'))
+  } else {
+    callback()
+  }
 }
 
 export function isDecimal(rule, value, callback) {

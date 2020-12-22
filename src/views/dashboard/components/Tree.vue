@@ -90,24 +90,24 @@ import dialog from './Dialog'
       },
       loadTree() {
         this.savaData = [{
-              id:'11',
+              id:'-1',
               name:'損壞',
               type:'damage',
               count:'0',
               children: []
           }, {
-              id:'12',
+              id:'-2',
               name:'叫修',
               type:'repair',
               count:'0',
               children: []
           },{
-              id:'13',
+              id:'-3',
               name:'妥善',
               type:'good',
               count:'0',
               children: []
-          }];
+          }]
 
           for (let i = 0; i < this.savaData.length; i++){
               if( i === this.savaData.length-1 ) this.finaltype === true

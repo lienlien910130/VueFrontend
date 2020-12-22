@@ -4,12 +4,11 @@
             
             <div>
                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <p v-if="isChoose == false && title === 'floor'">請選擇樓層</p>
-                <el-button v-else 
+                <el-button
                     class="filter-item" 
                     style="" 
                     type="primary" 
-                    @click="handleCreate">
+                    @click="handleClickOption('empty','')">
                         新增
                 </el-button>
                 </el-col>
@@ -53,46 +52,44 @@
                                 {{ tagChange(item[option.prop]) }}
                             </el-tag>
 
-                            <el-button 
-                            v-else-if="option.format == 'hide-f' "
-                            type="text" @click="openReportfile(item['id'])" style="padding-top:0px;padding-bottom:0px">查看</el-button>
-
-                            <el-button 
-                            v-else-if="option.format == 'hide-l' "
-                            type="text" @click="openReportLackfile(item['id'])" style="padding-top:0px;padding-bottom:0px">查看</el-button>
-                            
-                            <el-button 
-                            v-else-if="option.format == 'userselect' "
-                            type="text" @click="open(item[option.prop])" style="padding-top:0px;padding-bottom:0px">查看</el-button>
-
-                            <el-button 
-                            v-else-if="option.format == 'ownerselect' "
-                            type="text" @click="open(item[option.prop])" style="padding-top:0px;padding-bottom:0px">查看</el-button>
-
                             <span 
-                            v-else-if="option.format == 'manageselect' ">
+                            v-else-if="option.format == 'select' ">
                             {{ selectStr(item[option.prop]) }}
                             </span>
 
-                            <router-link v-else-if="option.format == 'contactunitselect' " 
-                            :to="{ name: 'Basic', params: { block:'co',target: item[option.prop] }}" target='_blank'
-                            style="color:blue">
-                                {{ selectStr(item[option.prop]) }}
-                            </router-link>
+                            <span 
+                            v-else-if="option.format == 'deviceStatusSelect' ">
+                                <el-tag 
+                                v-if="item[option.prop] === '良好' "
+                                class="tag-noco"
+                                > 
+                                {{ item[option.prop] }}
+                                </el-tag>
+                                <el-tag 
+                                v-else-if="item[option.prop] === '損壞' "
+                                class="tag-co"
+                                > 
+                                {{ item[option.prop] }}
+                                </el-tag>
+                                <el-tag 
+                                v-else
+                                class="tag-mid"
+                                > 
+                                {{ item[option.prop] }}
+                                </el-tag>
+                            </span>
 
-                            <router-link v-else-if="option.format == 'deviceselect' " 
-                            :to="{ name: 'Equipment', params: { target: item[option.prop] }}" target='_blank'
-                            style="color:blue">
-                                {{ deviceStr(item[option.prop]) }}
-                            </router-link>
-                            
-                            <!-- <el-button 
-                            v-else-if="option.format == 'deviceselect' "
-                            type="text" @click="opendevice(item[option.prop])" 
-                            style="padding:0px;margin:0px;font-size:16px">
-                            {{ deviceStr(item[option.prop]) }}</el-button> -->
+                            <el-button 
+                            v-else-if="option.format == 'userInfo' "
+                            type="text" @click="handleClickOption('opendialog',item[option.prop])" 
+                            style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
-                             <span 
+                            <el-button 
+                            v-else-if="option.format == 'openfiles' "
+                            type="text" @click="handleClickOption('openfiles',item['id'])" 
+                            style="padding-top:0px;padding-bottom:0px">查看</el-button>
+
+                            <span 
                             v-else-if="option.format == 'MaintainContentOptions' || 
                             option.format == 'DeviceOptions' || 
                             option.format == 'MaintainProcessOptions' || 
@@ -100,10 +97,23 @@
                             {{ optionfilter(item[option.prop]) }}
                             </span>
 
-                            <span
-                            v-else-if="option.format == 'floor' ">
-                            </span>
-                            
+                            <router-link v-else-if="option.format == 'deviceSelect' " 
+                            :to="{ name: 'Equipment', params: { target: item[option.prop] }}" target='_blank'
+                            style="color:blue">
+                                {{ deviceStr(item[option.prop]) }}
+                            </router-link>
+
+                            <router-link v-else-if="option.format == 'contactunitSelect' " 
+                            :to="{ name: 'Basic', params: { block:'co',target: item[option.prop] }}" target='_blank'
+                            style="color:blue">
+                                {{ selectStr(item[option.prop]) }}
+                            </router-link>
+
+                            <el-button 
+                            v-else-if="option.format == 'openlacks' "
+                            type="text" @click="handleClickOption('openlacks',item['id'])" 
+                            style="padding-top:0px;padding-bottom:0px">查看</el-button>
+
                             <span v-else>{{ item[option.prop] }}</span>
                         </div>
                     </div>
@@ -115,9 +125,9 @@
                         >
                         <el-button
                         :type="index == 0 ? 'primary' : 'info'"
-                        @click="handleClickOption(item,button)"
+                        @click="handleClickOption(button.status,item)"
                         >
-                        <span >{{ button }}</span>
+                        <span >{{ button.name }}</span>
                         </el-button>
                         </span>
                     </div>
@@ -125,165 +135,7 @@
               </el-col>
               </div>
             </div>
-
             <p v-if="loading">加載中...</p>
-
-            <el-dialog 
-            :width="dialogWidth"
-            :title="textMap[dialogStatus]" 
-            :visible="dialogFormVisible"
-            :close-on-click-modal='false'
-            @close="cancelData"
-            center
-            >
-                <el-form 
-                ref="dataForm"  
-                :model="temp" 
-                :label-position="label" 
-                label-width="auto">
-                    <el-form-item 
-                        v-for="(item, index) in config"
-                        :key="index"
-                        :prop="item.prop"
-                        :label="item.label"
-                        v-show="item.format !== 'hide' && 
-                        item.format !== 'hide-f' && item.format !== 'hide-l' "
-                        :rules="[
-                            { required: item.mandatory, message: item.message},
-                            item.isPattern ? { pattern: item.pattern , message:item.errorMsg } : { type: item.type, message: item.typemessage }
-                        ]"
-                    >
-                    <el-date-picker 
-                    v-if="item.format == 'YYYY'" 
-                    v-model="temp[item.prop]" value-format="yyyy-MM-dd" type="year" /> 
-                    
-                    <el-date-picker 
-                    v-else-if="item.format == 'YYYY-MM-DD'" 
-                    v-model="temp[item.prop]" value-format="yyyy-MM-dd" type="date" /> 
-
-                    <span v-else-if="item.format == 'range'">
-                        <el-date-picker
-                            ref="picker"
-                            v-model="rangevalue"
-                            type="daterange"
-                            range-separator="至"
-                            start-placeholder="開始日期"
-                            end-placeholder="結束日期"
-                            format="yyyy-MM-dd"
-                            value-format="yyyy-MM-dd">
-                        </el-date-picker>
-                    </span>
-                    <el-select
-                    v-else-if="item.format =='DeviceOptions' || item.format =='BrandOptions' || 
-                    item.format =='MaintainContentOptions' || item.format =='MaintainProcessOptions' "
-                    v-model="temp[item.prop]"
-                    placeholder="請選擇"
-                    >
-                        <el-option
-                        v-for="(item,index) in option(item.format)"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.id"
-                        >
-                        </el-option>  
-                    </el-select>
-
-                    <el-select
-                    v-else-if="item.format =='deviceselect' "
-                    v-model="temp[item.prop]"
-                    placeholder="請選擇"
-                    >
-                        <el-option
-                        v-for="(item,index) in devicelist"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.id"
-                        >
-                        </el-option>  
-                    </el-select> 
-
-                    <el-select
-                    v-else-if="item.format =='manageselect' || 
-                    item.format =='userselect' || item.format =='ownerselect' 
-                    || item.format =='contactunitselect' "
-                    v-model="temp[item.prop]"
-                    placeholder="請選擇"
-                    >
-                        <el-option
-                        v-for="(item,index) in selectData"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.id"
-                        >
-                        </el-option>  
-                    </el-select>
-                    
-                    <el-checkbox 
-                        v-else-if="item.format == 'tag' "
-                        v-model="temp[item.prop]"
-                        >
-                        {{ checkboxChange(temp[item.prop]) }}
-                    </el-checkbox>
-
-                    <el-input v-else-if="item.format =='textarea'"
-                    :ref="item.prop"
-                    :name="item.prop"
-                    v-model="temp[item.prop]" 
-                    :autosize="{ minRows: 4, maxRows: 8}"
-                    type="textarea">
-                    </el-input>
-
-                    <el-input v-else
-                    :ref="item.prop"
-                    :name="item.prop"
-                    v-model="temp[item.prop]" >
-                    </el-input>
-
-                    </el-form-item>
-                    
-                </el-form>
-
-                <div v-if="title == 'floor' && dialogStatus == 'update' ">
-                    <el-form
-                        :label-position="label" 
-                        label-width="auto" 
-                        >
-                            <el-form-item label="檔案">
-                                <div
-                                class="files"
-                                v-for="(item,index) in originFiles"
-                                :key="item.id"
-                                >
-                                    <el-link 
-                                    class="link"
-                                    :href="downloadbufile(item.id)" target="_blank">{{ index+1 }}.{{ item.fileOriginalName }}
-                                    </el-link>
-                                    <span>
-                                        <i class="el-icon-delete del" style="float:right;font-size: 25px;" @click="delfile(item.id)" />
-                                    </span>
-                                </div>
-                            </el-form-item>
-                            <el-form-item label="上傳檔案">
-                                <Upload v-on="uploadEvent"></Upload>
-                            </el-form-item>
-                    </el-form>
-                </div>
-                
-                <div slot="footer" class="dialog-footer">
-                    <el-button 
-                    v-if="title === 'floor'"
-                    @click="createuser()">
-                    新增用戶資料
-                    </el-button>
-                    <el-button type="info" @click="cancelData()">
-                    取消
-                    </el-button>
-                    <el-button type="primary" @click="sendData()">
-                    儲存
-                    </el-button>
-                </div>
-            </el-dialog>
-
         </div>
     </el-row>
 </template>
@@ -294,7 +146,7 @@ import api from '@/api';
 
 export default {
     components:{
-        Upload: () => import('@/components/Upload/index.vue')
+        
     },
     props:{
         blockData: {
@@ -302,8 +154,7 @@ export default {
             required: true
         },
         buttonsName: {
-            type: Array,
-            default:['編輯','刪除']
+            type: Array
         },
         isHasButtons: {
             type: Boolean,
@@ -319,12 +170,13 @@ export default {
         selectData: {
             type: Array
         },
-        isChoose:{
-            type: Boolean
+        deviceList: {
+            type: Array
         },
-        originFiles:{},
-        devicelist:{},
-        options:{},
+        options: {
+            type: Array
+        },
+
         targetId:{
             default: ''
         }
@@ -358,11 +210,6 @@ export default {
                 return '60%'
             }
         },
-        uploadEvent(){
-            return {
-                subOpitonButton: this.handleUploadOption
-            }
-        },
         noMore () {
          return this.count >= this.blockData.length
         },
@@ -380,7 +227,7 @@ export default {
         },
         tagChange(){
             return function (a) {
-                if(this.title == 'ReportInspectio' | this.title == 'ReportPublicSafe'){
+                if(this.title == 'reportInspectio' | this.title == 'reportPublicSafe'){
                     switch(a){
                         case false:
                             return '未改善'
@@ -389,7 +236,7 @@ export default {
                             return '已改善'
                             break;    
                     }
-                }else if(this.title == 'ContactUnit'){
+                }else if(this.title == 'contactunit'){
                     switch(a){
                         case false:
                             return '未配合'
@@ -401,19 +248,9 @@ export default {
                 }
             }
         },
-        checkboxChange(){
-            return function (a) {
-                if(this.title == 'ReportInspectio' | this.title == 'ReportPublic'){
-                    return '改善'
-                }else if(this.title == 'ContactUnit'){
-                    return '配合'
-                }
-            }
-        },
         selectStr(){
             return function (a) {
                 if(a !== null && a !== undefined){
-                    console.log(a,this.selectData)
                     let _array = this.selectData.filter((item, index) => 
                         item.id == a 
                     )
@@ -438,7 +275,7 @@ export default {
         deviceStr(){
             return function (a) {
                 if(a !== null ){
-                    let _array = this.devicelist.filter((item, index) => 
+                    let _array = this.deviceList.filter((item, index) => 
                         item.id == a 
                     )
                     return _array[0].label
@@ -446,20 +283,7 @@ export default {
                     return ""
                 }
             } 
-        },
-        option(){
-            return function (a) {
-                if(a !== null ){
-                    let _array = this.options.filter((item, index) => 
-                        item.classType == a 
-                    )
-                    return _array
-                }else{
-                    return ""
-                }
-            }
         }
-        
     },
     watch: {
         blockData:function(){
@@ -472,7 +296,7 @@ export default {
                 let _array = this.loadlist.filter((item, index) => 
                 item.id == this.targetId 
             )
-                this.handleClickOption(_array[0],"編輯")
+                this.handleClickOption('update',_array[0])
             }
         }
     },
@@ -480,17 +304,13 @@ export default {
         return {
             loading : false,
             count : 9,
-            dialogFormVisible: false,
-            innerVisible:false,
             textMap: {
                 update: '編輯',
                 create: '新增'
             },
             dialogStatus: '',
             temp: {},
-            origin:[],
             loadlist:[],
-            innerdata:{},
             rangevalue: []
         }
     },
@@ -506,109 +326,43 @@ export default {
                 this.loading = false;
             }, 500);
         },
-        handleCreate() {
-            if(this.title == 'ContactUnit' && this.selectData.length == 0){
-                this.$message({
-                    showClose: true,
-                    message: '請先至設定新增廠商類別',
-                    type: 'warning'
-                });
-            }else if(this.title == 'Management' && this.selectData.length == 0){
-                this.$message({
-                    showClose: true,
-                    message: '請先至下方點選樓層新增門牌',
-                    type: 'warning'
-                });
-            }else{
-                this.dialogStatus = 'create'
-                this.rangevalue = []
-                this.dialogFormVisible = true
-                this.$nextTick(() => {
-                    this.$refs['dataForm'].clearValidate()
-                })
-                this.temp = {}
-            }
-        },
-        handleClickOption(row, button) {
-            if (button === '刪除') {
+        // handleCreate() {
+        //     if(this.title == 'ContactUnit' && this.selectData.length == 0){
+        //         this.$message({
+        //             showClose: true,
+        //             message: '請先至設定新增廠商類別',
+        //             type: 'warning'
+        //         });
+        //     }else if(this.title == 'Management' && this.selectData.length == 0){
+        //         this.$message({
+        //             showClose: true,
+        //             message: '請先至下方點選樓層新增門牌',
+        //             type: 'warning'
+        //         });
+        //     }else{
+        //         this.dialogStatus = 'create'
+        //         this.rangevalue = []
+        //         this.dialogFormVisible = true
+        //         this.$nextTick(() => {
+        //             this.$refs['dataForm'].clearValidate()
+        //         })
+        //         this.temp = {}
+        //     }
+        // },
+        handleClickOption(status,row) {
+            if (status === 'delete') {
                 this.$confirm('是否確定刪除該筆資料?', '提示', {
                 confirmButtonText: '確定',
                 cancelButtonText: '取消',
                 type: 'warning',
                 center: true
                 }).then(() => {
-                this.dialogStatus = 'delete'
-                this.$emit('subOpitonButton', this.dialogStatus, row.id)
+                this.$emit('handleBlock',this.title,status, row.id)
                 }).catch(() => {
-                    this.dialogStatus = ''
-                });
-            } else {
-                this.dialogStatus = 'update'
-                this.dialogFormVisible = true
-                this.$nextTick(() => {
-                   this.$refs['dataForm'].clearValidate()
                 })
-                if(this.title == 'ReportInspectio'){
-                    if(row['checkStartDate'] !== null){
-                        this.rangevalue = [row['checkStartDate'],row['checkEndDate'],]
-                    }
-                }
-                this.temp = Object.assign({}, row)
-                if(this.title == 'floor'){
-                    this.$emit('subOpitonButton', 'getfiles', row.id)
-                }
+            } else {
+                this.$emit('handleBlock',this.title,status, row)
             } 
-        },
-        cancelData(){
-            this.dialogFormVisible = false
-        },
-        //新增或更新的操作
-        sendData(){
-            if(this.title == 'ReportInspectio'){
-                this.temp['checkStartDate'] = this.rangevalue[0]
-                this.temp['checkEndDate'] = this.rangevalue[1]
-            }
-            const tempData = Object.assign({}, this.temp)
-            this.$refs.dataForm.validate(valid =>{
-              if(valid){
-                this.$emit('subOpitonButton', this.dialogStatus, tempData)
-                setTimeout(() => {
-                    this.dialogFormVisible = false
-                }, 1000);
-              }
-            })
-        },
-        createuser(){
-            this.$emit('subOpitonButton', 'createUser', '')
-        },
-        open(id) {
-            this.$emit('subOpitonButton', 'openUser', id)
-        },
-        opendevice(deviceId){
-            this.$emit('subOpitonButton', 'openDevice', deviceId)
-        },
-        openReportfile(id){
-            this.$emit('subOpitonButton', this.title , id)
-        },
-        openReportLackfile(id){
-            this.$emit('subOpitonButton', this.title+'Lack', id)
-        },
-        handleUploadOption(index,file){
-            var _array = { 
-                id: this.temp['id'],
-                file: file
-            }
-            this.$emit('subOpitonButton', index, _array)
-        },
-        downloadbufile(fileid){
-            return "http://192.168.88.65:59119/basic/fileDownload/"+fileid
-        },
-        delfile(fileid){
-            var temp = { 
-                id: this.temp['id'],
-                fileid: fileid
-            }
-            this.$emit('subOpitonButton', 'deletefile', temp)
         }
     }
 }
@@ -616,7 +370,6 @@ export default {
 
 <style lang="scss" scoped>
 .infinite-list-wrapper {
-    
 	width: 100%;
     .filter-item{
         float: right;
@@ -638,6 +391,10 @@ export default {
     .tag-noco{
         background-color:rgb(237,237,237);
         color: #409EFF;
+    }
+    .tag-mid{
+        background-color:rgb(237,237,237);
+        color: #e6a23c;
     }
 }
 

@@ -1,9 +1,14 @@
 const path = require('path')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const vueSrc = "./src";
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const vueSrc = "./src"
+const webpack = require('webpack')
+
+function resolve(dir) {
+  return path.join(__dirname, dir)
+}
 
 module.exports = {
   entry: './src/main.js',
@@ -19,53 +24,54 @@ module.exports = {
         test: /\.vue$/,
         loader: 'vue-loader'
       },
-      // this will apply to both plain `.js` files
-      // AND `<script>` blocks in `.vue` files
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        // loader: 'babel-loader',
-        // options: {
-        //     presets: ['env']
-        // },
-        // query: { compact: false }
         use: {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env'],
-              plugins: ['@babel/plugin-proposal-object-rest-spread'],
-              compact: false
-            }
+          loader: 'babel-loader',
+          options: {
+            plugins: ['syntax-dynamic-import']
           }
-      },
-      // this will apply to both plain `.css` files
-      // AND `<style>` blocks in `.vue` files
-      {
-        test: /\.css$/,
-        loader: 'vue-style-loader!css-loader',
-        
-        // use: [ 'style-loader', 'css-loader' ]
-        // use: ExtractTextPlugin.extract(
-        //   {
-        //     fallback: 'style-loader',
-        //     use: [ 'vue-style-loader', 'css-loader' ]
-        //   })
-      },
-      {
-        test: /\.(png|jpg|gif|svg)$/,
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]?[hash]',
         }
       },
       {
-        test: /\.(eot|svg|ttf|woff|woff2)(\?\S*)?$/,
-        loader: 'file-loader'
+        test: /\.css$/,
+        loader: [
+          'style-loader','css-loader',
+          'sass-loader'
+        ]
       },
       {
-        test: /\.scss$/,
+        test: /\.(png|jpg|gif|svg)$/,
+        exclude: [resolve('src/icons')],
+        loader: 'file-loader',
+        options: {
+          name: 'img/[name].[ext]',
+        }
+      },
+      {
+        test: /\.svg$/,
+        loader: 'svg-sprite-loader',
+        include: [resolve('src/icons')],
+        options: {
+          symbolId: 'icon-[name]'
+        }
+      },
+      {
+        test: /\.(eot|ttf|woff|woff2)(\?\S*)?$/,
         use: [
-          'vue-style-loader',
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]?[hash]'
+            }
+          }
+        ]
+      },
+      {
+        test: /\.s[ac]ss$/i,
+        use: [
+          MiniCssExtractPlugin.loader, 
           'css-loader',
           'sass-loader'
         ]
@@ -73,25 +79,24 @@ module.exports = {
     ]
   },
   plugins: [
-    // make sure to include the plugin for the magic
     new VueLoaderPlugin(),
     new CleanWebpackPlugin({
         cleanAfterEveryBuildPatterns: ['./dist']
     }),
-    new ExtractTextPlugin({filename: 'style.css'}),
+    new MiniCssExtractPlugin(),
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: '"development"',
+        VUE_APP_BASE_API: '"http://192.168.88.65:59119"'
+      }
+    }),
     new HtmlWebpackPlugin({
       inject: false,
       hash: true,
       template: './src/index.html',
       filename: 'index.html',
-      minify: {
-        // 移除空白
-        collapseWhitespace: true,
-        // 移除註釋
-        removeComments: true,
-        // 移除屬性中的雙引號
-        removeAttributeQuotes: true
-      }
+      title: '智慧消防管理平台',
+      minify: process.env.NODE_ENV == 'development' ? false : true,
     })
   ],
   resolve: { 
@@ -99,6 +104,30 @@ module.exports = {
         'vue$': 'vue/dist/vue.esm.js',
         "@": path.join(__dirname, vueSrc)
     },
-    extensions: ['*', '.js', '.vue','.json']
+    extensions: ['*', '.js', '.vue','.json'],
+    modules: [
+      'node_modules'
+    ]
   }
+}
+if (process.env.NODE_ENV === 'production') {
+  module.exports.devtool = '#source-map'
+  // http://vue-loader.vuejs.org/en/workflow/production.html
+  module.exports.plugins = (module.exports.plugins || []).concat([
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: '"production"',
+        VUE_APP_BASE_API: '"http://192.168.88.65:59119"'
+      }
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      sourceMap: true,
+      compress: {
+        warnings: false
+      }
+    }),
+    new webpack.LoaderOptionsPlugin({
+      minimize: true
+    })
+  ])
 }

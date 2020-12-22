@@ -3,7 +3,7 @@ import { getToken, setToken, removeToken,
   setID, getID, removeID, removeVersion,
   removeBuildingid } from '../../utils/auth'
 import { resetRouter } from '../../router'
-
+import user from '../../api/user.js'
 
 // 個人資料
 const getDefaultState = () => {
@@ -44,11 +44,10 @@ const mutations = {
 }
 
 const actions = {
-  // 線上
   login({ commit }, userInfo) {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ account: username.trim(), password: password }).then(response => {
+      user.apiPostLogin({ account: username.trim(), password: password }).then(response => {
         commit('SET_TOKEN', response.accessToken) //store 儲存
         setToken(response.accessToken) //cookie儲存
         commit('SET_USER', response.userId) //store 儲存
@@ -62,19 +61,16 @@ const actions = {
   },
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.id).then(response => {
-        
+      user.apiGetUserInfo().then(response => {
         if (!response) {
           reject('登入失敗，請重新登入')
         }
-
         const { account, name, accountLevel } = response.result[0]
 
         // roles must be a non-empty array
         // if (!roles) {
         //   reject('getInfo: roles must be a non-null array!')
         // }
-
         commit('SET_ROLES', ['admin'])
         commit('SET_ACCOUNT', account)
         commit('SET_NAME', name)

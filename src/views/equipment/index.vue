@@ -1,64 +1,24 @@
 <template>
-<div class="fireequ-container">
-    <div class="fireequ-editor-container">
-        
-        <!-- <FloorSelect 
-            style="margin-bottom: 20px;"
-            v-bind="floorselectAttrs" 
-            v-on="floorselectEvent">
-        </FloorSelect>
-
-        <div v-if="isChose">
-            <el-row :gutter="32">
-                <el-col :xs="24" :sm="24" :md="15" :lg="15">
-                    <div class="block-wrapper">
-                        <p>樓層平面圖</p>
-                    </div>
-                </el-col>
-                <el-col :xs="24" :sm="24" :md="9" :lg="9">
-                    <div class="block-wrapper">
-                        <div class="outside">
-                            <el-col :xs="24" :sm="24" :md="8" :lg="5">
-                                <p>消防設備</p>
-                                <Checkbox></Checkbox>    
-                            </el-col>
-                            <el-col :xs="24" :sm="24" :md="8" :lg="5">
-                                <p>建築設備</p>
-                                <Checkbox></Checkbox>    
-                            </el-col>
-                            <el-col :xs="24" :sm="24" :md="8" :lg="5">
-                                <p>防火/防煙設備</p>
-                                <Checkbox></Checkbox>    
-                            </el-col>
-                            <el-col :xs="24" :sm="24" :md="8" :lg="5">
-                                <p>一般設備</p>
-                                <Checkbox></Checkbox>    
-                            </el-col>
-                            <el-col :xs="24" :sm="24" :md="8" :lg="4">
-                                <p>其他設備</p>
-                                <Checkbox></Checkbox>    
-                            </el-col>
-                        </div>
-                    </div>
-                </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                    <div class="block-wrapper">
-                        <p>設備詳細資料</p>
-                    </div>
-                </el-col>
-            </el-row>
-        </div> -->
-
-        <el-row>
+    <div class="editor-container">
+        <el-row  :gutter="32">
+            <Select 
+                style="padding-left: 15px;margin-bottom: 20px;" 
+                v-bind="selectAttrs" 
+                v-on:handleSelect="handleSelect"
+            />
+        </el-row>
+        <el-row  :gutter="32">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper">
-                    <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
+                    <Block v-bind="blockAttrs" v-on:handleBlock="handleBlock"></Block>
                 </div>
             </el-col>
         </el-row>
+        <Dialog 
+        v-if="innerVisible === true"
+        v-bind="dialogAttrs" 
+        v-on:handleDialog="handleDialog"></Dialog>
     </div>
-    
-</div>
 </template>
 <script>
 import { mapGetters } from 'vuex'
@@ -66,30 +26,43 @@ import { mapGetters } from 'vuex'
 export default {
     name:'Device',
     components:{
-        Block: () => import('@/components/Block/index.vue')
+        Block: () => import('@/components/Block/index.vue'),
+        Select: () => import('@/components/Select/index.vue'),
+        Dialog:() => import('@/components/Dialog/index.vue')
     },
     computed:{
         blockAttrs() {
             return {
                 blockData: this.blockData,
-                buttonsName: this.buttonsName,
+                buttonsName:this.buttonsName,
                 config: this.tableConfig,
-                title:'Device',
+                title:'equipment',
                 selectData: this.selectData,
                 options:this.options,
                 targetId:this.targetId
             }
         },
-        blockEvent() {
-            return {
-                subOpitonButton: this.handleBlockOption
+        dialogAttrs(){
+            return{
+                title:'equipment',
+                visible: this.innerVisible,
+                dialogData: this.dialogData,
+                dialogStatus: this.dialogStatus,
+                buttonsName: this.dialogButtonsName,
+                config: this.tableConfig,
+                selectData: this.selectData,
+                dialogOptions: this.options
             }
-        }
+        },
+        selectAttrs() {
+            return {
+                selectData: this.groupData, //分類群組
+                title:'equipment', 
+            }
+        },
     },
     data() {
         return {
-            blockData:[],
-            buttonsName: ['編輯','刪除'],
             tableConfig:[
                     {
                         label: '設備種類',
@@ -143,28 +116,44 @@ export default {
                     {
                         label: '保管單位',
                         prop: 'keeperUnitID',
-                        format:'contactunitselect',
+                        format:'contactunitSelect',
                         mandatory:true, message:'請選擇保管單位'
                     },
                     {
                         label: '維護廠商',
                         prop: 'maintainVendorID',
-                        format:'contactunitselect',
+                        format:'contactunitSelect',
                         mandatory:true, message:'請選擇維護廠商'
                     },
-                    
+                    {
+                        label: '設備狀況',
+                        prop: 'status',
+                        format:'deviceStatusSelect',
+                        mandatory:true, message:'請選擇設備狀況'
+                    }
                 ],
             selectData:[],
+            targetId:'',
+            buttonsName:[
+                { name:'編輯',type:'primary',status:'open'},
+                { name:'刪除',type:'info',status:'delete'}], 
+            blockData:[],
+            deviceList:[],
             options:[],
-            targetId:''
+            innerVisible:false,
+            dialogStatus:'',
+            dialogData:[],
+            dialogButtonsName:[],
+            groupData:[],
+            origin:[]
         }
     },
     watch: {
     },
     async mounted() {
         await this.getOptions() //取得所有分類
-        await this.getcontactunitList() //廠商資料
-        await this.getbuildingdevicesmanage() //大樓的所有設備
+        await this.getContactUnitList() //廠商資料
+        await this.getBuildingDevicesManage() //大樓的所有設備
         if(this.$route.params.target !== undefined){
             this.$nextTick(() => {
                this.targetId = this.$route.params.target
@@ -172,21 +161,44 @@ export default {
         }   
     },
     methods: {
-        async getbuildingdevicesmanage(){
+        async getBuildingDevicesManage(){
             this.blockData = []
-            var _temp = []
+            this.groupData = []
+            var _array = []
             await this.$api.device.apiGetBuildingDevicesManagement().then(response =>{
-                console.log(JSON.stringify(response))
-                this.blockData = response.result.sort((x,y) => y.id - x.id)
+                console.log(JSON.stringify(response.result))
+                this.blockData = response.result.sort(function(x,y){
+                    var a = x.status
+                    var b = y.status
+                    if(a == b){
+                    return y.id - x.id
+                    }
+                    return y.status - x.status
+                })
+                _array = this.blockData.map(v => {
+                    this.$set(v, 'id', v.id) 
+                    this.$set(v, 'label', v.groupID) 
+                    return v
+                })
+                this.origin = JSON.stringify(this.blockData)
+                this.groupData = this.removeDuplicates(_array,'label')
             })
-            
+        },
+        removeDuplicates(originalArray, prop) {
+            var newArray = []
+            var lookupObject  = {}
+            for(var i in originalArray) {
+                lookupObject[originalArray[i][prop]] = originalArray[i]
+            }
+            for(i in lookupObject) {
+                newArray.push(lookupObject[i])
+            }
+            return newArray
         },
         async getOptions(){
             this.options = []
-            var _temp = []
             await this.$api.setting.apiGetBuildingOptions().then(response => {
-                console.log(JSON.stringify(response))
-                _temp = response.result.sort((x,y) => x.id - y.id)
+                var _temp = response.result.sort((x,y) => x.id - y.id)
                 this.options = _temp.map(v => {
                     this.$set(v, 'value', v.id) 
                     this.$set(v, 'label', v.textName) 
@@ -195,12 +207,10 @@ export default {
                 })
             })
         },
-        async getcontactunitList(){
+        async getContactUnitList(){
             this.selectData = []
-            var _temp = []
             this.$api.building.apiGetContactUnit().then(response => {
-              console.log(JSON.stringify(response))
-              _temp = response.result.sort((x,y) => x.id - y.id)
+              var _temp = response.result.sort((x,y) => x.id - y.id)
                this.selectData = _temp.map(v => {
                     this.$set(v, 'value', v.id) 
                     this.$set(v, 'label', v.name) 
@@ -209,52 +219,64 @@ export default {
               })
             })
         },
-        async handleBlockOption(index,content){
-            if(index == 'opendialog'){
-                await this.getdevicetypeOption()
-                await this.getbrandOption()
-                await this.getcontactunitList()
-            }else if(index == 'update'){
+        async handleBlock(title,index, content) { //維護保養的操作
+            console.log(title,index,JSON.stringify(content))
+            this.dialogData = []
+            if(index === 'open'){
+                this.dialogStatus = 'update'
+                this.dialogData.push(content)
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'update'},
+                { name:'取消',type:'info',status:'cancel'}]
+                this.innerVisible = true
+            }else if(index === 'delete'){
+                this.$api.device.apiDeleteDevicesManagement(content).then(async(response) => {
+                    this.$message('刪除成功')
+                    await this.getBuildingDevicesManage()
+                })
+            }
+            else if(index === 'empty'){
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'create'},
+                { name:'取消',type:'info',status:'cancel'}]
+                this.innerVisible = true
+                this.dialogStatus = 'create'
+            }
+        },
+        async handleDialog(title ,index, content){ //Dialog相關操作
+            console.log(title ,index,content)
+            if(index === 'update'){
                 this.$api.device.apiPatchDevicesManagement(JSON.stringify(content)).then(async(response) => {
                     this.$message('更新成功')
-                    await this.getbuildingdevicesmanage()
-                }).catch(error=>{
-                    console.log(error)
+                    await this.getBuildingDevicesManage()
                 })
             }else if(index === 'create'){
                 this.$api.device.apiPostDevicesManagement(JSON.stringify(content)).then(async(response) => {
                     this.$message('新增成功')
-                    await this.getbuildingdevicesmanage()
-                }).catch(error=>{
-                    console.log(error)
+                    await this.getBuildingDevicesManage()
                 })
-            }else if(index === 'delete'){
-                this.$api.device.apiDeleteDevicesManagement(content).then(async(response) => {
-                    this.$message('刪除成功')
-                    await this.getbuildingdevicesmanage()
-                }).catch(error=>{
-                    console.log(error)
-                })
+            }
+            this.innerVisible = false
+        },
+        async handleSelect(content){ //分類群組選擇
+            const array =  JSON.parse(this.origin)
+            if(content !== undefined){
+                this.blockData = array.filter((item, index) => 
+                item.groupID == content[0].label )
+            }else{
+                this.blockData = array
             }
         }
     }
 }
 </script>
 <style lang="scss" scoped>
-.fireequ-editor-container {
-  padding: 15px;
-  background-color: rgb(209, 226, 236);
-  position: relative;
-  min-height: calc(100vh - 155px);
-  max-height: calc(100vh - 155px);
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  .block-wrapper {
+.block-wrapper {
     background: #fff;
     padding: 10px;
     margin-bottom: 32px;
     height: 720px;
-  }
 }
+
+
 </style>

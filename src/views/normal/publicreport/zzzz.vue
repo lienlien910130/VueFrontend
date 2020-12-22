@@ -1,0 +1,414 @@
+<template>
+        <div class="editor-container">
+          <el-row :gutter="32">
+              <el-form  class="report-form" :inline="true" :model="form" label-width="auto" :label-position="label">
+                <el-col :xs="24" :sm="24" :md="24" :lg="12">
+                    <div class="chart-wrapper">
+                      <el-form-item label="場所名稱">
+                        <span>{{ form.name }}</span>
+                      </el-form-item>
+                      <el-form-item label="下次檢修時間">
+                        <span class="report">{{ form.repair }}</span>
+                      </el-form-item>
+                    </div>
+                </el-col>
+                <el-col :xs="24" :sm="24" :md="24" :lg="12">
+                    <div class="chart-wrapper">
+                        <el-form-item label="管理權人">
+                            <div
+                            v-for="(item,index) in form.owner"
+                            :key="index">
+                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
+                              </div>
+                        </el-form-item>
+                        <el-form-item label="防火管理人">
+                            <div
+                            v-for="(item,index) in form.firemanager"
+                            :key="index">
+                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
+                              </div>
+                        </el-form-item>
+                    </div>
+                </el-col>
+              </el-form>
+          </el-row>    
+          <el-row :gutter="32">
+            <el-col :xs="24" :sm="24" :md="24" :lg="24">
+                <div class="wrapper">
+                  <div class="block-wrapper">
+                      <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
+                  </div>
+                </div>
+            </el-col>
+          </el-row>      
+          
+          <div
+            v-if="reportVisible == true">
+              <Report v-bind="dialogAttrs" v-on="dialogEvent"></Report>
+          </div>
+          <div
+            v-if="lackVisible == true">
+              <Lack v-bind="lackAttrs" v-on="lackEvent"></Lack>
+          </div>
+        </div>
+</template>
+<script>
+import { mapGetters } from 'vuex'
+
+export default {
+    name:'',
+    components:{ 
+      Block: () => import('@/components/Block/index.vue'),
+      Report: () => import('@/components/Dialog/report.vue'),
+      Lack:() => import('@/components/Dialog/lackcontent.vue')
+    },
+    data(){
+        return{
+            tableConfig: [
+              {
+                label: '申報年度',
+                prop: 'declareYear',
+                format:'YYYY',
+                mandatory:true, message:'請選擇年度'
+              },
+              {
+                label: '申報期限',
+                prop: 'declareDeadline',
+                format:'YYYY-MM-DD',
+                mandatory:true, message:'請選擇期限'
+              },
+              {
+                label: '申報日期',
+                prop: 'declareDate',
+                format:'YYYY-MM-DD',
+                mandatory:true, message:'請選擇日期'
+              },
+              {
+                label: '檢測日期',
+                prop: 'rangeDate',
+                format:'range',
+                // mandatory:true, message:'請選擇日期'
+              },
+              {
+                label: '專技人員',
+                prop: 'professName'
+              },
+              {
+                label: '證號',
+                prop: 'certificateNumber'
+              },
+              {
+                label: '申報結果',
+                prop: 'declareResult'
+              },
+              {
+                label: '改善期限',
+                prop: 'declarationImproveDate',
+                format:'YYYY-MM-DD'
+              },
+              {
+                label: '改善狀況',
+                prop: 'isImproved',
+                format:'tag',
+                type:'boolean',
+                mandatory:false, isPattern:false,trigger:'change'
+              },
+              {
+                label: '備註',
+                prop: 'note',
+                format:'textarea',
+                mandatory:false, isPattern:false
+              },
+              {
+                label: '檢附文件',
+                prop: 'file',
+                format:'hide-f'
+              },
+              {
+                label: '缺失內容',
+                prop: 'missingContent',
+                format:'hide-l'
+              }
+            ],
+            lackconfig:[
+              {
+                label: '缺失項目',
+                prop: 'lackItem',
+                mandatory:true, message:'請輸入缺失項目',textarea:false
+              },
+              {
+                label: '缺失內容',
+                prop: 'lackContent',
+                mandatory:true, message:'請輸入缺失內容',textarea:true
+              },
+              {
+                label: '無法合格理由',
+                prop: 'notPassReason',
+                mandatory:true, message:'請輸入無法合格理由',textarea:true
+              },
+              {
+                label: '法令依據',
+                prop: 'accordLaws', mandatory:false,textarea:true
+              },
+              {
+                label: '改善計劃',
+                prop: 'improvePlan', mandatory:false,textarea:true
+              }
+            ],
+            blockData: [],
+            buttonsName: ['編輯','刪除'],
+            form:{},
+            reportVisible:false,
+            lackVisible:false,
+            originFiles:[],
+            publicSafeid:'',
+            tableData:[],
+            list:[]
+        }
+    },
+    watch: {
+      buildingid: function(val){
+        this.reportList()
+        this.getbuInfo()
+      },
+    },
+    mounted() {
+      this.reportList()
+      this.getbuInfo()
+    },
+    computed: {
+      ...mapGetters([
+        'id',
+        'buildingid'
+      ]),
+      label() {
+            if (this.$store.state.app.device === 'mobile') {
+                return 'top'
+            } else {
+                return 'left'
+            }
+        },
+      blockAttrs() {
+        return {
+          blockData: this.blockData,
+          buttonsName: this.buttonsName,
+          config: this.tableConfig,
+          title:'ReportPublicSafe',
+          selectData: []
+        }
+      },
+      blockEvent() {
+        return {
+          subOpitonButton: this.handleBlockOption
+        }
+      },
+      dialogAttrs(){
+        return{
+          originFiles: this.originFiles,
+          visible: this.reportVisible,
+          lackfileid:0
+        }
+      },
+      dialogEvent(){
+        return{
+          subReportButton: this.handleReportOption
+        }
+      },
+      lackAttrs(){
+        return{
+          lackVisible: this.lackVisible,
+          tableData:this.list,
+          lackconfig:this.lackconfig,
+          itemkey:this.itemkey,
+          title:'ReportPublicSafe',
+        }
+      },
+      lackEvent(){
+        return{
+          subReportLackButton : this.handleLackOption
+        }
+      }
+  },
+  methods: {
+    getbuInfo() {
+      this.$api.building.apiGetBuildingInfo().then(response => {
+        let array = {
+              name:response.result[0].buildingName,
+              repair:'2020/10/10',
+              owner:response.result[0].linkOwners,
+              firemanager:response.result[0].linkFireManagers
+          }
+          this.form = array
+      })
+    },
+    async reportList() {
+      await this.$api.report.apiGetBuildingPublicSafe().then(response => {
+        this.blockData = response.result.sort(function(x,y){
+            var a = x.isImproved
+            var b = y.isImproved
+            if(a == b){
+              return y.id - x.id
+            }
+            return y.isImproved - x.isImproved
+          })
+      })
+    },  
+    async handleBlockOption(index, content) { //區塊的操作
+      console.log(index,JSON.stringify(content))
+      if (index === 'update'){
+        this.$api.report.apiPatchPublicSafe(JSON.stringify(content)).then(response => {
+          this.$message('更新成功')
+          this.reportList()
+        }).catch(error=>{
+          console.log(error)
+        })
+      }else if(index === 'create'){
+        this.$api.report.apiPostPublicSafe(JSON.stringify(content)).then(response => {
+          this.$message('新增成功')
+          this.reportList()
+        }).catch(error=>{
+          console.log(error)
+        })
+      }else if(index === 'delete'){
+        this.$api.report.apiDeletePublicSafe().then(response => {
+          this.$message('刪除成功')
+          this.reportList()
+        }).catch(error=>{
+          console.log(error)
+        })
+      }else if (index === 'ReportPublicSafe'){
+        await this.getpublicSafefiles(content)
+      }else{ // ReportPublicSafeLack
+        await this.getpublicSafelack(content)
+        this.lackVisible = true
+      }
+    },
+    handleReportOption(index,content){ //附件文檔的操作
+      if(index == 'fileupload'){
+        const formData = new FormData();
+          content.forEach(item => {
+            formData.append('file', item.raw)
+        })
+        this.$api.files.apiPostPublicSafeFiles(this.publicSafeid,formData).then(response =>{
+            this.$message('上傳成功')
+            this.getpublicSafefiles(this.publicSafeid)
+        }).catch(error =>{
+            console.log('error=>'+error)
+        })
+      }else if(index == 'cancel'){
+        this.reportVisible = false
+      }else if(index == 'delete'){
+        this.$api.files.apiDeleteFile(content).then(response =>{
+            this.$message('刪除成功')
+            this.getpublicSafefiles(this.publicSafeid)
+        }).catch(error =>{
+            console.log('error=>'+error)
+        })
+      }
+    },
+    async handleLackOption(index,content){ //缺失內容的操作
+      if(index == 'cancel'){
+        this.lackVisible = false
+      }else if (index == 'create'){
+        await this.$api.report.apiPostPublicSafeLack(this.publicSafeid,content).then(response => {
+            this.$message('新增成功')
+        })
+        await this.getpublicSafelack(this.publicSafeid)
+      }else if(index == 'delete'){
+        await this.$api.report.apiDeletePublicSafeLack(content).then(response => {
+            this.$message('刪除成功')
+        })
+        await this.getpublicSafelack(this.publicSafeid)
+      }else if(index == 'update'){
+        await this.$api.report.apiPatchPublicSafeLack(content).then(response => {
+            this.$message('更新成功')
+        })
+        await this.getpublicSafelack(this.publicSafeid)
+      }
+    },
+    async getpublicSafefiles(id){ //取得申報的附件文檔
+      this.publicSafeid = id
+      this.$api.files.apiGetPublicSafeFiles(id).then(response =>{
+        this.originFiles = response.result.sort((x,y) => x.id - y.id)
+        this.reportVisible = true
+      }).catch(error =>{
+        console.log('error=>'+error)
+      })
+    },
+    async getpublicSafelack(id){ //取得缺失內容
+      this.publicSafeid = id
+      this.tableData = []
+      this.list = []
+      await this.$api.report.apiGetPublicSafeLack(id).then(response =>{
+        this.itemkey = Math.random()
+        this.tableData = response.result.sort((x,y) => x.id - y.id)
+        this.list = this.tableData.map(v => {
+          this.$set(v, 'lackItem', v.lackItem) 
+          this.$set(v, 'lackContent', v.lackContent) 
+          this.$set(v, 'notPassReason', v.notPassReason) 
+          this.$set(v, 'accordLaws', v.accordLaws) 
+          this.$set(v, 'improvePlan', v.improvePlan) 
+          return v
+        })
+      }).catch(error =>{
+            console.log('error=>'+error)
+      })
+    },
+  },
+}
+</script>
+<style lang="scss" scoped>
+    
+.mainreport-editor-container {
+  padding: 20px;
+  background-color: #d1e2ec;
+  position: relative;
+  min-height: calc(100vh - 155px);
+  max-height: calc(100vh - 155px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+   .el-form--inline .el-form-item{
+     margin-right:40px
+   }
+    .chart-wrapper {
+        background: #fff;
+        padding: 10px 16px 0;
+        margin-bottom: 32px;
+        height: 110px;
+        width: 100%;
+    }
+    .wrapper{
+      background: #fff;
+      padding: 10px;
+      height: 720px;
+      
+      .block-wrapper {
+        margin-bottom: 32px;
+        height: 700px;
+        width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+    }
+
+    .top{
+        width: 100%;
+    }
+    .report{
+        font-size: 60px;
+        color: red;
+    }
+}
+
+
+@media (max-width:1024px) {
+  .chart-wrapper {
+    padding: 8px;
+  }
+  .block-wrapper {
+    padding: 8px;
+  }
+}
+
+</style>

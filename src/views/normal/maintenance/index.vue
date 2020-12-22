@@ -1,6 +1,6 @@
 <template>
-    <div class="maintain-container">
-        <div class="maintain-editor-container">
+
+        <div class="editor-container">
             <div class="left">
               <el-form  class="report-form" :model="form" label-width="auto" :label-position="label">
                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
@@ -33,27 +33,26 @@
                     </div>
                 </el-col>
               </el-form>
-                
-                
             </div>
-
             <div class="right">
                  <el-col :xs="24" :sm="24" :md="24" :lg="24">
                     <div class="chart-wrapper">
-                        <Block v-bind="blockAttrs" v-on="blockEvent" ></Block>
+                        <Block v-bind="blockAttrs" v-on:handleBlock="handleBlock" ></Block>
                     </div>
                 </el-col>
             </div>
-            <Dialog v-bind="dialogAttrs" v-on="dialogEvent"></Dialog>
+            <Dialog 
+            v-if="innerVisible === true"
+            v-bind="dialogAttrs" 
+            v-on:handleDialog="handleDialog"></Dialog>
         </div>
-    </div>
 </template>
 <script>
 
 export default {
     components:{ 
       Block: () => import('@/components/Block/index.vue'),
-      Dialog:() => import('@/components/Dialog/normal.vue'),
+      Dialog:() => import('@/components/Dialog/index.vue'),
     },
     data(){
         return{
@@ -68,7 +67,7 @@ export default {
               {
                 label: '設備',
                 prop: 'deviceID',
-                format:'deviceselect',
+                format:'deviceSelect',
                 mandatory:true, message:'請選擇設備'
               },
               {
@@ -96,14 +95,16 @@ export default {
                 mandatory:true, message:'請選擇處理內容'
               },
             ],
-            deviceconfig:[],
-            blockData: [],
-            buttonsName: ['編輯','刪除'],
-            selectData:[],
-            devicelist:[],
+            buttonsName:[
+                { name:'編輯',type:'primary',status:'open'},
+                { name:'刪除',type:'info',status:'delete'}], 
+            blockData:[],
+            deviceList:[],
             options:[],
             innerVisible:false,
-            dialogStatus:''
+            dialogStatus:'',
+            dialogData:[],
+            dialogButtonsName:[],
         }
     },
     computed: {
@@ -117,43 +118,34 @@ export default {
         blockAttrs() {
             return {
                 blockData: this.blockData,
-                buttonsName: this.buttonsName,
+                buttonsName:this.buttonsName,
                 config: this.tableConfig,
-                title:'Maintain',
-                selectData: this.selectData,
-                devicelist:this.devicelist,
+                title:'maintain',
+                deviceList:this.deviceList,
                 options:this.options
-            }
-        },
-        blockEvent() {
-            return {
-                subOpitonButton: this.handleBlockOption
             }
         },
         dialogAttrs(){
             return{
+                title:'maintain',
                 visible: this.innerVisible,
+                dialogData: this.dialogData,
                 dialogStatus: this.dialogStatus,
-                buttonsName: this.buttonsName,
-                config: this.deviceconfig,
-            }
-        },
-        dialogEvent(){
-            return{
-                subDeviceButton: this.handleDeviceOption
+                buttonsName: this.dialogButtonsName,
+                config: this.tableConfig,
+                selectData: this.deviceList,
+                dialogOptions: this.options
             }
         }
     },
     async mounted() {
-        await this.getbuInfo()
-        await this.getcontactunitList()
+        await this.getBuildingInfo()
         await this.getOptions()
-        await this.getbuildingdevicesmanage()
-        await this.getbuildingmaintain()
-
+        await this.getBuildingDevicesManage()
+        await this.getBuildingMaintain()
     },
     methods:{
-        async getbuInfo() {
+        async getBuildingInfo() {
             await this.$api.building.apiGetBuildingInfo().then(response => {
                 let array = {
                     name:response.result[0].buildingName,
@@ -164,7 +156,7 @@ export default {
                 this.form = array
             })
         },
-        async getbuildingmaintain(){ //取得大樓維護保養
+        async getBuildingMaintain(){ //取得大樓維護保養
             this.blockData = []
             var _temp = []
             await this.$api.device.apiGetBuildingMaintains().then(response =>{
@@ -172,26 +164,10 @@ export default {
                 this.blockData = response.result.sort((x,y) => y.id - x.id)
             })
         },
-        async getcontactunitList(){ //取得大樓廠商資料
-            this.selectData = []
-            var _temp = []
-            this.$api.building.apiGetContactUnit().then(response => {
-              console.log(JSON.stringify(response))
-              _temp = response.result.sort((x,y) => x.id - y.id)
-               this.selectData = _temp.map(v => {
-                    this.$set(v, 'value', v.id) 
-                    this.$set(v, 'label', v.name) 
-                    this.$set(v, 'id', v.id) 
-                    return v
-              })
-            })
-        },
         async getOptions(){
             this.options = []
-            var _temp = []
             await this.$api.setting.apiGetBuildingOptions().then(response => {
-                console.log(JSON.stringify(response))
-                _temp = response.result.sort((x,y) => x.id - y.id)
+                var _temp = response.result.sort((x,y) => x.id - y.id)
                 this.options = _temp.map(v => {
                     this.$set(v, 'value', v.id) 
                     this.$set(v, 'label', v.textName) 
@@ -200,13 +176,12 @@ export default {
                 })
             })
         },
-        async getbuildingdevicesmanage(){
-            this.devicelist = []
+        async getBuildingDevicesManage(){
+            this.deviceList = []
             var _temp = []
             await this.$api.device.apiGetBuildingDevicesManagement().then(response =>{
-                console.log(JSON.stringify(response))
                 _temp = response.result.sort((x,y) => x.id - y.id)
-                this.devicelist = _temp.map(v => {
+                this.deviceList = _temp.map(v => {
                     this.$set(v, 'value', v.id) 
                     this.$set(v, 'label', v.name) 
                     this.$set(v, 'id', v.id) 
@@ -214,56 +189,50 @@ export default {
                 })
             })
         },
-
-        async handleBlockOption(index, content) { //維護保養的操作
+        async handleBlock(title,index, content) { //維護保養的操作
             console.log(index,JSON.stringify(content))
-            if (index === 'update'){
-                this.$api.device.apiPatchMaintains(JSON.stringify(content)).then(async(response) => {
-                    this.$message('更新成功')
-                    await this.getbuildingmaintain()
-                }).catch(error=>{
-                    console.log(error)
-                })
-            }else if(index === 'create'){
-                this.$api.device.apiPostMaintains(JSON.stringify(content)).then(async(response) => {
-                    this.$message('新增成功')
-                    await this.getbuildingmaintain()
-                }).catch(error=>{
-                    console.log(error)
-                })
-            }else if(index === 'delete'){
-                this.$api.device.apiDeleteMaintains(content).then(async(response) => {
-                    this.$message('刪除成功')
-                    await this.getbuildingmaintain()
-                }).catch(error=>{
-                    console.log(error)
-                })
-            }else if(index == 'openDevice'){
+            this.dialogData = []
+            if(index === 'open'){
+                this.dialogData.push(content)
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'update'},
+                { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
+            }else if(index === 'delete'){
+                await this.$api.device.apiDeleteMaintains(content).then(async(response) => {
+                    this.$message('刪除成功')
+                    await this.getBuildingMaintain()
+                })
+            }
+            else if(index === 'empty'){
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'create'},
+                { name:'取消',type:'info',status:'cancel'}]
+                this.innerVisible = true
+                this.dialogStatus = 'create'
             }
         },
-        async handleDeviceOption(index, content){
-            if(index == 'cancel'){
-                this.innerVisible = false
-                this.dialogStatus = ''
+        async handleDialog(title ,index, content){ //Dialog相關操作
+            console.log(title ,index,content)
+            if(index === 'update'){
+                await this.$api.device.apiPatchMaintains(JSON.stringify(content)).then(async(response) => {
+                    this.$message('更新成功')
+                    await this.getBuildingMaintain()
+                })
+            }else if(index === 'create'){
+                await this.$api.device.apiPostMaintains(JSON.stringify(content)).then(async(response) => {
+                    this.$message('新增成功')
+                    await this.getBuildingMaintain()
+                })
             }
-        }
+            this.innerVisible = false
+        },
     }
 }
 </script>
 <style lang="scss" scoped>
-    
-.maintain-editor-container {
-  padding: 20px;
-  background-color: #d1e2ec;
-  position: relative;
-  min-height: calc(100vh - 155px);
-  max-height: calc(100vh - 155px);
-  overflow-y: auto;
-  overflow-x: hidden;
-   
-    .chart-wrapper {
+.chart-wrapper {
         background: #fff;
         padding: 5px 16px 0;
         margin-bottom: 32px;
@@ -290,15 +259,11 @@ export default {
         font-size: 70px;
         color: red;
     }
-}
-
 
 @media (max-width:1024px) {
   .chart-wrapper {
     padding: 8px;
   }
-
-  .maintain-editor-container {
     .left{
       float: none;
       width: 100%;
@@ -308,6 +273,5 @@ export default {
       width: 100%;
       padding-left:0px;
     }
-  }
 }
 </style>

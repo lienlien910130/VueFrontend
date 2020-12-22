@@ -61,9 +61,6 @@
         @click.native.prevent="handleLogin">登入</el-button>
         
       </el-form>
-      <!-- <div class="register">
-        <h3>沒有帳號嗎? <a style="color:blue" href="https://panjiachen.github.io/vue-element-admin-site/#/" target="_blank">註冊</a></h3>
-      </div> -->
     </div>
     <div class="footer">
       <h3 class="ft">版權所有：水星工程科技有限公司</h3>
@@ -72,7 +69,6 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
 import SIdentify from "./components/identify";
 
 export default {
@@ -90,11 +86,6 @@ export default {
   },
   data() {
     const validateUsername = (rule, value, callback) => {
-      // if (!validUsername(value)) {
-      //   callback(new Error('請輸入帳號'))
-      // } else {
-      //   callback()
-      // }
       if(value === "") {
         callback(new Error('請輸入帳號'))
       } else {
@@ -102,13 +93,6 @@ export default {
       }
     }
     const validatePassword = (rule, value, callback) => {
-      // if (value.length < 6 && value.length >0) {
-      //   callback(new Error('密碼長度需大於6位數'))
-      // } else if (value.length == 0) {
-      //   callback(new Error('請輸入密碼'))
-      // } else {
-      //   callback()
-      // }
       if(value === "") {
         callback(new Error('請輸入密碼'))
       } else {
@@ -191,16 +175,10 @@ export default {
       for (let i = 0; i < len; i++) {
         this.identifyCode += data[this.randomNum(0, data.length - 1)]
       }
-      console.log(this.identifyCode);
     },
     //取得版本解析
     getVersion() {
       this.src = require('../../assets/image/login_logo.png')
-      // this.$store.dispatch('version/getversion', window.location.href).then(()=>{
-      //     this.src = require('../../../dist/static/img/login_logo.png')
-      // }).catch(()=>{
-      //     console.log('getVersion error')
-      // })
     }
   }
 }

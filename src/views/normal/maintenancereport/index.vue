@@ -128,27 +128,23 @@ export default {
               {
                 label: '缺失項目',
                 prop: 'lackItem',
+                mandatory:true, message:'請輸入缺失項目',format:'input'
               },
               {
                 label: '缺失內容',
                 prop: 'lackContent',
+                mandatory:true, message:'請輸入缺失內容',format:'textarea'
               },
               {
-                label: '無法合格理由',
-                prop: 'notPassReason'
-              },
-              {
-                label: '法令依據',
-                prop: 'accordLaws'
-              },
-              {
-                label: '改善計劃',
-                prop: 'improvePlan'
+                label: '改善狀況',
+                prop: 'improveContent',
+                mandatory:false, format:'textarea'
               },
               {
                 label: '改善狀態',
                 prop: 'status',
-              }
+                mandatory:false, format:'select'
+              },
             ],
             blockData: [],
             buttonsName:[
@@ -156,7 +152,8 @@ export default {
                 { name:'刪除',type:'info',status:'delete'}], 
             form:{},
             files:[],
-            publicSafeId:'', //公安申報id
+            inspectionId:'', //檢修申報id
+            lackFileId:'', //缺失檔案id
             dialogButtonsName:[],
             dialogConfig:[],
             dialogData:[],
@@ -170,7 +167,7 @@ export default {
     async mounted() {
       await this.getBuildingInfo()
       await this.getOptions() 
-      await this.getBuildingPublicSafeReport() //公安申報
+      await this.getBuildingMaintenanceReport() //檢修申報
     },
     computed: {
       ...mapGetters([
@@ -196,19 +193,20 @@ export default {
             blockData: this.blockData,
             buttonsName:this.buttonsName,
             config: this.tableConfig,
-            title:'reportPublicSafe'
+            title:'reportInspectio'
           }
       },
       dialogAttrs(){
         return{
-            title:'reportPublicSafe',
+            title:'reportInspectio',
             visible: this.innerVisible,
             dialogData: this.dialogData,
             dialogStatus: this.dialogStatus,
             buttonsName: this.dialogButtonsName,
             dialogOptions:this.options,
             config: this.dialogConfig,
-            files:this.files
+            files:this.files,
+            specialId:this.lackFileId
         }
       }
   },
@@ -224,10 +222,9 @@ export default {
           this.form = array
       })
     },
-    async getBuildingPublicSafeReport() { //取得公安申報
+    async getBuildingMaintenanceReport() { //取得檢修申報
       this.blockData = []
-      await this.$api.report.apiGetBuildingPublicSafe().then(response => {
-        console.log(JSON.stringify(response))
+      await this.$api.report.apiGetBuildingInspection().then(response => {
         this.blockData = response.result.sort(function(x,y){
             var a = x.isImproved
             var b = y.isImproved
@@ -238,12 +235,24 @@ export default {
           })
       })
     },  
-    async getPublicSafeFiles(id){ //取得公安申報的附件文檔
-      this.publicSafeId = id
+    async getInspectionFiles(id){ //取得檢修申報的附件文檔
+      this.inspectionId = id
       this.files = []
-      await this.$api.files.apiGetPublicSafeFiles(id).then(response =>{
+      await this.$api.files.apiGetInspectionFiles(id).then(response =>{
         this.files = response.result.sort((x,y) => x.id - y.id)
       })
+    },
+    async getInspectionLackFileOfId(id){ //取得import檔案id
+      this.lackFileId = ''
+      await this.$api.report.apiGetInspection(id).then(response =>{
+          this.lackFileId = response.result[0].imported.toString()
+      })
+    },
+    async setLackFile(fileId,cover){ //設定缺失檔案
+      await this.$api.report.apiPostInspectionLackFiles(this.inspectionId,parseInt(fileId),cover).then(response =>{
+        this.$message('上傳成功')
+      })
+      await this.getInspectionLackFileOfId(this.inspectionId)
     },
     async getOptions(){
       await this.$api.setting.apiGetOptions('LackStatusOptions').then(response => {
@@ -256,9 +265,9 @@ export default {
         })
       })
     },
-    async getPublicSafeLack(id){ //取得缺失內容
-      this.publicSafeId = id
-      await this.$api.report.apiGetPublicSafeLack(id).then(response =>{
+    async getInspectionLack(id){ //取得缺失內容
+      this.inspectionId = id
+      await this.$api.report.apiGetInspectionLack(id).then(response =>{
         var _temp = response.result.sort((x,y) => x.id - y.id)
         this.dialogData = _temp.map(v => {
           this.$set(v, 'isEdit', false) 
@@ -266,7 +275,7 @@ export default {
         })
       })
     },
-    async handleBlock(title,index, content) { //公安申報的操作
+    async handleBlock(title,index, content) { //檢修申報的操作
       console.log(index,JSON.stringify(content))
       this.dialogData = []
       if(index === 'open'){
@@ -278,9 +287,9 @@ export default {
           this.innerVisible = true
           this.dialogStatus = 'update'
       }else if(index === 'delete'){
-          await this.$api.report.apiDeletePublicSafeLack(content).then(async(response) => {
+          await this.$api.report.apiDeleteInspection(content).then(async(response) => {
             this.$message('刪除成功')
-            await this.getBuildingPublicSafeReport()
+            await this.getBuildingMaintenanceReport()
           })
       }else if(index === 'empty'){
           this.dialogButtonsName = [
@@ -290,12 +299,13 @@ export default {
           this.innerVisible = true
           this.dialogStatus = 'create'
       }else if(index === 'openfiles'){
-          await this.getPublicSafeFiles(content)
+          await this.getInspectionFiles(content)
+          await this.getInspectionLackFileOfId(content)
           this.dialogButtonsName = []
           this.innerVisible = true
           this.dialogStatus = 'upload'
       }else if(index === 'openlacks'){
-        await this.getPublicSafeLack(content)
+        await this.getInspectionLack(content)
         this.dialogButtonsName = []
         this.innerVisible = true
         this.dialogConfig = this.lackconfig
@@ -303,33 +313,36 @@ export default {
       }
     },
     async handleDialog(title ,index, content){ //Dialog相關操作
-        console.log(title ,index,JSON.stringify(content))
-        if(title === 'reportPublicSafe'){
+        console.log(title ,index,content)
+        if(title === 'reportInspectio'){
           if(index === 'update'){
-              await this.$api.report.apiPatchPublicSafe(content).then(async(response)  => {
+              await this.$api.report.apiPatchInspection(JSON.stringify(content)).then(async(response)  => {
                 this.$message('更新成功')
-                await this.getBuildingPublicSafeReport()
+                await this.getBuildingMaintenanceReport()
               })
           }else if(index === 'create'){
-              await this.$api.report.apiPostPublicSafe(JSON.stringify(content)).then(async(response)  => {
+              await this.$api.report.apiPostInspection(JSON.stringify(content)).then(async(response)  => {
                 this.$message('新增成功')
-                await this.getBuildingPublicSafeReport()
+                await this.getBuildingMaintenanceReport()
               })
-
           }else if(index === 'createfile'){
               const formData = new FormData();
                 content.forEach(item => {
                   formData.append('file', item.raw)
               })
-              await this.$api.files.apiPostPublicSafeFiles(this.publicSafeId,formData).then(async(response)  =>{
+              await this.$api.files.apiPostInspectionFiles(this.inspectionId,formData).then(async(response)  =>{
                   this.$message('上傳成功')
-                  await this.getPublicSafeFiles(this.publicSafeId)
+                  await this.getInspectionFiles(this.inspectionId)
               })
           }else if(index === 'deletefile'){
               await this.$api.files.apiDeleteFile(content).then(async(response)  =>{
                 this.$message('刪除成功')
-                await this.getPublicSafeFiles(this.publicSafeId)
+                await this.getInspectionFiles(this.inspectionId)
               })
+          }else if(index === 'changeAgain'){
+              await this.setLackFile(content,true)
+          }else if(index === 'changeFirst'){
+              await this.setLackFile(content,false)
           }
           this.innerVisible = false 
         }else{
@@ -339,19 +352,19 @@ export default {
     async handleLackDialog(title ,index, content){ //LackDialog相關操作
         console.log(title ,index,content)
         if(index === 'create'){
-          await this.$api.report.apiPostPublicSafeLack(this.publicSafeId,JSON.stringify(content)).then(response => {
+          await this.$api.report.apiPostInspectionLack(this.inspectionId,JSON.stringify(content)).then(response => {
             this.$message('新增成功')
           })
         }else if(index === 'update'){
-          await this.$api.report.apiPatchPublicSafeLack(content).then(response => {
+          await this.$api.report.apiPatchInspectionLack(content).then(response => {
             this.$message('更新成功')
           })
         }else if(index === 'delete'){
-          await this.$api.report.apiDeletePublicSafeLack(content).then(response => {
+          await this.$api.report.apiDeleteInspectionLack(content).then(response => {
             this.$message('刪除成功')
           })
         }
-        await this.getPublicSafeLack(this.publicSafeId)
+        await this.getInspectionLack(this.inspectionId)
     }
   }
 }
