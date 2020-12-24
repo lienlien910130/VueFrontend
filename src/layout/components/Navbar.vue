@@ -14,7 +14,7 @@
         <Select 
         class="select right-menu-item"
         v-bind="selectAttrs" 
-        v-on="selectEvent">
+        v-on:handleSelect="handleSelect">
         </Select>
 
         <Screenfull id="screenfull" class="right-menu-item hover-effect" />
@@ -142,15 +142,10 @@ export default {
         selectData: this.selectData,
         title:'Building'
       }
-    },
-    selectEvent() {
-      return {
-        subChangeOption: this.handleSelectOption
-      }
-    },
+    }
   },
-  mounted() {
-      this.getBuilding()
+  async mounted() {
+      await this.getBuilding()
   },
   data() {
     return {
@@ -159,13 +154,13 @@ export default {
     }
   },
   methods: {
-    
     async logout() {
       await this.$store.dispatch('user/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
-    getBuilding() {
-      this.$api.building.apiGetBuilding().then(response=>{
+    async getBuilding() {
+      await this.$api.building.apiGetBuilding().then(response=>{
+        this.$store.dispatch('building/setbuildingid',response.result[0].id)
         response.result.forEach(item => {
               let _array = { 
                   id : item.id, 
@@ -179,7 +174,7 @@ export default {
         this.selectData = this.options
       })
     },
-    handleSelectOption(content){
+    handleSelect(content){
       this.$store.dispatch('building/setbuildingid',content[0].id)
     }
   }

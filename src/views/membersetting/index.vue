@@ -1,228 +1,106 @@
 <template>
-<div class="setting-container">
-        <div class="setting-editor-container">
-            <el-row :gutter="20">
-                <el-col :xs="24" :sm="24" :md="24" :lg="8">
-                    <ContactUnit
-                    v-bind="contactUnitAttrs"
-                    v-on="settingBlockEvent"
-                    ></ContactUnit>
-                </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="8">
-                    <Device
-                    v-bind="deviceAttrs"
-                    v-on="settingBlockEvent"
-                    ></Device>
-                </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="8">
-                    <MaintainContent
-                    v-bind="maintainContentAttrs"
-                    v-on="settingBlockEvent"
-                    ></MaintainContent>
-                </el-col>
-            </el-row>
-
-            <el-row :gutter="20">
-                <el-col :xs="24" :sm="24" :md="24" :lg="8">
-                    <Brand
-                    v-bind="brandAttrs"
-                    v-on="settingBlockEvent"
-                    ></Brand>
-                </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="8">
-                    <LackStatus
-                    v-bind="lackstatusAttrs"
-                    v-on="settingBlockEvent"
-                    ></LackStatus>
-                </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="8">
-                    <MaintainProcess
-                    v-bind="processAttrs"
-                    v-on="settingBlockEvent"
-                    ></MaintainProcess>
-                </el-col>
-            </el-row>
-        </div>
+    <div class="editor-container">
+        <el-tabs tab-position="left">
+                <el-tab-pane label="建築物">
+                    <el-row :gutter="20">
+                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                            <SettingBlock
+                            v-bind="settingAttrs('ContactUnitOptions')"
+                            v-on:handleButton="handleButton"
+                            ></SettingBlock>
+                        </el-col>
+                    </el-row>
+                </el-tab-pane>
+                <el-tab-pane label="設備">
+                    <el-row :gutter="20">
+                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                            <SettingBlock
+                            v-bind="settingAttrs('DeviceOptions')"
+                            v-on:handleButton="handleButton"
+                            ></SettingBlock>
+                        </el-col>
+                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                            <SettingBlock
+                            v-bind="settingAttrs('BrandOptions')"
+                            v-on:handleButton="handleButton"
+                            ></SettingBlock>
+                        </el-col>
+                    </el-row>
+                </el-tab-pane>
+                <el-tab-pane label="維護保養">
+                    <el-row :gutter="20">
+                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                            <SettingBlock
+                            v-bind="settingAttrs('MaintainContentOptions')"
+                            v-on:handleButton="handleButton"
+                            ></SettingBlock>
+                        </el-col>
+                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                            <SettingBlock
+                            v-bind="settingAttrs('MaintainProcessOptions')"
+                            v-on:handleButton="handleButton"
+                            ></SettingBlock>
+                        </el-col>
+                    </el-row>
+                </el-tab-pane>
+                <el-tab-pane label="檢修及公安申報">
+                    <el-row :gutter="20">
+                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                            <SettingBlock
+                            v-bind="settingAttrs('LackStatusOptions')"
+                            v-on:handleButton="handleButton"
+                            ></SettingBlock>
+                        </el-col>  
+                    </el-row>   
+                </el-tab-pane>
+        </el-tabs>
     </div>
 </template>
 
 <script>
-import { Breadcrumb } from 'element-ui'
-import { mapGetters } from 'vuex'
-
 export default {
     components:{
-        ContactUnit: () => import('./components/SettingBlock.vue'),
-        Device: () => import('./components/SettingBlock.vue'),
-        MaintainContent: () => import('./components/SettingBlock.vue'),
-        Brand: () => import('./components/SettingBlock.vue'),
-        LackStatus: () => import('./components/SettingBlock.vue'),
-        MaintainProcess: () => import('./components/SettingBlock.vue'),
+        SettingBlock:() => import('./components/SettingBlock.vue')
     },
     data(){
         return{
+            options:[],
             input:'',
-            contactunitoption:[],
-            deviceoption:[],
-            maintaincontentoption:[],
-            brandoption:[],
-            lackstatusoption:[],
-            maintainprocessoption:[],
             type:'view',
             current:'',
             temp:[]
         }
     },
-    computed:{
-        ...mapGetters([
-            'id',
-            'buildingid'
-        ]),
-        contactUnitAttrs(){
-            return{
-                title:'ContactUnitOptions',
-                option:this.contactunitoption,
-                type:this.type,
-                current:this.current
-            }
-        },
-        deviceAttrs(){
-            return{
-                title:'DeviceOptions',
-                option:this.deviceoption,
-                type:this.type,
-                current:this.current
-            }
-        },
-        maintainContentAttrs(){
-            return{
-                title:'MaintainContentOptions',
-                option:this.maintaincontentoption,
-                type:this.type,
-                current:this.current
-            }
-        },
-        brandAttrs(){
-            return{
-                title:'BrandOptions',
-                option:this.brandoption,
-                type:this.type,
-                current:this.current
-            }
-        },
-        lackstatusAttrs(){
-            return{
-                title:'LackStatusOptions',
-                option:this.lackstatusoption,
-                type:this.type,
-                current:this.current
-            }
-        },
-        processAttrs(){
-            return{
-                title:'MaintainProcessOptions',
-                option:this.maintainprocessoption,
-                type:this.type,
-                current:this.current
-            }
-        },
-        settingBlockEvent(){
-            return{
-                subButton: this.handleButtonOption
-            }
-        }
-    },
     async mounted(){
-        await this.getcontactunitOption()
-        await this.getdeviceOption()
-        await this.getmaintaincontentOption()
-        await this.getbrandOption()
-        await this.getlackstatusOption()
-        await this.getmaintainprocessOption()
+        await this.getOptions()
     },
     methods:{
-        async getcontactunitOption(){ //取得大樓的廠商分類
-            this.contactunitoption = []
-            var _temp = []
-            await this.$api.setting.apiGetOptions('ContactUnitOptions').then(response => {
-                console.log(JSON.stringify(response))
-                _temp = response.result.sort((x,y) => x.id - y.id)
-                this.contactunitoption = _temp.map(v => {
+        settingAttrs(data){
+            return{
+                title:data,
+                option:this.optionsFilter(data),
+                type:this.type,
+                current:this.current
+            }
+        },
+        async getOptions(){ //取得大樓的所有分類
+            this.options = []
+            await this.$api.setting.apiGetBuildingOptions().then(response => {
+                var _temp = response.result.sort((x,y) => x.id - y.id)
+                this.options = _temp.map(v => {
                 this.$set(v, 'textName', v.textName) 
-                this.$set(v, 'id', v.id) 
                 return v
                 })
             })
+            this.contactunitoption = this.optionsFilter('ContactUnitOptions')
         },
-        async getdeviceOption(){ //取得大樓的設備種類
-            this.deviceoption = []
-            var _temp = []
-            await this.$api.setting.apiGetOptions('DeviceOptions').then(response => {
-                console.log(JSON.stringify(response))
-                _temp = response.result.sort((x,y) => x.id - y.id)
-                this.deviceoption = _temp.map(v => {
-                this.$set(v, 'textName', v.textName) 
-                this.$set(v, 'id', v.id) 
-                return v
-                })
-            })
+        optionsFilter(title){
+            let data = this.options.filter((item, index) => 
+                item.classType == title 
+            )
+            return data
         },
-        async getmaintaincontentOption(){ //取得大樓的維護內容
-            this.maintaincontentoption = []
-            var _temp = []
-            await this.$api.setting.apiGetOptions('MaintainContentOptions').then(response => {
-                console.log(JSON.stringify(response))
-                _temp = response.result.sort((x,y) => x.id - y.id)
-                this.maintaincontentoption = _temp.map(v => {
-                this.$set(v, 'textName', v.textName) 
-                this.$set(v, 'id', v.id) 
-                return v
-                })
-            })
-        },
-        async getbrandOption(){ //取得大樓的廠牌名稱&型號
-            this.brandoption = []
-            var _temp = []
-            await this.$api.setting.apiGetOptions('BrandOptions').then(response => {
-                console.log(JSON.stringify(response))
-                _temp = response.result.sort((x,y) => x.id - y.id)
-                this.brandoption = _temp.map(v => {
-                    this.$set(v, 'value', v.value) 
-                    this.$set(v, 'textName', v.textName) 
-                    this.$set(v, 'id', v.id) 
-                return v
-                })
-            })
-        },
-        async getlackstatusOption(){ //取得大樓的缺失改善狀況
-            this.lackstatusoption = []
-            var _temp = []
-            await this.$api.setting.apiGetOptions('LackStatusOptions').then(response => {
-                console.log(JSON.stringify(response))
-                _temp = response.result.sort((x,y) => x.id - y.id)
-                this.lackstatusoption = _temp.map(v => {
-                    this.$set(v, 'value', v.value) 
-                    this.$set(v, 'textName', v.textName) 
-                    this.$set(v, 'id', v.id) 
-                return v
-                })
-            })
-        },
-        async getmaintainprocessOption(){ //取得大樓的維護處理狀況
-            this.maintainprocessoption = []
-            var _temp = []
-            await this.$api.setting.apiGetOptions('MaintainProcessOptions').then(response => {
-                console.log(JSON.stringify(response))
-                _temp = response.result.sort((x,y) => x.id - y.id)
-                this.maintainprocessoption = _temp.map(v => {
-                    this.$set(v, 'value', v.value) 
-                    this.$set(v, 'textName', v.textName) 
-                    this.$set(v, 'id', v.id) 
-                return v
-                })
-            })
-        },
-        async handleButtonOption(index,operation,content){
+        async handleButton(index,operation,content){
             console.log(index,operation,content)
             switch(operation){
                 case 'create':
@@ -380,15 +258,3 @@ export default {
     }
 }
 </script>
-
-<style lang="scss" scoped>
-.setting-editor-container {
-  padding: 20px;
-  background-color: #d1e2ec;
-  position: relative;
-  min-height: calc(100vh - 155px);
-  max-height: calc(100vh - 155px);
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-</style>

@@ -19,7 +19,6 @@ const device = {
     apiPatchMaintains(data){ return req('patch','/devicesManagement/maintains',data) },
     apiDeleteMaintains(maintainId){ return req('delete','/devicesManagement/'+maintainId+'/maintains') },
 
-    
 }
 
 export default device

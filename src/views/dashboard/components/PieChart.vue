@@ -3,11 +3,9 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import echarts from 'echarts'
 require('echarts/theme/macarons') // echarts theme
 import resize from './mixins/resize'
-import { equipment  } from '@/api/index'
 
 export default {
   mixins: [resize],
@@ -21,9 +19,6 @@ export default {
       chart: null
     }
   },
-  mounted() {
-    //this.init()
-  },
   beforeDestroy() {
     if (!this.chart) {
       return
@@ -35,13 +30,10 @@ export default {
     seriesData(val) {
       this.setOptions({series:val})
     },
-    percentage:{
-      handler:function(){
-        if(this.percentage.length > 0){
-           this.init()
+    percentage(){
+      if(this.percentage.length > 0){
+          this.init()
         }
-      },
-      immediate:true
     }
   },
   methods: {
@@ -49,19 +41,9 @@ export default {
       this.chart = null
       this.chart = echarts.init(this.$el, 'macarons')
       this.setOption(this.percentage[0].length,this.percentage[1].length,this.percentage[2].length)
-      this.$emit('handleChartClick', '損壞')
       this.chart.on('click',params => {
         this.$emit('handleChartClick', params.data.type)
       })
-      // this.$nextTick(() => {
-      //   this.chart = null
-      //   this.chart = echarts.init(this.$el, 'macarons')
-      //   this.setOption(this.percentage[0].length,this.percentage[1].length,this.percentage[2].length)
-      //   this.$emit('setloadtree', buildingid)
-      //   this.chart.on('click',params => {
-      //     this.$emit('setcurrentnode', params.data.type)
-      //   })
-      // })
     },
     setOption(one,two,three) {
       this.chart.setOption({
@@ -111,7 +93,8 @@ export default {
                   }
             }
           }
-        ]
+        ],
+        color: ['rgb(64, 158, 255)','rgb(255, 0, 0)','rgb(230, 162, 60)']
       })
     }
   }

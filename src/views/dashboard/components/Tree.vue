@@ -1,38 +1,51 @@
 <template>
 <div>
-<el-input
-  placeholder="輸入關鍵字"
-  v-model="filterText">
-</el-input>
+  <el-input
+    placeholder="輸入關鍵字"
+    v-model="filterText">
+  </el-input>
 
-<el-tree
-  ref="tree"
-  class="filter-tree"
-  :data="resData"
-  :props="defaultProps"
-  :filter-node-method="filterNode"
-  node-key="id"
-  :default-expanded-keys="defaultExpandedKeys"
-  :highlight-current="true"
-  >
-  <span class="custom-tree-node" slot-scope="{ node, data }" style="width:100%;" @mouseenter="mouseenter(data)" @mouseleave="mouseleave(data)">
-      <span>{{ node.label }}</span>
-      <span v-if="node.level !== 3 " class="count">{{ data.count }}</span>
-      <i v-if="node.level === 3 " v-show="data.del" class="el-icon-s-tools" style="float:right;" @click="nodeclick(data)">叫修</i>
-      
-      <!-- <el-link v-show="data.del" size="mini" type="primary" @click="alert('叫修')" style="float:right;" icon="el-icon-s-tools"></el-link> -->
-  </span>
-  
-</el-tree>
+  <el-tree
+    ref="tree"
+    class="filter-tree"
+    :data="resData"
+    :props="defaultProps"
+    :filter-node-method="filterNode"
+    node-key="id"
+    :default-expanded-keys="defaultExpandedKeys"
+    :highlight-current="true"
+    empty-text="暫無資料"
+    >
+    <span 
+    slot-scope="{ node, data }" 
+    style="width:100%;" 
+    @click="node.level === 3 ? handleNodeClick(node,data) : null"
+    >
+        <span>{{ node.label }}</span>
+        <span v-if="node.level !== 3 " class="count">{{ data.count }}</span>
+        <!-- <i v-if="node.level === 3 " 
+        v-show="data.del" 
+        class="el-icon-s-tools" 
+        style="float:right;" 
+        @click="nodeclick(node,data)">叫修</i> -->
+        <!-- <el-link v-show="data.del" size="mini" type="primary" @click="alert('叫修')" style="float:right;" icon="el-icon-s-tools"></el-link> -->
+    </span>
+  </el-tree>
 </div>
 </template>
 
 <script>
-import { getequipment } from '@/api/index'
-import dialog from './Dialog'
+import { mapGetters } from 'vuex'
 
   export default {
-    props:['currentnode','loadtree'],
+    props:{
+      treeData:{
+        type:Array
+      },
+      currentNode:{
+        type:String
+      },
+    },
      data() {
       return {
         filterText: '',
@@ -44,42 +57,136 @@ import dialog from './Dialog'
           isLeaf: 'leaf',
           count: 'count'
         },
-        defaultExpandedKeys: ['11']
-      };
+        defaultExpandedKeys: ['-1'],
+        deviceOptions:[]
+      }
+    },
+    async mounted(){
+      if(this.buildingid !== undefined){
+        await this.getDeviceTypeOption()
+      }
     },
     watch: {
-        loadtree: function() {
-            this.loadTree()
-        },
-        filterText(val) {
-            this.$refs.tree.filter(val);
-        },
-        currentnode: function() {
+      buildingid:{
+        handler:async function(){
+          await this.getDeviceTypeOption()
+        }
+      },
+      treeData:{
+        handler:function(){
+          if(this.treeData.length > 0){
+            this.init()
+          }
+        }
+      },
+      filterText(val) {
+        this.$refs.tree.filter(val);
+      },
+      currentNode: function() {
         this.$nextTick(()=> {
           this.setAllExpand(false)
           this.defaultExpandedKeys = []
-          if(this.currentnode === 'good'){
-            this.defaultExpandedKeys.push(13)
-            this.$refs.tree.setCurrentKey(13)
-          } else if (this.currentnode === 'repair') {
-            this.defaultExpandedKeys.push(12)
-            this.$refs.tree.setCurrentKey(12)
-          } else {
-            this.defaultExpandedKeys.push(11)
-            this.$refs.tree.setCurrentKey(11)
-          }
+          this.defaultExpandedKeys.push(this.currentNode)
+          this.$refs.tree.setCurrentKey(this.currentNode)
         })
       }
     },
+    computed:{
+      ...mapGetters([
+        'buildingid'
+      ]),
+    },
     methods: {
-      nodeclick(data) {
-        this.$emit('setvisible', data)
+      init(){
+        var good = this.treeData[0]
+        var damage = this.treeData[1]
+        var repair = this.treeData[2]
+        this.savaData = [{
+              id:'-1',
+              name:'損壞',
+              type:'damage',
+              count:damage.length,
+              children: []
+          }, {
+              id:'-2',
+              name:'叫修中',
+              type:'repair',
+              count:repair.length,
+              children: []
+          },{
+              id:'-3',
+              name:'良好',
+              type:'good',
+              count:good.length,
+              children: []
+          }]
+          var _good = this.removeDuplicates(good,'type') // 去除重複的種類
+          var _damage = this.removeDuplicates(damage,'type') 
+          var _repair = this.removeDuplicates(repair,'type')
+          this.createChildrenNode(damage,_damage,0)
+          this.createChildrenNode(repair,_repair,1)
+          this.createChildrenNode(good,_good,2)
+          this.resData = this.savaData
       },
-      mouseenter(data){
-          this.$set(data, 'del', true)
+      removeDuplicates(originalArray, prop) {
+            var newArray = []
+            var lookupObject  = {}
+            for(var i in originalArray) {
+                lookupObject[originalArray[i][prop]] = originalArray[i]
+            }
+            for(i in lookupObject) {
+                newArray.push(lookupObject[i])
+            }
+            return newArray
       },
-      mouseleave(data){
-          this.$set(data, 'del', false)
+      async getDeviceTypeOption(){
+        await this.$api.setting.apiGetOptions('DeviceOptions').then(response => {
+          console.log('getDeviceTypeOption',response)
+          this.deviceOptions = response.result.sort((x,y) => x.id - y.id)
+        })
+      },
+      optionsFilter(id){
+        console.log('Tree_optionsFilter',this.deviceOptions,id)
+        let data = this.deviceOptions.filter((item, index) => 
+          item.id == id 
+        )
+        return data[0]
+      },
+      countToType(array,type){
+        let data = array.filter((item, index) => 
+          item.type == type 
+        )
+        return data
+      },
+      createChildrenNode(origin,removeDuplicatesArray,index){
+        removeDuplicatesArray.forEach(item => {
+          var array = this.optionsFilter(item.type) //設備種類的資料
+          console.log('Tree_createChildrenNode',array)
+          var cnt = this.countToType(origin,item.type) //取得該種類的數量
+          const _temp = { 
+              id: -array.id,
+              name: array.textName,
+              type: item.type,
+              count:cnt.length,
+              leaf: false,
+              children: []
+          }
+          this.savaData[index].children.push(_temp) //建立設備種類子節點
+          const childrenindex = this.savaData[index].children.length
+          const newArray = cnt.map(v => {
+              this.$set(v, 'children', []) 
+              this.$set(v, 'leaf', false) 
+              return v
+          })
+          for (let i = 0; i < newArray.length; i++){
+            this.savaData[index].children[childrenindex-1].children.push(newArray[i]) //建立設備子節點
+          }
+        })
+      },
+      handleNodeClick(node,data) {
+        // let routeData = this.$router.resolve({ name: 'Equipment', params: { target: data.id }})
+        // window.open(routeData.href, '_blank')
+        this.$router.push({ name: 'Equipment', params: { target: data.id }})
       },
       filterNode(value, data) {
         if(value.length === 0) {
@@ -88,77 +195,10 @@ import dialog from './Dialog'
         if (!value) return true;
         return data.name.indexOf(value) !== -1;
       },
-      loadTree() {
-        this.savaData = [{
-              id:'-1',
-              name:'損壞',
-              type:'damage',
-              count:'0',
-              children: []
-          }, {
-              id:'-2',
-              name:'叫修',
-              type:'repair',
-              count:'0',
-              children: []
-          },{
-              id:'-3',
-              name:'妥善',
-              type:'good',
-              count:'0',
-              children: []
-          }]
-
-          for (let i = 0; i < this.savaData.length; i++){
-              if( i === this.savaData.length-1 ) this.finaltype === true
-              this.requestData(i,this.savaData[i].type)
-          }
-      },
-      requestData(index,type) {
-        // 取得相對應的陣列 傳入損壞/叫修/妥善
-          getequipment(type).then(respone => {
-            const resDatas = respone.data.items;
-            const types= [
-              {id: '1',type: 'F',name:'消防設備'},
-              {id: '2',type: 'P',name:'防火/防煙設備'},
-              {id: '3',type: 'B',name:'建築設備'},
-              {id: '4',type: 'G',name:'一般設備'},
-              {id: '5',type: 'O',name:'其他設備'} 
-            ]
-            this.savaData[index].count = resDatas.length
-            types.forEach( typelistitem => {
-              const count = resDatas.filter( function(item, index){
-                if (item.type === typelistitem.type) {
-                    return true
-                }
-              })
-              if(count.length > 0) {
-                const itemar = {
-                  id: typelistitem.id,
-                  name: typelistitem.name,
-                  type: typelistitem.type,
-                  count:count.length,
-                  leaf: false,
-                  children: []
-                }
-                this.savaData[index].children.push(itemar)
-                const childrenindex = this.savaData[index].children.length
-                for (let i = 0; i < count.length; i++){
-                  this.savaData[index].children[childrenindex-1].children.push(count[i])
-                  if( index=== 2 && typelistitem.id === '5' && i === count.length-1 ){
-                    this.resData = this.savaData
-                  }
-                }
-              }
-            });
-          }).catch(error => {
-            console.log("error=>"+error)
-          })
-      },
       setAllExpand(state){
         this.changeTreeNodeStatus(this.$refs.tree.store.root);
       },
-       changeTreeNodeStatus(node) {
+      changeTreeNodeStatus(node) {
         for(let i = 0; i < node.childNodes.length; i++ ) {
           node.childNodes[i].expanded = false;
           if(node.childNodes[i].childNodes.length > 0) {

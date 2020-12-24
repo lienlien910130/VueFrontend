@@ -3,15 +3,7 @@
             <el-card class="box-card">
                 <div slot="header" class="clearfix">
                     <span>{{ titleToch }}</span>
-                    
                     <div style="margin-top:10px">
-                        <!-- <el-row v-if="title =='BrandOptions'">
-                            <el-input :style="{float: 'left', margin: '5px',width:'30%'}" v-model="input" placeholder="請輸入名稱"></el-input>
-                            <el-input 
-                            :style="{float: 'left', margin: '5px',width:'45%'}" v-model="value" placeholder="請輸入型號"></el-input>
-                            <el-button style="float: right;" type="primary" 
-                            @click="onSubmit">新增</el-button>
-                        </el-row> -->
                         <el-row >
                             <el-input :style="{float: 'left', margin: '5px',width:inputstyle}" v-model="input" placeholder="請輸入名稱"></el-input>
                             <el-button style="float: right;" type="primary" 
@@ -26,29 +18,16 @@
                                 名稱：
                             </span>
                             <el-input v-model="item.textName" style="width:60%"></el-input>
-                            <!-- <span v-if="title =='BrandOptions'">
-                                <br>
-                                型號：
-                            </span>
-                            <el-input v-if="title =='BrandOptions'" v-model="item.value" style="width:60%"></el-input> -->
-                            <i class="el-icon-circle-close" style="float: right;font-size: 30px;margin-top:5px" @click="onCancel()"></i>
+                           <i class="el-icon-circle-close" style="float: right;font-size: 30px;margin-top:5px" @click="onCancel()"></i>
                             <i class="el-icon-circle-check" style="float: right;font-size: 30px;margin-top:5px" @click="onEdit(item)"></i>
                         </div>
                         <div v-else >
                             <div :style="{display:'inline-block',width:labelstyle}">
                                  <span>
                                     {{ index+1 }}. 
-                                    <!-- <span v-if="title =='BrandOptions'">
-                                        廠牌
-                                    </span>  -->
                                     {{ item.textName }} 
                                 </span>
                             </div>
-                            <!-- <div v-if="title =='BrandOptions'" style="display:inline-block;width:30%">
-                                <span >
-                                    型號：{{ item.value }} 
-                                </span>
-                            </div> -->
                             <span v-if="current == ''">
                                 <i class="el-icon-delete" style="float: right;font-size: 25px;" @click="checkDelete(item.id)"></i>
                                 <i class="el-icon-edit" style="float: right;font-size: 25px;" @click="changeEdit(item)"></i>
@@ -56,13 +35,25 @@
                         </div>
                     </div>
                 </div>
-                
             </el-card>
     </div>
 </template>
 <script>
 export default {
-    props:['title','option','type','current'],
+    props:{
+        title:{
+            type:String
+        },
+        option:{
+            type:Array
+        },
+        type:{
+            type:String
+        },
+        current:{
+            type:String
+        }
+    },
     data(){
         return{
             input:''
@@ -95,16 +86,13 @@ export default {
             if (this.$store.state.app.device === 'mobile') {
                 return '60%'
             } else {
-                return '80%'
+                return '79%'
             }
         },
         labelstyle(){
             if (this.$store.state.app.device === 'mobile') {
                 return '80%'
             } else {
-                // if(this.title == 'BrandOptions'){
-                //     return '40%'
-                // }
                 return '60%'
             }
         },
@@ -124,17 +112,17 @@ export default {
                     type: 'warning'
                 })
             }else{
-                this.$emit('subButton', this.title, 'create' , this.input)
+                this.$emit('handleButton', this.title, 'create' , this.input)
             }
         },
         onCancel(){
-            this.$emit('subButton', this.title, 'cancelEdit' , '')
+            this.$emit('handleButton', this.title, 'cancelEdit' , '')
         },
         onEdit(item){
-            this.$emit('subButton', this.title, 'update' , item)
+            this.$emit('handleButton', this.title, 'update' , item)
         },
         changeEdit(item){
-            this.$emit('subButton', this.title, 'changeEdit' , item)
+            this.$emit('handleButton', this.title, 'changeEdit' , item)
         },
         checkDelete(id){
              this.$confirm('是否確定刪除該筆資料?', '提示', {
@@ -142,14 +130,14 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                this.$emit('subButton', this.title, 'checkDelete' , id)
+                this.$emit('handleButton', this.title, 'checkDelete' , id)
             })
-        },
+        }
     }
 }
 </script>
 <style lang="scss" scoped>
-.setting-wrapper{
+.setting-wrapper {
     margin: 10px;
     .el-card{
         height: 400px;
@@ -165,9 +153,6 @@ export default {
   }
    
 }
-
-
-  
 
     i{
         cursor: pointer;

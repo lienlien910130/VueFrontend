@@ -65,7 +65,7 @@ export const constantRoutes = [
     redirect: '/equipment/index',
     children: [
       {
-        path: 'index/:target?',
+        path: 'index',
         name: 'Equipment',
         component: () => import('@/views/equipment/index.vue'),
         meta: { title: '設備管理', icon: 'icon', needLogin: true }
@@ -80,7 +80,7 @@ export const constantRoutes = [
     meta: { title: '平時管理', icon: 'icon', needLogin: true  },
     children: [
       {
-        path: 'basic/:block?/:target?',
+        path: 'basic',
         name: 'Basic',
         component: () => import('@/views/normal/basicinfor/index.vue'),
         meta: { title: '基本資料', icon: 'one', needLogin: true }

@@ -1,31 +1,40 @@
 <template>
     <div class="editor-container">
-      <!-- <div class="dashboard-text">name: {{ name }} </div>
-      <div class="dashboard-text">roles: <span v-for="role in roles" :key="role">{{ role }}</span></div> -->
-      <!-- <Select style="margin-bottom: 20px;" v-on:setselect="setselect"/> -->
-
       <el-row :gutter="32">
         <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
             <pie-chart 
             :percentage="deviceGroup"
             v-on:handleChartClick="handleChartClick" 
-            v-on:setloadtree="setloadtree" 
             />
           </div>
         </el-col>
-        <el-col :xs="24" :sm="24" :md="16" :lg="16">
+        <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
             <Tree 
             :treeData="deviceGroup"
-            :currentnode="currentnode" 
-            :loadtree="loadtree" 
-            v-on:setvisible="setvisible"/> 
+            :currentNode="currentNode" 
+            v-on:handleNodeClick="handleNodeClick"/> 
+          </div>
+        </el-col>
+        <el-col :xs="24" :sm="24" :md="8" :lg="8">
+          <div class="chart-wrapper">
+            通知(檢修/公安)
           </div>
         </el-col>
       </el-row>
-        <Dialog :dialogTableVisible="dialogTableVisible" :dialogData="dialogData" v-on:setvisible="setvisible"/>
-
+      <el-row :gutter="32">
+        <el-col :xs="24" :sm="24" :md="8" :lg="12">
+          <div class="chart-wrapper">
+            通知(檢修/公安)
+          </div>
+        </el-col>
+        <el-col :xs="24" :sm="24" :md="16" :lg="12">
+          <div class="chart-wrapper">
+            設備即時狀況
+          </div>
+        </el-col>
+      </el-row>
         <!-- <el-row  :gutter="32">
           <div class="infinite-list-wrapper">
             <div 
@@ -65,9 +74,12 @@ export default {
     Dialog: () => import('./components/Dialog'),
     Pump: () => import('./components/Pump'),
     Waterlevel: () =>  import('./components/Waterlevel'),
-    Elevator: () =>  import('./components/Elevator'),
+    Elevator: () =>  import('./components/Elevator')
   },
   computed: {
+    ...mapGetters([
+      'buildingid'
+    ]),
     noMore () {
       return this.count >= this.viewlist.length 
     },
@@ -75,24 +87,27 @@ export default {
       return this.loading || this.noMore
     }
   },
+  watch:{
+    buildingid:{
+      handler:async function(){
+        await this.getBuildingDevicesManage()
+      }
+    },
+  },
   data() {
     return {
       deviceData:[],
       deviceGroup:[],
-
-      typelist: '',
-      currentnode: '',
-      selectbuild:'',
-      loadtree:'',
-      dialogTableVisible:false,
-      dialogData:'',
-      viewlist: constant.INDEX_VIEW_NINE,
       loading: false,
-      count: 9
+      count: 9,
+      viewlist: constant.INDEX_VIEW_NINE,
+      currentNode: '',
     }
   },
   async mounted() {
-    await this.getBuildingDevicesManage()
+    if(this.buildingid !== undefined){
+      await this.getBuildingDevicesManage()
+    }
   },
   methods: {
     loadMore() {
@@ -118,28 +133,20 @@ export default {
       })
     },
     handleChartClick(type){
-
-    },
-    settypelist(val) {
-      this.typelist = val
-    },
-    setcurrentnode(val) {
-      this.currentnode = val
-    },
-    setselect(val) {
-      this.selectbuild = val
-    },
-    setloadtree(val) {
-      this.loadtree = val
-    },
-    setvisible(val) {
-      if(val.id !== undefined){
-        this.dialogData = val
-        this.dialogTableVisible = true
-      }else {
-        this.dialogData = ''
-        this.dialogTableVisible = false
+      switch(type){
+        case '良好':
+          this.currentNode = '-3'
+          break;
+        case '損壞':
+          this.currentNode = '-1'
+          break;
+        case '叫修中':
+          this.currentNode = '-2'
+          break;
       }
+    },
+    handleNodeClick(data){
+      console.log(data)
     }
   }
 }

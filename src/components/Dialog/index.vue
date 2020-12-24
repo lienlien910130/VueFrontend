@@ -22,7 +22,7 @@
 
         <keep-alive>
         <el-form 
-        v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack'"
+        v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' "
         ref="dataForm"  
         :model="temp"  
         :label-position="label" 
@@ -250,6 +250,8 @@
             </el-table-column>
 
         </el-table>
+
+
         </keep-alive>
         
         <div v-if="isHasButtons" slot="footer" class="dialog-footer">

@@ -147,7 +147,6 @@ export default {
         config: this.tableConfig,
         title:'contactunit',
         selectData: this.selectData, //廠商類別
-        targetId:this.$route.params.block == 'co' ? this.targetId : ''
       }
     },
     selectAttrs() {
@@ -161,8 +160,7 @@ export default {
         blockData: this.floorData,
         buttonsName: this.buttonsName,
         config: this.floorConfig,
-        title:'floorOfHouse',
-        targetId:this.$route.params.block == 'fl' ? this.targetId : ''
+        title:'floorOfHouse'
       }
     },
     floorwrapper(){
@@ -211,7 +209,7 @@ export default {
       selectData:[],
       floorData:[],
       tableConfig: [
-          { label:'所屬單位' , prop:'usageOfFloorId',format:'select', mandatory:true, message:'請選擇單位'},
+          { label:'所屬單位' , prop:'usageOfFloorId',format:'floorOfHouseSelect', mandatory:true, message:'請選擇單位'},
           { label:'職稱' , prop:'title', mandatory:true, message:'請輸入內容'},
           { label:'姓名' , prop:'userName', mandatory:true, message:'請輸入內容'},
           { label:'電話' , prop:'callNumber', mandatory:true, message:'請輸入內容'},
@@ -234,7 +232,6 @@ export default {
       isChoose:false,
       floorofhouseId :'',
       origin:[], //廠商資料
-      targetId:''
     }
   },
   watch: {
@@ -253,7 +250,7 @@ export default {
       this.selectData = []
       if(val == 'MC'){
          this.tableConfig= [
-          { label:'所屬單位' , prop:'usageOfFloorId',format:'select', mandatory:true, message:'請選擇單位'},
+          { label:'所屬單位' , prop:'usageOfFloorId',format:'floorOfHouseSelect', mandatory:true, message:'請選擇單位'},
           { label:'職稱' , prop:'title', mandatory:true, message:'請輸入內容'},
           { label:'姓名' , prop:'userName', mandatory:true, message:'請輸入內容'},
           { label:'電話' , prop:'callNumber', mandatory:true, message:'請輸入內容'},
@@ -281,28 +278,24 @@ export default {
     this.activeName = 'MC'
     await this.getFloorOfHouse()
     await this.getManagementList()
-    if(this.$route.params.target !== undefined){
-            this.$nextTick(async() => {
-              console.log(this.$route.params.block,this.$route.params.target)
-               if(this.$route.params.block == 'co'){
-                 this.activeName = 'Vender'
-                  this.selectData = []
-                  this.tableConfig = [
-                      { label:'公司名稱' , prop:'name', mandatory:true, message:'請輸入內容'},
-                      { label:'類別' , prop:'type', format:'select', mandatory:true, message:'請選擇類別'},
-                      { label:'電話' , prop:'contactNumber',mandatory:true, message:'請輸入內容'},
-                      { label:'地址' , prop:'address', mandatory:true, message:'請輸入內容'},
-                      { label:'備註' , prop:'note',format:'textarea', mandatory:false},
-                      { label:'狀態' , prop:'collaborate', format:'tag', mandatory:false, message:'請輸入內容' }
-                    ]
-                  await this.getContactUnitOption()
-                  await this.getContactunitList()
-               }else if(this.$route.params.block == 'fl'){
-                 
-               }
-               this.targetId = this.$route.params.target
-            })
-        } 
+    if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+      this.activeName = 'Vender'
+      this.selectData = []
+      this.tableConfig = [
+          { label:'公司名稱' , prop:'name', mandatory:true, message:'請輸入內容'},
+          { label:'類別' , prop:'type', format:'select', mandatory:true, message:'請選擇類別'},
+          { label:'電話' , prop:'contactNumber',mandatory:true, message:'請輸入內容'},
+          { label:'地址' , prop:'address', mandatory:true, message:'請輸入內容'},
+          { label:'備註' , prop:'note',format:'textarea', mandatory:false},
+          { label:'狀態' , prop:'collaborate', format:'tag', mandatory:false, message:'請輸入內容' }
+      ]
+      await this.getContactUnitOption()
+      await this.getContactunitList()
+      let _array = this.blockData.filter((item, index) => 
+        item.id == this.$route.params.target
+      )
+      await this.handleBlock('contactunit','open',_array[0])
+    } 
   },
   methods: { 
     async getBuildingFiles() {
@@ -558,7 +551,7 @@ export default {
         this.dialogStatus = 'update'
         this.dialogData.push(content)
         this.innerVisible = true
-      }else if(index == 'delete'){
+      }else if(index === 'delete'){
         if(title === 'floorOfHouse'){
           await this.$api.building.apiDeleteFloorOfHouse(content).then(async(response)=>{
             this.$message('刪除成功')
@@ -575,7 +568,7 @@ export default {
             await this.getContactunitList()
           })
         }
-      }else if(index == 'empty'){
+      }else if(index === 'empty'){
         this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'create'},
           { name:'取消',type:'info',status:'cancel'}]
@@ -583,13 +576,21 @@ export default {
         this.dialogStatus = 'create'
       }else if(index == 'opendialog'){
         await this.handleBuildingInfo('open',content)
-      }else if(index == 'openfiles'){
+      }else if(index === 'openfiles'){
         await this.getUsageofFloorFiles(content)
         this.floorofhouseId = content
         this.dialogButtonsName = []
         this.dialogTitle = 'floorOfHouse'
         this.innerVisible = true
         this.dialogStatus = 'upload'
+      }else if(index === 'openfloorofhouse'){
+        this.dialogTitle = 'floorOfHouse'
+        this.dialogConfig = this.floorConfig
+        this.dialogSelect = this.buildingUsers
+        //用門牌ID取得門牌資料給Dialog
+        this.dialogStatus = 'update'
+        this.dialogData.push(content)
+        this.innerVisible = true
       }
     },
     async onUserActions(index, content){

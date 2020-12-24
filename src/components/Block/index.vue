@@ -97,17 +97,35 @@
                             {{ optionfilter(item[option.prop]) }}
                             </span>
 
-                            <router-link v-else-if="option.format == 'deviceSelect' " 
+                            <!-- <router-link v-else-if="option.format == 'deviceSelect' " 
                             :to="{ name: 'Equipment', params: { target: item[option.prop] }}" target='_blank'
                             style="color:blue">
                                 {{ deviceStr(item[option.prop]) }}
-                            </router-link>
+                            </router-link> -->
 
-                            <router-link v-else-if="option.format == 'contactunitSelect' " 
-                            :to="{ name: 'Basic', params: { block:'co',target: item[option.prop] }}" target='_blank'
-                            style="color:blue">
+                            <el-button v-else-if="option.format == 'floorOfHouseSelect' " 
+                            @click="handleClickOption('openfloorofhouse',item[option.prop])"
+                            type="text"
+                            style="padding:0px"
+                            >
                                 {{ selectStr(item[option.prop]) }}
-                            </router-link>
+                            </el-button>
+
+                            <el-button v-else-if="option.format == 'deviceSelect' " 
+                            @click="toAnotherPage('Equipment',item[option.prop],'')"
+                            type="text"
+                            style="padding:0px"
+                            >
+                                {{ deviceStr(item[option.prop]) }}
+                            </el-button>
+
+                            <el-button v-else-if="option.format == 'contactunitSelect' " 
+                            @click="toAnotherPage('Basic',item[option.prop],'co')"
+                            type="text"
+                            style="padding:0px"
+                            >
+                                {{ selectStr(item[option.prop]) }}
+                            </el-button>
 
                             <el-button 
                             v-else-if="option.format == 'openlacks' "
@@ -142,12 +160,8 @@
 
 <script>
 import moment from 'moment';
-import api from '@/api';
 
 export default {
-    components:{
-        
-    },
     props:{
         blockData: {
             type: Array,
@@ -175,10 +189,6 @@ export default {
         },
         options: {
             type: Array
-        },
-
-        targetId:{
-            default: ''
         }
     },
     computed: {
@@ -289,15 +299,6 @@ export default {
         blockData:function(){
             this.loadlist = this.blockData.slice(0, 9);
             this.count = 9
-        },
-        targetId:function(){
-            console.log('targetId=>'+this.targetId,this.loadlist)
-            if(this.targetId !== '' && this.targetId !== ':target'){
-                let _array = this.loadlist.filter((item, index) => 
-                item.id == this.targetId 
-            )
-                this.handleClickOption('update',_array[0])
-            }
         }
     },
     data() {
@@ -363,6 +364,10 @@ export default {
             } else {
                 this.$emit('handleBlock',this.title,status, row)
             } 
+        },
+        toAnotherPage(page,data,block){
+            console.log(page,data,block)
+            this.$router.push({ name: page, params: { block:block, target: data }})
         }
     }
 }

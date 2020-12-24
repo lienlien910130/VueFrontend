@@ -44,7 +44,6 @@ export default {
         selectData: function(){
           if(this.title == 'Building'){
             this.defaultvalue = this.selectData[0].id
-            this.$store.dispatch('building/setbuildingid',this.defaultvalue)
           }else if(this.title == 'contactunit' || this.title == 'equipment'){
             this.defaultvalue = 'all'
           }

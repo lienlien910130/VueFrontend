@@ -38,8 +38,7 @@ export default {
                 config: this.tableConfig,
                 title:'equipment',
                 selectData: this.selectData,
-                options:this.options,
-                targetId:this.targetId
+                options:this.options
             }
         },
         dialogAttrs(){
@@ -133,7 +132,6 @@ export default {
                     }
                 ],
             selectData:[],
-            targetId:'',
             buttonsName:[
                 { name:'編輯',type:'primary',status:'open'},
                 { name:'刪除',type:'info',status:'delete'}], 
@@ -148,16 +146,15 @@ export default {
             origin:[]
         }
     },
-    watch: {
-    },
     async mounted() {
         await this.getOptions() //取得所有分類
         await this.getContactUnitList() //廠商資料
         await this.getBuildingDevicesManage() //大樓的所有設備
-        if(this.$route.params.target !== undefined){
-            this.$nextTick(() => {
-               this.targetId = this.$route.params.target
-            })
+        if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+            let _array = this.blockData.filter((item, index) => 
+                item.id == this.$route.params.target
+            )
+            await this.handleBlock('equipment','open',_array[0])
         }   
     },
     methods: {
@@ -219,7 +216,7 @@ export default {
               })
             })
         },
-        async handleBlock(title,index, content) { //維護保養的操作
+        async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
             this.dialogData = []
             if(index === 'open'){
