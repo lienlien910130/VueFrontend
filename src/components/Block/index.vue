@@ -41,7 +41,8 @@
                             
                             <span 
                             v-else-if="option.format == 'range' ">
-                                {{ dataStr(item['checkStartDate'],'YYYY-MM-DD') }} ~ 
+                                {{ dataStr(item['checkStartDate'],'YYYY-MM-DD') }} 
+                                <span v-if="item['checkStartDate'] !== null">~</span> 
                                 {{ dataStr(item['checkEndDate'],'YYYY-MM-DD') }}
                             </span>
 

@@ -10,7 +10,8 @@
     <!-- <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" /> -->
 
     <div class="right-menu">
-      <template v-if="device!=='mobile'">
+      <el-row style="height:45px">
+        <template v-if="device!=='mobile'">
         <Select 
         class="select right-menu-item"
         v-bind="selectAttrs" 
@@ -42,6 +43,8 @@
             </el-dropdown-item>
           </el-dropdown-menu>
       </el-dropdown>
+      </el-row>
+        <span class="timer">{{ date | formatDate }}</span>
     </div>
     <!-- <el-row :gutter="20">
       <el-col :xs="2" :sm="3" :md="4" :lg="4" :xl="4">
@@ -121,7 +124,9 @@
 
 <script>
 import { mapGetters } from 'vuex'
-
+var padDate = function (value) {
+  return value <10 ? '0' + value:value;
+}
 export default {
   components: {
     Select: () => import('@/components/Select/index.vue'),
@@ -145,12 +150,37 @@ export default {
     }
   },
   async mounted() {
+      let _this = this
+	    this.timer = setInterval(() => { 
+        var t = new Date().toLocaleString()
+        _this.date = new Date()
+      }, 1000)
       await this.getBuilding()
+  },
+  filters: {
+      formatDate:function (value) {
+        var date = new Date(value)
+        var year = date.getFullYear()
+        var month = padDate(date.getMonth()+1)
+        var day = padDate(date.getDate())
+        var hours = padDate(date.getHours())
+        var minutes = padDate(date.getMinutes())
+        var seconds = padDate(date.getSeconds())
+        return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':'
+         + seconds
+      }
+  },
+  beforeDestroy() { 
+    if (this.timer) 
+    { 
+        clearInterval(this.timer)
+    } 
   },
   data() {
     return {
       selectData:[],
-      options:[]
+      options:[],
+      date: new Date()
     }
   },
   methods: {
@@ -176,6 +206,9 @@ export default {
     },
     handleSelect(content){
       this.$store.dispatch('building/setbuildingid',content[0].id)
+    },
+    padDate(value) {
+        return value <10 ? '0' + value:value;
     }
   }
 }
@@ -233,7 +266,7 @@ export default {
     }
 
     .avatar-container {
-      margin-right: 30px;
+      margin-right: 15px;
 
       .avatar-wrapper {
         position: relative;
@@ -243,6 +276,11 @@ export default {
     .el-dropdown{
       font-size: 18px;
       color: black;
+    }
+
+    .timer{
+      float: right;
+      margin-right: 15px;
     }
   }
 }

@@ -6,7 +6,7 @@
           <FloorSelect 
             style="margin-bottom: 20px;"
             v-bind="floorselectAttrs" 
-            v-on="floorselectEvent">
+            v-on:handleSelectOption="handleSelectOption">
           </FloorSelect>
 
           <el-popover
@@ -108,11 +108,6 @@ export default {
         return {
           selectData: this.selectData,
           title:'GraphicFloor'
-        }
-      },
-      floorselectEvent(){
-        return{
-          subChangeOption: this.handleSelectOption
         }
       },
       graphicAttrs(){

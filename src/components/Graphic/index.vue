@@ -12,6 +12,9 @@
                   <div :class="{active:drawType==''}" @click="drawTypeChange('')">
                     <i class="draw-icon icon-mouse"></i>
                   </div>
+                  <div :class="{active:drawType=='icon'}" @click="openLegendWindows">
+                    <i class="el-icon-add-location" style="font-size:30px"></i>
+                  </div>
                   <div :class="{active:drawType=='text'}" @click="drawTypeChange('text')">
                     <i class="draw-icon icon-text"></i>
                   </div>
@@ -21,9 +24,9 @@
                   <div :class="{active:drawType=='polygon'}" @click="drawTypeChange('polygon')">
                     <i class="draw-icon icon-polygon"></i>
                   </div>
-                  <!-- <div @click="save">
+                  <div @click="save">
                     <i class="draw-icon icon-save"></i>
-                  </div> -->
+                  </div>
                   <div @click="deleteObj">
                     <i class="draw-icon icon-delete"></i>
                   </div>
@@ -76,9 +79,6 @@
                 <el-form-item>
                   <el-button type="primary" @click="sendObj">廣播</el-button>
                 </el-form-item>
-                <el-form-item>
-                  <el-button type="primary" @click="openimages">開啟圖例</el-button>
-                </el-form-item>
           </el-form>
         </div>
       </el-col>
@@ -88,31 +88,11 @@
         </div>
       </el-col>
     </el-row>
-
-    <el-dialog 
-    
-    :visible.sync="dialogTableVisible" 
-    title="圖例" 
-    @dragDialog="handleDrag"
-    :modal="false"
-    :close-on-click-modal="false"
-    class="dialog"
-    style="width:230px"
-    width="230px"
-    top="0px">
-      
-            <div class="collapse-wrapper">
-                <EquipmentType v-on="equipmentTypeEvent">
-                </EquipmentType>
-              </div>
-      
-    </el-dialog>
-
   </div>
 </template>
 
 <script>
-
+import constant from '../../../src/constant'
 import { mapGetters } from 'vuex'
 import elDragDialog from '@/directive/el-drag-dialog' 
 
@@ -120,36 +100,13 @@ export default {
   name: "App",
   props:['deleteObject','selectObject','reset','title','saveimg','deletesuccess'],
   directives: { elDragDialog },
-  components:{
-    EquipmentType: () => import('../../views/graphic/components/EquipmentType.vue'),
-  },
   computed: {
      ...mapGetters([
         'json'
     ]),
     getWsMsg() {
         return this.$store.state.websocket.msg
-    },
-    equipmentTypeEvent(){
-        return{
-          subDragOption: this.handleDragOption,
-          subSelectionOption : this.handleSelectionOption
-        }
-    },
-    // dialogwidth(){
-    //   if(this.startdrag == true){
-    //     return '200px'
-    //   }else{
-    //     return '100%'
-    //   }
-    // }
-    // divwidth(){
-    //   if (this.$store.state.app.device === 'mobile') {
-    //     return '500px'
-    //   } else {
-    //     return '1550px'
-    //   }
-    // }
+    }
   },
   data() {
     return {
@@ -226,7 +183,8 @@ export default {
           label: '撒水區'
         }],
       blocktype: '',
-       id:0
+      id:0,
+      imgSource:[]
     }
   },
   watch: {
@@ -419,6 +377,8 @@ export default {
     this.canvas.selectionLineWidth = 2
     this.canvas.selectionDashArray = [5, 5]
     this.canvas.on("drop", this.drop)
+    this.canvas.on("dragover", this.drag)
+    this.canvas.on("dragenter", this.drag)
     this.canvas.on("mouse:down", this.mousedown)
     this.canvas.on("mouse:move", this.mousemove)
     this.canvas.on("mouse:up", this.mouseup)
@@ -433,10 +393,8 @@ export default {
     // this.canvas.on('object:modified', (e) => {
     //   this.setAnimate(e.target)
     // })
-    // delete insert
-    // ctrl+c ctrl+v ctrl+z
-    // alt+q alt+w
-    // alt+s alt+t alt+r alr+a
+    //添加消息接收函數
+    window.addEventListener("message", this.receiveMessage, false)
     document.onkeydown = async(e) => {
       if (e.keyCode == 46) {
         await this.deleteObj()
@@ -493,6 +451,9 @@ export default {
       this.$emit('subResetSelectOption')
     },
     async drawTypeChange(e) { //切換繪圖類別
+    if(window.child && window.child.open && !window.child.closed){
+      window.child.close()
+    }
       if(this.drawType == 'text' && this.textbox !== null){
         this.textbox.exitEditing() //關閉文字框編輯
         await this.deleteblankTextobj() 
@@ -560,7 +521,7 @@ export default {
       this.mouseFrom.x = this.getX(e)
       this.mouseFrom.y = this.getY(e)
       this.doDrawing = true
-      if(this.canvas.getActiveObject() == null && this.movingImage !== null && this.drawType == ""){ //可以點選圖片新增
+      if(this.canvas.getActiveObject() == null && this.imgSource.length !== 0 && this.drawType == 'icon'){ //可以點選圖片新增
         this.drop(e)
       }else if(e.e.altKey && this.drawType == ""){ //移動畫布
         this.panning = true
@@ -643,19 +604,31 @@ export default {
         this.sendAllobj()
       }
     },
-    drop(e){ //拖曳圖片近來觸發
-      const image = new fabric.Image(this.movingImage, {
-        width: this.movingImage.naturalWidth,
-        height: this.movingImage.naturalHeight,
-        scaleX: 0.1,
-        scaleY: 0.1,
-        top: this.getY(e) - this.imgDragOffset.offsetY*0.05,
-        left: this.getX(e) - this.imgDragOffset.offsetX*0.05
-      })
-      
-      this.canvas.add(image)
-      this.addCustomize(image,this.movingImage.alt)
-      this.sendAllobj()
+    drag(e){
+      window.event.stopPropagation()
+      window.event.preventDefault()
+    },
+    drop(e){ //新增圖例
+      window.event.stopPropagation()
+      window.event.preventDefault()
+      const imgEl = document.createElement('img')
+      var item = constant.Equipment.filter((item,index) => 
+          item.id == this.imgSource[0]
+      ) 
+      imgEl.src = item[0].imgSrc
+      imgEl.onload = () => {
+        const image = new fabric.Image(imgEl, {
+          // width: this.imgSource[3],
+          // height: this.imgSource[4],
+          scaleX: 0.1,
+          scaleY: 0.1,
+          top: this.getY(e) - this.imgSource[2]*0.05,
+          left: this.getX(e) - this.imgSource[1]*0.05
+        })
+        this.canvas.add(image)
+        this.addCustomize(image,this.imgSource[5])
+        this.sendAllobj()
+      }
     },
     resetCanvas(){ //重置
       this.canvas.setZoom(1)
@@ -972,7 +945,6 @@ export default {
         self.sendAllobj()
       })
     },
-
     objectaction(e,action){ //封裝廣播內容
         var change = []
         var id = ''
@@ -1009,7 +981,6 @@ export default {
             this.$socket.$ws
         }
     },
-    
     setAnimate(obj){
         obj.animate('opacity', obj.opacity === 0.5 ? 1 : 0.5, {
             duration: 1000,
@@ -1018,27 +989,28 @@ export default {
             easing: fabric.util.ease.easeInCubic
         })
     },
-
-    openimages(){
-      this.dialogTableVisible = true
+    openLegendWindows(){
+      this.drawType = 'icon'
+      const { href } = this.$router.resolve({
+        name: 'Graphic_equipmentType'
+      })
+      if(window.child && window.child.open && !window.child.closed){
+        window.child.focus()
+      }else{
+        window.child = window.open(href, '_blank', 'toolbar=no, width=400, height=600,location=no')
+      }
+    },
+    receiveMessage(event) {
+        //event.origin是指發送的消息源，一定要進行驗證！！！
+        if (event.origin !== "http://localhost:9528")return
+        if(event.data !== "" && event.data !== 'null'){
+          this.imgSource = event.data.split(',')
+        }else if (event.data == 'null'){
+          this.imgSource = []
+        }
     },
     handleDrag() {
       console.log('drag')
-    },
-    handleDragOption(e){
-        if(e !== null){
-          this.imgDragOffset.offsetX = e.offsetX
-          this.imgDragOffset.offsetY = e.offsetY
-          this.movingImage = e.target
-        }else{
-          this.movingImage = null
-        }
-    },
-    handleSelectionOption(content){
-      console.log('content'+content)
-      this.canvas.forEachObject(function(object){ 
-            object.selectable = content
-      });
     }
   }
 }

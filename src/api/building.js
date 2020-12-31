@@ -28,6 +28,7 @@ const building = {
     //門牌資料
     apiGetBuildingOfHouse(){ return req('get','/basic/buildingId/'+this.getBid()+'/floors/a/usage-of-floors') },
     apiGetFloorOfHouse(floorId){ return req('get','/basic/floors/'+floorId+'/usage-of-floors') },
+    apiGetHouse(usageOfFloorId){ return req('get','/basic/usage-of-floors/'+usageOfFloorId) },
     apiPostFloorOfHouse(floorId,data){ return req('post','/basic/floors/'+floorId+'/usage-of-floors',data) },
     apiPatchFloorOfHouse(data){ return req('patch','/basic/usage-of-floors',data) },
     apiDeleteFloorOfHouse(floorofhouseId){ return req('delete','/basic/'+floorofhouseId+'/usage-of-floors') },

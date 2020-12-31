@@ -72,7 +72,8 @@
 
                 <el-select
                     v-else-if="item.format =='select' || item.format =='userInfo' ||
-                    item.format == 'deviceSelect' || item.format =='contactunitSelect' "
+                    item.format == 'deviceSelect' || item.format =='contactunitSelect' || 
+                    item.format == 'floorOfHouseSelect' "
                     v-model="temp[item.prop]"
                     placeholder="請選擇"
                     style="width:100%"

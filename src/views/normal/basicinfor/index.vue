@@ -587,7 +587,19 @@ export default {
         this.dialogTitle = 'floorOfHouse'
         this.dialogConfig = this.floorConfig
         this.dialogSelect = this.buildingUsers
-        //用門牌ID取得門牌資料給Dialog
+        await this.$api.building.apiGetHouse(content).then(async(response) => {
+          let content = {
+                id:response.result[0].id,
+                houseNumber: response.result[0].houseNumber,
+                placeName:response.result[0].placeName,
+                name:response.result[0].linkUsers[0].name,
+                capacity:response.result[0].capacity,
+                note:response.result[0].note,
+                linkOwners:response.result[0].linkOwners[0].id,
+                linkUsers:response.result[0].linkUsers[0].id
+            }
+          this.dialogData.push(content)
+        })
         this.dialogStatus = 'update'
         this.dialogData.push(content)
         this.innerVisible = true
@@ -670,9 +682,12 @@ export default {
         await this.$api.building.apiPatchFloorOfHouse(content).then(async(response) => {
           this.$message('更新成功')
           this.innerVisible = false
-          await this.getFloorList()
+          if(this.selectFloor !== ''){
+            await this.getFloorList()
+          }
           if(this.activeName == 'MC'){
             this.blockData = []
+            await this.getFloorOfHouse()
             await this.getManagementList()
           }
         })  

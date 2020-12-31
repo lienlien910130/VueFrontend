@@ -20,6 +20,13 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/Graphic_equipmentType',
+    name: 'Graphic_equipmentType',
+    meta: { title: '圖例'},
+    component: () => import('@/views/graphic/components/EquipmentType.vue'),
+    hidden: true
+  },
+  {
     path: '/',
     component: Layout,
     redirect: '/dashboard',

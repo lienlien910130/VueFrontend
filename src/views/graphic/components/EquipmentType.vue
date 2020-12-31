@@ -2,28 +2,6 @@
 <div>
     <el-row :gutter="32">
         <el-col :xs="24" :sm="24" :md="8" :lg="24">
-            <!-- <div
-            v-if="this.select"
-            style="width:100%">
-                <el-form label-width="auto">
-                    <el-form-item label="比例">
-                        <el-input-number v-model="imgscale" :precision="1" :step="0.1" :min="0.1" :max="1" 
-                        @change="changeImg" style="width:100%"  controls-position="right" ></el-input-number>
-                    </el-form-item>
-                    <el-form-item label="預覽">
-                        <el-image
-                            class="icon"
-                            :style="{ width: scalewidth +'px', height: scaleheight + 'px' }"
-                            :src="this.select.imgSrc"
-                            :alt="this.select.name"
-                            @mousedown="handleImage(item,$event)"
-                            draggable
-                        >
-                        </el-image>
-                    </el-form-item>
-                </el-form>
-            </div> -->
-            
             <el-input 
             v-model="search" 
             placeholder="請輸入名稱"
@@ -84,27 +62,11 @@ export default {
             type:'icon',
             search:'',
             temp:[],
-            select:null,
-            imgscale:0.1,
-            natural:{width:0,height:0}
-        }
-    },
-    computed:{
-        scalewidth(){
-            return this.natural.width * this.imgscale
-        },
-        scaleheight(){
-            return this.natural.height * this.imgscale
+            select:null
         }
     },
     mounted(){
         this.temp = Object.assign({}, this.viewlist)
-        document.onkeydown = async(e) => {
-            if (e.keyCode == 90 && e.altKey) {
-                this.select = null
-                this.$emit('subDragOption',null)
-            }
-        }
     },
     methods:{
         handleChange(type){
@@ -114,11 +76,12 @@ export default {
             if(e.target.localName == 'img'){
                 if(this.select == item){
                     this.select = null
-                    this.$emit('subDragOption',null)
+                    window.opener.postMessage('null', window.location)
                 }else{
                     this.select = item
-                    this.$emit('subDragOption',e)
-                    this.natural = {width:e.target.naturalWidth,height:e.target.naturalHeight}
+                    var str = item.id+','+e.offsetX+','+e.offsetY+','+
+                    e.target.naturalWidth+','+e.target.naturalHeight+','+item.name
+                    window.opener.postMessage(str, window.location)
                 }
             }
         },
@@ -126,7 +89,7 @@ export default {
             this.temp = []
             this.viewlist.filter((item) => {
                 if (item.name.indexOf(this.search) !== -1) {
-                    this.temp.push(item);
+                    this.temp.push(item)
                 }
             }) 
         }

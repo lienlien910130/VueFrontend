@@ -83,7 +83,10 @@
         fileList:[],
         isDisabled:true,
         importFiles:[],
-        choose:''
+        choose:'',
+        isLt10M:true,
+        isType:true,
+        disable:[]
       }
     },
     mounted(){
@@ -91,6 +94,20 @@
     },
     methods: {
         handleChange(file, fileList) {
+            console.log(file,fileList)
+            const m = file.size / 1024 / 1024 < 10
+            const array = file.name.split('.')
+            const t = array[1] !== 'dwg'
+            if (!m && t) {
+                this.disable.push(file)
+                this.$message.error('上傳檔案不能超過10MB!')
+            }else if (m && !t) {
+                this.disable.push(file)
+                this.$message.error('dwg檔請壓縮成zip檔再上傳')
+            }else if(!m && !t){
+                this.disable.push(file)
+                this.$message.error('檔案大小及格式有錯誤,請移除錯誤檔案再進行上傳')
+            }
             this.importFiles = fileList
             if (this.importFiles.length > 0) {
                 this.isDisabled = false
@@ -99,6 +116,10 @@
             }
         },
         handleRemove(file, fileList) {
+            const obj = this.disable.findIndex((item, index) =>
+                item.uid == file.uid
+            )
+            this.disable.splice(obj,1)
             if(fileList.length == 0){
                 this.isDisabled = true
             }
@@ -110,12 +131,16 @@
             })
         },
         beforeRemove(file, fileList) {
-            return this.$confirm(`確定移除 ${ file.name }？`);
+            return this.$confirm(`確定移除 ${ file.name }？`)
         },
         onUpload(file){
-            this.$emit('handleFilesUpload','createfile',this.title,this.importFiles)
-            this.importFiles = []
-            this.fileList = []
+            if(this.disable.length === 0){
+                this.$emit('handleFilesUpload','createfile',this.title,this.importFiles)
+                this.importFiles = []
+                this.fileList = []
+            }else{
+                this.$message.error('上傳檔案格式或檔案大小錯誤,請移除錯誤的檔案後重新上傳')
+            }
         },
         downloadfile(fileid) {
             return "http://192.168.88.65:59119/basic/fileDownload/" + fileid

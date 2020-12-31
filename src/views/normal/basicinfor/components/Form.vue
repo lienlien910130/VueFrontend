@@ -56,7 +56,9 @@
           <el-option v-for="(item,index) in buildingUsers" :key="index" :label="item.label" :value="item.id">
           </el-option>
         </el-select>
-        <el-input v-else-if="this.type === 'view' && form.fireManagerId == null && this.buildingUsers.length>0" ref="linkFireManagers" name="linkFireManagers" placeholder="請設定防火管理人" disabled></el-input>
+        <el-input v-else-if="this.type === 'view' && form.fireManagerId == null && 
+        this.buildingUsers.length>0" ref="linkFireManagers" name="linkFireManagers" 
+        placeholder="請設定防火管理人" disabled></el-input>
         <el-button v-else-if="this.buildingUsers.length == 0" type="text" @click="openDialog">新增用戶</el-button>
         <el-input v-else-if="form.linkFireManagers.length" ref="linkFireManagers" name="linkFireManagers" :placeholder="change(form.fireManagerId)" disabled>
           <template slot="append">

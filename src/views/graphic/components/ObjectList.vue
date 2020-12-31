@@ -12,8 +12,10 @@
         :expand-on-click-node="false"
         >
         <span class="custom-tree-node" slot-scope="{ node, data }" >
-            
-            <span @click="select(node, data)" style="width:87%;padding:7px;margin:5px;float:left">{{ node.label }}</span>
+            <span @click="select(node, data)" 
+                style="padding:7px;margin:5px;float:left">
+                    {{ node.label }}</span>
+            <span v-if="node.level === 1 " class="itemcount">{{ node.childNodes.length +1 }}</span>
             <span style="float:right">
                 <el-button
                     type="text"
@@ -56,9 +58,17 @@ export default {
                     if(item.type == 'image'){
                         this.$refs.tree.filter(item.name)
                         if(this.parentnode == null){
-                            this.data.push({ id: item.id , label: item.name, children: [] })
+                            this.data.push({ 
+                                id: item.id , 
+                                label: item.name, 
+                                children: []
+                            })
                         }else{
-                            this.$refs.tree.append( { id: item.id, label: item.name, children: []} , this.parentnode)
+                            this.$refs.tree.append({ 
+                                id: item.id, 
+                                label: item.name, 
+                                children: []} , 
+                                this.parentnode)
                             this.parentnode = null
                         }
                     }else{
@@ -132,7 +142,20 @@ export default {
 }
 </script>
 <style lang="scss">
-
+.itemcount {
+    background-color: #F56C6C;
+    border-radius: 10px;
+    color: #FFF;
+    display: inline-block;
+    font-size: 12px;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 6px;
+    text-align: center;
+    white-space: nowrap;
+    border: 1px solid #FFF;
+    margin-top:12px
+}
 
 
 /* 设置树形最外层的背景颜色和字体颜色 */
@@ -178,4 +201,5 @@ export default {
 background-color:rgb(147, 180 , 197);
   color: black;
 }
+
 </style>
