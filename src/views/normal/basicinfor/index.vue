@@ -342,8 +342,8 @@ export default {
       }else{
         this.loading = true
         await this.$api.files.apiGetFloorImage(this.floorImageId).then(response=> {
-            const bufferUrl = btoa(new Uint8Array(response).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-            this.imageSrc = 'data:image/png;base64,' + bufferUrl;
+          const bufferUrl = btoa(new Uint8Array(response).reduce((data, byte) => data + String.fromCharCode(byte), ''))
+          this.imageSrc = 'data:image/png;base64,' + bufferUrl
         }) 
         this.loading = false
       }

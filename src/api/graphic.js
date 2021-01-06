@@ -11,7 +11,8 @@ const graphic = {
     apiGetFloorIdToGraphicFile(floorId){ 
         return req('get','/drawingControl/floors/'+floorId+'/supervisoryControlSystems') },
     apiPostGraphicFile(floorId,data){ 
-        return req('post','/drawingControl/'+this.getUid()+'/floors/'+floorId+'/supervisoryControlSystems',data) },
+        return req('post','/drawingControl/'+this.getUid()+'/floors/'+floorId+'/supervisoryControlSystems',
+        data) },
     apiDeleteGraphicFile(supervisoryControlSystemId){ 
         return req('delete','/drawingControl/'+supervisoryControlSystemId+'/supervisoryControlSystems') },
 }

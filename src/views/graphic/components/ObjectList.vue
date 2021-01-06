@@ -36,7 +36,7 @@ export default {
             default() {
                 return []
             }
-        },objectDelete:{},objectSelect:{}
+        },objectDelete:{},objectSelect:{},redoundo:{}
     },
     data(){
         return{
@@ -48,34 +48,7 @@ export default {
     },
     watch:{
         list(list){
-            var _temp = []
-            list.forEach(item => {
-                _temp = this.collect.filter(function(value) {
-                    return value.id === item.id
-                })
-                if(_temp.length == 0){
-                    this.collect.push(item)
-                    if(item.type == 'image'){
-                        this.$refs.tree.filter(item.name)
-                        if(this.parentnode == null){
-                            this.data.push({ 
-                                id: item.id , 
-                                label: item.name, 
-                                children: []
-                            })
-                        }else{
-                            this.$refs.tree.append({ 
-                                id: item.id, 
-                                label: item.name, 
-                                children: []} , 
-                                this.parentnode)
-                            this.parentnode = null
-                        }
-                    }else{
-                        this.data.push({ id: item.id, label: item.type+'|'+item.name, children: [] })
-                    }
-                }
-            })
+            this.checkNode(list)
         },
         objectDelete(val){
             if(val !== null){
@@ -105,10 +78,19 @@ export default {
             }else{
                 this.$refs.tree.setCurrentKey(null)
             }
+        },
+        redoundo(val){
+            if(val !== null ){
+                this.collect.length = 0
+                this.data.length = 0
+                console.log('redoundo',val,this.collect,this.data)
+                this.checkNode(val)
+                this.$emit('subResetRedoUndoOption','')
+            }
         }
     },
     methods:{
-         remove(node, data) {
+        remove(node, data) {
             if(node.childNodes.length >0){
                 this.$message({
                     message: '尚有子物件，請先移除子物件再刪除該物件',
@@ -137,6 +119,36 @@ export default {
                 }
             }
             return true
+        },
+        checkNode(list){
+            var _temp = []
+            list.forEach(item => {
+                _temp = this.collect.filter(function(value) {
+                    return value.id === item.id
+                })
+                if(_temp.length == 0){
+                    this.collect.push(item)
+                    if(item.type == 'image'){
+                        this.$refs.tree.filter(item.objectName)
+                        if(this.parentnode == null){
+                            this.data.push({ 
+                                id: item.id , 
+                                label: item.objectName, 
+                                children: []
+                            })
+                        }else{
+                            this.$refs.tree.append({ 
+                                id: item.id, 
+                                label: item.objectName, 
+                                children: []} , 
+                                this.parentnode)
+                            this.parentnode = null
+                        }
+                    }else{
+                        this.data.push({ id: item.id, label: item.type+'|'+item.objectName, children: [] })
+                    }
+                }
+            })
         }
     }
 }

@@ -130,7 +130,6 @@ var padDate = function (value) {
 export default {
   components: {
     Select: () => import('@/components/Select/index.vue'),
-    Breadcrumb: () => import('@/components/Breadcrumb'),
     Hamburger: () => import('@/components/Hamburger'),
     Screenfull: () => import('@/components/Screenfull')
   },

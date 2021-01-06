@@ -38,7 +38,8 @@ Vue.use(fabric)
 Vue.use(vcolorpicker)
 
 Vue.config.productionTip = false
-
+Vue.config.debug = false
+Vue.config.devtools = false
 Vue.prototype.$socket = socket
 Vue.prototype.$qs = qs
 Vue.prototype.$api = api;

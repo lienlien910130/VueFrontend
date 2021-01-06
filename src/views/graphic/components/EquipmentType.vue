@@ -29,7 +29,6 @@
             :src="item.imgSrc"
             :alt="item.name"
             @mousedown="handleImage(item,$event)"
-            
             draggable
             >
             </el-image>
@@ -62,13 +61,26 @@ export default {
             type:'icon',
             search:'',
             temp:[],
-            select:null
+            select:null,
+            tt:require("../../../assets/equipment/1.png")
         }
     },
     mounted(){
         this.temp = Object.assign({}, this.viewlist)
     },
+    computed:{
+        changeToImage(obj){
+            console.log(obj.viewlist[0].imgSrc)
+            var str = "../../../assets/equipment/"+obj.viewlist[0].imgSrc
+            return require(str)
+        }
+    },
     methods:{
+        // changeToImage(name){
+        //     var str = "../../../assets/equipment/"+name
+        //     console.log(str)
+        //     return require(str)
+        // },
         handleChange(type){
             this.type = type
         },

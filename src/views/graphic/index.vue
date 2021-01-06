@@ -6,7 +6,7 @@
           <FloorSelect 
             style="margin-bottom: 20px;"
             v-bind="floorselectAttrs" 
-            v-on:handleSelectOption="handleSelectOption">
+            v-on:handleSelect="handleSelect">
           </FloorSelect>
 
           <el-popover
@@ -22,20 +22,22 @@
               <p class="tipck">5.【Alt】+【T】：文字</p>
               <p class="tipck">6.【Alt】+【R】：矩形</p>
               <p class="tipck">7.【Alt】+【A】：多邊形</p>
-              <p class="tipck">8.【Alt】+【Z】：取消拖曳圖片</p>
-              <p class="tipck">9.【Ctrl】+【C】：複製</p>
-              <p class="tipck">10.【Ctrl】+【V】：貼上</p>
-              <p class="tipck">11.【Ctrl】+【Z】：返回上一步</p>
-              <p class="tipck">12.【Delete】：刪除</p>
-              <p class="tipck">13.【Insert】：下載圖片</p>
-              <el-button slot="reference" type="primary">快捷鍵</el-button>
+              <!-- <p class="tipck">8.【Alt】+【Z】：取消拖曳圖片</p> -->
+              <p class="tipck">9.【Alt】+【G】：打開圖例</p>
+              <p class="tipck">10.【Ctrl】+【C】：複製</p>
+              <p class="tipck">11.【Ctrl】+【V】：貼上</p>
+              <p class="tipck">12.【Ctrl】+【Z】：上一步</p>
+              <p class="tipck">13.【Ctrl】+【Y】：下一步</p>
+              <p class="tipck">14.【Delete】：刪除</p>
+              <p class="tipck">15.【Insert】：下載圖片</p>
+              <el-button slot="reference" type="primary" :disabled="disabled">快捷鍵</el-button>
           </el-popover>
 
-          <el-button v-if="type =='view'" type="primary" @click="changetype('edit')">編輯圖控</el-button>
+          <el-button v-if="type =='view'" type="primary" @click="changetype('edit')" :disabled="disabled">編輯圖控</el-button>
           <el-button v-else type="primary" @click="changetype('view')">關閉編輯</el-button>
-          <el-button type="primary" @click="resetcanvas">復原位置</el-button>
-          <el-button type="primary" @click="savetoimage">匯出圖片</el-button>
-          <el-button type="primary" >歷史紀錄</el-button>
+          <el-button type="primary" @click="resetcanvas" :disabled="disabled">復原位置</el-button>
+          <el-button type="primary" @click="savetoimage" :disabled="disabled">匯出圖片</el-button>
+          <el-button type="primary" :disabled="disabled">歷史紀錄</el-button>
         </el-row>
          <div class="block-wrapper">
           <el-row>
@@ -112,14 +114,14 @@ export default {
       },
       graphicAttrs(){
         return{
-                movingImage:this.movingImage,
-                imgDragOffset:this.imgDragOffset,
-                deleteObject:this.deleteObject,
-                selectObject:this.selectObject,
-                deletesuccess:this.deletesuccess,
-                reset:this.reset,
-                saveimg:this.save,
-                title:this.type
+              deleteObject:this.deleteObject,
+              selectObject:this.selectObject,
+              deleteSuccess:this.deleteSuccess,
+              reset:this.reset,
+              saveimg:this.save,
+              type:this.type,
+              imageSrc:this.imageSrc,
+              objects:this.objects
             }
       },
       graphicEvent(){
@@ -131,20 +133,23 @@ export default {
               subResetSelectOption: this.handleResetSelectOption,
               subResetDeleteOption: this.handleResetDeleteOption,
               subObjectDeleteOption:this.handleGraphicObjDeleteOption,
-              subObjectSelectOption:this.handleGraphicObjSelectOption
+              subObjectSelectOption:this.handleGraphicObjSelectOption,
+              subRedoUndoOption:this.handleRedoUndo
           }
       },
       objectListAttrs(){
             return {
-              list: this.objectlist,
+              list: this.objectList,
               objectDelete:this.objectDelete,
-              objectSelect:this.objectSelect
+              objectSelect:this.objectSelect,
+              redoundo:this.redoundo
             }
         },
       objectListEvent(){
             return {
               subSelectOption: this.handleObjSelectOption,
               subDeleteReturnOption: this.handleDeleteReturnOption,
+              subResetRedoUndoOption:this.handleResetRedoUndoOption
             }
       },
     },
@@ -154,16 +159,19 @@ export default {
           reset:false,
           type:'view',
           save:false,
-          canjson:'',
-          objectlist:[],
+          objectList:[],
           deleteObject:null,
           selectObject:null,
           objectDelete:null,
-          deletesuccess:null,
-          movingImage:null,
-          imgDragOffset:{offsetX: 0,offsetY: 0},
+          deleteSuccess:null,
+          redoundo:null,
           addobject:null,
-          tableData:[]
+          tableData:[],
+          floorImageId:'',
+          floorId:'',
+          imageSrc:'',
+          disabled:true,
+          objects:null
         }
     },
     mounted(){
@@ -182,17 +190,59 @@ export default {
           });
         })
       },
-      handleSelectOption(){
-
+      async handleSelect(content){
+        await this.getFloorGraphic(content[0].id)
+        this.floorId = content[0].id
+        await this.getFloorImageId(content[0].id)
+        await this.getFloorImage()
       },
+      async getFloorGraphic(floorId){
+        await this.$api.graphic.apiGetFloorIdToGraphicFile(floorId).then(response =>{
+          console.log(JSON.stringify(response))
+        })
+      },
+      async addFloorGraphicFile(state){
+        var _temp = {
+           "CodeContent" : state
+        }
+        console.log(JSON.stringify(_temp))
+        await this.$api.graphic.apiPostGraphicFile(this.floorId,JSON.stringify(_temp)).then(response =>{
+          console.log(JSON.stringify(response))
+        })
+      },
+      async getFloorImageId(floorId){ //儲存floorimageID
+        await this.$api.building.apiGetFloor(floorId).then(response=> {
+            if(response.result[0].floorPlanID !== null){
+              this.floorImageId = (response.result[0].floorPlanID).toString()
+            }else{
+              this.floorImageId = null
+            }
+        })
+      }, 
+      async getFloorImage(){ //載入平面圖
+        if(this.floorImageId == null){
+          this.imageSrc = ""
+          this.disabled = true
+          this.changetype('view')
+        }else{
+          await this.$api.files.apiGetFloorImage(this.floorImageId).then(response=> {
+              const bufferUrl = btoa(new Uint8Array(response).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+              this.imageSrc = 'data:image/png;base64,' + bufferUrl
+              this.disabled = false
+          })
+        }
+      },  
       handleResetSelectOption(){
         this.selectObject = null
         this.objectSelect = null
       },
       handleResetDeleteOption(){
         this.deleteObject = null
-        this.deletesuccess = null
+        this.deleteSuccess = null
         this.objectDelete = null
+      },
+      handleResetRedoUndoOption(){
+        this.redoundo = null
       },
       handleObjSelectOption(index,val){
           if(index == "del"){
@@ -202,10 +252,13 @@ export default {
           }
       },
       handleDeleteReturnOption(val){
-        this.deletesuccess = val
+        this.deleteSuccess = val
       },
       handleGraphicObjListOption(val){
-        this.objectlist = val
+        this.objectList = val
+      },
+      handleRedoUndo(val){
+        this.redoundo = val
       },
       handleGraphicObjDeleteOption(val){
         this.objectDelete = val
@@ -219,9 +272,8 @@ export default {
       handleGraphicSaveOption(){
         this.save = false
       },
-      handleGraphicJsonOption(val){
-        console.log('store=>'+JSON.stringify(this.$store.state.graphic.json))
-        this.canjson = val
+      async handleGraphicJsonOption(val){
+        await this.addFloorGraphicFile(val)
       },
       resetcanvas(){
         this.reset = true
