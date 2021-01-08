@@ -104,7 +104,7 @@ import { mapGetters } from 'vuex'
 
 export default {
   name: "App",
-  props:['deleteObject','selectObject','reset','type','saveimg','deleteSuccess','imageSrc','objects'],
+  props:['deleteObject','selectObject','reset','type','saveimg','deleteSuccess','imageSrc','objects','checkList'],
   computed: {
      ...mapGetters([
         'json'
@@ -124,7 +124,12 @@ export default {
       strokeDash:'0', //顯示在邊框select的對應值
       strokedash:[0,0],
       strokeWidth:1, //邊框寬度
-      options: [{ //區塊類型
+      options: [
+        {
+          value: '未分類',
+          label: '未分類'
+        },
+        { //區塊類型
           value: '警戒區',
           label: '警戒區'
         }, {
@@ -184,7 +189,7 @@ export default {
       clipboard:null,
       //客製化的元素
       id:0,
-      blockType: '',
+      blockType: '未分類',
       objectName:'', //圖層標題
       //上一步下一步
       state:'', //狀態
@@ -194,12 +199,13 @@ export default {
   },
   watch: {
     type(val){
-      console.log(val)
       if(val === 'edit'){
         this.canvas.skipTargetFind = false
+        this.canvas.selection = true
       }else{
         this.doDrawing = false
         this.canvas.skipTargetFind = true
+        this.canvas.selection = false
       }
     },
     saveimg(val){
@@ -224,7 +230,7 @@ export default {
       if(this.deleteObject !== null){
         this.canvas.remove(this.deleteObject)
         this.saveCanvasState()
-        this.$emit('subResetDeleteOption')
+        this.$emit('returnDeleteObjects')
         this.canvas.renderAll()
       }
     },
@@ -234,7 +240,7 @@ export default {
           this.canvas.remove(obj)
         })
         this.saveCanvasState()
-        this.$emit('subResetDeleteOption')
+        this.$emit('returnDeleteObjects')
       }
     },
     getWsMsg: function (data, val) {
@@ -374,7 +380,15 @@ export default {
       this.loadBackgroundImage()
     },
     objects(val){
-
+      if(val !== null){ 
+        this.loadObjects(JSON.parse(val))
+      }else{
+        this.canvas.clear()
+        this.sendAllobj()
+      }
+    },
+    checkList(val){
+      console.log(val)
     }
   },
   mounted() {
@@ -383,6 +397,7 @@ export default {
     this.canvas.setWidth(1550)
     this.canvas.setHeight(800)
     this.canvas.skipTargetFind = true
+    this.canvas.selection = false
     this.canvas.selectionBorderColor ="red"
     this.canvas.selectionLineWidth = 2
     this.canvas.selectionDashArray = [5, 5]
@@ -398,6 +413,7 @@ export default {
     this.canvas.on('object:modified', this.saveCanvasState)
     this.canvas.on("object:moving",(e) => {
         this.canvas.skipTargetFind = true
+        // this.canvas.selection = false
         //this.objectaction(e,'moving')
     })
     
@@ -450,7 +466,7 @@ export default {
     
   },
   methods: {
-    loadBackgroundImage(){
+    loadBackgroundImage(){ //載入背景圖
       fabric.Image.fromURL(this.imageSrc, (img) => {
           img.set({
           scaleX: this.canvas.width / img.width,
@@ -461,10 +477,32 @@ export default {
           this.state = this.canvas.toJSON()
       })
     },
+    loadObjects(val){
+      var self = this
+      fabric.util.enlivenObjects(val, function(object) {
+			    var origRenderOnAddRemove = self.canvas.renderOnAddRemove
+          self.canvas.renderOnAddRemove = false
+          var original = []
+          val.sort((x,y) => x.id - y.id).forEach(item=>{
+            original.push(item)
+          })
+          self.id = original[original.length-1].id
+          for(let i=0;i<object.length;i++){
+            self.canvas.add(object[i])
+            self.addCustomize(object[i],original[i].id,original[i].objectName,original[i].blocktype)
+          }
+			    self.canvas.renderOnAddRemove = origRenderOnAddRemove
+          self.canvas.renderAll()
+          self.$emit('sendFileObjects',self.canvas.getObjects())
+          //self.sendAllobj() //廣播圖層:初次加載
+      })
+    },
     selectioncreatedandupdated(e){ //畫面顯示選取到的物件的屬性狀況
-      this.objectName = e.target.objectName
+      this.$emit('sendActionToLayer','sel',null)
       var items = this.canvas.getActiveObjects()
       if(items.length === 1){
+        this.objectName = items[0].objectName
+        this.blockType = items[0].blockType  
         if(items[0].type === 'textbox'){
           this.fontsize = items[0].fontSize
           this.fontcolor = items[0].fill
@@ -474,7 +512,6 @@ export default {
           this.strokecolor = items[0].stroke
           this.strokedash = items[0].strokeDashArray
           this.strokeWidth = items[0].strokeWidth
-          this.blockType = items[0].blockType
           if(this.strokedash == null){
             this.strokeDash = '-1'
           }else{
@@ -490,11 +527,11 @@ export default {
         item.set({borderColor:'#fbb802',
         cornerColor:'#fbb802',cornerSize: 18,transparentCorners: false})
       })
-      this.$emit('subObjectSelectOption',items)
+      this.$emit('sendActionToLayer','sel',items)
     },
     selectioncleared(e){ //回到預設值
       this.objectName = ''
-      this.blockType = ''
+      this.blockType = '未分類'
       this.fontsize = '14'
       this.fontcolor = 'rgba(255, 0, 0, 1)'
       this.opacity = 50
@@ -503,8 +540,8 @@ export default {
       this.strokeDash = '0'
       this.strokedash = [0,0]
       this.strokeWidth = 1 
-      this.$emit('subObjectSelectOption',null)
-      this.$emit('subResetSelectOption')
+      this.$emit('sendActionToLayer','sel',null)
+      // this.$emit('returnSelectObjects')
     },
     saveCanvasState(){
       if(this.canvas.toJSON() === this.state) return  
@@ -518,6 +555,7 @@ export default {
         window.child.close()
         this.imgSource = []
       }
+      
       if(this.drawType == 'text' && this.textbox !== null){
         this.textbox.exitEditing() //關閉文字框編輯
         this.textbox = null
@@ -587,6 +625,7 @@ export default {
       if(e.e.altKey && this.drawType == ""){ //移動畫布
         this.panning = true
         this.canvas.skipTargetFind = true
+        this.canvas.selection = false
         this.lastMovePos.x = e.e.clientX
         this.lastMovePos.y = e.e.clientY
       }
@@ -601,6 +640,7 @@ export default {
         if(window.child.closed){
           this.imgSource = []
           this.canvas.skipTargetFind = false
+          //this.canvas.selection = true
         }else{
           this.drop(e)
         }
@@ -669,12 +709,15 @@ export default {
         //this.objectaction(e,'added') //廣播新增
       }
       this.panning = false //移動畫布
-      if(this.imgSource.length === 0 && this.drawType !== 'icon'){
-        this.canvas.skipTargetFind = false
-      }
       if(this.type !== 'edit'){
         return
       }
+      //新增圖例的狀況下應關閉所有選取,才可在方框上新增圖例
+      if(this.imgSource.length === 0 && this.drawType !== 'icon'){ 
+        this.canvas.skipTargetFind = false
+        this.canvas.selection = true
+      }
+      //廣播圖層新增:長方形
       if(this.drawType === 'rectangle'){
         if(this.canvas.getObjects().length !== this.objectCount){
           this.sendAllobj()
@@ -704,11 +747,13 @@ export default {
           scaleX: 0.1,
           scaleY: 0.1,
           top: this.getY(e) - this.imgSource[2]*0.05,
-          left: this.getX(e) - this.imgSource[1]*0.05
+          left: this.getX(e) - this.imgSource[1]*0.05,
+          visible:true
         })
         this.canvas.add(image)
-        this.addCustomize(image,this.imgSource[5])
-        this.sendAllobj()
+        this.addCustomize(image,null,this.imgSource[5])
+        this.sendAllobj() //廣播圖層新增:圖片
+
       }
     },
     resetCanvas(){ //重置
@@ -728,7 +773,7 @@ export default {
       this.relativeMouseY = 0
       
       this.resetOriginAfterZoom()
-      this.$emit('subResetOption',false)
+      this.$emit('resetCanvas',false)
     },
     drawing() {
       if(this.canvas.getActiveObjects().length === 0){
@@ -769,11 +814,12 @@ export default {
                       strokeWidth: this.strokeWidth,
                       fill: this.fillcolor,
                       opacity:this.opacity/100,
-                      strokeDashArray:this.strokedash
+                      strokeDashArray:this.strokedash,
+                      visible:true
                   })
                   this.canvas.add(canvasObject)
                   this.drawingObject = canvasObject
-                  this.addCustomize(canvasObject,this.objectName)
+                  this.addCustomize(canvasObject)
       }
     },
     addTextBox(){ //新增文字
@@ -782,13 +828,14 @@ export default {
         top: this.mouseFrom.y,
         fontSize: this.fontsize,
         fill: this.fontcolor, //字體顏色
-        editingBorderColor: 'blue'
+        editingBorderColor: 'blue',
+        visible:true
       })
       this.canvas.add(this.textbox)
       this.textbox.enterEditing()
       this.textbox.hiddenTextarea.focus()
-      this.addCustomize(this.textbox,this.objectName)
-      this.sendAllobj()
+      this.addCustomize(this.textbox)
+      this.sendAllobj() //廣播圖層新增:文字
       this.drawTypeChange('')
     },
     addPoint(e) { //多邊形的點
@@ -902,11 +949,12 @@ export default {
         fill: this.fillcolor,
         opacity: this.opacity/100,
         hasBorders: true,
-        strokeDashArray: this.strokedash
+        strokeDashArray: this.strokedash,
+        visible:true
       })
       this.canvas.add(polygon)
-      this.addCustomize(polygon,this.objectName)
-      this.sendAllobj()
+      this.addCustomize(polygon)
+      this.sendAllobj() //廣播圖層新增:多邊形
       this.drawingObject = polygon
       this.activeLine = null
       this.activeShape = null
@@ -917,10 +965,10 @@ export default {
     async deleteObj() { //刪除物件
       var item = this.canvas.getActiveObjects()
       if(item.length !== 0){
-        await this.$emit('subObjectDeleteOption',item)
+        await this.$emit('sendActionToLayer','del',item)
       }
     },
-    addCustomize(canvasObject,name){ //新增客製化元素
+    addCustomize(canvasObject,id = null, name = null, blocktype = null){ //新增客製化元素
         canvasObject.toObject = (function (toObject) {
             return function () {
                 return fabric.util.object.extend(toObject.call(this), {
@@ -930,16 +978,16 @@ export default {
                 })
             }
         })(canvasObject.toObject)
-        canvasObject.set("id",this.id++)
-        canvasObject.set("objectName",name == undefined ? (new Date()).getTime() : name) //+'_'+ (new Date()).getTime()
-        canvasObject.set("blockType",this.blockType == '' ? '' : this.blockType)
+        canvasObject.set("id",id == null ? this.id++ : id)
+        canvasObject.set("objectName",name !== null ? name : this.objectName == '' ?  (new Date()).getTime() : this.objectName) //+'_'+ (new Date()).getTime()
+        canvasObject.set("blockType",blocktype == null ? this.blockType : blocktype)
     },
     sendAllobj(){ //傳給父元件
       this.saveCanvasState()
-      this.$emit('subObjectListOption',this.canvas.getObjects())
+      this.$emit('sendObjectListToLayer',this.canvas.getObjects())
     },
     textchange(){ //標題修改
-    console.log('textchange',this.objectName)
+      console.log('textchange',this.objectName)
       if(this.canvas.getActiveObject()){
         this.canvas.getActiveObject().set({ objectName: this.objectName })
         this.sendAllobj()
@@ -968,13 +1016,12 @@ export default {
         var event = document.createEvent('MouseEvents')
         event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
         save_link.dispatchEvent(event)
-        this.$emit('subSaveOption',false)
+        this.$emit('saveCanvasToImage',false)
     },
     canvasToJson(){
       var currState =JSON.stringify(this.canvas.getObjects())
       console.log(currState)
-      this.$store.dispatch('graphic/sendJson',currState)
-      this.$emit('subJsonOption',currState)
+      this.$emit('sendFloorGraphicFile',currState)
     },
     copy(){ //複製圖片
       var object = fabric.util.object.clone(this.canvas.getActiveObject())
@@ -984,7 +1031,9 @@ export default {
       var canvas = this.canvas
       var _clipboard = this.clipboard
       var objname = this.objectName
+      var objblockType = this.blockType
       var self = this
+      console.log(this.objectName,this.blockType)
       _clipboard.clone(function(clonedObj) {
           canvas.discardActiveObject()
           clonedObj.set({
@@ -997,18 +1046,18 @@ export default {
             clonedObj.forEachObject(function(obj) {
               canvas.add(obj)
               if(_clipboard.type === 'image'){
-                self.addCustomize(obj,_clipboard.objectName)  
+                self.addCustomize(obj,null,_clipboard.objectName)  
               }else{
-                self.addCustomize(obj,objname)
+                self.addCustomize(obj,null,objname,objblockType)
               }
             });
             clonedObj.setCoords()
           } else {
             canvas.add(clonedObj)
             if(_clipboard.type === 'image'){
-              self.addCustomize(clonedObj,_clipboard.objectName)  
+              self.addCustomize(clonedObj,null,_clipboard.objectName)  
             }else{
-              self.addCustomize(clonedObj,objname)
+              self.addCustomize(clonedObj,null,objname,objblockType)
             }
           }
           _clipboard.top += 10
@@ -1082,9 +1131,11 @@ export default {
         if(event.data !== "" && event.data !== 'null'){
           this.imgSource = event.data.split(',')
           this.canvas.skipTargetFind = true
+          //this.canvas.selection = false
         }else if (event.data == 'null'){
           this.imgSource = []
           this.canvas.skipTargetFind = false
+          //this.canvas.selection = true
         }
     },
     doUndo() {
@@ -1097,7 +1148,7 @@ export default {
       this.redo.push(this.state) // 在做上一步時把目前狀態 push 到 redo 陣列
       this.state = lastJSON // 換成上一步的狀態
       console.log('上一步',lastJSON.objects)
-      this.$emit('subRedoUndoOption',lastJSON.objects)
+      this.$emit('sendObjectRedoUndoToLayer',lastJSON.objects)
     },
     doRedo () {
       if (this.redo.length === 0) {
@@ -1109,7 +1160,7 @@ export default {
       this.undo.push(this.state)
       this.state = lastJSON
       console.log('下一步',lastJSON.objects)
-      this.$emit('subRedoUndoOption',lastJSON.objects)
+      this.$emit('sendObjectRedoUndoToLayer',lastJSON.objects)
     }
   }
 }

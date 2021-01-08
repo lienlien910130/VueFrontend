@@ -33,11 +33,18 @@
               <el-button slot="reference" type="primary" :disabled="disabled">快捷鍵</el-button>
           </el-popover>
 
-          <el-button v-if="type =='view'" type="primary" @click="changetype('edit')" :disabled="disabled">編輯圖控</el-button>
-          <el-button v-else type="primary" @click="changetype('view')">關閉編輯</el-button>
-          <el-button type="primary" @click="resetcanvas" :disabled="disabled">復原位置</el-button>
-          <el-button type="primary" @click="savetoimage" :disabled="disabled">匯出圖片</el-button>
+          <el-button v-if="type =='view'" type="primary" @click="changeType('edit')" :disabled="disabled">編輯圖控</el-button>
+          <el-button v-else type="primary" @click="changeType('view')">關閉編輯</el-button>
+          <el-button type="primary" @click="resetCanvas(true)" :disabled="disabled">復原位置</el-button>
+          <el-button type="primary" @click="saveCanvasToImage(true)" :disabled="disabled">匯出圖片</el-button>
           <el-button type="primary" :disabled="disabled">歷史紀錄</el-button>
+          <el-checkbox-group v-model="checkList" style="display:inline;margin-left:20px;" >
+            <el-checkbox label="尚未分類" border></el-checkbox>
+            <el-checkbox label="警戒區" border></el-checkbox>
+            <el-checkbox label="防護區" border></el-checkbox>
+            <el-checkbox label="放射區" border></el-checkbox>
+            <el-checkbox label="撒水區" border></el-checkbox>
+          </el-checkbox-group>
         </el-row>
          <div class="block-wrapper">
           <el-row>
@@ -76,7 +83,7 @@
               </div>
             </el-col>
             <el-col :xs="24" :sm="24" :md="24" :lg="8">
-              <div class="collapse-wrapper" v-if="type =='edit'">
+              <div class="collapse-wrapper">
                 <ObjectList
                   v-bind="objectListAttrs"
                   v-on="objectListEvent">
@@ -85,12 +92,8 @@
             </el-col>
           </el-row>
          </div>
-        
-
       </div>
-       
   </div>
- 
 </template>
 
 <script>
@@ -121,36 +124,38 @@ export default {
               saveimg:this.save,
               type:this.type,
               imageSrc:this.imageSrc,
-              objects:this.objects
+              objects:this.objects,
+              checkList:this.checkList
             }
       },
       graphicEvent(){
         return{
-              subObjectListOption: this.handleGraphicObjListOption,
-              subResetOption: this.handleGraphicResetOption,
-              subSaveOption: this.handleGraphicSaveOption,
-              subJsonOption: this.handleGraphicJsonOption,
-              subResetSelectOption: this.handleResetSelectOption,
-              subResetDeleteOption: this.handleResetDeleteOption,
-              subObjectDeleteOption:this.handleGraphicObjDeleteOption,
-              subObjectSelectOption:this.handleGraphicObjSelectOption,
-              subRedoUndoOption:this.handleRedoUndo
-          }
+            sendActionToLayer:this.sendActionToLayer,
+            sendObjectListToLayer: this.sendObjectListToLayer,
+            sendObjectRedoUndoToLayer:this.sendObjectRedoUndoToLayer,
+            sendFloorGraphicFile: this.sendFloorGraphicFile,
+            resetCanvas: this.resetCanvas,
+            saveCanvasToImage: this.saveCanvasToImage,
+            returnDeleteObjects: this.returnDeleteObjects,
+            sendFileObjects:this.sendFileObjects
+            // returnSelectObjects: this.returnSelectObjects
+        }
       },
       objectListAttrs(){
-            return {
-              list: this.objectList,
-              objectDelete:this.objectDelete,
-              objectSelect:this.objectSelect,
-              redoundo:this.redoundo
-            }
-        },
+        return {
+            list: this.objectList,
+            objectDelete:this.objectDelete,
+            objectSelect:this.objectSelect,
+            redoundo:this.redoundo,
+            originalData:this.originalData
+        }
+      },
       objectListEvent(){
-            return {
-              subSelectOption: this.handleObjSelectOption,
-              subDeleteReturnOption: this.handleDeleteReturnOption,
-              subResetRedoUndoOption:this.handleResetRedoUndoOption
-            }
+        return {
+            sendActionToCanvas: this.sendActionToCanvas,
+            returnDeleteSuccess: this.returnDeleteSuccess,
+            returnObjectRedoUndo:this.returnObjectRedoUndo
+        }
       },
     },
     data() {
@@ -171,7 +176,9 @@ export default {
           floorId:'',
           imageSrc:'',
           disabled:true,
-          objects:null
+          objects:null,
+          checkList:[],
+          originalData:[]
         }
     },
     mounted(){
@@ -187,31 +194,23 @@ export default {
               label:element.floors>0 ? element.floors+'F' : '地下'+element.floors.substr(1)+'F'
             }
             this.selectData.push(_temp)
-          });
+          })
         })
       },
       async handleSelect(content){
-        await this.getFloorGraphic(content[0].id)
         this.floorId = content[0].id
-        await this.getFloorImageId(content[0].id)
+        await this.getFloorImageId()
         await this.getFloorImage()
+        await this.getFloorGraphic()
       },
-      async getFloorGraphic(floorId){
-        await this.$api.graphic.apiGetFloorIdToGraphicFile(floorId).then(response =>{
-          console.log(JSON.stringify(response))
+      async getFloorGraphic(){ //取得圖控檔案
+        await this.$api.graphic.apiGetFloorIdToGraphicFile(this.floorId).then(response =>{
+          this.$store.dispatch('graphic/sendJson',response.result.codeContent)
+          this.objects = response.result.codeContent
         })
       },
-      async addFloorGraphicFile(state){
-        var _temp = {
-           "CodeContent" : state
-        }
-        console.log(JSON.stringify(_temp))
-        await this.$api.graphic.apiPostGraphicFile(this.floorId,JSON.stringify(_temp)).then(response =>{
-          console.log(JSON.stringify(response))
-        })
-      },
-      async getFloorImageId(floorId){ //儲存floorimageID
-        await this.$api.building.apiGetFloor(floorId).then(response=> {
+      async getFloorImageId(){ //儲存floorimageID
+        await this.$api.building.apiGetFloor(this.floorId).then(response=> {
             if(response.result[0].floorPlanID !== null){
               this.floorImageId = (response.result[0].floorPlanID).toString()
             }else{
@@ -223,7 +222,7 @@ export default {
         if(this.floorImageId == null){
           this.imageSrc = ""
           this.disabled = true
-          this.changetype('view')
+          this.changeType('view')
         }else{
           await this.$api.files.apiGetFloorImage(this.floorImageId).then(response=> {
               const bufferUrl = btoa(new Uint8Array(response).reduce((data, byte) => data + String.fromCharCode(byte), ''));
@@ -232,64 +231,75 @@ export default {
           })
         }
       },  
-      handleResetSelectOption(){
-        this.selectObject = null
-        this.objectSelect = null
+      // sendToCanvas(){
+      //   console.log(this.checkList)
+      // },
+      resetCanvas(reset){
+        this.reset = reset
       },
-      handleResetDeleteOption(){
+      saveCanvasToImage(save){
+        this.save = save
+      },
+      changeType(type){
+        this.type = type
+      },
+      //圖控的事件
+      sendObjectListToLayer(val){ //圖控傳過來的所有物件清單,更新圖層節點用
+        this.objectList = val
+      },
+      sendActionToLayer(index,val){ //圖控上面選取/刪除物件
+        if(index == "del"){
+          this.objectDelete = val
+        }else{
+          this.objectSelect = val
+        }
+      },
+      sendObjectRedoUndoToLayer(val){//圖控上一步下一步
+        this.redoundo = val
+      },
+      async sendFloorGraphicFile(state){
+        var _temp = {
+           "CodeContent" : state
+        }
+        await this.$api.graphic.apiPostGraphicFile(this.floorId,JSON.stringify(_temp)).then(response =>{
+          this.$message('儲存成功')
+        })
+      },
+      // returnSelectObjects(){ //重置圖層及圖控選取的物件
+      //   this.selectObject = null
+      //   this.objectSelect = null
+      // },
+      returnDeleteObjects(){ //重置圖層及圖控刪除的物件
         this.deleteObject = null
         this.deleteSuccess = null
         this.objectDelete = null
       },
-      handleResetRedoUndoOption(){
+      sendFileObjects(val){
+        this.originalData = val
+      },
+      //圖層事件
+      returnObjectRedoUndo(){
         this.redoundo = null
       },
-      handleObjSelectOption(index,val){
+      sendActionToCanvas(index,val){ //圖層選取/刪除物件
+      console.log(val)
           if(index == "del"){
             this.deleteObject = val
           }else{
             this.selectObject = val
           }
       },
-      handleDeleteReturnOption(val){
+      returnDeleteSuccess(val){ //圖控刪除物件給圖層檢查是否可以刪除,刪除成功的回傳
         this.deleteSuccess = val
-      },
-      handleGraphicObjListOption(val){
-        this.objectList = val
-      },
-      handleRedoUndo(val){
-        this.redoundo = val
-      },
-      handleGraphicObjDeleteOption(val){
-        this.objectDelete = val
-      },
-      handleGraphicObjSelectOption(val){
-        this.objectSelect = val
-      },
-      handleGraphicResetOption(){
-        this.reset = false
-      },
-      handleGraphicSaveOption(){
-        this.save = false
-      },
-      async handleGraphicJsonOption(val){
-        await this.addFloorGraphicFile(val)
-      },
-      resetcanvas(){
-        this.reset = true
-      },
-      savetoimage(){
-        this.save = true
-      },
-      changetype(type){
-        this.type = type
-      },
-      
+      }
     }
 }
 </script>
 
 <style lang="scss" scoped>
+.el-checkbox{
+  margin-right: 0px;
+}
 .graphic-container{
   height: 100%;
 }

@@ -15,7 +15,10 @@
             <span @click="select(node, data)" 
                 style="padding:7px;margin:5px;float:left">
                     {{ node.label }}</span>
-            <span v-if="node.level === 1 " class="itemcount">{{ node.childNodes.length +1 }}</span>
+            <span v-if="node.level === 1 && node.data.id < 0" class="itemcount">
+                {{ node.childNodes.length  }}</span>
+            <span v-else-if="node.level === 1 && node.data.id >= 0" class="itemcount">
+                {{ node.childNodes.length + 1  }}</span>
             <span style="float:right">
                 <el-button
                     type="text"
@@ -36,21 +39,31 @@ export default {
             default() {
                 return []
             }
-        },objectDelete:{},objectSelect:{},redoundo:{}
+        },objectDelete:{},objectSelect:{},redoundo:{},originalData:{}
     },
     data(){
         return{
             data:[],
             collect:[],
-            id:0,
-            parentnode:null,
+            parentnode:null
         }
     },
     watch:{
-        list(list){
-            this.checkNode(list)
+        list:{
+            handler:function(newValue,oldValue){
+                console.log('listwatch',JSON.stringify(newValue))
+                if(newValue.length == 0){
+                    this.data = []
+                    this.collect = []
+                    this.parentnode = null
+                }else{
+                    this.checkNode(newValue)
+                }
+            },
+            immediate:true
         },
         objectDelete(val){
+            console.log('objectdelete',val)
             if(val !== null){
                 var _temp =[]
                     val.sort((x,y) => y.id - x.id).forEach(item =>{
@@ -67,7 +80,7 @@ export default {
                             _temp.push(item)
                         }    
                     })
-                    this.$emit('subDeleteReturnOption',_temp)
+                    this.$emit('returnDeleteSuccess',_temp)
                 }
         },
         objectSelect(val){
@@ -85,8 +98,12 @@ export default {
                 this.data.length = 0
                 console.log('redoundo',val,this.collect,this.data)
                 this.checkNode(val)
-                this.$emit('subResetRedoUndoOption','')
+                this.$emit('returnObjectRedoUndo','')
             }
+        },
+        originalData(val){
+            console.log('originalData',JSON.stringify(val))
+            this.setOriginalData(val)
         }
     },
     methods:{
@@ -99,16 +116,16 @@ export default {
             }else{
                 this.$refs.tree.remove(node)
                 const collectid = this.collect.findIndex(d => d.id === data.id)
-                this.$emit('subSelectOption','del',this.collect[collectid])
+                this.$emit('sendActionToCanvas','del',this.collect[collectid])
                 this.collect.splice(collectid, 1)
             }
         },
         select(node, data){
             if(data.id >= 0){
-                var _temp = this.list.filter(function(value) {
+                var _temp = this.collect.filter(function(value) {
                     return value.id === data.id
                 })
-                this.$emit('subSelectOption','sel',_temp[0])
+                this.$emit('sendActionToCanvas','sel',_temp[0])
             }
         },
         filterNode(value, data) {
@@ -120,6 +137,17 @@ export default {
             }
             return true
         },
+        removeDuplicates(originalArray, prop) {
+            var newArray = []
+            var lookupObject  = {}
+            for(var i in originalArray) {
+                lookupObject[originalArray[i][prop]] = originalArray[i]
+            }
+            for(i in lookupObject) {
+                newArray.push(lookupObject[i])
+            }
+            return newArray
+        },
         checkNode(list){
             var _temp = []
             list.forEach(item => {
@@ -129,13 +157,13 @@ export default {
                 if(_temp.length == 0){
                     this.collect.push(item)
                     if(item.type == 'image'){
-                        this.$refs.tree.filter(item.objectName)
+                        this.$refs.tree.filter(item.objectName)   
                         if(this.parentnode == null){
                             this.data.push({ 
                                 id: item.id , 
                                 label: item.objectName, 
                                 children: []
-                            })
+                            })  
                         }else{
                             this.$refs.tree.append({ 
                                 id: item.id, 
@@ -145,9 +173,101 @@ export default {
                             this.parentnode = null
                         }
                     }else{
-                        this.data.push({ id: item.id, label: item.type+'|'+item.objectName, children: [] })
+                        this.$refs.tree.filter(item.blockType) 
+                        var i = 0
+                        switch(item.blockType){
+                            case '未分類':
+                                i = -1    
+                                break;
+                            case '警戒區':
+                                i = -2    
+                                break;
+                            case '防護區':
+                                i = -3    
+                                break;
+                            case '放射區':
+                                i = -4    
+                                break;
+                            case '撒水區':
+                                i = -5    
+                                break;
+                        }
+                        if(this.parentnode == null){
+                            this.data.push({ 
+                                id: i , 
+                                label: item.blockType !== '' ? item.blockType : '尚未分類', 
+                                children: [{
+                                    id: item.id, 
+                                    label: item.objectName, 
+                                    children: []
+                                }]
+                            }) 
+                        }else{
+                            this.$refs.tree.append({ 
+                                id: item.id, 
+                                label: item.objectName, 
+                                children: []} , 
+                                this.parentnode)
+                            this.parentnode = null  
+                        }
                     }
                 }
+            })
+        },
+        setOriginalData(val){
+            val.forEach(item =>{
+                this.collect.push(item)
+                if(item.type === 'image'){
+                    var temp = this.data.filter((obj, index) =>
+                        obj.label == item.objectName
+                    )
+                    var node = temp.length == 0? this.data : temp[0].children
+                    node.push({ 
+                        id: item.id , 
+                        label: item.objectName, 
+                        children: []
+                    })
+                }else{
+                    var i = 0
+                    switch(item.blockType){
+                        case '未分類':
+                            i = -1    
+                            break;
+                        case '警戒區':
+                            i = -2    
+                            break;
+                        case '防護區':
+                            i = -3    
+                            break;
+                        case '放射區':
+                            i = -4    
+                            break;
+                        case '撒水區':
+                            i = -5    
+                            break;
+                    }
+                    var temp = this.data.filter((obj, index) =>
+                        obj.id == i
+                    )
+                    if(temp.length == 0){
+                        this.data.push({ 
+                            id: i , 
+                            label: item.blockType !== '' ? item.blockType : '尚未分類', 
+                            children: [{
+                                id: item.id, 
+                                label: item.objectName, 
+                                children: []
+                            }]
+                        })
+                    }else{
+                        temp[0].children.push({
+                            id: item.id, 
+                            label: item.objectName, 
+                            children: []
+                        })
+                    }
+                }
+                
             })
         }
     }
