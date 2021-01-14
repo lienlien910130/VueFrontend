@@ -25,19 +25,16 @@
           :width="item.width"
         >
           <template slot-scope="scope">
-              <span >{{  scope.row[scope.column.property] }}</span>
+              <span v-if="scope.column.property == 'status'"> 
+                {{ scope.row[scope.column.property] | changeStatus }}</span>
+              <span v-else-if="scope.column.property == 'linkRoles'"> 
+                {{  changeLinkRoles(scope.row[scope.column.property]) }}</span>
+              <span v-else >{{  scope.row[scope.column.property] }}</span>
           </template>
         </el-table-column>
     </template>
-    <!-- <el-table-column
-      fixed="right"
-      label="操作">
-      <template slot-scope="scope">
-          <el-button @click="handleUpdata(scope.row)" type="primary" size="small">編輯</el-button>
-          <el-button type="info" size="small" @click="handleDelete(scope.row)">刪除</el-button>
-      </template>
-    </el-table-column> -->
     <el-table-column
+    width="350px"
       align="right">
       <template slot="header" >
         <el-input
@@ -46,132 +43,147 @@
           placeholder="請輸入關鍵字搜尋"/>
       </template>
       <template slot-scope="scope">
-        <el-button
-          size="mini"
-          @click="OpenEdit(scope.$index, scope.row)">Edit</el-button>
-        <el-button
-          size="mini"
-          type="danger"
-          @click="handleDelete(scope.$index, scope.row)">Delete</el-button>
+         <span
+            v-for="(option, index) in buttonsName"
+            :key="index"
+            class="button-margin-left"
+          >
+            <el-button
+              size="small"
+              :type="index == 0 ? 'primary' : 'info'"
+              @click="handleClickOption(scope.$index, scope.row, option,$event)"
+            >
+              <span>{{ option }}</span>
+            </el-button>
+        </span>
       </template>
     </el-table-column>
   </el-table>
 
-
-  <el-dialog
-        :width="dialogWidth"
-        :title="textMap[dialogStatus]"
-        :visible="visible"
-        :close-on-click-modal='false'
-        append-to-body
-        @close="CancelData"
-        center>
-
-        <el-form 
-        ref="dataForm"  :model="temp"  
-        :label-position="label" label-width="auto" >
-                <el-form-item 
-                    v-for="(item, index) in config"
-                    :key="index"
-                    :prop="item.prop"
-                    :label="item.label"
-                    :rules="[
-                        { required: item.mandatory, message: item.message}
-                    ]"
-                >
-                    <el-input  
-                    v-if="item.textarea == false"
-                    :ref="item.prop"
-                    :name="item.prop"
-                    v-model="temp[item.prop]"
-                    type="string">
-                    </el-input>
-                    <el-input  
-                    v-else
-                    :ref="item.prop"
-                    :name="item.prop"
-                    :autosize="{ minRows: 4, maxRows: 8}"
-                    v-model="temp[item.prop]"
-                    type="textarea">
-                    </el-input>
-                </el-form-item>
-        </el-form>                        
-        
-        <div slot="footer" class="dialog-footer">
-            <el-button type="primary" @click="SendData()">
-                儲存
-            </el-button>
-            <el-button type="info" @click="CancelData()">
-                取消
-            </el-button>
-        </div> 
-    </el-dialog>
+  <div v-if="total > 0" class="pagination-container">
+      <el-pagination
+        background
+        layout="total, sizes, prev, pager, next, jumper"
+        :current-page="page"
+        :page-sizes="pageSizeList"
+        :page-size="limit"
+        :total="total"
+        @current-change="handleCurrentChange"
+        @size-change="handleSizeChange"
+      ></el-pagination>
+  </div>
 </div>
 </template>
 
 <script>
 export default {
-  props:['tableData','itemkey','config','dialogStatus'],
-  computed:{
-    label() {
-      if (this.$store.state.app.device === 'mobile') {
-        return 'top'
-      } else {
-        return 'left'
+  props:{
+    tableData: {
+      type: Array
+    },
+    itemkey: {
+      type: Number
+    },
+    config: {
+      type: Array
+    },
+    listQueryParams: {
+      type: Object
+    },
+    filterData: {
+      type: Array
+    },
+    buttonsName: {
+      type: Array
+    },
+    pageSizeList: {
+      type: Array,
+      default: function() {
+        return [10, 30, 50, 100]
       }
     },
-    dialogWidth(){
-      if (this.$store.state.app.device === 'mobile') {
-        return "90%"
-      } else {
-        return "800px"
+  },
+  filters:{
+    changeStatus: function(val) {
+      if(val == true){
+        return '啟用'
+      }else{
+        return '禁用'
       }
     }
+    
+  },
+  computed:{
+    page: function() {
+      return this.listQueryParams.page || 1
+    },
+    limit: function() {
+      return this.listQueryParams.limit || 10
+    },
+    total: function() {
+      return this.listQueryParams.total || 0
+    },
+    
+  },
+  watch:{
   },
   data(){
     return{
-      search:'',
-      textMap: {
-        update: '編輯',
-        create: '新增'
-      },
-      visible:false,
-      temp:[]
+      search:''
     }
   },
   methods:{
-    CancelData(){
-      this.temp = {}
-    },
-    SendData(){
-      if(this.dialogStatus == 'create'){
-        this.handleCreate()
+    changeLinkRoles: function(val){
+      if(val !== null){
+        var _temp = []
+        val.forEach(element => {
+          var data = this.filterData.filter(item=>{
+            return item.id == element
+          })
+          _temp.push(data[0].label)
+        })
+        return _temp.toString()
       }else{
-        this.handleEdit()
+        return ''
       }
     },
     OpenCreate(){
-
+      this.$emit('handleTableRow', '', '', '新增')
     },
-    OpenEdit(index,row){
-
-    },
-    handleCreate(){
-
-    },
-    handleEdit(index,row){
-        
-    },
-    handleDelete(index,row){
-      this.$confirm('是否確定刪除該筆資料?', '提示', {
+    handleClickOption(index, row, option) {
+      if(option == '刪除'){
+        this.$confirm('是否確定刪除該筆資料?', '提示', {
           confirmButtonText: '確定',
           cancelButtonText: '取消',
           type: 'warning',
           center: true
-         }).then(() => {
-            
-         })
+        }).then(() => {
+            this.$emit('handleTableRow', index, row, option)
+        })
+      }else{
+        this.$emit('handleTableRow', index, row, option)
+      }
+    },
+    // 改變翻頁組件中每頁數據總數
+    handleSizeChange(val) {
+      this.listQueryParams.limit = val
+      this.listQueryParams.page = 1 // 改變翻頁數目，將頁面=1
+      this.$emit('update:listQueryParams', this.listQueryParams)
+      this.$emit('clickPagination', this.listQueryParams)
+    },
+    // 跳到當前是第幾頁
+    handleCurrentChange(val) {
+      this.listQueryParams.page = val
+      this.$emit('update:listQueryParams', this.listQueryParams)
+      this.$emit('clickPagination', this.listQueryParams)
     },
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.pagination-container{
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+</style>

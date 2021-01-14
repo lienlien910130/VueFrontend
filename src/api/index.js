@@ -6,6 +6,7 @@ import files from '@/api/files'
 import report from '@/api/report'
 import setting from '@/api/setting'
 import graphic from '@/api/graphic'
+import authority from '@/api/authority'
 
 export default {    
   user,
@@ -14,5 +15,6 @@ export default {
   files,
   report,
   setting,
-  graphic
+  graphic,
+  authority
 }

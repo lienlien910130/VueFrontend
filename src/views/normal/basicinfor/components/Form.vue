@@ -43,9 +43,11 @@
           <el-option v-for="(item,index) in buildingUsers" :key="index" :label="item.label" :value="item.id">
           </el-option>
         </el-select>
-        <el-input v-else-if="this.type === 'view' && form.ownerId == null && this.buildingUsers.length > 0" ref="linkOwners" name="linkOwners" placeholder="請設定所有權人" disabled></el-input>
+        <el-input v-else-if="this.type === 'view' && form.ownerId == null && this.buildingUsers.length > 0" 
+          ref="linkOwners" name="linkOwners" placeholder="請設定所有權人" disabled></el-input>
         <el-button v-else-if="this.buildingUsers.length == 0" type="text" @click="openDialog">新增用戶</el-button>
-        <el-input v-else-if="form.linkOwners.length" ref="linkOwners" name="linkOwners" :placeholder="change(form.ownerId)" disabled>
+        <el-input v-else-if="form.linkOwners.length" ref="linkOwners" name="linkOwners" 
+        :placeholder="change(form.ownerId)" disabled>
           <template slot="append">
             <el-link :underline="false" @click="openUser(form.ownerId)">查看</el-link>
           </template>
@@ -96,6 +98,7 @@ export default {
     },
     change() {
       return function(a) {
+        console.log(a)
         if (a.indexOf(',') !== -1) {
           var str = ""
           var _array = a.split(',')
@@ -230,6 +233,7 @@ export default {
     },
     async getBuildingInfo() {
       await this.$api.building.apiGetBuildingInfo().then(response => {
+        console.log(response.result[0])
         this.form = response.result[0]
       })
     },

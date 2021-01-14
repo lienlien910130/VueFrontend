@@ -18,6 +18,7 @@
                 </el-col>
            </el-row>
         </div>
+    
 </template>
 <script>
 import path from 'path'
@@ -131,13 +132,15 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+
 .chart-wrapper {
-        background: #fff;
-        padding: 5px 16px 0;
-        margin-bottom: 32px;
-        height: 730px;
-        overflow-x:hidden;
-        overflow-y:auto;
-        width: 100%;
-    }
+    background: #fff;
+    padding: 5px 16px 0;
+    margin-bottom: 32px;
+    height: 730px;
+    overflow-x:hidden;
+    overflow-y:auto;
+    width: 100%;
+}
+
 </style>

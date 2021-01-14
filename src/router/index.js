@@ -186,6 +186,12 @@ export const constantRoutes = [
     meta: { title: '權限設定', icon: 'icon', needLogin: true  },
     children: [
       {
+        path: 'menu',
+        name: 'Menu',
+        component: () => import('@/views/authority/menu/index.vue'),
+        meta: { title: '菜單管理', icon: 'icon', needLogin: true  }
+      },
+      {
         path: 'auth',
         name: 'Auth',
         component: () => import('@/views/authority/auth/index.vue'),

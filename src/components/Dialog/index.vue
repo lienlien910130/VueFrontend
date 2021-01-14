@@ -75,6 +75,24 @@
                     item.format == 'deviceSelect' || item.format =='contactunitSelect' || 
                     item.format == 'floorOfHouseSelect' "
                     v-model="temp[item.prop]"
+                    filterable
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                        <el-option
+                        v-for="(item,index) in selectData"
+                        :key="index"
+                        :label="item.label"
+                        :value="item.id"
+                        >
+                        </el-option>  
+                </el-select>
+
+                <el-select
+                    v-else-if="item.format =='roleSelect' "
+                    v-model="temp[item.prop]"
+                    filterable
+                    multiple 
                     placeholder="請選擇"
                     style="width:100%"
                     >
@@ -93,6 +111,7 @@
                     item.format =='MaintainContentOptions' 
                     || item.format =='MaintainProcessOptions' "
                     v-model="temp[item.prop]"
+                    filterable
                     placeholder="請選擇"
                     style="width:100%"
                     >
@@ -123,6 +142,17 @@
                         </el-option>   -->
                 </el-select>
 
+                <el-select
+                    v-else-if="item.format =='accountStatusSelect'"
+                    v-model="temp[item.prop]"
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                    <el-option v-for="(val,index) in [true, false]" 
+                    :key="index"
+                    :value="val" :label="val == true ? '啟用':'禁用'"></el-option>
+                </el-select>
+
                 <el-checkbox 
                     v-else-if="item.format == 'tag' "
                     v-model="temp[item.prop]"
@@ -134,6 +164,8 @@
                 v-else-if="item.format =='number'"
                 v-model="temp[item.prop]"  
                 controls-position="right" 
+                :min="0"
+                :precision="0"
                 ></el-input-number>
 
                 <el-input v-else-if="item.format =='textarea'"
@@ -481,7 +513,7 @@ export default {
         },
         async handleFilesUpload(index,title,data) { 
             this.$emit('handleDialog',this.title, index , data)
-        },
+        }
     }
 }
 </script>

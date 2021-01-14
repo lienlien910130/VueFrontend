@@ -7,19 +7,17 @@
         node-key="id"
         empty-text=""
         draggable
-        :filter-node-method="filterNode"
         highlight-current
         :expand-on-click-node="false"
+        :allow-drop="allowDrop"
         >
         <span class="custom-tree-node" slot-scope="{ node, data }" >
             <span @click="select(node, data)" 
                 style="padding:7px;margin:5px;float:left">
                     {{ node.label }}</span>
-            <span v-if="node.level === 1 && node.data.id < 0" class="itemcount">
+            <span v-if="node.level === 1 || (node.level === 2 && node.data.children.length > 0)" class="itemcount">
                 {{ node.childNodes.length  }}</span>
-            <span v-else-if="node.level === 1 && node.data.id >= 0" class="itemcount">
-                {{ node.childNodes.length + 1  }}</span>
-            <span style="float:right">
+            <span v-if="type == 'edit' && node.level !== 1" style="float:right">
                 <el-button
                     type="text"
                     size="mini"
@@ -39,31 +37,60 @@ export default {
             default() {
                 return []
             }
-        },objectDelete:{},objectSelect:{},redoundo:{},originalData:{}
+        },objectDelete:{},objectSelect:{},redoundo:{},type:{},labelChange:{},blockChange:{}
     },
     data(){
         return{
-            data:[],
+            data:[
+                {
+                    id:'-1',
+                    label: '未分類',
+                    children: []
+                },
+                {
+                    id:'-2',
+                    label: '警戒區',
+                    children: []
+                },
+                {
+                    id:'-3',
+                    label: '防護區',
+                    children: []
+                },
+                {
+                    id:'-4',
+                    label: '放射區',
+                    children: []
+                },
+                {
+                    id:'-5',
+                    label: '撒水區',
+                    children: []
+                },
+                {
+                    id:'-6',
+                    label: '圖例',
+                    children: []
+                }
+            ],
             collect:[],
+            original:[],
             parentnode:null
         }
     },
     watch:{
         list:{
-            handler:function(newValue,oldValue){
-                console.log('listwatch',JSON.stringify(newValue))
+            handler:async function(newValue,oldValue){
                 if(newValue.length == 0){
-                    this.data = []
                     this.collect = []
                     this.parentnode = null
                 }else{
-                    this.checkNode(newValue)
+                    await this.checkNode(newValue)
                 }
             },
             immediate:true
         },
         objectDelete(val){
-            console.log('objectdelete',val)
             if(val !== null){
                 var _temp =[]
                     val.sort((x,y) => y.id - x.id).forEach(item =>{
@@ -80,31 +107,39 @@ export default {
                             _temp.push(item)
                         }    
                     })
+                    const imgNode = this.$refs.tree.getNode(-6)
+                    imgNode.data.children.forEach(item=>{
+                        if(item.children.length == 0){
+                            this.$refs.tree.remove(item)
+                        }
+                    })
                     this.$emit('returnDeleteSuccess',_temp)
                 }
         },
         objectSelect(val){
-            if(val !== null){
-                val.sort((x,y) => y.id - x.id).forEach(item =>{
-                    this.$refs.tree.setCurrentKey(item.id)
-                })
+            if(val !== null && val.length == 1){
+                this.$refs.tree.setCurrentKey(val[0].id)
             }else{
                 this.$refs.tree.setCurrentKey(null)
             }
         },
-        redoundo(val){
+        async redoundo(val){
             if(val !== null ){
-                this.collect.length = 0
-                this.data.length = 0
-                console.log('redoundo',val,this.collect,this.data)
-                this.checkNode(val)
+                this.collect = []
+                this.data = JSON.parse(this.original)
+                await this.checkNode(val)
                 this.$emit('returnObjectRedoUndo','')
             }
         },
-        originalData(val){
-            console.log('originalData',JSON.stringify(val))
-            this.setOriginalData(val)
+        labelChange(val){
+            this.$refs.tree.getNode(val[0]).data.label = val[1]
+        },
+        blockChange(val){
+            this.updateNodeLevel(val)
         }
+    },
+    mounted(){
+        this.original = JSON.stringify(this.data)
     },
     methods:{
         remove(node, data) {
@@ -128,148 +163,82 @@ export default {
                 this.$emit('sendActionToCanvas','sel',_temp[0])
             }
         },
-        filterNode(value, data) {
-            const node =  this.$refs.tree.getNode(data.id)
-            if(node.parent.level == 0){
-                if(node.data.label == value){
-                    this.parentnode = node
-                }
-            }
-            return true
-        },
-        removeDuplicates(originalArray, prop) {
-            var newArray = []
-            var lookupObject  = {}
-            for(var i in originalArray) {
-                lookupObject[originalArray[i][prop]] = originalArray[i]
-            }
-            for(i in lookupObject) {
-                newArray.push(lookupObject[i])
-            }
-            return newArray
-        },
-        checkNode(list){
+        async checkNode(list){
             var _temp = []
-            list.forEach(item => {
+            list.forEach(async(item) => {
                 _temp = this.collect.filter(function(value) {
                     return value.id === item.id
                 })
                 if(_temp.length == 0){
                     this.collect.push(item)
-                    if(item.type == 'image'){
-                        this.$refs.tree.filter(item.objectName)   
-                        if(this.parentnode == null){
-                            this.data.push({ 
-                                id: item.id , 
+                    if(item.type == 'image'){ //先找第一層圖例 -> 再找該圖例類別 -> 再放新節點
+                       var level1 = this.data.filter((obj, index) =>
+                            obj.label == '圖例'
+                        )
+                        var _id = 'img'+item.srcId
+                        var temp = level1[0].children.filter((obj, index) =>
+                            obj.id == _id
+                        )
+                        if(temp.length == 0){
+                            level1[0].children.push({
+                                id: _id , 
                                 label: item.objectName, 
-                                children: []
-                            })  
-                        }else{
-                            this.$refs.tree.append({ 
-                                id: item.id, 
-                                label: item.objectName, 
-                                children: []} , 
-                                this.parentnode)
-                            this.parentnode = null
-                        }
-                    }else{
-                        this.$refs.tree.filter(item.blockType) 
-                        var i = 0
-                        switch(item.blockType){
-                            case '未分類':
-                                i = -1    
-                                break;
-                            case '警戒區':
-                                i = -2    
-                                break;
-                            case '防護區':
-                                i = -3    
-                                break;
-                            case '放射區':
-                                i = -4    
-                                break;
-                            case '撒水區':
-                                i = -5    
-                                break;
-                        }
-                        if(this.parentnode == null){
-                            this.data.push({ 
-                                id: i , 
-                                label: item.blockType !== '' ? item.blockType : '尚未分類', 
                                 children: [{
-                                    id: item.id, 
+                                    id: item.id , 
                                     label: item.objectName, 
                                     children: []
                                 }]
-                            }) 
+                            })
+                            this.$nextTick(() => { 
+                                this.$refs.tree.getNode(level1[0].id).expanded = true
+                                this.$refs.tree.setCurrentKey(level1[0].id)
+                            })
                         }else{
-                            this.$refs.tree.append({ 
+                            temp[0].children.push({ 
+                                id: item.id , 
+                                label: item.objectName, 
+                                children: []
+                            })
+                            this.$nextTick(() => { 
+                                this.$refs.tree.getNode(temp[0].id).expanded = true
+                                this.$refs.tree.setCurrentKey(temp[0].id)
+                            })
+                        }
+
+                    }else{
+                        var temp = this.data.filter((obj, index) =>
+                            obj.label == item.blockType
+                        )
+                        temp[0].children.push({
                                 id: item.id, 
                                 label: item.objectName, 
-                                children: []} , 
-                                this.parentnode)
-                            this.parentnode = null  
-                        }
+                                children: []
+                        })
+                        this.$nextTick(() => { 
+                            this.$refs.tree.getNode(temp[0].id).expanded = true
+                        })
                     }
                 }
             })
         },
-        setOriginalData(val){
-            val.forEach(item =>{
-                this.collect.push(item)
-                if(item.type === 'image'){
-                    var temp = this.data.filter((obj, index) =>
-                        obj.label == item.objectName
-                    )
-                    var node = temp.length == 0? this.data : temp[0].children
-                    node.push({ 
-                        id: item.id , 
-                        label: item.objectName, 
-                        children: []
-                    })
-                }else{
-                    var i = 0
-                    switch(item.blockType){
-                        case '未分類':
-                            i = -1    
-                            break;
-                        case '警戒區':
-                            i = -2    
-                            break;
-                        case '防護區':
-                            i = -3    
-                            break;
-                        case '放射區':
-                            i = -4    
-                            break;
-                        case '撒水區':
-                            i = -5    
-                            break;
-                    }
-                    var temp = this.data.filter((obj, index) =>
-                        obj.id == i
-                    )
-                    if(temp.length == 0){
-                        this.data.push({ 
-                            id: i , 
-                            label: item.blockType !== '' ? item.blockType : '尚未分類', 
-                            children: [{
-                                id: item.id, 
-                                label: item.objectName, 
-                                children: []
-                            }]
-                        })
-                    }else{
-                        temp[0].children.push({
-                            id: item.id, 
-                            label: item.objectName, 
-                            children: []
-                        })
-                    }
-                }
-                
+        updateNodeLevel(val){
+            this.$refs.tree.remove(val[0])
+            var temp = this.data.filter((obj, index) =>
+                obj.label == val[2]
+            )
+            temp[0].children.push({
+                id: val[0], 
+                label: val[1], 
+                children: []
             })
-        }
+        },
+        allowDrop(draggingNode, dropNode, type) {
+            if (draggingNode.level === dropNode.level && type !== 'inner' && draggingNode.parent === dropNode.parent) {
+                return true
+            } else {
+                return false
+            }
+        },
     }
 }
 </script>

@@ -39,7 +39,7 @@
           <el-button type="primary" @click="saveCanvasToImage(true)" :disabled="disabled">匯出圖片</el-button>
           <el-button type="primary" :disabled="disabled">歷史紀錄</el-button>
           <el-checkbox-group v-model="checkList" style="display:inline;margin-left:20px;" >
-            <el-checkbox label="尚未分類" border></el-checkbox>
+            <el-checkbox label="未分類" border></el-checkbox>
             <el-checkbox label="警戒區" border></el-checkbox>
             <el-checkbox label="防護區" border></el-checkbox>
             <el-checkbox label="放射區" border></el-checkbox>
@@ -85,6 +85,7 @@
             <el-col :xs="24" :sm="24" :md="24" :lg="8">
               <div class="collapse-wrapper">
                 <ObjectList
+                  v-show="type == 'edit'"
                   v-bind="objectListAttrs"
                   v-on="objectListEvent">
                 </ObjectList>
@@ -137,8 +138,8 @@ export default {
             resetCanvas: this.resetCanvas,
             saveCanvasToImage: this.saveCanvasToImage,
             returnDeleteObjects: this.returnDeleteObjects,
-            sendFileObjects:this.sendFileObjects
-            // returnSelectObjects: this.returnSelectObjects
+            sendLabelChange:this.sendLabelChange,
+            sendBlcokChange:this.sendBlcokChange
         }
       },
       objectListAttrs(){
@@ -147,7 +148,9 @@ export default {
             objectDelete:this.objectDelete,
             objectSelect:this.objectSelect,
             redoundo:this.redoundo,
-            originalData:this.originalData
+            type:this.type,
+            labelChange:this.labelChange,
+            blockChange:this.blockChange
         }
       },
       objectListEvent(){
@@ -168,6 +171,7 @@ export default {
           deleteObject:null,
           selectObject:null,
           objectDelete:null,
+          objectSelect:null,
           deleteSuccess:null,
           redoundo:null,
           addobject:null,
@@ -178,7 +182,8 @@ export default {
           disabled:true,
           objects:null,
           checkList:[],
-          originalData:[]
+          labelChange:[],
+          blockChange:[]
         }
     },
     mounted(){
@@ -242,17 +247,28 @@ export default {
       },
       changeType(type){
         this.type = type
+        if(type == 'edit'){
+          this.checkList = ['未分類','警戒區','防護區','放射區','撒水區']
+        }else{
+          this.checkList = []
+        }
       },
       //圖控的事件
       sendObjectListToLayer(val){ //圖控傳過來的所有物件清單,更新圖層節點用
         this.objectList = val
       },
       sendActionToLayer(index,val){ //圖控上面選取/刪除物件
-        if(index == "del"){
+        if(index == 'del'){
           this.objectDelete = val
         }else{
           this.objectSelect = val
         }
+      },
+      sendLabelChange(id,objname){
+        this.labelChange = [id,objname]
+      },
+      sendBlcokChange(id,objname,blocktype){
+        this.blockChange = [id,objname,blocktype]
       },
       sendObjectRedoUndoToLayer(val){//圖控上一步下一步
         this.redoundo = val
@@ -265,24 +281,16 @@ export default {
           this.$message('儲存成功')
         })
       },
-      // returnSelectObjects(){ //重置圖層及圖控選取的物件
-      //   this.selectObject = null
-      //   this.objectSelect = null
-      // },
       returnDeleteObjects(){ //重置圖層及圖控刪除的物件
         this.deleteObject = null
         this.deleteSuccess = null
         this.objectDelete = null
-      },
-      sendFileObjects(val){
-        this.originalData = val
       },
       //圖層事件
       returnObjectRedoUndo(){
         this.redoundo = null
       },
       sendActionToCanvas(index,val){ //圖層選取/刪除物件
-      console.log(val)
           if(index == "del"){
             this.deleteObject = val
           }else{

@@ -5,6 +5,7 @@ import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 import ElementUI from 'element-ui'
 import fabric from 'fabric'
 import vcolorpicker from 'vcolorpicker'
+import locale from 'element-ui/lib/locale/lang/zh-TW'
 import 'element-ui/lib/theme-chalk/index.css'
 
 import '@/styles/index.scss' // global css
@@ -27,12 +28,9 @@ import '@/permission' // permission control
  * Currently MockJs will be used in the production environment,
  * please remove it before going online ! ! !
  */
-if (process.env.NODE_ENV === 'production') {
-  const { mockXHR } = require('../mock')
-  mockXHR()
-}
 
-Vue.use(ElementUI)
+
+Vue.use(ElementUI, {locale})
 Vue.use(SIdentify)
 Vue.use(fabric)
 Vue.use(vcolorpicker)
