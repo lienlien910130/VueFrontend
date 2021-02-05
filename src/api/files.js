@@ -29,6 +29,16 @@ const files = {
     apiPostPublicSafeFiles(publicSafeId,data){ 
         return req('post','/report/'+this.getUid()+'/publicSafe/'+publicSafeId+'/fileUpload',data,true) } ,
     
+    //維護保養大項
+    apiGetMaintainsListFiles(maintainListId){ return req('get','/maintainManagement/maintains/'+maintainListId+'/filesList') } ,
+    apiPostMaintainsListFiles(maintainListId,data){ 
+        return req('post','/maintainManagement/1/maintains/'+maintainListId+'/fileUpload',data,true) } ,
+
+    //維護保養細項
+    apiGetMaintainsFiles(maintainId){ return req('get','/maintainManagement/maintains/list/'+maintainId+'/filesList') } ,
+    apiPostMaintainsFiles(maintainListId,maintainId,data){ 
+        return req('post','/maintainManagement/'+maintainListId+'/maintains/list/'+maintainId+'/fileUpload',data,true) } ,
+
     //共用方法 刪除/下載
     apiDeleteFile(fileId){ return req('delete','/basic/fileDelete/'+fileId) },
     apiGetFile(fileId){ return req('get','/basic/fileDownload/'+fileId) },

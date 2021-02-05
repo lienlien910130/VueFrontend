@@ -15,7 +15,8 @@
         </div>
 </template>
 <script>
-import constant from '@/constant/production'
+
+import { getRoutes } from '@/utils/router'
 
 export default {
     components:{ 
@@ -24,6 +25,8 @@ export default {
     },
     data(){
         return{
+            routes:[],
+            treeData:[],
             tableData:[],
             itemkey:Math.random(),
             config:[
@@ -32,6 +35,8 @@ export default {
                 { label:'排序' , prop:'sort',format:'number', mandatory:true, message:'請輸入排序',
                 isPattern:false,errorMsg:'',type:'number',typemessage:''},
                 { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
+                isPattern:false,errorMsg:'',type:'boolean',typemessage:''},
+                { label:'刪除' , prop:'removable',format:'removableSelect', mandatory:true, message:'請選擇',
                 isPattern:false,errorMsg:'',type:'boolean',typemessage:''}
             ],
             listQueryParams:{
@@ -39,7 +44,7 @@ export default {
                 limit: 10,
                 total: 0
             },
-            buttonsName: ['編輯','刪除'],
+            buttonsName: ['編輯','刪除','分配權限'],
             //Dialog
             dialogButtonsName:[],
             dialogTitle:'',
@@ -56,7 +61,8 @@ export default {
                 tableData: this.tableData,
                 itemkey:this.itemkey,
                 config:this.config,
-                buttonsName:this.buttonsName
+                buttonsName:this.buttonsName,
+                
             }
         },
         tableEvent(){
@@ -73,21 +79,25 @@ export default {
                 dialogStatus: this.dialogStatus,
                 buttonsName: this.dialogButtonsName,
                 config: this.dialogConfig,
-                selectData: this.dialogSelect
+                selectData: this.dialogSelect,
+                treeData:this.treeData
             }
         },
     },
     async mounted() {
         await this.getAllRole()
+        //await this.getAllRoutes()
     },
     methods:{
         async getAllRole(){
-            await this.$api.authority.apiGetAllRoleAuthority().then(response=>{
-                this.tableData = response.result.filter((item, index) => 
+            var data = await this.$obj.Authority.getRole()
+            this.tableData = data.filter((item, index) => 
                 index < this.listQueryParams.limit * this.listQueryParams.page && 
                 index >= this.listQueryParams.limit * (this.listQueryParams.page - 1)).sort((x,y) => x.sort - y.sort)
-                this.listQueryParams.total = response.result.length
-            })
+                this.listQueryParams.total = data.length
+        },
+        async getAllRoutes() {
+            this.treeData = getRoutes()
         },
         async handleTableRow(index, row, option){
             console.log(index, row, option)
@@ -101,10 +111,11 @@ export default {
                 this.innerVisible = true
                 this.dialogStatus = 'update'
             }else if(option === '刪除'){
-                await this.$api.authority.apiDeleteRoleAuthority(row.id).then(async(response)=>{
+                var isOk = await this.$obj.Authority.deleteRole()
+                if(isOk){
                     this.$message('刪除成功')
                     await this.getAllRole()
-                })
+                }
             }
             else if(option === '新增'){
                 this.dialogButtonsName = [
@@ -112,6 +123,13 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'create'
+            }
+            else if(option === '分配權限'){
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'authoritycreate'},
+                { name:'取消',type:'info',status:'cancel'}]
+                this.innerVisible = true
+                this.dialogStatus = 'authority'
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
@@ -127,6 +145,8 @@ export default {
                     this.$message('新增成功')
                     await this.getAllRole()
                 })
+            }else if(index === 'authoritycreate'){
+
             }
             this.innerVisible = false
         },
@@ -138,7 +158,6 @@ export default {
 .chart-wrapper {
     background: #fff;
     padding: 5px 16px 0;
-    margin-bottom: 32px;
     height: 730px;
     overflow-x:hidden;
     overflow-y:auto;

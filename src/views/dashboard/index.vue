@@ -1,6 +1,10 @@
 <template>
     <div class="editor-container">
-      <el-row :gutter="32">
+      <div v-if="account == 'mf01'">
+        水星專用
+      </div>
+      <div v-else >
+        <el-row :gutter="32">
         <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
             <pie-chart 
@@ -59,12 +63,14 @@
           </div>
         </el-row> -->
 
+      </div>
     </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import constant from '../../../src/constant';
+import { removeDuplicates } from '@/utils/index'
 
 export default {
   name: 'Dashboard',
@@ -78,7 +84,8 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'buildingid'
+      'buildingid',
+      'account'
     ]),
     noMore () {
       return this.count >= this.viewlist.length 
@@ -121,29 +128,21 @@ export default {
       }, 2000)
     },
     async getBuildingDevicesManage() { //取得設備
-      this.deviceData = []
       var _temp = []
-      await this.$api.device.apiGetBuildingDevicesManagement().then(response => {
-        this.deviceData = response.result.sort((x,y) => x.id - y.id)
-        _temp.push(this.deviceData.filter((item, index) => 
-                        item.status == '良好'),this.deviceData.filter((item, index) => 
-                        item.status == '損壞'),this.deviceData.filter((item, index) => 
-                        item.status == '叫修中'))
-        this.deviceGroup = _temp
-      })
-    },
-    handleChartClick(type){
-      switch(type){
-        case '良好':
-          this.currentNode = '-3'
-          break;
-        case '損壞':
-          this.currentNode = '-1'
-          break;
-        case '叫修中':
-          this.currentNode = '-2'
-          break;
+      this.deviceData = await this.$obj.Device.getBuildingDevicesManage()
+      var statusArray = removeDuplicates(this.deviceData,'status')
+      for(let obj of statusArray) {
+        var statusObj = await this.$obj.Setting.getOption(obj.status)
+        _temp.push({
+          value: obj.status,
+          name: statusObj[0].textName,
+          data: this.deviceData.filter((item, index) => item.status == obj.status)
+        })
       }
+      this.deviceGroup = _temp
+    },
+    handleChartClick(value){
+      this.currentNode = value
     },
     handleNodeClick(data){
       console.log(data)

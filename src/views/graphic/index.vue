@@ -16,20 +16,19 @@
             trigger="click"
             >
               <p class="tipck">1.【Alt】+【➚】+【滑鼠左鍵】：平移</p>
-              <p class="tipck">2.【Alt】+【Q】：放大</p>
-              <p class="tipck">3.【Alt】+【W】：縮小</p>
-              <p class="tipck">4.【Alt】+【S】：選取</p>
-              <p class="tipck">5.【Alt】+【T】：文字</p>
-              <p class="tipck">6.【Alt】+【R】：矩形</p>
-              <p class="tipck">7.【Alt】+【A】：多邊形</p>
+              <p class="tipck">2.【滑鼠滾輪】：放大&縮小</p>
+              <p class="tipck">3.【Alt】+【S】：選取</p>
+              <p class="tipck">4.【Alt】+【T】：文字</p>
+              <p class="tipck">5.【Alt】+【R】：矩形</p>
+              <p class="tipck">6.【Alt】+【A】：多邊形</p>
               <!-- <p class="tipck">8.【Alt】+【Z】：取消拖曳圖片</p> -->
-              <p class="tipck">9.【Alt】+【G】：打開圖例</p>
-              <p class="tipck">10.【Ctrl】+【C】：複製</p>
-              <p class="tipck">11.【Ctrl】+【V】：貼上</p>
-              <p class="tipck">12.【Ctrl】+【Z】：上一步</p>
-              <p class="tipck">13.【Ctrl】+【Y】：下一步</p>
-              <p class="tipck">14.【Delete】：刪除</p>
-              <p class="tipck">15.【Insert】：下載圖片</p>
+              <p class="tipck">7.【Alt】+【G】：打開圖例</p>
+              <p class="tipck">8.【Ctrl】+【C】：複製</p>
+              <p class="tipck">9.【Ctrl】+【V】：貼上</p>
+              <p class="tipck">10.【Ctrl】+【Z】：上一步</p>
+              <p class="tipck">11.【Ctrl】+【Y】：下一步</p>
+              <p class="tipck">12.【Delete】：刪除</p>
+              <p class="tipck">13.【Insert】：下載圖片</p>
               <el-button slot="reference" type="primary" :disabled="disabled">快捷鍵</el-button>
           </el-popover>
 

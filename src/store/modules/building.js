@@ -1,5 +1,7 @@
 import { 
   setBuildingid, getBuildingid, removeBuildingid } from '../../utils/auth'
+
+import obj from '@/object'
 // 個人資料
 const getDefaultState = () => {
   return {
@@ -23,7 +25,8 @@ const actions = {
     return new Promise((resolve, reject) => {
         commit('SET_BUILDINGID', buildingid)
         setBuildingid(buildingid)
-        resolve()
+        var ok = obj.Building.getBuildingInfo()
+        resolve(ok)
     })
   },
   resetBuildingid({ commit }) {

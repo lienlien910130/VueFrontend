@@ -40,12 +40,12 @@ export default {
     init(){
       this.chart = null
       this.chart = echarts.init(this.$el, 'macarons')
-      this.setOption(this.percentage[0].length,this.percentage[1].length,this.percentage[2].length)
+      this.setOption(this.percentage)
       this.chart.on('click',params => {
-        this.$emit('handleChartClick', params.data.type)
+        this.$emit('handleChartClick', params.data.value)
       })
     },
-    setOption(one,two,three) {
+    setOption(dataArray) {
       this.chart.setOption({
         tooltip: {
           trigger: 'item',
@@ -65,11 +65,7 @@ export default {
             roseType: 'radius',
             radius: [15, 95],
             center: ['50%', '42%'],
-            data: [
-              { value: one, name: '良好',type:'良好' },
-              { value: two, name: '損壞',type:'損壞' },
-              { value: three, name: '叫修中',type:'叫修中' }
-            ],
+            data: dataArray,
             animationEasing: 'cubicInOut',
             label:{
                 normal: {

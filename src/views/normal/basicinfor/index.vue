@@ -17,20 +17,18 @@
                           <el-tab-pane label="管委會" name="MC" >
                           <Block 
                           v-if="activeName == 'MC'"
+                          :list-query-params.sync="listQueryParams"
+                          :selectSetting.sync="selectSetting"
                           v-bind="communityAttrs" 
-                          v-on:handleBlock="handleBlock"></Block>
+                          v-on="ManagementListblockEvent"></Block>
                           </el-tab-pane>
                           <el-tab-pane label="廠商資料" name="Vender" >
-                            <Select 
-                            v-if="activeName == 'Vender'"
-                            style="margin-bottom: 20px;" 
-                            v-bind="selectAttrs" 
-                            v-on:handleSelect="handleSelect"
-                            />
                             <Block 
                             v-if="activeName == 'Vender'"
+                            :list-query-params.sync="listQueryParams"
+                            :selectSetting.sync="selectSetting"
                             v-bind="contactunitAttrs" 
-                            v-on:handleBlock="handleBlock">
+                            v-on="ContactunitListblockEvent">
                             </Block>
                           </el-tab-pane>
                           <el-tab-pane label="相關資料" name="BOT" >
@@ -50,13 +48,15 @@
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
                     <div class="block-wrapper">
-                        <el-tabs v-model="activeFloor" style="margin-top:15px;margin-bottom:15px;" type="border-card">
+                        <el-tabs v-model="activeFloor" type="border-card">
                             <el-tab-pane label="基本資料" name="IN" >
                               <p v-if="!isChoose">請選擇樓層</p>
                               <Block 
                               v-if="activeFloor == 'IN' && isChoose"
+                              :list-query-params.sync="floorlistQueryParams"
+                              :selectSetting.sync="floorselectSetting"
                               v-bind="floorAttrs" 
-                              v-on:handleBlock="handleBlock"></Block>
+                              v-on="FloorblockEvent"></Block>
                             </el-tab-pane>
                             <el-tab-pane label="樓層平面圖" name="IM" >
                               <p v-if="!isChoose">請選擇樓層</p>
@@ -84,6 +84,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { setSelectSetting } from '@/utils/index'
 
 export default {
   name: 'Tab',
@@ -137,7 +138,8 @@ export default {
         buttonsName:this.buttonsName,
         config: this.tableConfig,
         title:'community',
-        selectData: this.selectData //門牌
+        selectData: this.selectData, //門牌
+        sortArray:this.sortArray
       }
     },
     contactunitAttrs() {
@@ -147,12 +149,7 @@ export default {
         config: this.tableConfig,
         title:'contactunit',
         selectData: this.selectData, //廠商類別
-      }
-    },
-    selectAttrs() {
-      return {
-        selectData: this.selectData, //廠商類別
-        title:'contactunit', 
+        sortArray:this.sortArray
       }
     },
     floorAttrs() {
@@ -160,7 +157,8 @@ export default {
         blockData: this.floorData,
         buttonsName: this.buttonsName,
         config: this.floorConfig,
-        title:'floorOfHouse'
+        title:'floorOfHouse',
+        sortArray:this.floorsortArray
       }
     },
     floorwrapper(){
@@ -168,6 +166,24 @@ export default {
         return 'floorMobile'
       } else {
         return 'floornotMobile'
+      }
+    },
+    ManagementListblockEvent(){
+      return{
+          handleBlock:this.handleBlock,
+          clickPagination:this.getManagementList
+      }
+    },
+    ContactunitListblockEvent(){
+      return{
+          handleBlock:this.handleBlock,
+          clickPagination:this.getContactunitList
+      }
+    },
+    FloorblockEvent(){
+      return{
+          handleBlock:this.handleBlock,
+          clickPagination:this.getFloorList
       }
     },
   },
@@ -209,22 +225,25 @@ export default {
       selectData:[],
       floorData:[],
       tableConfig: [
-          { label:'所屬單位' , prop:'usageOfFloorId',format:'floorOfHouseSelect', mandatory:true, message:'請選擇單位'},
-          { label:'職稱' , prop:'title', mandatory:true, message:'請輸入內容'},
-          { label:'姓名' , prop:'userName', mandatory:true, message:'請輸入內容'},
-          { label:'電話' , prop:'callNumber', mandatory:true, message:'請輸入內容'},
-          { label:'緊急電話' , prop:'emergencyNumber', mandatory:true, message:'請輸入內容'},
-          { label:'備註' , prop:'note',format:'textarea', mandatory:false}],
+          { label:'所屬單位' , prop:'usageOfFloorId',format:'floorOfHouseSelect',
+           mandatory:true, message:'請選擇單位',isSelect:true,options:[],selectType:'usageOfFloor',select:'',isSort:true},
+          { label:'職稱' , prop:'title', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
+          { label:'姓名' , prop:'userName', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
+          { label:'電話' , prop:'callNumber', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
+          { label:'緊急電話' , prop:'emergencyNumber', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
+          { label:'備註' , prop:'note',format:'textarea', mandatory:false,isSelect:false,isSort:false }],
       floorConfig: [
-          { label:'戶號' , prop:'houseNumber', mandatory:true, message:'請輸入內容'},
-          { label:'場所名稱' , prop:'placeName', mandatory:true, message:'請輸入內容'},
-          { label:'緊急連絡人' , prop:'name',format:'hide'},
-          { label:'電話' , prop:'cellphonenumber',format:'hide'},
-          { label:'收容人數' , prop:'capacity',mandatory:true,message:'請輸入內容'},
-          { label:'備註' , prop:'note',format:'textarea',mandatory:false},
-          { label:'所有人資料' , prop:'linkOwners',format:'userInfo', mandatory:true, message:'請選擇用戶'},
-          { label:'使用人資料' , prop:'linkUsers',format:'userInfo', mandatory:true, message:'請選擇用戶'},
-          { label:'檢附文件' , prop: 'file',format:'openfiles'} 
+          { label:'戶號' , prop:'houseNumber', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
+          { label:'場所名稱' , prop:'placeName', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
+          { label:'緊急連絡人' , prop:'name',format:'hide',isSelect:false,isSort:false},
+          { label:'電話' , prop:'cellphonenumber',format:'hide',isSelect:false,isSort:false},
+          { label:'收容人數' , prop:'capacity',mandatory:true,message:'請輸入內容',isSelect:false,isSort:false},
+          { label:'備註' , prop:'note',format:'textarea',mandatory:false,isSelect:false,isSort:false},
+          { label:'所有人資料' , prop:'linkOwners',format:'userInfo', mandatory:true, message:'請選擇用戶',
+          isSelect:true,options:[],selectType:'user',select:'',isSort:true},
+          { label:'使用人資料' , prop:'linkUsers',format:'userInfo', mandatory:true, message:'請選擇用戶',
+          isSelect:true,options:[],selectType:'user',select:'',isSort:true},
+          { label:'檢附文件' , prop: 'file',format:'openfiles',isSelect:false,isSort:false} 
       ],
       activeName: 'MC',
       activeFloor:'IN',
@@ -232,13 +251,28 @@ export default {
       isChoose:false,
       floorofhouseId :'',
       origin:[], //廠商資料
+      floorlistQueryParams:{
+          page: 1,
+          limit: 10,
+          total: 0
+      },
+      listQueryParams:{
+          page: 1,
+          limit: 10,
+          total: 0
+      },
+      floorselectSetting:[],
+      selectSetting:[],
+      sortArray:[],
+      floorsortArray:[]
     }
   },
   watch: {
     async activeFloor(val){ 
       await this.getFloorImageId()
       if(val == 'IN'){
-        this.getFloorList()
+        await this.getFloorList()
+        await this.setFloorSelectSetting()
       }else if(val == 'IM'){
         this.getFloorImage()
       }else {
@@ -250,25 +284,30 @@ export default {
       this.selectData = []
       if(val == 'MC'){
          this.tableConfig= [
-          { label:'所屬單位' , prop:'usageOfFloorId',format:'floorOfHouseSelect', mandatory:true, message:'請選擇單位'},
-          { label:'職稱' , prop:'title', mandatory:true, message:'請輸入內容'},
-          { label:'姓名' , prop:'userName', mandatory:true, message:'請輸入內容'},
-          { label:'電話' , prop:'callNumber', mandatory:true, message:'請輸入內容'},
-          { label:'緊急電話' , prop:'emergencyNumber', mandatory:true, message:'請輸入內容'},
-          { label:'備註' , prop:'note',format:'textarea', mandatory:false}],
+          { label:'所屬單位' , prop:'usageOfFloorId',format:'floorOfHouseSelect',
+           mandatory:true, message:'請選擇單位',isSelect:true,options:[],selectType:'usageOfFloor',select:'',isSort:true},
+          { label:'職稱' , prop:'title', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
+          { label:'姓名' , prop:'userName', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
+          { label:'電話' , prop:'callNumber', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
+          { label:'緊急電話' , prop:'emergencyNumber', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
+          { label:'備註' , prop:'note',format:'textarea', mandatory:false,isSelect:false,isSort:false }],
         await this.getFloorOfHouse()
         await this.getManagementList()
+        await this.setSelectSetting()
       }else if(val == 'Vender'){
         this.tableConfig = [
-          { label:'公司名稱' , prop:'name', mandatory:true, message:'請輸入內容'},
-          { label:'類別' , prop:'type', format:'select', mandatory:true, message:'請選擇類別'},
-          { label:'電話' , prop:'contactNumber',mandatory:true, message:'請輸入內容'},
-          { label:'地址' , prop:'address', mandatory:true, message:'請輸入內容'},
-          { label:'備註' , prop:'note',format:'textarea', mandatory:false},
-          { label:'狀態' , prop:'collaborate', format:'tag', mandatory:false, message:'請輸入內容' }
+          { label:'公司名稱' , prop:'name', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
+          { label:'類別' , prop:'type', format:'select', mandatory:true, message:'請選擇類別',
+          isSelect:true,options:[],selectType:'options',select:'',isSort:true},
+          { label:'電話' , prop:'contactNumber',mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
+          { label:'地址' , prop:'address', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
+          { label:'備註' , prop:'note',format:'textarea', mandatory:false,isSelect:false,isSort:false},
+          { label:'狀態' , prop:'collaborate', format:'tag', mandatory:false, message:'請輸入內容',
+          isSelect:true,options:[],selectType:'collaborateBool',select:'',isSort:true }
         ]
         await this.getContactUnitOption()
         await this.getContactunitList()
+        await this.setSelectSetting()
       }else{ //BOT
         await this.getBuildingFiles()
       }
@@ -278,6 +317,7 @@ export default {
     this.activeName = 'MC'
     await this.getFloorOfHouse()
     await this.getManagementList()
+    await this.setSelectSetting()
     if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
       this.activeName = 'Vender'
       this.selectData = []
@@ -291,6 +331,7 @@ export default {
       ]
       await this.getContactUnitOption()
       await this.getContactunitList()
+      await this.setSelectSetting()
       let _array = this.blockData.filter((item, index) => 
         item.id == this.$route.params.target
       )
@@ -307,17 +348,7 @@ export default {
       })
     },
     async getBuildingUser(){ //取得大樓的所有用戶資料
-      this.buildingUsers= []
-      await this.$api.building.apiGetAllBuildingOfUser().then(response=>{
-        response.result.sort((x,y) => x.id - y.id).forEach(item=>{
-          var _temp = {
-            id: item.id,
-            label: item.name,
-            value: item.id
-          }
-          this.buildingUsers.push(_temp)
-        })
-      })
+      this.buildingUsers = this.$deepClone(await this.$obj.Building.getBuildingUser())
     },
     async getFloorFiles(){ //取得樓層檔案
       this.floorFiles = []
@@ -359,14 +390,35 @@ export default {
         })
       })
     },
-    async getManagementList() { //取得管委會
+    async getManagementList(sort = null) { //取得管委會
       this.blockData = []
+      var data = []
       await this.$api.building.apiGetCommittee().then(response => {
-        this.blockData = response.result
+          this.listQueryParams.total = response.result.length
+                data = response.result
+                this.selectSetting.forEach(element=>{
+                    if(element.select != ''){
+                        data = data.filter((item, index) => item[element.prop] == element.select )
+                    }
+                })
+                data = data.filter((item, index) => 
+                index < this.listQueryParams.limit * this.listQueryParams.page && 
+                index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
+                if(sort !== '' && sort !== null){
+                    data = data.sort(function(x,y){
+                        return y[sort] - x[sort]
+                    })
+                }else{
+                    data = data.sort(function(x,y){
+                        return y.id - x.id
+                    })
+                }
+                this.blockData = data
       })
     },
     async getContactUnitOption(){ //取得大樓的廠商分類
       await this.$api.setting.apiGetOptions('ContactUnitOptions').then(response => {
+        console.log(JSON.stringify(response))
         var _temp = response.result.sort((x,y) => x.id - y.id)
         this.selectData = _temp.map(v => {
           this.$set(v, 'id', v.id) 
@@ -376,21 +428,40 @@ export default {
         })
       })
     },
-    async getContactunitList(){ //取得廠商資料
-      await this.$api.building.apiGetContactUnit().then(response => {
-        this.blockData = response.result.sort(function(x,y){
-            var a = x.collaborate
-            var b = y.collaborate
-            if(a == b){
-              return y.id - x.id
+    async getContactunitList(sort = null){ //取得廠商資料
+      this.blockData = []
+      var data = []
+      await this.$api.building.apiGetBuildingContactUnit().then(response => {
+          this.listQueryParams.total = response.result.length
+          data = response.result
+          this.selectSetting.forEach(element=>{
+            if(element.select != ''){
+                data = data.filter((item, index) => item[element.prop] == element.select )
             }
-            return y.collaborate - x.collaborate
           })
-        this.origin = JSON.stringify(this.blockData)
+          data = data.filter((item, index) => 
+          index < this.listQueryParams.limit * this.listQueryParams.page && 
+          index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
+          if(sort !== '' && sort !== null){
+            data = data.sort(function(x,y){
+              return y[sort] - x[sort]
+            })
+          }else{
+              data = data.sort(function(x,y){
+                var a = x.collaborate
+                var b = y.collaborate
+                if(a == b){
+                  return y.id - x.id
+                }
+                return y.collaborate - x.collaborate
+              })
+          }
+          this.blockData = data
       })
     },
-    async getFloorList(){ //取得樓層資料
+    async getFloorList(sort = null){ //取得樓層資料
       this.floorData = []
+      var data = []
       await this.$api.building.apiGetFloorOfHouse(this.selectFloor).then(response => {
         response.result.forEach( item => {
             let content = {
@@ -405,8 +476,27 @@ export default {
                 linkOwners:item.linkOwners[0].id,
                 linkUsers:item.linkUsers[0].id
             }
-            this.floorData.push(content)
+            data.push(content)
         })
+        this.floorlistQueryParams.total = response.result.length
+        this.floorselectSetting.forEach(element=>{
+            if(element.select != ''){
+                data = data.filter((item, index) => item[element.prop] == element.select )
+            }
+          })
+          data = data.filter((item, index) => 
+          index < this.floorlistQueryParams.limit * this.floorlistQueryParams.page && 
+          index >= this.floorlistQueryParams.limit * (this.floorlistQueryParams.page - 1))
+          if(sort !== '' && sort !== null){
+            data = data.sort(function(x,y){
+              return y[sort] - x[sort]
+            })
+          }else{
+              data = data.sort(function(x,y){
+                return y.id - x.id
+              })
+          }
+          this.floorData = data
       })
     },
     async getUsageofFloorFiles(usageofFloorId){ //取得門牌檔案
@@ -417,10 +507,16 @@ export default {
         })
       })
     },
-    async getUser(userid){ //取得特定用戶資料
-      await this.$api.building.apiGetUser(userid).then(response => {
-        this.dialogData.push(response.result[0])
-      })
+    async getUser(userId){ //取得特定用戶資料
+      this.dialogData.push(await this.$obj.User.getUser(userId))
+    },
+    async setSelectSetting(){
+        this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
+        this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
+    },
+    async setFloorSelectSetting(){
+        this.floorselectSetting = await setSelectSetting(this.floorConfig,this.floorData)
+        this.floorsortArray = this.floorConfig.filter((item,index)=>item.isSort == true)
     },
     async handleBuildingInfo(index, content){ //基本資料相關操作
       this.dialogTitle = 'user'
@@ -473,6 +569,7 @@ export default {
       await this.getFloorImageId()
       if(this.activeFloor == 'IN'){
         await this.getFloorList()
+        await this.setFloorSelectSetting()
       }else if(this.activeFloor == 'IM'){
         await this.getFloorImage()
       }else {
@@ -521,15 +618,6 @@ export default {
                 this.floorImageId = data
             })
         }
-      }
-    },
-    async handleSelect(content){ //廠商分類相關操作
-      const array =  JSON.parse(this.origin)
-      if(content !== undefined){
-        this.blockData = array.filter((item, index) => 
-        item.type == content[0].id )
-      }else{
-        this.blockData = array
       }
     },
     async handleBlock(title,index, content) { //管委會、廠商資料、樓層門牌相關操作
@@ -607,11 +695,12 @@ export default {
     },
     async onUserActions(index, content){
       if(index === 'create'){
-        await this.$api.building.apiPostUser(content).then(async(response) => {
-            this.$message('新增成功')
-            this.innerVisible = false
-            await this.getBuildingUser()
-          })
+        var isSucc = await this.$obj.User.createUser(content)
+        if(isSucc){
+          this.$message('新增成功')
+          this.innerVisible = false
+          await this.getBuildingUser()
+        }
       }else if(index === 'update'){
         await this.$api.building.apiPatchUser(content).then(async(response) => {
           this.$message('更新成功')
@@ -718,11 +807,7 @@ export default {
     margin-bottom: 32px;
     height: 750px;
 
-    .el-tab-pane{
-      height:600px;
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
+   
   }
 
   .floornotMobile {

@@ -16,6 +16,8 @@ import router from './router'
 import SIdentify from './views/login/components/identify.vue'
 import socket from './utils/socket';
 import api from './api'
+import obj from './object'
+import { deepClone } from './utils/index'
 
 import '@/icons' // icon
 import '@/permission' // permission control
@@ -40,7 +42,9 @@ Vue.config.debug = false
 Vue.config.devtools = false
 Vue.prototype.$socket = socket
 Vue.prototype.$qs = qs
-Vue.prototype.$api = api;
+Vue.prototype.$api = api
+Vue.prototype.$obj = obj
+Vue.prototype.$deepClone = deepClone
 
 new Vue({
   el: '#app',

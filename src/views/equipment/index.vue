@@ -1,17 +1,15 @@
 <template>
     <div class="editor-container">
         <el-row  :gutter="32">
-            <Select 
-                style="padding-left: 15px;margin-bottom: 20px;" 
-                v-bind="selectAttrs" 
-                v-on:handleSelect="handleSelect"
-            />
-        </el-row>
-        <el-row  :gutter="32">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper">
-                    <Block v-bind="blockAttrs" v-on:handleBlock="handleBlock"></Block>
+                    <Block 
+                    :list-query-params.sync="listQueryParams"
+                    :selectSetting.sync="selectSetting"
+                    v-bind="blockAttrs" 
+                    v-on="blockEvent"></Block>
                 </div>
+                
             </el-col>
         </el-row>
         <Dialog 
@@ -21,13 +19,13 @@
     </div>
 </template>
 <script>
-import { mapGetters } from 'vuex'
+
+import { setSelectSetting } from '@/utils/index'
 
 export default {
     name:'Device',
     components:{
         Block: () => import('@/components/Block/index.vue'),
-        Select: () => import('@/components/Select/index.vue'),
         Dialog:() => import('@/components/Dialog/index.vue')
     },
     computed:{
@@ -38,7 +36,14 @@ export default {
                 config: this.tableConfig,
                 title:'equipment',
                 selectData: this.selectData,
-                options:this.options
+                options:this.options,
+                sortArray:this.sortArray
+            }
+        },
+        blockEvent(){
+            return{
+                handleBlock:this.handleBlock,
+                clickPagination:this.getBuildingDevicesManage
             }
         },
         dialogAttrs(){
@@ -52,13 +57,7 @@ export default {
                 selectData: this.selectData,
                 dialogOptions: this.options
             }
-        },
-        selectAttrs() {
-            return {
-                selectData: this.groupData, //分類群組
-                title:'equipment', 
-            }
-        },
+        }
     },
     data() {
         return {
@@ -67,68 +66,74 @@ export default {
                         label: '設備種類',
                         prop: 'type',
                         format:'DeviceOptions',
-                        mandatory:true, message:'請選擇設備種類'
+                        mandatory:true, message:'請選擇設備種類',isSelect:true,options:[],
+                        selectType:'options',select:'',isSort:true
                     },
                     {
                         label: '廠牌名稱',
                         prop: 'brand',
                         format:'BrandOptions',
-                        mandatory:true, message:'請選擇廠牌名稱'
+                        mandatory:true, message:'請選擇廠牌名稱',isSelect:true,options:[],
+                        selectType:'options',select:'',isSort:true
                     },
                     {
                         label: '設備型號',
                         prop: 'productId',
-                        mandatory:true, message:'請選擇廠牌名稱'
+                        mandatory:true, message:'請選擇廠牌名稱',isSelect:false,options:[],selectType:'',isSort:true
                     },
                     {
                         label: '設備名稱',
                         prop: 'name',
-                        mandatory:true, message:'請選擇設備名稱'
+                        mandatory:true, message:'請選擇設備名稱',isSelect:false,options:[],selectType:'',isSort:true
                     },
                     {
                         label: '國家認證編號',
                         prop: 'certificationNumber',
-                        mandatory:true, message:'請輸入國家認證編號'
+                        mandatory:true, message:'請輸入國家認證編號',isSelect:false,options:[],selectType:'',isSort:true
                     },
                     {
                         label: '購買日期',
                         prop: 'dateOfPurchase',
                         format:'YYYY-MM-DD',
-                        mandatory:true, message:'請選擇購買日期'
+                        mandatory:true, message:'請選擇購買日期',isSelect:false,options:[],selectType:'',isSort:true
                     },
                     {
                         label: '保固日期',
                         prop: 'dateOfWarranty',
                         format:'YYYY-MM-DD',
-                        mandatory:true, message:'請輸入保固日期'
+                        mandatory:true, message:'請輸入保固日期',isSelect:false,options:[],selectType:'',isSort:true
                     },
                     {
                         label: '位置設置',
                         prop: 'location',
-                        mandatory:true, message:'請輸入位置設置'
+                        mandatory:true, message:'請輸入位置設置',isSelect:false,options:[],selectType:'',isSort:true
                     },
                     {
                         label: '分類群組',
                         prop: 'groupID',
-                        mandatory:true, message:'請輸入分類群組'
+                        mandatory:true, message:'請輸入分類群組',isSelect:true,options:[],
+                        selectType:'group',select:'',isSort:true
                     },
                     {
                         label: '保管單位',
                         prop: 'keeperUnitID',
                         format:'contactunitSelect',
-                        mandatory:true, message:'請選擇保管單位'
+                        mandatory:true, message:'請選擇保管單位',isSelect:true,options:[],
+                        selectType:'contactunit',select:'',isSort:true
                     },
                     {
                         label: '維護廠商',
                         prop: 'maintainVendorID',
                         format:'contactunitSelect',
-                        mandatory:true, message:'請選擇維護廠商'
+                        mandatory:true, message:'請選擇維護廠商',isSelect:true,options:[],
+                        selectType:'contactunit',select:'',isSort:true
                     },
                     {
                         label: '設備狀況',
                         prop: 'status',
-                        format:'deviceStatusSelect',
-                        mandatory:true, message:'請選擇設備狀況'
+                        format:'DeviceStatusOptions',
+                        mandatory:true, message:'請選擇設備狀況',isSelect:true,options:[],
+                        selectType:'options',select:'',isSort:true
                     }
                 ],
             selectData:[],
@@ -142,14 +147,23 @@ export default {
             dialogStatus:'',
             dialogData:[],
             dialogButtonsName:[],
-            groupData:[],
-            origin:[]
+            // groupData:[],
+            origin:[],
+            selectGroup:'',
+            listQueryParams:{
+                page: 1,
+                limit: 10,
+                total: 0
+            },
+            selectSetting:[],
+            sortArray:[]
         }
     },
     async mounted() {
         await this.getOptions() //取得所有分類
         await this.getContactUnitList() //廠商資料
         await this.getBuildingDevicesManage() //大樓的所有設備
+        await this.setSelectSetting()
         if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
             let _array = this.blockData.filter((item, index) => 
                 item.id == this.$route.params.target
@@ -158,39 +172,51 @@ export default {
         }   
     },
     methods: {
-        async getBuildingDevicesManage(){
+        async getBuildingDevicesManage(sort = null){
             this.blockData = []
-            this.groupData = []
-            var _array = []
+            var data = []
             await this.$api.device.apiGetBuildingDevicesManagement().then(response =>{
-                console.log(JSON.stringify(response.result))
-                this.blockData = response.result.sort(function(x,y){
-                    var a = x.status
-                    var b = y.status
-                    if(a == b){
-                    return y.id - x.id
+                this.listQueryParams.total = response.result.length
+                this.origin = JSON.stringify(response.result)  
+                data = response.result
+                this.selectSetting.forEach(element=>{
+                    if(element.select != ''){
+                        data = data.filter((item, index) => item[element.prop] == element.select )
                     }
-                    return y.status - x.status
                 })
-                _array = this.blockData.map(v => {
-                    this.$set(v, 'id', v.id) 
-                    this.$set(v, 'label', v.groupID) 
-                    return v
-                })
-                this.origin = JSON.stringify(this.blockData)
-                this.groupData = this.removeDuplicates(_array,'label')
+                data = data.filter((item, index) => 
+                index < this.listQueryParams.limit * this.listQueryParams.page && 
+                index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
+                if(sort !== '' && sort !== null){
+                    if(sort == 'dateOfPurchase' || sort == 'dateOfWarranty'){
+                        data = data.sort(function(x,y){
+                            var date1 = x[sort].split(' ')
+                            var date2 = y[sort].split(' ')
+                            var _data1 = new Date(date1[0])
+                            var _data2 = new Date(date2[0])
+                            return  _data2 - _data1
+                        })
+                    }else{
+                        data = data.sort(function(x,y){
+                            return y[sort] - x[sort]
+                        })
+                    }
+                }else{
+                    data = data.sort(function(x,y){
+                        var a = x.status
+                        var b = y.status
+                        if(a == b){
+                            return y.id - x.id
+                        }
+                        return y.status - x.status
+                    })
+                }
+                this.blockData = data
             })
         },
-        removeDuplicates(originalArray, prop) {
-            var newArray = []
-            var lookupObject  = {}
-            for(var i in originalArray) {
-                lookupObject[originalArray[i][prop]] = originalArray[i]
-            }
-            for(i in lookupObject) {
-                newArray.push(lookupObject[i])
-            }
-            return newArray
+        async setSelectSetting(){
+            this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
+            this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
         },
         async getOptions(){
             this.options = []
@@ -206,7 +232,7 @@ export default {
         },
         async getContactUnitList(){
             this.selectData = []
-            this.$api.building.apiGetContactUnit().then(response => {
+            this.$api.building.apiGetBuildingContactUnit().then(response => {
               var _temp = response.result.sort((x,y) => x.id - y.id)
                this.selectData = _temp.map(v => {
                     this.$set(v, 'value', v.id) 
@@ -254,15 +280,6 @@ export default {
                 })
             }
             this.innerVisible = false
-        },
-        async handleSelect(content){ //分類群組選擇
-            const array =  JSON.parse(this.origin)
-            if(content !== undefined){
-                this.blockData = array.filter((item, index) => 
-                item.groupID == content[0].label )
-            }else{
-                this.blockData = array
-            }
         }
     }
 }
@@ -270,10 +287,8 @@ export default {
 <style lang="scss" scoped>
 .block-wrapper {
     background: #fff;
-    padding: 10px;
+    padding: 30px 15px;
     margin-bottom: 32px;
     height: 720px;
 }
-
-
 </style>

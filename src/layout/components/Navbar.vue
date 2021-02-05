@@ -7,16 +7,16 @@
       </router-link>
     </div>
 
-    <!-- <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" /> -->
-
     <div class="right-menu">
       <el-row style="height:45px">
         <template v-if="device!=='mobile'">
-        <Select 
-        class="select right-menu-item"
-        v-bind="selectAttrs" 
-        v-on:handleSelect="handleSelect">
-        </Select>
+        
+        <i class="el-icon-office-building icon" />
+          <!-- <Select 
+          class="select right-menu-item"
+          v-bind="selectAttrs" 
+          v-on:handleSelect="handleSelect">
+          </Select> -->
 
         <Screenfull id="screenfull" class="right-menu-item hover-effect" />
       </template>
@@ -130,7 +130,6 @@ var padDate = function (value) {
 export default {
   components: {
     Select: () => import('@/components/Select/index.vue'),
-    Hamburger: () => import('@/components/Hamburger'),
     Screenfull: () => import('@/components/Screenfull')
   },
   computed: {
@@ -154,7 +153,9 @@ export default {
         var t = new Date().toLocaleString()
         _this.date = new Date()
       }, 1000)
-      await this.getBuilding()
+      if(this.account !== 'mf01'){
+        await this.getBuilding()
+      }
   },
   filters: {
       formatDate:function (value) {
@@ -202,6 +203,7 @@ export default {
             })
         this.selectData = this.options
       })
+      // this.handleSelect(this.selectData)
     },
     handleSelect(content){
       this.$store.dispatch('building/setbuildingid',content[0].id)
@@ -245,6 +247,11 @@ export default {
     .select { 
       width: 180px;
       margin-right: 10px;
+    }
+    .icon{
+      font-size:25px;
+      padding:0px 8px;
+      cursor: pointer;
     }
 
     .right-menu-item {

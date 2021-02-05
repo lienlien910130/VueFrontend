@@ -98,7 +98,6 @@ export default {
     },
     change() {
       return function(a) {
-        console.log(a)
         if (a.indexOf(',') !== -1) {
           var str = ""
           var _array = a.split(',')
@@ -184,7 +183,7 @@ export default {
     async init(){
       this.getUsers()
       await this.getBuildingInfo()
-      await this.getBuildingFloor()
+      //await this.getBuildingFloor()
     },
     openDialog() {
       this.$emit('handleBuildingInfo', 'empty', '')
@@ -204,20 +203,15 @@ export default {
     },
     async postBuildingInfo() {
       //把陣列轉換成字串
-      this.loading = true
-      this.$set(this.form, 'ownerId', this.form.ownerId.join(','))
-      this.$set(this.form, 'fireManagerId', this.form.fireManagerId.join(','))
-      var _array = []
-      this.$set(this.form, 'linkOwners', _array)
-      this.$set(this.form, 'linkFireManagers', _array)
+      this.form.ownerId = this.form.ownerId.join(',')
+      this.form.fireManagerId = this.form.fireManagerId.join(',')
+      this.form.linkOwners = []
+      this.form.linkFireManagers = []
       this.$refs.form.validate(async(valid) => {
         if (valid) {
-          await this.$api.building.apiPatchBuildingInfo(this.form).then(async(response) => {
-            this.$message('更新成功')
-            this.loading = false
-            this.type = 'view'
-            await this.getBuildingInfo()
-          })
+          this.form = this.$deepClone(await this.$obj.Building.updateBuildingInfo(this.form))
+          this.$message('更新成功')
+          this.type = 'view'
         }
       })
     },
@@ -232,10 +226,7 @@ export default {
       this.$emit('handleBuildingInfo', 'readbuildingUsers', '')
     },
     async getBuildingInfo() {
-      await this.$api.building.apiGetBuildingInfo().then(response => {
-        console.log(response.result[0])
-        this.form = response.result[0]
-      })
+      this.form = this.$deepClone(await this.$obj.Building.getBuildingInfo())
     },
     async getBuildingFloor() {
       await this.$api.building.apiGetBuildingFloors().then(response => {

@@ -403,6 +403,7 @@ export default {
     this.canvas.on("mouse:down", this.mousedown)
     this.canvas.on("mouse:move", this.mousemove)
     this.canvas.on("mouse:up", this.mouseup)
+    this.canvas.on("mouse:wheel", this.mousewheel)
     this.canvas.on("selection:created", this.selectioncreatedandupdated)
     this.canvas.on("selection:updated", this.selectioncreatedandupdated)
     this.canvas.on("selection:cleared", this.selectioncleared)
@@ -616,7 +617,10 @@ export default {
       )
     },
     mousewheel(e){ //放大縮小
-      this.zoom = (e.key.toLowerCase() =="q" ? 0.1 : -0.1) + this.canvas.getZoom()
+      window.event.stopPropagation()
+      window.event.preventDefault()
+      this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom();
+      //this.zoom = (e.key.toLowerCase() =="q" ? 0.1 : -0.1) + this.canvas.getZoom()
       this.zoom = Math.max(0.5, this.zoom)
       this.zoom = Math.min(3, this.zoom)
       const center = this.canvas.getCenter()
@@ -640,6 +644,9 @@ export default {
         this.relativeMouseY = 0
     },
     mousedown(e) { 
+      window.event.stopPropagation()
+      window.event.preventDefault()
+      console.log(event.button)
       this.mouseFrom.x = this.getX(e)
       this.mouseFrom.y = this.getY(e)
       this.objectCount = this.canvas.getObjects().length

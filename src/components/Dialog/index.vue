@@ -20,9 +20,11 @@
             :name="item.id"></el-tab-pane>
         </el-tabs>
 
+        <!-- dialogStatus : 一般表單/upload/lack/authority -->
         <keep-alive>
+
         <el-form 
-        v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' "
+        v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' && dialogStatus !== 'authority'  "
         ref="dataForm"  
         :model="temp"  
         :label-position="label" 
@@ -34,7 +36,7 @@
             :prop="item.prop"
             :label="item.label"
             v-show="item.format !== 'hide' &&  item.format !== 'openfiles' 
-            &&  item.format !== 'openlacks'"
+            &&  item.format !== 'openlacks' "
             :rules="[
             { required: item.mandatory, message: item.message},
             item.isPattern ? { pattern: item.pattern , message:item.errorMsg } : 
@@ -109,7 +111,7 @@
                     v-else-if="item.format =='DeviceOptions' 
                     || item.format =='BrandOptions' || 
                     item.format =='MaintainContentOptions' 
-                    || item.format =='MaintainProcessOptions' "
+                    || item.format =='MaintainProcessOptions' || item.format == 'DeviceStatusOptions' "
                     v-model="temp[item.prop]"
                     filterable
                     placeholder="請選擇"
@@ -125,21 +127,34 @@
                 </el-select>
 
                 <el-select
-                    v-else-if="item.format =='deviceStatusSelect'"
+                    v-else-if="item.format =='menuSelect'"
                     v-model="temp[item.prop]"
                     placeholder="請選擇"
                     style="width:100%"
                     >
-                    <el-option label="良好" key="1" value="良好"></el-option>
-                    <el-option label="損壞" key="2" value="損壞"></el-option>
-                    <el-option label="叫修中" key="3" value="叫修中"></el-option>
-                        <!-- <el-option
-                        v-for="(item,index) in optionfilter(item.format)"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.id"
-                        >
-                        </el-option>   -->
+                    <el-option label="首頁" key="1" value="index"></el-option>
+                    <el-option label="基本資料" key="2" value="basic"></el-option>
+                    <el-option label="圖控" key="3" value="drawingControl"></el-option>
+                    <el-option label="檢修&公安申報" key="4" value="report"></el-option>
+                    <el-option label="設備管理" key="5" value="devicesManagement"></el-option>
+                    <el-option label="維護保養" key="6" value="maintainManagement"></el-option>
+                    <el-option label="菜單管理" key="7" value="mainMenuSetting"></el-option>
+                    <el-option label="權限管理" key="8" value="accessAuthoritySetting"></el-option>
+                    <el-option label="角色管理" key="9" value="roleSetting"></el-option>
+                    <el-option label="帳號管理" key="10" value="accountSetting"></el-option>
+                    <el-option label="設定" key="11" value="settings"></el-option>
+                </el-select>
+
+                <el-select
+                    v-else-if="item.format =='actionSelect'"
+                    v-model="temp[item.prop]"
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                    <el-option label="查詢" key="1" value="query"></el-option>
+                    <el-option label="新增" key="2" value="add"></el-option>
+                    <el-option label="刪除" key="3" value="delete"></el-option>
+                    <el-option label="修改" key="4" value="update"></el-option>
                 </el-select>
 
                 <el-select
@@ -151,6 +166,17 @@
                     <el-option v-for="(val,index) in [true, false]" 
                     :key="index"
                     :value="val" :label="val == true ? '啟用':'禁用'"></el-option>
+                </el-select>
+
+                <el-select
+                    v-else-if="item.format =='removableSelect'"
+                    v-model="temp[item.prop]"
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                    <el-option v-for="(val,index) in [true, false]" 
+                    :key="index"
+                    :value="val" :label="val == true ? '允許':'禁止'"></el-option>
                 </el-select>
 
                 <el-checkbox 
@@ -166,6 +192,7 @@
                 controls-position="right" 
                 :min="0"
                 :precision="0"
+                style="width:100%"
                 ></el-input-number>
 
                 <el-input v-else-if="item.format =='textarea'"
@@ -173,6 +200,14 @@
                 :autosize="{ minRows: 4, maxRows: 8}"
                 type="textarea">
                 </el-input>
+
+                <div v-else-if="item.format =='openmaintain'">
+                    <Table
+                       :list-query-params.sync="listQueryParams"
+                       v-bind="tableAttrs"
+                       v-on="tableEvent">
+                    </Table>
+                </div>
 
                 <el-input v-else
                 v-model="temp[item.prop]" >
@@ -284,6 +319,27 @@
 
         </el-table>
 
+        <el-table
+            v-if="dialogStatus === 'authority'"
+            :data="tableData"
+            style="width: 100%;margin-bottom: 20px;"
+            row-key="id"
+            border
+            default-expand-all
+            :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+            <el-table-column
+            prop="mainMenu"
+            label="菜單"
+            sortable
+            width="180">
+            </el-table-column>
+            <el-table-column
+            prop="access"
+            label="權限"
+            sortable
+            width="180">
+            </el-table-column>
+        </el-table>
 
         </keep-alive>
         
@@ -307,6 +363,7 @@
 export default {
     components:{
         Upload:() => import('@/components/Upload/index.vue'),
+        Table: () => import('@/components/Table/index.vue'),
     },
     props:{
         dialogData: {
@@ -346,6 +403,20 @@ export default {
             type: String,
             default:'0' 
         },
+        //表單內的表格
+        formtableData: {
+            type: Array
+        },
+        itemkey: {
+            type: Array,
+            dafault : Math.random()
+        },
+        formtableconfig: {
+            type: Array
+        },
+        formtablebuttonsName: {
+            type: Array
+        }
     },
     watch:{
         dialogData(){
@@ -364,6 +435,9 @@ export default {
             if (this.$store.state.app.device === 'mobile') {
                 return "90%"
             } else {
+                if(this.title == 'maintain'){
+                    return "1400px"
+                }
                 return "1000px"
             }
         },
@@ -381,6 +455,20 @@ export default {
                 files:this.files,
                 title:this.title,
                 specialId:this.specialId
+            }
+        },
+        tableAttrs(){
+            return {
+                tableData: this.formtableData,
+                itemkey:this.itemkey,
+                config:this.formtableconfig,
+                buttonsName:this.formtablebuttonsName
+            }
+        },
+        tableEvent(){
+            return {
+                clickPagination:this.handleTableRow,
+                handleTableRow:this.handleTableRow
             }
         },
         optionfilter(){
@@ -424,7 +512,12 @@ export default {
             activeName:'',
             temp:{},
             rangevalue: [],
-            origin:[]
+            origin:[],
+            listQueryParams:{
+                page: 1,
+                limit: 10,
+                total: 0
+            },
         }
     },
     methods: {
@@ -513,6 +606,31 @@ export default {
         },
         async handleFilesUpload(index,title,data) { 
             this.$emit('handleDialog',this.title, index , data)
+        },
+        async handleTableRow(index, row, option){
+            console.log(index, row, option)
+            this.dialogData = []
+            this.dialogConfig = this.config
+            if(option === '編輯'){
+                this.dialogData.push(row)
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'update'},
+                { name:'取消',type:'info',status:'cancel'}]
+                this.innerVisible = true
+                this.dialogStatus = 'update'
+            }else if(option === '刪除'){
+                await this.$api.authority.apiDeleteAccessAuthority(row.id).then(async(response)=>{
+                    this.$message('刪除成功')
+                    await this.getAllAccessAuthority()
+                })
+            }
+            else if(option === '新增'){
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'create'},
+                { name:'取消',type:'info',status:'cancel'}]
+                this.innerVisible = true
+                this.dialogStatus = 'create'
+            }
         }
     }
 }

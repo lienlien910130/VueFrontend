@@ -1,11 +1,27 @@
 <template>
         <div class="editor-container">
           <el-row :gutter="32">
-            <el-form  class="report-form" :inline="inline" :model="form" label-width="auto" label-position="left">
+            <div class="chart-wrapper">
+              <span>{{ this.$obj.Building.building.buildingName }}</span>
+              <span class="report">2020</span>
+            </div>
+            <div :class="chartwrapper">
+              <!-- <div
+                            v-for="(item,index) in this.$obj.Building.building.owner"
+                            :key="index">
+                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
+                              </div>
+                       <div
+                            v-for="(item,index) in this.$obj.Building.building.firemanager"
+                            :key="index">
+                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
+                              </div>-->
+                    </div> 
+            <!-- <el-form  class="report-form" :inline="inline" :model="form" label-width="auto" label-position="left">
                 <el-col :xs="24" :sm="24" :md="24" :lg="12">
                     <div class="chart-wrapper">
                       <el-form-item label="場所名稱">
-                        <span>{{ form.name }}</span>
+                        <span>{{ this.$obj.Building.building.buildingName }}</span>
                       </el-form-item>
                       <el-form-item label="下次檢修時間">
                         <span class="report">{{ form.repair }}</span>
@@ -30,13 +46,17 @@
                         </el-form-item>
                     </div>
                 </el-col>
-              </el-form>
+              </el-form> -->
           </el-row>
           <el-row :gutter="32">
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="wrapper">
                   <div class="block-wrapper">
-                      <Block v-bind="blockAttrs" v-on:handleBlock="handleBlock"></Block>
+                      <Block 
+                      :list-query-params.sync="listQueryParams"
+                      :selectSetting.sync="selectSetting"
+                      v-bind="blockAttrs" 
+                      v-on="blockEvent"></Block>
                   </div>
                 </div>
               </el-col>
@@ -49,6 +69,7 @@
 </template>
 <script>
 import { mapGetters } from 'vuex'
+import { setSelectSetting } from '@/utils/index'
 
 export default {
     name:'',
@@ -63,65 +84,67 @@ export default {
                 label: '申報年度',
                 prop: 'declareYear',
                 format:'YYYY',
-                mandatory:true, message:'請選擇年度'
+                mandatory:true, message:'請選擇年度',isSelect:true,options:[],
+                selectType:'dateOfYear',select:'',isSort:true
               },
               {
                 label: '申報期限',
                 prop: 'declareDeadline',
                 format:'YYYY-MM-DD',
-                mandatory:true, message:'請選擇期限'
+                mandatory:true, message:'請選擇期限',isSelect:true,options:[],
+                selectType:'dateOfDate',select:'',isSort:true
               },
               {
                 label: '申報日期',
                 prop: 'declareDate',
                 format:'YYYY-MM-DD',
-                mandatory:true, message:'請選擇日期'
+                mandatory:true, message:'請選擇日期',isSelect:true,options:[],
+                selectType:'dateOfDate',select:'',isSort:true
               },
               {
                 label: '檢測日期',
                 prop: 'rangeDate',
-                format:'range',
+                format:'range',isSelect:false,isSort:false
                 // mandatory:true, message:'請選擇日期'
               },
               {
                 label: '專技人員',
-                prop: 'professName'
+                prop: 'professName',isSelect:true,options:[],
+                        selectType:'',select:'',isSort:true
               },
               {
                 label: '證號',
-                prop: 'certificateNumber'
-              },
-              {
-                label: '申報結果',
-                prop: 'declareResult'
+                prop: 'certificateNumber',isSelect:false,isSort:true
               },
               {
                 label: '改善期限',
                 prop: 'declarationImproveDate',
-                format:'YYYY-MM-DD'
+                format:'YYYY-MM-DD',mandatory:true, message:'請選擇日期',isSelect:true,options:[],
+                  selectType:'dateOfDate',select:'',isSort:true
               },
               {
                 label: '改善狀況',
                 prop: 'isImproved',
                 format:'tag',
                 type:'boolean',
-                mandatory:false, isPattern:false,trigger:'change'
+                mandatory:false, isPattern:false,trigger:'change',isSelect:true,options:[],
+                selectType:'reportBool',select:'',isSort:true
               },
               {
                 label: '備註',
                 prop: 'note',
                 format:'textarea',
-                mandatory:false, isPattern:false
+                mandatory:false, isPattern:false,isSelect:false,isSort:false
               },
               {
                 label: '檢附文件',
                 prop: 'file',
-                format:'openfiles'
+                format:'openfiles',isSelect:false,isSort:false
               },
               {
                 label: '缺失內容',
                 prop: 'missingContent',
-                format:'openlacks'
+                format:'openlacks',isSelect:false,isSort:false
               }
             ],
             lackconfig:[
@@ -150,7 +173,6 @@ export default {
             buttonsName:[
                 { name:'編輯',type:'primary',status:'open'},
                 { name:'刪除',type:'info',status:'delete'}], 
-            form:{},
             files:[],
             inspectionId:'', //檢修申報id
             lackFileId:'', //缺失檔案id
@@ -159,15 +181,20 @@ export default {
             dialogData:[],
             dialogStatus:'',
             innerVisible:false,
-            options:[]
+            options:[],
+            listQueryParams:{
+                page: 1,
+                limit: 10,
+                total: 0
+            },
+            selectSetting:[],
+            sortArray:[]
         }
     },
-    watch: {
-    },
     async mounted() {
-      await this.getBuildingInfo()
       await this.getOptions() 
       await this.getBuildingMaintenanceReport() //檢修申報
+      await this.setSelectSetting()
     },
     computed: {
       ...mapGetters([
@@ -180,7 +207,7 @@ export default {
             } else {
                 return true
             }
-        },
+      },
       chartwrapper(){
         if (this.$store.state.app.device === 'mobile') {
             return 'chart-mwrapper'
@@ -193,8 +220,15 @@ export default {
             blockData: this.blockData,
             buttonsName:this.buttonsName,
             config: this.tableConfig,
-            title:'reportInspectio'
+            title:'reportInspectio',
+            sortArray:this.sortArray
           }
+      },
+      blockEvent(){
+            return{
+                handleBlock:this.handleBlock,
+                clickPagination:this.getBuildingMaintenanceReport
+            }
       },
       dialogAttrs(){
         return{
@@ -211,30 +245,60 @@ export default {
       }
   },
   methods: {
-    async getBuildingInfo() {
-      await this.$api.building.apiGetBuildingInfo().then(response => {
-        let array = {
-              name:response.result[0].buildingName,
-              repair:'2020/10/10',
-              owner:response.result[0].linkOwners,
-              firemanager:response.result[0].linkFireManagers
-          }
-          this.form = array
-      })
-    },
-    async getBuildingMaintenanceReport() { //取得檢修申報
+    async getBuildingMaintenanceReport(sort = null) { //取得檢修申報
       this.blockData = []
+      var data = []
       await this.$api.report.apiGetBuildingInspection().then(response => {
-        this.blockData = response.result.sort(function(x,y){
-            var a = x.isImproved
-            var b = y.isImproved
-            if(a == b){
-              return y.id - x.id
+        this.listQueryParams.total = response.result.length
+        this.origin = JSON.stringify(response.result)  
+        data = response.result
+        this.selectSetting.forEach(element=>{
+            if(element.select !== ''){
+              data = data.filter((item, index) => item[element.prop] == element.select )
             }
-            return y.isImproved - x.isImproved
-          })
+        })
+        data = data.filter((item, index) => 
+        index < this.listQueryParams.limit * this.listQueryParams.page && 
+        index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
+        if(sort !== '' && sort !== null){
+          if(sort == 'declareDeadline' || sort == 'declareDate' || sort == 'declarationImproveDate'){
+            data = data.sort(function(x,y){
+              var date1 = x[sort].split(' ')
+              var date2 = y[sort].split(' ')
+              var _data1 = new Date(date1[0])
+              var _data2 = new Date(date2[0])
+              return  _data2 - _data1
+            })
+          }else if(sort == 'declareYear'){
+            data = data.sort(function(x,y){
+                var date1 = x[sort].split(' ')
+                var date2 = y[sort].split(' ')
+                var _data1 = new Date(date1[0]).getFullYear()
+                var _data2 = new Date(date2[0]).getFullYear()
+                return  _data2 - _data1
+            })
+          }else{
+            data = data.sort(function(x,y){
+                return y[sort] - x[sort]
+            })
+          }
+        }else{
+            data = data.sort(function(x,y){
+                var a = x.isImproved
+                var b = y.isImproved
+                if(a == b){
+                  return y.id - x.id
+                }
+                return x.isImproved - y.isImproved
+            })
+        }
+        this.blockData = data
       })
     },  
+    async setSelectSetting(){
+      this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
+      this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
+    },
     async getInspectionFiles(id){ //取得檢修申報的附件文檔
       this.inspectionId = id
       this.files = []
@@ -268,6 +332,7 @@ export default {
     async getInspectionLack(id){ //取得缺失內容
       this.inspectionId = id
       await this.$api.report.apiGetInspectionLack(id).then(response =>{
+        console.log(JSON.stringify(response))
         var _temp = response.result.sort((x,y) => x.id - y.id)
         this.dialogData = _temp.map(v => {
           this.$set(v, 'isEdit', false) 

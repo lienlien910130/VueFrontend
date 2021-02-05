@@ -19,13 +19,7 @@ export const constantRoutes = [
     component: () => import('@/views/404.vue'),
     hidden: true
   },
-  {
-    path: '/Graphic_equipmentType',
-    name: 'Graphic_equipmentType',
-    meta: { title: '圖例'},
-    component: () => import('@/views/graphic/components/EquipmentType.vue'),
-    hidden: true
-  },
+  
   {
     path: '/',
     component: Layout,
@@ -38,7 +32,68 @@ export const constantRoutes = [
     }],
     hidden: true
   },
+  {
+    path: '/authority',
+    component: Layout,
+    redirect: '/authority/roles',
+    name: 'Roles',
+    meta: { title: '權限設定', icon: 'icon', needLogin: true  },
+    children: [
+      {
+        path: 'menu',
+        name: 'Menu',
+        component: () => import('@/views/authority/menu/index.vue'),
+        meta: { title: '選單管理', icon: 'icon', needLogin: true  }
+      },
+      {
+        path: 'auth',
+        name: 'Auth',
+        component: () => import('@/views/authority/auth/index.vue'),
+        meta: { title: '權限管理', icon: 'icon', needLogin: true  }
+      },
+      {
+        path: 'roles',
+        name: 'Roles',
+        component: () => import('@/views/authority/roles/index.vue'),
+        meta: { title: '角色管理', icon: 'icon', needLogin: true  }
+      },
+      {
+        path: 'users',
+        name: 'Users',
+        component: () => import('@/views/authority/users/index.vue'),
+        meta: { title: '帳號管理', icon: 'icon', needLogin: true  }
+      }
+    ]
+  }
+]
 
+export const mercuryfireRoutes = [
+  {
+    path: '/building',
+    component: Layout,
+    redirect: '/building/index',
+    children: [
+      {
+        path: 'index',
+        name: 'Building',
+        component: () => import('@/views/building/index.vue'),
+        meta: { title: '建築物', icon: 'icon', needLogin: true }
+      }
+    ]
+  },
+
+  { path: '*', redirect: '/404', hidden: true }
+]
+
+export const customerRoutes = [
+  {
+    path: '/Graphic_equipmentType',
+    name: 'Graphic_equipmentType',
+    meta: { title: '圖例', needLogin: true},
+    component: () => import('@/views/graphic/components/EquipmentType.vue'),
+    hidden: true
+  },
+  
   {
     path: '/graphic',
     component: Layout,
@@ -48,7 +103,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'Graphic',
         component: () => import('@/views/graphic/index.vue'),
-        meta: { title: '圖控系統', icon: 'icon' }
+        meta: { title: '圖控系統', icon: 'icon', needLogin: true }
       }
     ]
   },
@@ -61,7 +116,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'Setting',
         component: () => import('@/views/membersetting/index.vue'),
-        meta: { title: '設定', icon: 'icon' }
+        meta: { title: '設定', icon: 'icon', needLogin: true }
       }
     ],
     hidden: true
@@ -178,42 +233,12 @@ export const constantRoutes = [
       }
     ]
   },
-  {
-    path: '/authority',
-    component: Layout,
-    redirect: '/authority/roles',
-    name: 'Roles',
-    meta: { title: '權限設定', icon: 'icon', needLogin: true  },
-    children: [
-      {
-        path: 'menu',
-        name: 'Menu',
-        component: () => import('@/views/authority/menu/index.vue'),
-        meta: { title: '菜單管理', icon: 'icon', needLogin: true  }
-      },
-      {
-        path: 'auth',
-        name: 'Auth',
-        component: () => import('@/views/authority/auth/index.vue'),
-        meta: { title: '權限管理', icon: 'icon', needLogin: true  }
-      },
-      {
-        path: 'roles',
-        name: 'Roles',
-        component: () => import('@/views/authority/roles/index.vue'),
-        meta: { title: '角色管理', icon: 'icon', needLogin: true  }
-      },
-      {
-        path: 'users',
-        name: 'Users',
-        component: () => import('@/views/authority/users/index.vue'),
-        meta: { title: '帳號管理', icon: 'icon', needLogin: true  }
-      }
-    ]
-  },
+  
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
+
 ]
+
 
 const createRouter = () => new Router({
   mode: 'history', // require service support
@@ -221,7 +246,7 @@ const createRouter = () => new Router({
   routes: constantRoutes
 })
 
-const router = createRouter()
+export const router = createRouter()
 
 // Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
 export function resetRouter() {

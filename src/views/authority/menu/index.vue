@@ -3,131 +3,211 @@
            <el-row :gutter="32">
                <el-col :xs="24" :sm="24" :md="24" :lg="7">
                     <div class="chart-wrapper">
-                       <MenuTree
-                       v-bind="treeAttrs"
-                       v-on="treeEvent"></MenuTree>
+                        <Select 
+                            class="select right-menu-item"
+                            v-bind="selectAttrs" 
+                            v-on:handleSelect="handleSelect"
+                            style="width:100%">
+                        </Select>
+
+                        <menu-tree 
+                            v-bind="treeAttrs"
+                            v-on:handleTreeNode="handleTreeNode">
+                        </menu-tree>
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
                     <div class="chart-wrapper">
                        <Table
+                       :list-query-params.sync="listQueryParams"
                        v-bind="tableAttrs"
                        v-on="tableEvent">
                        </Table>
                     </div>
                 </el-col>
            </el-row>
+           <Dialog 
+                v-bind="dialogAttrs" 
+                v-on:handleDialog="handleDialog"></Dialog>
         </div>
-    
 </template>
 <script>
-import path from 'path'
-import { constantRoutes } from '@/router'
+import { getRoutes } from '@/utils/router'
 
 export default {
     components:{ 
-      Table: () => import('@/components/Table/index.vue'),
-      MenuTree: () => import('@/components/Tree/menuTree.vue'),
+        Table: () => import('@/components/Table/index.vue'),
+        Select: () => import('@/components/Select/index.vue'),
+        menuTree: () => import('@/components/Tree/menuTree.vue'),
+        Dialog:() => import('@/components/Dialog/index.vue'),
     },
     data(){
         return{
+            data:[],
+            selectData:[],
+            original:[],
             tableData:[],
-            treeData:[],
-            routes:[],
-            itemkey:Math.random(),
+            selectId:'',
             config:[
-                {
-                    label: '權限名稱',
-                    prop: 'lackItem',
-                    mandatory:true, message:'請輸入權限名稱',textarea:false
-                },
-                {
-                    label: '描述',
-                    prop: 'lackItem',
-                    mandatory:true, message:'請輸入描述',textarea:false
-                },
-                {
-                    label: '狀態',
-                    prop: 'lackItem',
-                    mandatory:true, message:'請輸入狀態',textarea:false
-                }
-            ]
+                { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱'},
+                { label:'Code' , prop:'code', mandatory:true,message:'請輸入Code'},
+                { label:'描述' , prop:'description',format:'textarea', mandatory:false, message:'請輸入描述'},
+                { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
+                isPattern:false,errorMsg:'',type:'boolean',typemessage:''},
+                { label:'排序' , prop:'sort',format:'number', 
+                mandatory:true,message:'請輸入排序',isPattern:false,errorMsg:'',type:'number',typemessage:'' },
+                { label:'刪除' , prop:'removable',format:'removableSelect', mandatory:true, message:'請選擇',
+                isPattern:false,errorMsg:'',type:'boolean',typemessage:''},
+            ],
+            listQueryParams:{
+                page: 1,
+                limit: 10,
+                total: 0
+            },
+            buttonsName: ['編輯','刪除'],
+            //Dialog
+            dialogButtonsName:[],
+            dialogTitle:'',
+            dialogConfig:[],
+            dialogSelect:[],
+            dialogData:[],
+            dialogStatus:'',
+            innerVisible:false,
+        }
+    },
+    filters:{
+        changeicon(code){
+            switch (code){
+                case 'sys-DrawingControl':
+                    return 'el-icon-menu'
+                    break;
+                case 'sys-DevicesManagement':
+                    return 'el-icon-s-tools'
+                    break;
+                case 'sys-EmergencyResponse':
+                    return 'el-icon-warning-outline'
+                    break;
+                case 'sys-HistoryAnalysis':
+                    return 'el-icon-pie-chart'
+                    break;
+            }
         }
     },
     computed: {
+        selectAttrs() {
+            return {
+                selectData: this.selectData,
+                title:'Admin'
+            }
+        },
+        treeAttrs(){
+            return{
+                data:this.data,
+                selectId:this.selectId
+            }
+        },
         tableAttrs(){
             return {
+                title:'mainMenu',
                 tableData: this.tableData,
-                itemkey:this.itemkey,
-                config:this.config
+                config:this.config,
+                buttonsName:this.buttonsName,
+                hasPagin:false,
+                selectId:this.selectId
             }
         },
         tableEvent(){
             return {
-                
+                handleTableRow:this.handleTableRow
             }
         },
-        treeAttrs(){
-            return {
-                treedata: this.treeData
-            }
-        },
-        treeEvent(){
-            return {
-                
+        dialogAttrs(){
+            return{
+                title:'mainMenu',
+                visible: this.innerVisible,
+                dialogData: this.dialogData,
+                dialogStatus: this.dialogStatus,
+                buttonsName: this.dialogButtonsName,
+                config: this.dialogConfig,
             }
         },
     },
     async mounted() {
-        await this.getRoutes()
+        //await this.getAllRoutes()
+        await this.getSelectData()
     },
     methods:{
-        async getRoutes() {
-            this.routes = this.generateRoutes(constantRoutes)
-            this.treeData = Object.assign([], this.routes)
-            console.log(JSON.stringify(this.routes))
+        async getAllRoutes() {
+            this.data = getRoutes(this.$store.getters.permission_routes)
+            this.listQueryParams.total = 0
         },
-        generateRoutes(routes, basePath = '/') {
-            const res = []
-            for (let route of routes) {
-                // skip some route
-                if (route.hidden) { continue }
-                const onlyOneShowingChild = this.onlyOneShowingChild(route.children, route)
-                if (route.children && onlyOneShowingChild && !route.alwaysShow) {
-                route = onlyOneShowingChild
-                }
-                const data = {
-                path: path.resolve(basePath, route.path),
-                label: route.meta && route.meta.title
-                }
-                // recursive child routes
-                if (route.children) {
-                data.children = this.generateRoutes(route.children, data.path)
-                }
-                res.push(data)
-            }
-            return res
+        async getSelectData(){
+            var data = await this.$obj.Building.getAllBuilding(true)
+            this.selectData = data
         },
-        onlyOneShowingChild(children = [], parent) {
-            let onlyOneChild = null
-            const showingChildren = children.filter(item => !item.hidden)
-
-            // When there is only one child route, the child route is displayed by default
-            if (showingChildren.length === 1) {
-                onlyOneChild = showingChildren[0]
-                onlyOneChild.path = path.resolve(parent.path, onlyOneChild.path)
-                return onlyOneChild
-            }
-
-            // Show parent if there are no child route to display
-            if (showingChildren.length === 0) {
-                onlyOneChild = { ... parent, path: '', noShowingChildren: true }
-                return onlyOneChild
-            }
-
-            return false
+        async handleSelect(content){
+            this.$store.dispatch('building/setbuildingid',content[0].id)
+            this.data = await this.$obj.Authority.getBuildingMenu()
         },
-
+        async handleTreeNode(node,data){
+            this.tableData = data.children
+            this.selectId = data.id
+            console.log(this.selectId)
+        },
+        async handleTableRow(index, row, option){
+            console.log(index, row, option)
+            this.dialogData = []
+            this.dialogConfig = this.config
+            if(option === '編輯'){
+                this.dialogData.push(row)
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'update'},
+                { name:'取消',type:'info',status:'cancel'}]
+                this.innerVisible = true
+                this.dialogStatus = 'update'
+            }else if(option === '刪除'){
+                var temp = this.selectId
+                var isOk = await this.$obj.Authority.deleteBuildingMenu(row.id)
+                if(isOk){
+                    this.selectId = ''
+                    this.$message('刪除成功')
+                    this.data = await this.$obj.Authority.getBuildingMenu()
+                    this.selectId = temp
+                    this.tableData = await this.$obj.Authority.getBuildingMenuBelow(this.selectId)
+                    console.log(JSON.stringify(this.tableData))
+                }
+            }
+            else if(option === '新增'){
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'create'},
+                { name:'取消',type:'info',status:'cancel'}]
+                this.innerVisible = true
+                this.dialogStatus = 'create'
+            }
+        },
+        async handleDialog(title ,index, content){ //Dialog相關操作
+            console.log(title ,index,content)
+            content.sort = content.sort.toString()
+            if(index === 'update'){
+                this.data = await this.$obj.Authority.updateBuildingMenu(JSON.stringify(content))
+                if(this.data){
+                    this.$message('更新成功')
+                    this.selectId = ''
+                    this.data = await this.$obj.Authority.getBuildingMenu()
+                }
+                this.tableData = []
+            }else if(index === 'create'){
+                console.log(this.selectId)
+                this.data = await this.$obj.Authority.postBuildingMenu(JSON.stringify(content))
+                if(this.data){
+                    this.$message('新增成功')
+                    this.selectId = ''
+                    this.data = await this.$obj.Authority.getBuildingMenu()
+                }
+                this.tableData = []
+            }
+            this.innerVisible = false
+        },
     }
 }
 </script>
@@ -136,11 +216,70 @@ export default {
 .chart-wrapper {
     background: #fff;
     padding: 5px 16px 0;
-    margin-bottom: 32px;
     height: 730px;
     overflow-x:hidden;
     overflow-y:auto;
     width: 100%;
+    .menu-list{
+        width: 100%;
+        height: 80%;
+    }
+    .dashboard-wrapper{
+        padding: 16px 16px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        overflow-x:hidden;
+        overflow-y:auto;
+        line-height: 25px;
+    }
+    .dashboard-wrapper-add{
+        background-color: rgb(202, 191 , 220);
+        padding: 16px 16px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        overflow-x:hidden;
+        overflow-y:auto;
+        line-height: 25px;
+        cursor: pointer;
+    }
 }
 
+</style>
+
+<style lang="scss">
+.el-tree {
+  color: black;
+  background: transparent;
+  font-size: 20px;
+  margin:10px;
+}
+.custom-tree-node{
+    margin: 5px;
+    width:100%;
+}
+/* 设置三角形图标的颜色 */
+.el-tree-node__expand-icon {
+  color: black;
+  font-size: 25px;
+}
+
+/* 树节点鼠标悬浮式改变背景色，字体颜色 */
+.el-tree-node__content:hover {
+  background-color: rgb(202, 191 , 220);
+  color: rgb(29, 4, 4);
+}
+ 
+/* 改变节点高度 */
+.el-tree-node__content {
+  height: 30px;
+}
+ 
+.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
+    background-color: lightgray;
+  color:black;
+}
+.el-tree-node .is-focusable .is-checked{
+background-color:rgb(147, 180 , 197);
+  color: black;
+}
 </style>

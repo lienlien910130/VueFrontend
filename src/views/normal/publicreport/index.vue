@@ -36,7 +36,11 @@
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="wrapper">
                   <div class="block-wrapper">
-                      <Block v-bind="blockAttrs" v-on:handleBlock="handleBlock"></Block>
+                      <Block 
+                      :list-query-params.sync="listQueryParams"
+                      :selectSetting.sync="selectSetting"
+                      v-bind="blockAttrs" 
+                      v-on="blockEvent"></Block>
                   </div>
                 </div>
               </el-col>
@@ -49,6 +53,7 @@
 </template>
 <script>
 import { mapGetters } from 'vuex'
+import { setSelectSetting } from '@/utils/index'
 
 export default {
     name:'',
@@ -63,65 +68,67 @@ export default {
                 label: '申報年度',
                 prop: 'declareYear',
                 format:'YYYY',
-                mandatory:true, message:'請選擇年度'
+                mandatory:true, message:'請選擇年度',isSelect:true,options:[],
+                selectType:'dateOfYear',select:'',isSort:true
               },
               {
                 label: '申報期限',
                 prop: 'declareDeadline',
                 format:'YYYY-MM-DD',
-                mandatory:true, message:'請選擇期限'
+                mandatory:true, message:'請選擇期限',isSelect:true,options:[],
+                selectType:'dateOfDate',select:'',isSort:true
               },
               {
                 label: '申報日期',
                 prop: 'declareDate',
                 format:'YYYY-MM-DD',
-                mandatory:true, message:'請選擇日期'
+                mandatory:true, message:'請選擇日期',isSelect:true,options:[],
+                selectType:'dateOfDate',select:'',isSort:true
               },
               {
                 label: '檢測日期',
                 prop: 'rangeDate',
-                format:'range',
+                format:'range',isSelect:false,isSort:false
                 // mandatory:true, message:'請選擇日期'
               },
               {
                 label: '專技人員',
-                prop: 'professName'
+                prop: 'professName',isSelect:true,options:[],
+                        selectType:'',select:'',isSort:true
               },
               {
                 label: '證號',
-                prop: 'certificateNumber'
-              },
-              {
-                label: '申報結果',
-                prop: 'declareResult'
+                prop: 'certificateNumber',isSelect:false,isSort:true
               },
               {
                 label: '改善期限',
                 prop: 'declarationImproveDate',
-                format:'YYYY-MM-DD'
+                format:'YYYY-MM-DD',mandatory:true, message:'請選擇日期',isSelect:true,options:[],
+                        selectType:'dateOfDate',select:'',isSort:true
               },
               {
                 label: '改善狀況',
                 prop: 'isImproved',
                 format:'tag',
                 type:'boolean',
-                mandatory:false, isPattern:false,trigger:'change'
+                mandatory:false, isPattern:false,trigger:'change',isSelect:true,options:[],
+                selectType:'reportBool',select:'',isSort:true
               },
               {
                 label: '備註',
                 prop: 'note',
                 format:'textarea',
-                mandatory:false, isPattern:false
+                mandatory:false, isPattern:false,isSelect:false,isSort:false
               },
               {
                 label: '檢附文件',
                 prop: 'file',
-                format:'openfiles'
+                format:'openfiles',isSelect:false,isSort:false
               },
               {
                 label: '缺失內容',
                 prop: 'missingContent',
-                format:'openlacks'
+                format:'openlacks',isSelect:false,isSort:false
               }
             ],
             lackconfig:[
@@ -162,7 +169,14 @@ export default {
             dialogData:[],
             dialogStatus:'',
             innerVisible:false,
-            options:[]
+            options:[],
+            listQueryParams:{
+                page: 1,
+                limit: 10,
+                total: 0
+            },
+            selectSetting:[],
+            sortArray:[]
         }
     },
     watch: {
@@ -171,6 +185,7 @@ export default {
       await this.getBuildingInfo()
       await this.getOptions() 
       await this.getBuildingPublicSafeReport() //公安申報
+      await this.setSelectSetting()
     },
     computed: {
       ...mapGetters([
@@ -196,8 +211,15 @@ export default {
             blockData: this.blockData,
             buttonsName:this.buttonsName,
             config: this.tableConfig,
-            title:'reportPublicSafe'
+            title:'reportPublicSafe',
+            sortArray:this.sortArray
           }
+      },
+      blockEvent(){
+            return{
+                handleBlock:this.handleBlock,
+                clickPagination:this.getBuildingPublicSafeReport
+            }
       },
       dialogAttrs(){
         return{
@@ -224,19 +246,59 @@ export default {
           this.form = array
       })
     },
-    async getBuildingPublicSafeReport() { //取得公安申報
+    async getBuildingPublicSafeReport(sort = null) { 
       this.blockData = []
+      var data = []
       await this.$api.report.apiGetBuildingPublicSafe().then(response => {
-        console.log(JSON.stringify(response))
-        this.blockData = response.result.sort(function(x,y){
-            var a = x.isImproved
-            var b = y.isImproved
-            if(a == b){
-              return y.id - x.id
+        this.listQueryParams.total = response.result.length
+        this.origin = JSON.stringify(response.result)  
+        data = response.result
+        this.selectSetting.forEach(element=>{
+            if(element.select !== ''){
+              data = data.filter((item, index) => item[element.prop] == element.select )
             }
-            return y.isImproved - x.isImproved
-          })
+        })
+        data = data.filter((item, index) => 
+        index < this.listQueryParams.limit * this.listQueryParams.page && 
+        index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
+        if(sort !== '' && sort !== null){
+          if(sort == 'declareDeadline' || sort == 'declareDate' || sort == 'declarationImproveDate'){
+            data = data.sort(function(x,y){
+              var date1 = x[sort].split(' ')
+              var date2 = y[sort].split(' ')
+              var _data1 = new Date(date1[0])
+              var _data2 = new Date(date2[0])
+              return  _data2 - _data1
+            })
+          }else if(sort == 'declareYear'){
+            data = data.sort(function(x,y){
+                var date1 = x[sort].split(' ')
+                var date2 = y[sort].split(' ')
+                var _data1 = new Date(date1[0]).getFullYear()
+                var _data2 = new Date(date2[0]).getFullYear()
+                return  _data2 - _data1
+            })
+          }else{
+            data = data.sort(function(x,y){
+                return y[sort] - x[sort]
+            })
+          }
+        }else{
+            data = data.sort(function(x,y){
+                var a = x.isImproved
+                var b = y.isImproved
+                if(a == b){
+                  return y.id - x.id
+                }
+                return x.isImproved - y.isImproved
+            })
+        }
+        this.blockData = data
       })
+    },
+    async setSelectSetting(){
+      this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
+      this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
     },  
     async getPublicSafeFiles(id){ //取得公安申報的附件文檔
       this.publicSafeId = id

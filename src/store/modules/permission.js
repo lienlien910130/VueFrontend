@@ -1,4 +1,4 @@
-import { asyncRoutes, constantRoutes } from '@/router'
+import { mercuryfireRoutes, constantRoutes , customerRoutes } from '@/router'
 
 /**
  * Use meta.role to determine if the current user has permission
@@ -50,11 +50,10 @@ const actions = {
   generateRoutes({ commit }, roles) {
     return new Promise(resolve => {
       let accessedRoutes
-      console.log('roles=>'+JSON.stringify(roles))
-      if (roles[0].type == 'mercuryfire') {
-        accessedRoutes = asyncRoutes || []
+      if (roles) {
+        accessedRoutes = mercuryfireRoutes || []
       } else {
-        accessedRoutes = filterAsyncRoutes(asyncRoutes, roles[0].type)
+        accessedRoutes = customerRoutes || []
       }
       commit('SET_ROUTES', accessedRoutes)
       resolve(accessedRoutes)

@@ -2,18 +2,23 @@ import req from './https';
 import store from '../store'
 
 const authority = {
+    getBid(){ return store.getters.buildingid},
     //菜單管理
     apiGetAllMainMenuAuthority(){ return req('get','/mainMenuSetting/a') },
+    apiGetBuildingMainMenuAuthority(){ return req('get','/mainMenuSetting/buildings/'+this.getBid()) },
     apiGetMainMenuAuthority(mainMenuId){ return req('get','/mainMenuSetting/'+mainMenuId) },
-    apiPostMainMenuAuthority(data){ return req('post','/mainMenuSetting',data) },
+    apiPostMainMenuAuthority(data){ return req('post','/mainMenuSetting/buildings/'+this.getBid(),data) },
+    apiPostMainMenuAuthority(mainMenuId,data){ return req('post','/mainMenuSetting/mainMenu/'+mainMenuId,data) },
     apiPatchMainMenuAuthority(data){ return req('patch','/mainMenuSetting',data) },
     apiDeleteMainMenuAuthority(mainMenuId){ return req('delete','/mainMenuSetting/'+mainMenuId) },
     //權限管理
     apiGetAllAccessAuthority(){ return req('get','/accessAuthoritySetting/a') },
     apiGetAccessAuthority(accessAuthorityId){ return req('get','/accessAuthoritySetting/'+accessAuthorityId) },
+    apiGetMainMenuAccessAuthority(mainMenuId){ return req('get','/accessAuthoritySetting/mainMenu/'+mainMenuId) },
     apiPostAccessAuthority(data){ return req('post','/accessAuthoritySetting',data) },
     apiPatchAccessAuthority(data){ return req('patch','/accessAuthoritySetting',data) },
     apiDeleteAccessAuthority(accessAuthorityId){ return req('delete','/accessAuthoritySetting/'+accessAuthorityId) },
+    apiGetCheckAccessAuthority(){ return req('get','/accessAuthoritySetting/checkAssign') },
     //角色管理
     apiGetAllRoleAuthority(){ return req('get','/roleSetting/a') },
     apiGetRoleAuthority(roleId){ return req('get','/roleSetting/'+roleId) },

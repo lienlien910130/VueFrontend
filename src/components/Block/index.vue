@@ -1,16 +1,50 @@
 <template>
+<div>
     <el-row  :gutter="32">
         <div class="infinite-list-wrapper">
-            
             <div>
                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <el-button
-                    class="filter-item" 
-                    style="" 
-                    type="primary" 
-                    @click="handleClickOption('empty','')">
-                        新增
-                </el-button>
+                    <span>排序</span>
+                    <el-select 
+                    placeholder="請選擇" 
+                    style="width:8%;margin-left:5px;margin-right:5px;"
+                    @change="blockSelect"
+                    v-model="sort"
+                    clearable >
+                        <el-option
+                            v-for="element in sortArray"
+                            :key="element.prop"
+                            :label="element.label"
+                            :value="element.prop">
+                        </el-option>
+                    </el-select>
+
+                    <span v-for="item in selectSetting"
+                    :key="item.prop"
+                    >
+                        <span>{{ item.label }}</span>
+                        <el-select 
+                        placeholder="請選擇" 
+                        style="width:8%;margin-left:5px;margin-right:5px;"
+                        @change="blockSelect"
+                        v-model="item.select"
+                        clearable 
+                        >
+                            <el-option
+                            v-for="element in item.options"
+                            :key="element.id"
+                            :label="element.label"
+                            :value="element.value">
+                            </el-option>
+                        </el-select>
+                    </span>
+                    
+                    <el-button
+                        class="filter-item" 
+                        type="primary" 
+                        @click="handleClickOption('empty','')">
+                            新增
+                    </el-button>
                 </el-col>
             </div>
 
@@ -58,34 +92,17 @@
                             {{ selectStr(item[option.prop]) }}
                             </span>
 
-                            <span 
-                            v-else-if="option.format == 'deviceStatusSelect' ">
-                                <el-tag 
-                                v-if="item[option.prop] === '良好' "
-                                class="tag-noco"
-                                > 
-                                {{ item[option.prop] }}
-                                </el-tag>
-                                <el-tag 
-                                v-else-if="item[option.prop] === '損壞' "
-                                class="tag-co"
-                                > 
-                                {{ item[option.prop] }}
-                                </el-tag>
-                                <el-tag 
-                                v-else
-                                class="tag-mid"
-                                > 
-                                {{ item[option.prop] }}
-                                </el-tag>
-                            </span>
-
                             <el-button 
                             v-else-if="option.format == 'userInfo' "
                             type="text" @click="handleClickOption('opendialog',item[option.prop])" 
                             style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
-                            <el-button 
+                            <span 
+                            v-else-if="option.format == 'openmaintain' "
+                            type="text" 
+                            style="padding-top:0px;padding-bottom:0px">{{ changeMaintain(item[option.prop]) }}</span>
+
+                            <el-button
                             v-else-if="option.format == 'openfiles' "
                             type="text" @click="handleClickOption('openfiles',item['id'])" 
                             style="padding-top:0px;padding-bottom:0px">查看</el-button>
@@ -94,16 +111,12 @@
                             v-else-if="option.format == 'MaintainContentOptions' || 
                             option.format == 'DeviceOptions' || 
                             option.format == 'MaintainProcessOptions' || 
-                            option.format == 'BrandOptions' || option.format == 'ContactUnitOptions' ">
+                            option.format == 'BrandOptions' || option.format == 'ContactUnitOptions' ||
+                            option.format == 'DeviceStatusOptions' "
+                            >
                             {{ optionfilter(item[option.prop]) }}
                             </span>
-
-                            <!-- <router-link v-else-if="option.format == 'deviceSelect' " 
-                            :to="{ name: 'Equipment', params: { target: item[option.prop] }}" target='_blank'
-                            style="color:blue">
-                                {{ deviceStr(item[option.prop]) }}
-                            </router-link> -->
-
+                            
                             <el-button v-else-if="option.format == 'floorOfHouseSelect' " 
                             @click="handleClickOption('openfloorofhouse',item[option.prop])"
                             type="text"
@@ -156,7 +169,24 @@
             </div>
             <p v-if="loading">加載中...</p>
         </div>
+        
     </el-row>
+    <el-row>
+        <div v-if="total > 0" class="pagination-container">
+            <el-pagination
+                background
+                layout="total, sizes, prev, pager, next, jumper"
+                :current-page="page"
+                :page-sizes="pageSizeList"
+                :page-size="limit"
+                :total="total"
+                @current-change="handleCurrentChange"
+                @size-change="handleSizeChange"
+            ></el-pagination>
+        </div>
+    </el-row>
+</div>
+    
 </template>
 
 <script>
@@ -190,7 +220,22 @@ export default {
         },
         options: {
             type: Array
-        }
+        },
+        selectSetting: {
+            type: Array
+        },
+        sortArray: {
+            type: Array
+        },
+        listQueryParams: {
+            type: Object
+        },
+        pageSizeList: {
+            type: Array,
+            default: function() {
+                return [10, 30, 50, 100]
+            }
+        },
     },
     computed: {
         label() {
@@ -294,6 +339,20 @@ export default {
                     return ""
                 }
             } 
+        },
+        changeMaintain(){
+            return function (a) {
+                return a.length
+            } 
+        },
+        page: function() {
+            return this.listQueryParams.page || 1
+        },
+        limit: function() {
+            return this.listQueryParams.limit || 10
+        },
+        total: function() {
+            return this.listQueryParams.total || 0
         }
     },
     watch: {
@@ -313,7 +372,8 @@ export default {
             dialogStatus: '',
             temp: {},
             loadlist:[],
-            rangevalue: []
+            rangevalue: [],
+            sort:''
         }
     },
     methods: {
@@ -328,29 +388,6 @@ export default {
                 this.loading = false;
             }, 500);
         },
-        // handleCreate() {
-        //     if(this.title == 'ContactUnit' && this.selectData.length == 0){
-        //         this.$message({
-        //             showClose: true,
-        //             message: '請先至設定新增廠商類別',
-        //             type: 'warning'
-        //         });
-        //     }else if(this.title == 'Management' && this.selectData.length == 0){
-        //         this.$message({
-        //             showClose: true,
-        //             message: '請先至下方點選樓層新增門牌',
-        //             type: 'warning'
-        //         });
-        //     }else{
-        //         this.dialogStatus = 'create'
-        //         this.rangevalue = []
-        //         this.dialogFormVisible = true
-        //         this.$nextTick(() => {
-        //             this.$refs['dataForm'].clearValidate()
-        //         })
-        //         this.temp = {}
-        //     }
-        // },
         handleClickOption(status,row) {
             if (status === 'delete') {
                 this.$confirm('是否確定刪除該筆資料?', '提示', {
@@ -369,6 +406,23 @@ export default {
         toAnotherPage(page,data,block){
             console.log(page,data,block)
             this.$router.push({ name: page, params: { block:block, target: data }})
+        },
+            // 改變翻頁組件中每頁數據總數
+        handleSizeChange(val) {
+            this.listQueryParams.limit = val
+            this.listQueryParams.page = 1 // 改變翻頁數目，將頁面=1
+            this.$emit('update:listQueryParams', this.listQueryParams)
+            this.$emit('clickPagination', this.sort)
+        },
+        // 跳到當前是第幾頁
+        handleCurrentChange(val) {
+            this.listQueryParams.page = val
+            this.$emit('update:listQueryParams', this.listQueryParams)
+            this.$emit('clickPagination', this.sort)
+        },
+        blockSelect(){
+            this.$emit('update:selectSetting', this.selectSetting)
+            this.$emit('clickPagination',this.sort)
         }
     }
 }
@@ -376,16 +430,21 @@ export default {
 
 <style lang="scss" scoped>
 .infinite-list-wrapper {
-	width: 100%;
-    .filter-item{
+    width: 100%;
+    height: 600px;
+    overflow-x:hidden;
+    overflow-y:auto;
+    .filter-item {
         float: right;
+        margin-bottom: 0px;
+        margin-top: 0px;
     }
 }
-
 .dashboard-wrapper{
     background-color: rgb(219,231,237);
     padding: 16px 16px;
-    margin-bottom: 32px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     overflow-x:hidden;
     overflow-y:auto;
     line-height: 25px;
@@ -403,7 +462,6 @@ export default {
         color: #e6a23c;
     }
 }
-
 .files {
   width: 100%;
   max-height: 200px;
@@ -418,4 +476,9 @@ export default {
 .el-range-editor{
     width: 100%;
 }
+.pagination-container{
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
 </style>

@@ -6,25 +6,18 @@
         <div>
             <el-tree
             ref="tree"
-            :data="treedata"
+            :data="data"
             empty-text=""
             highlight-current
-            node-key="path"
+            node-key="id"
             default-expand-all
+            :expand-on-click-node="false"
             >
-            <span class="custom-tree-node" slot-scope="{ node }" >
-                <span>{{ node.label }}</span>
-                <!-- <span @click="select(node, data)" style="width:87%;padding:7px;margin:5px;float:left">
-                    {{ node.label }}</span>
-                <span style="float:right">
-                    <el-button
-                        type="text"
-                        size="mini"
-                        @click="() => remove(node, data)">
-                        <i style="color:#ff4949;font-size:22px" class="el-icon-delete"/>
-                    </el-button>
-                </span> -->
-            </span>
+              <span class="custom-tree-node" slot-scope="{ node,data }" @click="select(node, data)">
+                  <span >
+                    {{ node.label }}
+                  </span>
+              </span>
             </el-tree>    
         </div>
     </div>
@@ -32,10 +25,27 @@
 
 <script>
 export default {
-    props:['treedata'],
+    props:['data','selectId'],
     data(){
         return{
         }
+    },
+    watch:{
+      selectId:{
+        handler:function(){
+          if(this.selectId !== ''){
+            this.$nextTick(()=>{
+              this.$refs.tree.setCurrentKey(this.selectId)
+            })
+          }
+        },
+        immediate:true
+      }
+    },
+    methods:{
+        select(node, data){
+          this.$emit('handleTreeNode',node,data)
+        },
     }
 }
 </script>

@@ -1,8 +1,8 @@
 <template>
 <div>
-  <el-button type="primary" @click="OpenCreate">新增</el-button>
+  <el-button v-if="title !== 'building'" type="primary" @click="OpenCreate" style="float:right">新增</el-button>
   <el-table
-    :data="tableData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"
+    :data="tableData.filter(data => !search ||  data.name.toLowerCase().includes(search.toLowerCase()))"
     :key="itemkey"
     border
     highlight-current-row
@@ -27,6 +27,29 @@
           <template slot-scope="scope">
               <span v-if="scope.column.property == 'status'"> 
                 {{ scope.row[scope.column.property] | changeStatus }}</span>
+              <span v-else-if="scope.column.property == 'removable'"> 
+                {{ scope.row[scope.column.property] | changeRemoveable }}</span>
+              <span v-else-if="scope.column.property == 'dateOfFailure' || 
+              scope.column.property == 'dateOfCallRepair' || 
+              scope.column.property == 'completedTime' "> 
+                {{ scope.row[scope.column.property] | dataStr }}</span>
+              <span v-else-if="scope.column.property == 'processStatus'"> 
+                {{  changeprocessStatus(scope.row[scope.column.property]) }}
+              </span>
+              <span v-else-if="scope.column.property == 'linkDevices'"> 
+                {{ changeDevice(scope.row[scope.column.property]) }}
+              </span>
+              <span v-else-if="scope.column.property == 'linkContactUnits'"> 
+                {{ changeContainUnit(scope.row[scope.column.property]) }}
+              </span>
+              <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
+                <i v-if="scope.row[scope.column.property] == null " class="el-icon-close"></i>
+                <i v-else class="el-icon-check"></i>
+              </span>
+              <span v-else-if="scope.column.property == 'linkOwners' || 
+              scope.column.property == 'linkFireManagers'"> 
+                {{ changeUserName(scope.row[scope.column.property]) }}
+              </span>
               <span v-else-if="scope.column.property == 'linkRoles'"> 
                 {{  changeLinkRoles(scope.row[scope.column.property]) }}</span>
               <span v-else >{{  scope.row[scope.column.property] }}</span>
@@ -34,9 +57,9 @@
         </el-table-column>
     </template>
     <el-table-column
-    width="350px"
+      width="300px"
       align="right">
-      <template slot="header" >
+      <template slot="header" slot-scope="scope" >
         <el-input
           v-model="search"
           size="mini"
@@ -49,8 +72,7 @@
             class="button-margin-left"
           >
             <el-button
-              size="small"
-              :type="index == 0 ? 'primary' : 'info'"
+              :type="index == 0 ? 'primary' : index == 1 ? 'info' : 'danger' "
               @click="handleClickOption(scope.$index, scope.row, option,$event)"
             >
               <span>{{ option }}</span>
@@ -60,7 +82,7 @@
     </el-table-column>
   </el-table>
 
-  <div v-if="total > 0" class="pagination-container">
+  <div v-if="total > 0 && hasPagin" class="pagination-container">
       <el-pagination
         background
         layout="total, sizes, prev, pager, next, jumper"
@@ -76,13 +98,23 @@
 </template>
 
 <script>
+import moment from 'moment';
+
 export default {
   props:{
+    title: {
+      type: String
+    },
     tableData: {
       type: Array
     },
     itemkey: {
-      type: Number
+      type: Number,
+      dafault : Math.random()
+    },
+    hasPagin:{
+      type:Boolean,
+      default:true
     },
     config: {
       type: Array
@@ -102,6 +134,9 @@ export default {
         return [10, 30, 50, 100]
       }
     },
+    selectId:{
+      type: String
+    }
   },
   filters:{
     changeStatus: function(val) {
@@ -110,8 +145,17 @@ export default {
       }else{
         return '禁用'
       }
-    }
-    
+    },
+    changeRemoveable: function(val) {
+      if(val == true){
+        return '允許'
+      }else{
+        return '禁止'
+      }
+    },
+    dataStr: function(value){
+        return moment(value).format('YYYY-MM-DD')
+    },
   },
   computed:{
     page: function() {
@@ -122,8 +166,7 @@ export default {
     },
     total: function() {
       return this.listQueryParams.total || 0
-    },
-    
+    }
   },
   watch:{
   },
@@ -137,15 +180,59 @@ export default {
       if(val !== null){
         var _temp = []
         val.forEach(element => {
-          var data = this.filterData.filter(item=>{
+          var data = this.$obj.Authority.buildingRole.filter(item=>{
             return item.id == element
           })
-          _temp.push(data[0].label)
+          _temp.push(data[0].name)
         })
         return _temp.toString()
       }else{
         return ''
       }
+    },
+    async changeprocessStatus(val){
+      var data = this.$obj.Setting.buildingOptions.filter(item=>{
+            return item.id == val
+      })
+      return data[0].textName
+      // await this.$api.setting.apiGetOptionById(val).then(response =>{
+      //   label = response.result[0].textName
+        
+      // })
+      // return label
+    },
+    changeUserName(val){
+      var array = []
+      val.forEach(item=>{
+        array.push(item.name)
+      })
+      return array.toString()
+    },
+    changeDevice(val){
+      var array = []
+      if(val !== null){
+        val.forEach(item=>{
+          var data = this.$obj.Device.buildingDevice.filter(element=>{
+            return item.id == element.id
+          })
+          array.push(data[0].name)
+        })
+        return array.toString()
+      }
+      return ''
+    },
+    changeContainUnit(val){
+      var array = []
+      if(val !== null){
+        val.forEach(item=>{
+          var data = this.$obj.Building.buildingContactunit.filter(element=>{
+            return item.id == element.id
+          })
+          array.push(data[0].name)
+        })
+        return array.toString()
+      }
+      return ''
     },
     OpenCreate(){
       this.$emit('handleTableRow', '', '', '新增')

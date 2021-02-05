@@ -1,7 +1,7 @@
 /**
  * Created by PanJiaChen on 16/11/18.
  */
-
+import api from '@/api'
 /**
  * Parse the time to string
  * @param {(Object|string|number)} time
@@ -308,6 +308,88 @@ export function deepClone(source) {
   return targetObj
 }
 
+export function removeDuplicates(originalArray, prop) {
+  var newArray = []
+  var lookupObject  = {}
+  for(var i in originalArray) {
+      lookupObject[originalArray[i][prop]] = originalArray[i]
+  }
+  for(i in lookupObject) {
+      newArray.push(lookupObject[i])
+  }
+  return newArray
+}
+
+export async function changeLabel(selectType,value){
+  var label = ''
+  switch(selectType){
+      case 'options':
+          await api.setting.apiGetOptionById(value).then(response=>{
+              label = response.result[0].textName
+          })    
+          break;
+      case 'contactunit': 
+          await api.building.apiGetContactUnit(value).then(response=>{
+              label = response.result[0].name
+          })
+          break;
+      case 'usageOfFloor': 
+          await api.building.apiGetHouse(value).then(response=>{
+              label = response.result[0].houseNumber
+          })
+          break;
+      case 'user': 
+          await api.building.apiGetUser(value).then(response=>{
+              label = response.result[0].name
+          })  
+          break;
+      case 'collaborateBool': 
+          label = value == true ? '配合中' : '未配合'
+          break;
+      case 'reportBool': 
+          label = value == true ? '已改善' : '未改善'
+          break;
+      case 'dateOfYear':
+          if(value !== null){
+            var date = value.split(' ')
+            var _date = new Date(date[0])
+            label = _date.getFullYear()
+          }
+          break;
+      case 'dateOfDate': 
+          if(value !== null){
+            var _date = value.split(' ')
+            var date = new Date(_date[0])
+            var year=date.getFullYear()
+            var month= date.getMonth()+1<10 ? "0"+(date.getMonth()+1) : date.getMonth()+1
+            var day=date.getDate()<10 ? "0"+date.getDate() : date.getDate()
+            label =  year+"-"+month+"-"+day
+          }
+          break;
+      default:
+          label = value
+          break;
+  }
+  return label
+}
+
+export async function setSelectSetting(config,list){
+  var data  = config.filter((item,index)=>item.isSelect == true)
+  for(let item of data){
+    var _temp = removeDuplicates(list,item.prop)
+    for(let obj of _temp) {
+        if(obj[item.prop] !== '' && obj[item.prop] !== null){
+          var label = await changeLabel(item.selectType,obj[item.prop])
+          item.options.push({
+              id:obj.id,
+              value:obj[item.prop],
+              label:label
+          }) 
+        }
+    }
+  }
+  return data
+}
 /**
  * @param {Array} arr
  * @returns {Array}

@@ -13,6 +13,7 @@ const getters = {
   vercom: state => state.version.components,
   msg: state => state.websocket.msg,
   buildingid : state => state.building.buildingid,
-  json: state => state.graphic.json
+  json: state => state.graphic.json,
+  permission_routes: state => state.permission.routes
 }
 export default getters

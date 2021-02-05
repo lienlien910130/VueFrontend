@@ -15,6 +15,12 @@
                     <el-row :gutter="20">
                         <el-col :xs="24" :sm="24" :md="24" :lg="8">
                             <SettingBlock
+                            v-bind="settingAttrs('DeviceStatusOptions')"
+                            v-on:handleButton="handleButton"
+                            ></SettingBlock>
+                        </el-col>
+                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                            <SettingBlock
                             v-bind="settingAttrs('DeviceOptions')"
                             v-on:handleButton="handleButton"
                             ></SettingBlock>
@@ -92,7 +98,6 @@ export default {
                 return v
                 })
             })
-            this.contactunitoption = this.optionsFilter('ContactUnitOptions')
         },
         optionsFilter(title){
             let data = this.options.filter((item, index) => 
@@ -107,7 +112,7 @@ export default {
                     await this.PostData(index,content)
                     break;
                 case 'update':
-                    await this.UpdateData(index,content)
+                    await this.UpdateData(content)
                     break;
                 case 'delete':
                     await this.DeleteData(index,content)
@@ -115,84 +120,17 @@ export default {
                 case 'cancelEdit':
                     this.type='view'
                     this.current = ''
-                    await this.Temp(index,false)
+                    this.options = JSON.parse(this.temp)
                     break;
                 case 'changeEdit':
-                    this.type='edit'
+                    this.type = 'edit'
                     this.current = content.id
-                    await this.Temp(index,true)
+                    this.temp = JSON.stringify(this.options)
                     break;
                 case 'checkDelete':
                     await this.CheckDelete(index,content)
                     break;
                 default:
-                    break;
-            }
-        },
-        async Temp(index,isSave){
-            if(isSave){
-                switch(index){
-                    case 'ContactUnitOptions':
-                        this.temp = JSON.stringify(this.contactunitoption)
-                        break;
-                    case 'DeviceOptions':
-                        this.temp = JSON.stringify(this.deviceoption)
-                        break;
-                    case 'MaintainContentOptions':
-                        this.temp = JSON.stringify(this.maintaincontentoption)
-                        break;
-                    case 'BrandOptions':
-                        this.temp = JSON.stringify(this.brandoption)
-                        break;
-                    case 'LackStatusOptions':
-                        this.temp = JSON.stringify(this.lackstatusoption)
-                        break;
-                    case 'MaintainProcessOptions':
-                        this.temp = JSON.stringify(this.maintainprocessoption)
-                        break;
-                }
-            }else{
-                switch(index){
-                    case 'ContactUnitOptions':
-                        this.contactunitoption = JSON.parse(this.temp)
-                        break;
-                    case 'DeviceOptions':
-                        this.deviceoption = JSON.parse(this.temp)
-                        break;
-                    case 'MaintainContentOptions':
-                        this.maintaincontentoption = JSON.parse(this.temp)
-                        break;
-                    case 'BrandOptions':
-                        this.brandoption = JSON.parse(this.temp)
-                        break;
-                    case 'LackStatusOptions':
-                        this.lackstatusoption = JSON.parse(this.temp)
-                        break;
-                    case 'MaintainProcessOptions':
-                        this.maintainprocessoption = JSON.parse(this.temp)
-                        break;
-                }
-            }
-        },
-        async DirectToReloadData(index){
-            switch(index){
-                case 'ContactUnitOptions':
-                    await this.getcontactunitOption()
-                    break;
-                case 'DeviceOptions':
-                    await this.getdeviceOption()
-                    break;
-                case 'MaintainContentOptions':
-                    await this.getmaintaincontentOption()
-                    break;
-                case 'BrandOptions':
-                    await this.getbrandOption()
-                    break;
-                case 'LackStatusOptions':
-                    await this.getlackstatusOption()
-                    break;
-                case 'MaintainProcessOptions':
-                    await this.getmaintainprocessOption()
                     break;
             }
         },
@@ -204,42 +142,42 @@ export default {
             await this.$api.setting.apiPostOption(temp).then(response =>{
                     this.$message("新增成功")
             })
-            await this.DirectToReloadData(index)
+            await this.getOptions()
         },
-        async UpdateData(index,content){
+        async UpdateData(content){
             await this.$api.setting.apiPatchOption(content).then(response =>{
                 this.$message("更新成功")
-                this.type='view'
+                this.type = 'view'
                 this.current = ''
             })
-            await this.DirectToReloadData(index)
+            await this.getOptions()
         },
-        async DeleteData(index,content){
+        async DeleteData(content){
             await this.$api.setting.apiDeleteOption(content).then(response =>{
                 this.$message("刪除成功")
             })
-            await this.DirectToReloadData(index)
+            await this.getOptions()
         },
         async CheckDelete(index,content){
             switch(index){
                 case 'ContactUnitOptions':
                     var array = []
-                    await this.$api.building.apiGetContactUnit().then(async(response) => {
-                        this.array = response.result.filter((item, index) => 
+                    await this.$api.building.apiGetBuildingContactUnit().then(async(response) => {
+                        array = response.result.filter((item, index) => 
                             item.type == content )
-                        if(this.array.length){ //有資料
+                        if(array.length){ //有資料
                             this.$message({
                                 showClose: true,
                                 message: '該類別尚有廠商資料，請先刪除廠商資料!',
                                 type: 'warning'
                             });
                         }else{
-                            await this.DeleteData(index,content)
+                            await this.DeleteData(content)
                         }
                     })
                     break;
                 case 'DeviceOptions':
-                    await this.DeleteData(index,content)
+                    await this.DeleteData(content)
                     break;
                 case 'MaintainContentOptions':
                     
@@ -251,6 +189,9 @@ export default {
                     
                     break;
                 case 'MaintainProcessOptions':
+                    
+                    break;
+                case 'DeviceStatusOptions':
                     
                     break;
             }
