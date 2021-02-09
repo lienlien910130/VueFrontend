@@ -10,7 +10,10 @@ let Authority = {
             var array = [{
                 id:'-1',
                 label:'首頁',
-                children : []
+                children : [],
+                linkAccessAuthorities:[],
+                accessAuthorities:[],
+                originalAccessAuthorities:[]
             }]
             result.forEach(element => {
                 var node = {
@@ -23,21 +26,27 @@ let Authority = {
                     status:element.status,
                     sort:element.sort,
                     removable:element.removable,
-                    linkMainMenus:element.linkMainMenus
+                    linkMainMenus:element.linkMainMenus,
+                    linkAccessAuthorities:element.linkAccessAuthorities,
+                    accessAuthorities:[],
+                    originalAccessAuthorities:[]
                 }
                 if(element.linkMainMenus.length > 0){
-                    element.linkMainMenus.forEach(element => {
+                    element.linkMainMenus.forEach(item => {
                         var children = {
-                            id: element.id ,
-                            label: element.name,
-                            code:element.code,
+                            id: item.id ,
+                            label: item.name,
+                            code:item.code,
                             children : [],
-                            name:element.name,
-                            description:element.description,
-                            status:element.status,
-                            sort:element.sort,
-                            removable:element.removable,
-                            linkMainMenus:element.linkMainMenus
+                            name:item.name,
+                            description:item.description,
+                            status:item.status,
+                            sort:item.sort,
+                            removable:item.removable,
+                            linkMainMenus:item.linkMainMenus,
+                            linkAccessAuthorities:item.linkAccessAuthorities,
+                            accessAuthorities:[],
+                            originalAccessAuthorities:[]
                         }
                         node.children.push(children)
                     });
@@ -53,7 +62,6 @@ let Authority = {
     getBuildingMenuBelow: async function(mainMenuId){
         var data = await api.authority.apiGetMainMenuAuthority(mainMenuId).then(response => {
             var result = response.result.sort((x,y) => x.sort - y.sort)
-            console.log(JSON.stringify(result))
             return result
         }).catch(error=>{
             return []
@@ -62,21 +70,20 @@ let Authority = {
     },
     postBuildingMenu: async function(mainMenuId = null,data){
         if(mainMenuId == null){
-            var data = await api.authority.apiPostMainMenuAuthority(data).then(response => {
+            var data = await api.authority.apiPostLevelOneMainMenuAuthority(data).then(response => {
                 return true
             }).catch(error=>{
                 return false
             })
             return data
         }else{
-            var data = await api.authority.apiPostMainMenuAuthority(mainMenuId,data).then(response => {
+            var data = await api.authority.apiPostLevelTwoMainMenuAuthority(mainMenuId,data).then(response => {
                 return true
             }).catch(error=>{
                 return false
             })
             return data
         }
-        
     },
     deleteBuildingMenu: async function(mainMenuId){
         var data = await api.authority.apiDeleteMainMenuAuthority(mainMenuId).then(async(response) => {
@@ -104,7 +111,6 @@ let Authority = {
                 })
                 item.linkRoles = temp
             })
-            console.log(JSON.stringify(result))
             return result
         }).catch(error=>{
             return []

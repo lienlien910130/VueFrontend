@@ -54,6 +54,18 @@ export function removeBuildingid() {
   return Cookies.remove(BuildingID)
 }
 
+export function getBuildingArray() {
+  return Cookies.get(BuildingArray)
+}
+
+export function setBuildingArray(buildingArray) {
+  return Cookies.set(BuildingArray, buildingArray)
+}
+
+export function removeBuildingArray() {
+  return Cookies.remove(BuildingArray)
+}
+
 export function getGraphicJson() {
   return Cookies.get(GraphicJson)
 }

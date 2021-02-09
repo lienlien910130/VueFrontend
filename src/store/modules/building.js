@@ -1,11 +1,13 @@
 import { 
-  setBuildingid, getBuildingid, removeBuildingid } from '../../utils/auth'
+  setBuildingid, getBuildingid, removeBuildingid,
+  setBuildingArray, getBuildingArray, removeBuildingArray } from '../../utils/auth'
 
 import obj from '@/object'
 // 個人資料
 const getDefaultState = () => {
   return {
-    buildingid: getBuildingid() 
+    buildingid: getBuildingid() ,
+    buildingarray : []
   }
 }
 
@@ -17,6 +19,9 @@ const mutations = {
   },
   SET_BUILDINGID: (state, buildingid) => {
     state.buildingid = buildingid
+  },
+  SET_BUILDINGARRAY: (state, buildingarray) => {
+    state.buildingarray = buildingarray
   }
 }
 
@@ -29,9 +34,23 @@ const actions = {
         resolve(ok)
     })
   },
+  setbuildingarray({ commit }, buildingarray) {
+    return new Promise((resolve, reject) => {
+        commit('SET_BUILDINGARRAY', buildingarray)
+        setBuildingArray(buildingarray)
+        resolve()
+    })
+  },
   resetBuildingid({ commit }) {
     return new Promise(resolve => {
       removeBuildingid()
+      commit('RESET_STATE')
+      resolve()
+    })
+  },
+  resetBuildingarray({ commit }) {
+    return new Promise(resolve => {
+      removeBuildingArray()
       commit('RESET_STATE')
       resolve()
     })

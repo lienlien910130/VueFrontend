@@ -25,11 +25,20 @@
         </div>
 </template>
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
     components:{ 
         Table: () => import('@/components/Table/index.vue'),
         menuTree: () => import('@/components/Tree/menuTree.vue'),
         Dialog:() => import('@/components/Dialog/index.vue'),
+    },
+    watch:{
+        async buildingid(){
+            this.data = await this.$obj.Authority.getBuildingMenu()
+            await this.getAllRoles()
+            await this.$obj.Setting.getAllOption()
+        }
     },
     data(){
         return{
@@ -69,6 +78,9 @@ export default {
         }
     },
     computed: {
+        ...mapGetters([
+            'buildingid'
+        ]),
         treeAttrs(){
             return{
                 data:this.data,
@@ -104,12 +116,13 @@ export default {
         },
     },
     async mounted() {
-        await this.getMenu()
+        this.data = await this.$obj.Authority.getBuildingMenu()
         await this.getAllRoles()
         await this.$obj.Setting.getAllOption()
     },
     methods:{
         async getAllRoles(){
+            this.dialogSelect = []
             var roles = await this.$obj.Authority.getRole()
             roles.forEach(item=>{
                 var _temp = {
@@ -122,15 +135,13 @@ export default {
         },
         async getAccessAuthority(){
             var data = await this.$obj.Authority.getMenuAccessAuthority(this.selectId)
+            console.log(JSON.stringify(data))
             this.tableData = data.filter(
                 (item, index) => 
                 index < this.listQueryParams.limit * this.listQueryParams.page && 
                 index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
             .sort((x,y) => x.sort - y.sort)
             this.listQueryParams.total = data.length
-        },
-        async getMenu(){
-            this.data = await this.$obj.Authority.getBuildingMenu()
         },
         async handleTreeNode(node,data){
             this.selectId = data.id

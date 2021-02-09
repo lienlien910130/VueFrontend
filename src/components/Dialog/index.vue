@@ -321,23 +321,39 @@
 
         <el-table
             v-if="dialogStatus === 'authority'"
-            :data="tableData"
+            :data="treeData"
             style="width: 100%;margin-bottom: 20px;"
             row-key="id"
             border
             default-expand-all
-            :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+            ref="authorityTable"
+            :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+            @select="handleSelectionChange"
+            @select-all="handleSelectionAll"
+            v-loading = "pictLoading">
             <el-table-column
-            prop="mainMenu"
-            label="菜單"
-            sortable
-            width="180">
+            type="selection"
+            width="55">
             </el-table-column>
             <el-table-column
-            prop="access"
+            prop="label"
+            label="菜單"
+            min-width="20%">
+            </el-table-column>
+            <el-table-column
+            prop="linkAccessAuthorities"
             label="權限"
-            sortable
-            width="180">
+            min-width="80%">
+            <template slot-scope="scope">
+                <el-checkbox-group v-model="scope.row.accessAuthorities" @change="handleCheckedChange(scope.row)">
+                    <el-checkbox 
+                    v-for="item in scope.row.linkAccessAuthorities"
+                    :key="item.id"
+                    :label="item.id">
+                    {{ item.name }}
+                    </el-checkbox>
+                </el-checkbox-group>
+            </template>
             </el-table-column>
         </el-table>
 
@@ -393,6 +409,9 @@ export default {
         selectData: {
             type: Array
         },
+        treeData: {
+            type: Array
+        },
         files:{
             type: Array
         },
@@ -421,6 +440,11 @@ export default {
     watch:{
         dialogData(){
             this.init()
+        },
+        treeData(){
+            this.$nextTick(()=>{
+                this.treeSelection()
+            })
         }
     },
     computed:{
@@ -498,7 +522,7 @@ export default {
                 }
                 return ""
             }
-        },
+        }
     },
     mounted(){
         this.init()
@@ -518,6 +542,8 @@ export default {
                 limit: 10,
                 total: 0
             },
+            pictLoading:false,
+            isSelectAll:false
         }
     },
     methods: {
@@ -537,13 +563,33 @@ export default {
                 this.temp = {}
             }
         },
+        treeSelection(){
+            this.pictLoading = true
+            this.$refs.authorityTable.clearSelection()
+            var _temp = this.treeData
+            for(var i =0;i<_temp.length;i++){
+                if(_temp[i].accessAuthorities.length>0){
+                    this.$refs.authorityTable.toggleRowSelection(_temp[i],true)
+                }
+                if(_temp[i].children.length >0){
+                    var _below = _temp[i].children
+                    for(var x=0;x<_below.length;x++){
+                        if(_below[x].accessAuthorities.length>0){
+                            this.$refs.authorityTable.toggleRowSelection(_below[x],true)
+                        }
+                    }
+                }
+            }
+            this.pictLoading = false
+        },
         handleClickOption(status){
             if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                 this.temp['checkStartDate'] = this.rangevalue[0]
                 this.temp['checkEndDate'] = this.rangevalue[1]
             }
             const tempData = Object.assign({}, this.temp)
-            this.$emit('handleDialog',this.title, status , tempData)
+            var data = status == 'authoritycreate' ? this.treeData : tempData
+            this.$emit('handleDialog',this.title, status , data)
         },
         onAddRow(){
             if(this.title == 'reportInspectio'){
@@ -631,6 +677,65 @@ export default {
                 this.innerVisible = true
                 this.dialogStatus = 'create'
             }
+        },
+        async handleSelectionChange(selection, row){
+            var isSelect = selection.filter((obj,index)=> obj.id == row.id)
+            if(isSelect.length > 0){ //選取
+                if(row.linkMainMenus.length>0){
+                    row.children.forEach(children =>{
+                        this.$refs.authorityTable.toggleRowSelection(children,true)
+                        if(children.linkAccessAuthorities.length > 0){
+                            children.accessAuthorities = []
+                            children.linkAccessAuthorities.forEach(ele=>{
+                                children.accessAuthorities.push(ele.id)
+                            })
+                        }
+                    })
+                }else{
+                    row.accessAuthorities = []
+                    row.linkAccessAuthorities.forEach(ele=>{
+                        row.accessAuthorities.push(ele.id)
+                    })
+                }
+            }else{
+                row.accessAuthorities = []
+                if(row.linkMainMenus.length>0){
+                    row.children.forEach(ele=>{
+                        this.$refs.authorityTable.toggleRowSelection(ele,false)
+                        ele.accessAuthorities = []
+                    })
+                }
+            }
+            
+        },
+        async handleCheckedChange(row){
+            if(row.accessAuthorities.length>0){
+                this.$refs.authorityTable.toggleRowSelection(row,true)
+            }else{
+                this.$refs.authorityTable.toggleRowSelection(row,false)
+            }
+        },
+        async handleSelectionAll(val){
+            // console.log(JSON.stringify(val))
+            // if(!this.isSelectAll){
+            //     val.forEach( item => {
+            //         if(item.children.length>0){
+            //             item.children.forEach(children=>{
+            //                 this.$refs.authorityTable.toggleRowSelection(children,true)
+            //             })
+            //         }
+            //     })
+            //     this.isSelectAll = true
+            // }else{
+            //     this.treeData.forEach( item => {
+            //         if(item.children.length>0){
+            //             item.children.forEach(children=>{
+            //                 this.$refs.authorityTable.toggleRowSelection(children,false)
+            //             })
+            //         }
+            //     })
+            //     this.isSelectAll = false
+            // }
         }
     }
 }

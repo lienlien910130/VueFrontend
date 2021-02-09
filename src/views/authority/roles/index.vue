@@ -25,10 +25,10 @@ export default {
     },
     data(){
         return{
+            selectRoleId:'',
             routes:[],
             treeData:[],
             tableData:[],
-            itemkey:Math.random(),
             config:[
                 { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱'},
                 { label:'描述' , prop:'description',format:'textarea', mandatory:false,message:'請輸入描述'},
@@ -59,7 +59,6 @@ export default {
         tableAttrs(){
             return {
                 tableData: this.tableData,
-                itemkey:this.itemkey,
                 config:this.config,
                 buttonsName:this.buttonsName,
                 
@@ -86,7 +85,6 @@ export default {
     },
     async mounted() {
         await this.getAllRole()
-        //await this.getAllRoutes()
     },
     methods:{
         async getAllRole(){
@@ -95,9 +93,6 @@ export default {
                 index < this.listQueryParams.limit * this.listQueryParams.page && 
                 index >= this.listQueryParams.limit * (this.listQueryParams.page - 1)).sort((x,y) => x.sort - y.sort)
                 this.listQueryParams.total = data.length
-        },
-        async getAllRoutes() {
-            this.treeData = getRoutes()
         },
         async handleTableRow(index, row, option){
             console.log(index, row, option)
@@ -125,6 +120,29 @@ export default {
                 this.dialogStatus = 'create'
             }
             else if(option === '分配權限'){
+                this.selectRoleId = row.id
+                var data = await this.$obj.Authority.getBuildingMenu()
+                this.treeData = data[0].children
+                this.treeData.forEach(item => {
+                    item.linkAccessAuthorities.forEach(authority => {
+                        var role = authority.linkRoles
+                        var roleauthority = role.filter((r,index)=> r.id == this.selectRoleId)
+                        if(roleauthority.length > 0){
+                            item.accessAuthorities.push(authority.id)
+                            item.originalAccessAuthorities.push(authority.id)
+                        }
+                    })
+                    item.children.forEach(children => {
+                        children.linkAccessAuthorities.forEach(childrenauthority => {
+                            var role = childrenauthority.linkRoles
+                            var roleauthority = role.filter((r,index)=> r.id == this.selectRoleId)
+                            if(roleauthority.length > 0){
+                                children.accessAuthorities.push(childrenauthority.id)
+                                children.originalAccessAuthorities.push(childrenauthority.id)
+                            }
+                        })
+                    })
+                })
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'authoritycreate'},
                 { name:'取消',type:'info',status:'cancel'}]
@@ -134,21 +152,105 @@ export default {
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,content)
-            content.sort = content.sort.toString()
             if(index === 'update'){
+                content.sort = content.sort.toString()
                 await this.$api.authority.apiPatchRoleAuthority(content).then(async(response)=>{
                     this.$message('更新成功')
                     await this.getAllRole()
                 })
             }else if(index === 'create'){
+                content.sort = content.sort.toString()
                 await this.$api.authority.apiPostRoleAuthority(content).then(async(response)=>{
                     this.$message('新增成功')
                     await this.getAllRole()
                 })
             }else if(index === 'authoritycreate'){
-
+                content.forEach(async(item)=>{
+                    item.accessAuthorities.forEach(async(authId)=>{
+                        var index = item.originalAccessAuthorities.indexOf(authId) //先檢查原先是否有勾選
+                        if(index == '-1'){ //角色新增的權限
+                            var linkaccess = item.linkAccessAuthorities.filter((item,index)=> item.id==authId)
+                            var array = [] //先把原本的角色放入 //再新增該角色
+                            linkaccess[0].linkRoles.forEach(obj=>{
+                                var temp = {
+                                    id:obj.id
+                                }
+                                array.push(temp)
+                            })
+                            array.push({id:this.selectRoleId})
+                            var updateData = {
+                                id:authId,
+                                linkRoles:array
+                            }
+                            await this.$obj.Authority.updateMenuAccessAuthority(JSON.stringify(updateData))
+                        }
+                    })
+                    item.originalAccessAuthorities.forEach(async(authId)=>{ //移除的權限
+                        var index = item.accessAuthorities.indexOf(authId) //先檢查原先是否有勾選
+                        if(index == '-1'){
+                            var linkaccess = item.linkAccessAuthorities.filter((item,index)=> item.id==authId)
+                            var array = [] //先把原本的角色放入 //再移除該角色
+                            linkaccess[0].linkRoles.forEach(obj=>{
+                            if(obj.id !== this.selectRoleId){
+                                var temp = {
+                                        id:obj.id
+                                    }
+                                    array.push(temp)
+                                }
+                            })
+                            var updateData = {
+                                id:authId,
+                                linkRoles:array
+                            }
+                            await this.$obj.Authority.updateMenuAccessAuthority(JSON.stringify(updateData))
+                        }   
+                    })
+                    item.children.forEach(children => {
+                        children.accessAuthorities.forEach(async(authId) => { //勾選的權限
+                            var index = children.originalAccessAuthorities.indexOf(authId) //先檢查原先是否有勾選
+                            if(index == '-1'){ //角色新增的權限
+                                var linkaccess = children.linkAccessAuthorities.filter((item,index)=> item.id==authId)
+                                var array = [] //先把原本的角色放入 //再新增該角色
+                                linkaccess[0].linkRoles.forEach(obj=>{
+                                    var temp = {
+                                        id:obj.id
+                                    }
+                                    array.push(temp)
+                                })
+                                array.push({id:this.selectRoleId})
+                                var updateData = {
+                                    id:authId,
+                                    linkRoles:array
+                                }
+                                await this.$obj.Authority.updateMenuAccessAuthority(JSON.stringify(updateData))
+                            }
+                        })
+                        children.originalAccessAuthorities.forEach(async(authId)=>{ //移除的權限
+                            var index = children.accessAuthorities.indexOf(authId) //先檢查原先是否有勾選
+                            if(index == '-1'){
+                                var linkaccess = children.linkAccessAuthorities.filter((item,index)=> item.id==authId)
+                                var array = [] //先把原本的角色放入 //再移除該角色
+                                linkaccess[0].linkRoles.forEach(obj=>{
+                                    if(obj.id !== this.selectRoleId){
+                                        var temp = {
+                                            id:obj.id
+                                        }
+                                        array.push(temp)
+                                    }
+                                })
+                                var updateData = {
+                                    id:authId,
+                                    linkRoles:array
+                                }
+                                await this.$obj.Authority.updateMenuAccessAuthority(JSON.stringify(updateData))
+                            }   
+                        })
+                    })
+                })
+                this.$message('更新成功')
             }
             this.innerVisible = false
+            
         },
 
     }

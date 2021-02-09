@@ -7,8 +7,8 @@ const authority = {
     apiGetAllMainMenuAuthority(){ return req('get','/mainMenuSetting/a') },
     apiGetBuildingMainMenuAuthority(){ return req('get','/mainMenuSetting/buildings/'+this.getBid()) },
     apiGetMainMenuAuthority(mainMenuId){ return req('get','/mainMenuSetting/'+mainMenuId) },
-    apiPostMainMenuAuthority(data){ return req('post','/mainMenuSetting/buildings/'+this.getBid(),data) },
-    apiPostMainMenuAuthority(mainMenuId,data){ return req('post','/mainMenuSetting/mainMenu/'+mainMenuId,data) },
+    apiPostLevelOneMainMenuAuthority(data){ return req('post','/mainMenuSetting/buildings/'+this.getBid(),data) },
+    apiPostLevelTwoMainMenuAuthority(mainMenuId,data){ return req('post','/mainMenuSetting/mainMenu/'+mainMenuId,data) },
     apiPatchMainMenuAuthority(data){ return req('patch','/mainMenuSetting',data) },
     apiDeleteMainMenuAuthority(mainMenuId){ return req('delete','/mainMenuSetting/'+mainMenuId) },
     //權限管理

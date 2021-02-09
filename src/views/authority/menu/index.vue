@@ -3,12 +3,12 @@
            <el-row :gutter="32">
                <el-col :xs="24" :sm="24" :md="24" :lg="7">
                     <div class="chart-wrapper">
-                        <Select 
+                        <!-- <Select 
                             class="select right-menu-item"
                             v-bind="selectAttrs" 
                             v-on:handleSelect="handleSelect"
                             style="width:100%">
-                        </Select>
+                        </Select> -->
 
                         <menu-tree 
                             v-bind="treeAttrs"
@@ -32,7 +32,7 @@
         </div>
 </template>
 <script>
-import { getRoutes } from '@/utils/router'
+import { mapGetters } from 'vuex'
 
 export default {
     components:{ 
@@ -40,6 +40,11 @@ export default {
         Select: () => import('@/components/Select/index.vue'),
         menuTree: () => import('@/components/Tree/menuTree.vue'),
         Dialog:() => import('@/components/Dialog/index.vue'),
+    },
+    watch:{
+        async buildingid(){
+            this.data = await this.$obj.Authority.getBuildingMenu()
+        }
     },
     data(){
         return{
@@ -94,12 +99,9 @@ export default {
         }
     },
     computed: {
-        selectAttrs() {
-            return {
-                selectData: this.selectData,
-                title:'Admin'
-            }
-        },
+        ...mapGetters([
+            'buildingid'
+        ]),
         treeAttrs(){
             return{
                 data:this.data,
@@ -133,26 +135,24 @@ export default {
         },
     },
     async mounted() {
-        //await this.getAllRoutes()
-        await this.getSelectData()
+        this.data = await this.$obj.Authority.getBuildingMenu()
     },
     methods:{
-        async getAllRoutes() {
-            this.data = getRoutes(this.$store.getters.permission_routes)
-            this.listQueryParams.total = 0
-        },
-        async getSelectData(){
-            var data = await this.$obj.Building.getAllBuilding(true)
-            this.selectData = data
-        },
-        async handleSelect(content){
-            this.$store.dispatch('building/setbuildingid',content[0].id)
-            this.data = await this.$obj.Authority.getBuildingMenu()
-        },
+        // async getAllRoutes() {
+        //     this.data = getRoutes(this.$store.getters.permission_routes)
+        //     this.listQueryParams.total = 0
+        // },
+        // async getSelectData(){
+        //     var data = await this.$obj.Building.getAllBuilding(true)
+        //     this.selectData = data
+        // },
+        // async handleSelect(content){
+        //     this.$store.dispatch('building/setbuildingid',content[0].id)
+        //     this.data = await this.$obj.Authority.getBuildingMenu()
+        // },
         async handleTreeNode(node,data){
             this.tableData = data.children
             this.selectId = data.id
-            console.log(this.selectId)
         },
         async handleTableRow(index, row, option){
             console.log(index, row, option)
@@ -173,22 +173,29 @@ export default {
                     this.$message('刪除成功')
                     this.data = await this.$obj.Authority.getBuildingMenu()
                     this.selectId = temp
-                    this.tableData = await this.$obj.Authority.getBuildingMenuBelow(this.selectId)
-                    console.log(JSON.stringify(this.tableData))
+                    var d = this.data[0].children.filter((item, index) => item.id == this.selectId )
+                    this.tableData = this.selectId == '-1' ? this.data[0].children : d[0].children
                 }
             }
             else if(option === '新增'){
-                this.dialogButtonsName = [
-                { name:'儲存',type:'primary',status:'create'},
-                { name:'取消',type:'info',status:'cancel'}]
-                this.innerVisible = true
-                this.dialogStatus = 'create'
+                if(this.selectId == ''){
+                    this.$message({
+                        message: '請選擇要新增的父節點',
+                        type: 'warning'
+                    })
+                }else{
+                    this.dialogButtonsName = [
+                    { name:'儲存',type:'primary',status:'create'},
+                    { name:'取消',type:'info',status:'cancel'}]
+                    this.innerVisible = true
+                    this.dialogStatus = 'create'
+                }
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,content)
-            content.sort = content.sort.toString()
             if(index === 'update'){
+                content.sort = content.sort.toString()
                 this.data = await this.$obj.Authority.updateBuildingMenu(JSON.stringify(content))
                 if(this.data){
                     this.$message('更新成功')
@@ -197,9 +204,14 @@ export default {
                 }
                 this.tableData = []
             }else if(index === 'create'){
-                console.log(this.selectId)
-                this.data = await this.$obj.Authority.postBuildingMenu(JSON.stringify(content))
-                if(this.data){
+                content.sort = content.sort.toString()
+                var isOk = false
+                if(this.selectId == '-1'){
+                    isOk = await this.$obj.Authority.postBuildingMenu(null,JSON.stringify(content))
+                }else{
+                    isOk = await this.$obj.Authority.postBuildingMenu(this.selectId,JSON.stringify(content))
+                }
+                if(isOk){
                     this.$message('新增成功')
                     this.selectId = ''
                     this.data = await this.$obj.Authority.getBuildingMenu()

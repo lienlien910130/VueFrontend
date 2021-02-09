@@ -11,12 +11,31 @@
       <el-row style="height:45px">
         <template v-if="device!=='mobile'">
         
-        <i class="el-icon-office-building icon" />
+        <!-- <i class="el-icon-office-building icon" /> -->
           <!-- <Select 
           class="select right-menu-item"
           v-bind="selectAttrs" 
           v-on:handleSelect="handleSelect">
           </Select> -->
+
+        <el-dropdown 
+          class="avatar-container right-menu-item" trigger="click">
+            <div class="avatar-wrapper">
+              <i class="el-icon-office-building icon" />
+              <span style="margin-left:3px">{{  buildingName  }}</span>
+            </div>
+            <el-dropdown-menu 
+            slot="dropdown" 
+            class="user-dropdown" 
+            >
+              <el-dropdown-item 
+              v-for="item in selectData"
+              :key="item.id"
+              @click.native="handleSelect(item)">
+                {{ item.label }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+        </el-dropdown>
 
         <Screenfull id="screenfull" class="right-menu-item hover-effect" />
       </template>
@@ -124,6 +143,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+
 var padDate = function (value) {
   return value <10 ? '0' + value:value;
 }
@@ -138,7 +158,8 @@ export default {
       'account',
       'name',
       'id',
-      'device'
+      'device',
+      'buildingarray'
     ]),
     selectAttrs() {
       return {
@@ -153,9 +174,10 @@ export default {
         var t = new Date().toLocaleString()
         _this.date = new Date()
       }, 1000)
-      if(this.account !== 'mf01'){
-        await this.getBuilding()
-      }
+      await this.getBuilding()
+      // if(this.account !== 'mf01'){
+      //   await this.getBuilding()
+      // }
   },
   filters: {
       formatDate:function (value) {
@@ -170,6 +192,11 @@ export default {
          + seconds
       }
   },
+  watch:{
+      buildingarray(){
+        console.log('buildingarray',this.buildingarray)
+      }
+  },
   beforeDestroy() { 
     if (this.timer) 
     { 
@@ -180,7 +207,8 @@ export default {
     return {
       selectData:[],
       options:[],
-      date: new Date()
+      date: new Date(),
+      buildingName:''
     }
   },
   methods: {
@@ -189,24 +217,30 @@ export default {
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
     async getBuilding() {
-      await this.$api.building.apiGetBuilding().then(response=>{
-        this.$store.dispatch('building/setbuildingid',response.result[0].id)
-        response.result.forEach(item => {
-              let _array = { 
-                  id : item.id, 
-                  label: item.buildingName, 
-                  value: item.id,
-                  up: item.floorsOfAboveGround,
-                  down: item.floorsOfUnderground
-              }
-              this.options.push(_array)  
-            })
-        this.selectData = this.options
-      })
+      this.selectData = await this.$obj.Building.getAllBuilding(true)
+      this.$store.dispatch('building/setbuildingid',this.selectData[0].id)
+      this.$store.dispatch('building/setbuildingarray',this.$obj.Building.buildingArray)
+      this.buildingName = this.selectData[0].label
+      // await this.$api.building.apiGetBuilding().then(response=>{
+      //   this.$store.dispatch('building/setbuildingid',response.result[0].id)
+      //   console.log(JSON.stringify(response.result))
+      //   response.result.forEach(item => {
+      //         let _array = { 
+      //             id : item.id, 
+      //             label: item.buildingName, 
+      //             value: item.id,
+      //             up: item.floorsOfAboveGround,
+      //             down: item.floorsOfUnderground
+      //         }
+      //         this.options.push(_array)  
+      //       })
+      //   this.selectData = this.options
+      // })
       // this.handleSelect(this.selectData)
     },
     handleSelect(content){
-      this.$store.dispatch('building/setbuildingid',content[0].id)
+      this.$store.dispatch('building/setbuildingid',content.id)
+      this.buildingName = content.label
     },
     padDate(value) {
         return value <10 ? '0' + value:value;

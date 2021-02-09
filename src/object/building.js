@@ -4,7 +4,8 @@ let Building = {
     building : {},
     userArray:[],
     buildingContactunit:[],
-
+    buildingArray :[],
+    
     getBuildingDefaultState : function() {
         return {
             buildingName: '',
@@ -24,16 +25,25 @@ let Building = {
     getAllBuilding: async function(isSelect){
         var data = await api.building.apiGetBuilding().then(response => {
             var result = response.result.sort((x,y) => x.id - y.id)
-            if(isSelect){
-                var mapArray = result.map(v => {
-                    return {
-                        id:v.id,
-                        value: v.id,
-                        label: v.buildingName
-                    }
-                })
-                return mapArray
-            }
+            var mapArray = result.map(v => {
+                return {
+                    id:v.id,
+                    value: v.id,
+                    label: v.buildingName
+                }
+            })
+            this.buildingArray = mapArray
+            // if(isSelect){
+            //     var mapArray = result.map(v => {
+            //         return {
+            //             id:v.id,
+            //             value: v.id,
+            //             label: v.buildingName
+            //         }
+            //     })
+            //     this.buildingArray = mapArray
+            //     return mapArray
+            // }
             return result
         }).catch(error=>{
             return []

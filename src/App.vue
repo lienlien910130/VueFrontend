@@ -91,6 +91,12 @@ width: 0 !important;height: 0;
   overflow-y: auto;
   overflow-x: hidden;
 }
+.el-table .cell{
+  font-size: 18px;
+}
+.el-checkbox__label{
+  font-size: 18px;
+}
 /* .el-form-item__label{
   font-size: 16px;
 } */
