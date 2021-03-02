@@ -1,6 +1,8 @@
 <template>
 <div>
-  <el-button v-if="title !== 'building'" type="primary" @click="OpenCreate" style="float:right">新增</el-button>
+  <el-button 
+    v-if="title !== 'building'" type="primary" 
+    @click="OpenCreate" style="float:right">新增</el-button>
   <el-table
     :data="tableData.filter(data => !search ||  data.name.toLowerCase().includes(search.toLowerCase()))"
     :key="itemkey"
@@ -29,12 +31,12 @@
                 {{ scope.row[scope.column.property] | changeStatus }}</span>
               <span v-else-if="scope.column.property == 'removable'"> 
                 {{ scope.row[scope.column.property] | changeRemoveable }}</span>
-              <span v-else-if="scope.column.property == 'dateOfFailure' || 
+              <!-- <span v-else-if="scope.column.property == 'dateOfFailure' || 
               scope.column.property == 'dateOfCallRepair' || 
               scope.column.property == 'completedTime' "> 
                 {{ scope.row[scope.column.property] | dataStr }}</span>
               <span v-else-if="scope.column.property == 'processStatus'"> 
-                {{  changeprocessStatus(scope.row[scope.column.property]) }}
+                {{  optionfilter(scope.row[scope.column.property]) }}
               </span>
               <span v-else-if="scope.column.property == 'linkDevices'"> 
                 {{ changeDevice(scope.row[scope.column.property]) }}
@@ -45,7 +47,7 @@
               <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
                 <i v-if="scope.row[scope.column.property] == null " class="el-icon-close"></i>
                 <i v-else class="el-icon-check"></i>
-              </span>
+              </span> -->
               <span v-else-if="scope.column.property == 'linkOwners' || 
               scope.column.property == 'linkFireManagers'"> 
                 {{ changeUserName(scope.row[scope.column.property]) }}
@@ -57,10 +59,10 @@
         </el-table-column>
     </template>
     <el-table-column
-      width="300px"
+      width="200px"
       align="right">
-      <template slot="header" slot-scope="scope" >
-        <el-input
+      <template slot="header" >
+          <el-input
           v-model="search"
           size="mini"
           placeholder="請輸入關鍵字搜尋"/>
@@ -98,7 +100,8 @@
 </template>
 
 <script>
-import moment from 'moment';
+import { mapGetters } from 'vuex'
+import moment from 'moment'
 
 export default {
   props:{
@@ -158,6 +161,84 @@ export default {
     },
   },
   computed:{
+    ...mapGetters([
+      'buildingoptions',
+      'buildingusers',
+      'buildingdevices',
+      'buildingcontactunit'
+    ]),
+    optionfilter(){
+      return function (a) {
+        if(a !== null && a !== undefined && this.buildingoptions.length>0){
+          let _array = this.buildingoptions.filter((item, index) => 
+              item.id == a 
+          )
+          return _array[0].textName
+        }else{
+          return ""
+        }
+      }   
+    },
+    changeDevice(){
+      return function (val) {
+        var array = []
+        if(val !== null){
+          val.forEach(item=>{
+            var data = this.buildingdevices.filter(element=>{
+              return item.id == element.id
+            })
+            array.push(data[0].name)
+          })
+          return array.toString()
+        }
+        return ''
+      }
+    },
+    changeContainUnit(){
+      return function (val) {
+        var array = []
+        if(val !== null){
+          val.forEach(item=>{
+            var data = this.buildingcontactunit.filter(element=>{
+              return item.id == element.id
+            })
+            array.push(data[0].name)
+          })
+          return array.toString()
+        }
+        return ''
+      } 
+    },
+    changeUserName(){
+      return function (val) {
+        var array = []
+        if(val !== null){
+          val.forEach(item=>{
+            var data = this.buildingusers.filter(element=>{
+              return item.id == element.id
+            })
+            array.push(data[0].name)
+          })
+          return array.toString()
+        }
+        return ''
+      } 
+    },
+    changeLinkRoles(){
+      return function (val) {
+        var array = []
+        if(val !== null){
+          val.forEach(element => {
+          var data = this.$obj.Authority.buildingRole.filter(item=>{
+              return item.id == element
+            })
+            array.push(data[0].name)
+          })
+          return array.toString()
+        }
+        return ''
+      } 
+    },
     page: function() {
       return this.listQueryParams.page || 1
     },
@@ -168,72 +249,13 @@ export default {
       return this.listQueryParams.total || 0
     }
   },
-  watch:{
-  },
   data(){
     return{
-      search:''
+      search:'',
+      original:[]
     }
   },
   methods:{
-    changeLinkRoles: function(val){
-      if(val !== null){
-        var _temp = []
-        val.forEach(element => {
-          var data = this.$obj.Authority.buildingRole.filter(item=>{
-            return item.id == element
-          })
-          _temp.push(data[0].name)
-        })
-        return _temp.toString()
-      }else{
-        return ''
-      }
-    },
-    async changeprocessStatus(val){
-      var data = this.$obj.Setting.buildingOptions.filter(item=>{
-            return item.id == val
-      })
-      return data[0].textName
-      // await this.$api.setting.apiGetOptionById(val).then(response =>{
-      //   label = response.result[0].textName
-        
-      // })
-      // return label
-    },
-    changeUserName(val){
-      var array = []
-      val.forEach(item=>{
-        array.push(item.name)
-      })
-      return array.toString()
-    },
-    changeDevice(val){
-      var array = []
-      if(val !== null){
-        val.forEach(item=>{
-          var data = this.$obj.Device.buildingDevice.filter(element=>{
-            return item.id == element.id
-          })
-          array.push(data[0].name)
-        })
-        return array.toString()
-      }
-      return ''
-    },
-    changeContainUnit(val){
-      var array = []
-      if(val !== null){
-        val.forEach(item=>{
-          var data = this.$obj.Building.buildingContactunit.filter(element=>{
-            return item.id == element.id
-          })
-          array.push(data[0].name)
-        })
-        return array.toString()
-      }
-      return ''
-    },
     OpenCreate(){
       this.$emit('handleTableRow', '', '', '新增')
     },
@@ -263,6 +285,21 @@ export default {
       this.listQueryParams.page = val
       this.$emit('update:listQueryParams', this.listQueryParams)
       this.$emit('clickPagination', this.listQueryParams)
+    },
+    onAddRow(){
+      this.original = this.$deepClone(this.tableData)
+      var _temp = {
+          "dateOfFailure":"",
+          "dateOfCallRepair":"",
+          "completedTime":"",
+          "processContent":"",
+          "note":"",
+          "linkDevices":[],
+          "linkInspectionLacks":[],
+          "linkContactUnits":[],
+          "isEdit":true
+      }
+      this.tableData.push(_temp)
     },
   }
 }

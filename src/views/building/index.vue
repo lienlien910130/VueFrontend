@@ -44,8 +44,8 @@
 
                 </el-form>
                 <div style="float:right">
-                <el-button type="primary" @click="onPost">新增</el-button>
-                <el-button type="primary" @click="onEdit">更新</el-button>
+                <el-button v-if="type=='create'" type="primary" @click="onPost">新增</el-button>
+                <el-button v-else type="primary" @click="onEdit">更新</el-button>
                 <el-button type="info" @click="onCancel">清空</el-button>
                 </div>
         </div>
@@ -126,6 +126,7 @@ export default {
       }
     }
     return {
+      type:'create',
       origin: {},
       form: {},
       formRules: {
@@ -136,8 +137,8 @@ export default {
         floorsOfAboveGround: [{ required: true, trigger: 'blur', validator: vaildateInt }],
         floorsOfUnderground: [{ required: true, trigger: 'blur', validator: vaildateInt }],
         licenseNumber: [{ required: true, trigger: 'blur', validator: validateText }],
-        ownerId: [{ required: false, trigger: 'change', message: '請選擇所有權人' }],
-        fireManagerId: [{ required: false, trigger: 'change', message: '請選擇防火管理人' }]
+        linkOwners: [{ required: false, trigger: 'change', message: '請選擇所有權人' }],
+        linkFireManagers: [{ required: false, trigger: 'change', message: '請選擇防火管理人' }]
       },
       floorsArray:[],
       listQueryParams:{
@@ -160,19 +161,15 @@ export default {
       tablebuttonsName:['編輯','刪除']
     }
   },
-  watch:{
-    
-  },
   async mounted() {
     await this.getAllBuilding()
   },
   methods: {
-    async init(){
-      
-    },
     async getAllBuilding(){
       this.tableData = []
-      var data = await this.$obj.Building.getAllBuilding(false)
+      var data = await this.$obj.Building.getAllBuilding()
+      this.$store.dispatch('building/setbuildingid',data[0].id)
+      this.$store.dispatch('building/setbuildingarray',this.$obj.Building.buildingArray)
       this.listQueryParams.total = data.length
       this.tableData = data.filter((item, index) => 
         index < this.listQueryParams.limit * this.listQueryParams.page && 
@@ -197,7 +194,6 @@ export default {
         })
     },
     async onEdit(){
-      console.log(JSON.stringify(this.form))
       this.$refs.form.validate(async(valid) => {
           if (valid) {
             var isUpadte = await this.$obj.Building.updateBuildingInfo(JSON.stringify(this.form))
@@ -214,6 +210,7 @@ export default {
     },
     onCancel() {
       this.form = {}
+      this.type = 'create'
       this.$nextTick(() => {
         this.$refs.form.clearValidate()
       })
@@ -235,7 +232,8 @@ export default {
     async handleTableRow(index, row, option){
         console.log(index, row, option)
         if(option === '編輯'){
-            this.form = this.$deepClone(row)
+          this.type = 'edit'
+          this.form = this.$deepClone(row)
         }else if(option === '刪除'){
           var isOk = await this.$obj.Building.deleteBuilding(row.id)
           if(isOk){
@@ -256,7 +254,6 @@ export default {
 .block-wrapper {
     background: #fff;
     padding: 25px;
-    margin-bottom: 32px;
     height: 750px;
 }
 </style>

@@ -3,11 +3,15 @@ import User from '@/object/user'
 import Device from '@/object/device'
 import Setting from '@/object/setting'
 import Authority from '@/object/authority'
+import Files from '@/object/files'
+import Report from '@/object/report'
 
 export default {    
     Building,
     User,
     Device,
     Setting,
-    Authority
+    Authority,
+    Files,
+    Report
 }

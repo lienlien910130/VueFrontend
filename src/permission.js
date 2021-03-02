@@ -14,14 +14,10 @@ router.beforeEach(async(to, from, next) => {
   NProgress.start()
   document.title = `${to.meta.title} - 智慧消防管理平台`
   const hasToken = getToken()
-  
   // if (localStorage.getItem("store") ) {
   //   store.replaceState(Object.assign({}, store.state ,JSON.parse(sessionStorage.getItem("store"))))
   //   console.log(JSON.stringify( store.getters.permission_routes))
   // }
-
-  //if(to.meta.needLogin == true){ //判斷頁面是否需要登入
-    
     if (hasToken) {
       
       if (to.path === '/login') {
@@ -37,18 +33,18 @@ router.beforeEach(async(to, from, next) => {
           try {
             // get user info
             await store.dispatch('user/getInfo')
-            const isMercuryfire = store.getters.account == 'mf01'
-            const accessRoutes = await store.dispatch('permission/generateRoutes', isMercuryfire)
+            const isSystem = store.getters.account == 'System'
+            const accessRoutes = await store.dispatch('permission/generateRoutes', isSystem)
             router.addRoutes(accessRoutes)
-            
-            next({ ...to, replace: true })
-
+            next({ ...to, replace: true }) 
           } catch (error) {
             // remove token and go to login page to re-login
-            await store.dispatch('user/resetToken')
+            await store.dispatch('user/logout')
             await store.dispatch('building/resetBuildingid')
+            await store.dispatch('building/resetBuildingarray')
             Message.error(error || 'Has Error')
             next(`/login?redirect=${to.path}`)
+            alert('error'+error)
             NProgress.done()
           }
         }
@@ -64,10 +60,6 @@ router.beforeEach(async(to, from, next) => {
         NProgress.done()
       }
     }
-  // }else{
-  //   next();
-  // }
-  
 })
 
 router.afterEach(() => {

@@ -112,8 +112,8 @@ export default {
       identifyCode: '',
       identifyCodes: "0123456789",
       loginForm: {
-        username: '',
-        password: '',
+        username: 'System',
+        password: '1234567',
         identifyinputCode: ''
       },
       loginRules: {
@@ -175,6 +175,7 @@ export default {
       for (let i = 0; i < len; i++) {
         this.identifyCode += data[this.randomNum(0, data.length - 1)]
       }
+      // this.loginForm.identifyinputCode = this.identifyCode
     },
     //取得版本解析
     getVersion() {

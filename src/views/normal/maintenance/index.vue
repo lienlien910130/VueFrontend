@@ -1,50 +1,83 @@
 <template>
 
         <div class="editor-container">
-            <div class="left">
-              <el-form  class="report-form" label-width="auto" :label-position="label">
-                <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                    <div class="chart-wrapper">
-                      <el-form-item label="場所名稱">
-                        <span>{{ this.$obj.Building.building.buildingName }}</span>
-                      </el-form-item>
-                      <el-form-item label="下次維護保養日期">
-                        <br><br>
-                        <span class="report">xxx</span>
-                      </el-form-item>
+            <el-row :gutter="20">
+                <el-col :xs="24" :sm="24" :md="24" :lg="12">
+                <div class="chart-wrapper">
+                    <div class="verticalhalfdiv">
+                    <div class="label">
+                        <span>場所名稱 :</span>
                     </div>
+                    <div class="content">
+                        <span> {{ this.buildinginfo[0].buildingName }}</span> 
+                    </div>
+                    </div>
+                    <div class="verticalhalfdiv">
+                    <div class="label">
+                        <span>下次保養時間 :</span>
+                    </div>
+                    <div class="content">
+                        <span class="report"> 2021/03/20 </span> 
+                    </div>
+                    </div>
+                </div>
                 </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                    <div class="chart-wrapper">
-                        <el-form-item label="管理權人">
-                            <div
-                            v-for="(item,index) in this.$obj.Building.building.linkOwners"
-                            :key="index">
-                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
+                <el-col :xs="24" :sm="24" :md="24" :lg="12">
+                <div class="chart-wrapper">
+                    <el-col :xs="24" :sm="24" :md="24" :lg="12">
+                    <div class="horizontalhalfdiv">
+                        <div class="label">
+                        <span>管理權人 :</span>
+                        </div>
+                        <div class="content">
+                        <div
+                            v-for="(item,index) in this.buildinginfo[0].linkOwners"
+                            :key="index" class="user">
+                            <div style="padding-bottom:2px">
+                                姓名 ： {{ item.name }}
                             </div>
-                        </el-form-item>
-                        <el-form-item label="防火管理人">
-                            <div
-                            v-for="(item,index) in this.$obj.Building.building.linkFireManagers"
-                            :key="index">
-                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
+                            <div>
+                                電話 ： {{ item.cellPhoneNumber }}
                             </div>
-                        </el-form-item>
+                        </div>
+                        </div>
                     </div>
-                </el-col>
-              </el-form>
-            </div>
-            <div class="right">
-                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                    <div class="chart-wrapper">
-                        <Block 
-                        :list-query-params.sync="listQueryParams"
-                        :selectSetting.sync="selectSetting"
-                        v-bind="blockAttrs" 
-                        v-on="blockEvent" ></Block>
+                    </el-col>
+                    <el-col :xs="24" :sm="24" :md="24" :lg="12">
+                    <div class="horizontalhalfdiv">
+                        <div class="label">
+                        <span>防火管理人 :</span>
+                        </div>
+                        <div class="content">
+                        <div
+                            v-for="(item,index) in this.buildinginfo[0].linkFireManagers"
+                            :key="index" class="user">
+                            <div style="padding-bottom:2px">
+                                姓名 ： {{ item.name }}
+                            </div>
+                            <div>
+                                電話 ： {{ item.cellPhoneNumber }}
+                            </div>
+                        </div> 
+                        </div>
                     </div>
+                    </el-col>
+                </div>
                 </el-col>
-            </div>
+            </el-row>
+            <el-row :gutter="32">
+              <el-col :xs="24" :sm="24" :md="24" :lg="24">
+                <div class="wrapper">
+                  <div class="block-wrapper">
+                      <Block 
+                      :list-query-params.sync="listQueryParams"
+                      :selectSetting.sync="selectSetting"
+                      v-bind="blockAttrs" 
+                      v-on="blockEvent"></Block>
+                  </div>
+                </div>
+              </el-col>
+          </el-row>
             <Dialog 
             v-if="innerVisible === true"
             v-bind="dialogAttrs" 
@@ -52,7 +85,8 @@
         </div>
 </template>
 <script>
-import { setSelectSetting } from '@/utils/index'
+import { mapGetters } from 'vuex'
+import { setSelectSetting,changeLink } from '@/utils/index'
 
 export default {
     components:{ 
@@ -62,7 +96,8 @@ export default {
     data(){
         return{
             maintainListId:'',
-            maintainFiles:'',
+            maintainId:'',
+            maintainFiles:[],
             tableConfig: [
               {
                 label: '名稱',
@@ -82,38 +117,50 @@ export default {
                 label: '細項',
                 prop: 'linkMaintains',
                 format:'openmaintain',
-                mandatory:true, message:'請選擇建立時間',isSelect:false,isSort:false
+                mandatory:false, message:'請選擇',isSelect:false,isSort:false,type:'array',typemessage:''
               },
               {
                 label: '檢附文件',
                 prop: 'file',
-                format:'openfiles',
-                mandatory:true, message:'請選擇建立時間',isSelect:false,isSort:false
-              }
+                format:'openfiles',isSelect:false,isSort:false
+              },
             ],
-            buttonsName:[
-                { name:'編輯',type:'primary',status:'open'},
-                { name:'刪除',type:'info',status:'delete'}], 
             blockData:[],
             deviceList:[],
             options:[],
             innerVisible:false,
             dialogStatus:'',
             dialogData:[],
+            dialogTitle:'',
+            dialogSelect:[],
+            dialogConfig:[],
             dialogButtonsName:[],
             listQueryParams:{
                 page: 1,
                 limit: 10,
                 total: 0
             },
+            maintainlistQueryParams:{
+                page: 1,
+                limit: 5,
+                total: 0
+            },
+            maintainArray:[], //存放linkmaintain
+            origin:[], //存放maintainlist
             selectSetting:[],
             sortArray:[],
             formtableData:[],
             formtableconfig:[],
-            formtablebuttonsName:[]
+            
         }
     },
     computed: {
+        ...mapGetters([
+            'id',
+            'buildingid',
+            'buildinginfo',
+            'buildingdevices'
+        ]),
         label() {
             if (this.$store.state.app.device === 'mobile') {
                 return 'top'
@@ -124,11 +171,9 @@ export default {
         blockAttrs() {
             return {
                 blockData: this.blockData,
-                buttonsName:this.buttonsName,
                 config: this.tableConfig,
                 title:'maintain',
                 deviceList:this.deviceList,
-                options:this.options,
                 sortArray:this.sortArray
             }
         },
@@ -140,37 +185,70 @@ export default {
         },
         dialogAttrs(){
             return{
-                title:'maintain',
+                title:this.dialogTitle,
                 visible: this.innerVisible,
                 dialogData: this.dialogData,
                 dialogStatus: this.dialogStatus,
                 buttonsName: this.dialogButtonsName,
-                config: this.tableConfig,
-                selectData: this.deviceList,
-                dialogOptions: this.options,
+                config: this.dialogConfig,
+                selectData: this.dialogSelect,
                 files:this.maintainFiles,
                 //表格
                 formtableData: this.formtableData,
                 formtableconfig:this.formtableconfig,
-                formtablebuttonsName:this.formtablebuttonsName
+                listQueryParams:this.maintainlistQueryParams
             }
         }
     },
-    async mounted() {
-        await this.getOptions()
-        await this.getBuildingDevicesManage()
-        await this.getBuildingMaintain()
-        await this.getBuildingContactunitList()
-        await this.setSelectSetting()
+    watch: {
+      buildingid:{
+        handler:async function(){
+            await this.init()
+        },
+        immediate:true
+      },
+      buildingdevices:{
+        handler:async function(){
+            this.deviceList = this.buildingdevices.map(v => {
+                this.$set(v, 'value', v.id) 
+                this.$set(v, 'label', v.name) 
+                this.$set(v, 'id', v.id) 
+                return v
+            })
+        },
+        immediate:true
+      }
     },
     methods:{
+        async init(){   
+            this.maintainlistQueryParams = {
+                page: 1,
+                limit: 5,
+                total: 0
+            }
+            await this.saveBuildingMaintain()
+            await this.getBuildingMaintain()
+            await this.setSelectSetting()
+        },
+        async saveBuildingMaintain(){
+            var data = await this.$obj.Device.getBuildingMaintainList()
+            this.origin = this.$deepClone(data)
+        },
         async getBuildingMaintain(sort = null){ //取得大樓維護保養
             this.blockData = []
-            var data = await this.$obj.Device.getBuildingMaintainList()
+            var data = this.$deepClone(this.origin)
             this.listQueryParams.total = data.length
             this.selectSetting.forEach(element=>{
-                if(element.select != ''){
-                    data = data.filter((item, index) => item[element.prop] == element.select )
+                if(element.select !== ''){
+                    data = data.filter(function(item,index){
+                        if(typeof item[element.prop] !== 'object'){
+                            return item[element.prop] == element.select
+                        }else{
+                            if(item[element.prop].length > 0){
+                                return item[element.prop][0].id == element.select
+                            }
+                        }
+                    })
                 }
             })
             data = data.filter((item, index) => 
@@ -201,149 +279,260 @@ export default {
             this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
             this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
         },
-        async getOptions(){
-            var data = await this.$obj.Setting.getAllOption()
-            this.options = data.map(v => {
-                this.$set(v, 'value', v.id) 
-                this.$set(v, 'label', v.textName) 
-                this.$set(v, 'id', v.id) 
-                return v
-            })
-        },
-        async getBuildingDevicesManage(){
-            this.deviceList = []
-            var data = await this.$obj.Device.getBuildingDevicesManage()
-            this.deviceList = data.map(v => {
-                this.$set(v, 'value', v.id) 
-                this.$set(v, 'label', v.name) 
-                this.$set(v, 'id', v.id) 
-                return v
-            })
-        },
-        async getBuildingContactunitList(){
-            await this.$obj.Building.getBuildingContactunit()
-            // this.deviceList = data.map(v => {
-            //     this.$set(v, 'value', v.id) 
-            //     this.$set(v, 'label', v.name) 
-            //     this.$set(v, 'id', v.id) 
-            //     return v
-            // })
-        },
-        async getMaintainListFiles(content){
-            this.maintainFiles = []
-            await this.$api.files.apiGetMaintainsListFiles(content).then(response =>{
-                response.result.forEach( item => {
-                    this.maintainFiles.push(item)
-                })
-            })
-        },
         async handleBlock(title,index, content) { //維護保養的操作
-            console.log(index,JSON.stringify(content))
+            console.log(title,index,JSON.stringify(content))
             this.dialogData = []
+            this.dialogConfig = this.tableConfig
             if(index === 'open'){
+                this.dialogTitle = 'maintainList' //為了控制dialog大小
+                this.maintainListId = content.id
                 this.dialogData.push(content)
+                this.dialogConfig = this.tableConfig
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
-                this.formtableData = content.linkMaintains
+                this.maintainArray = this.$deepClone(content.linkMaintains)
+                var data =  this.$deepClone(this.maintainArray)
+                this.maintainlistQueryParams.total = this.maintainArray.length
+                this.formtableData = data.filter((item, index) => 
+                    index < this.maintainlistQueryParams.limit * this.maintainlistQueryParams.page && 
+                    index >= this.maintainlistQueryParams.limit * (this.maintainlistQueryParams.page - 1))
                 this.formtableconfig = [
                     { label:'故障日期' , prop:'dateOfFailure',format:'YYYY-MM-DD', mandatory:false, message:'請選擇故障日期'},
                     { label:'叫修日期' , prop:'dateOfCallRepair',format:'YYYY-MM-DD',  mandatory:true,message:'請選擇叫修日期'},
                     { label:'完成時間' , prop:'completedTime',format:'YYYY-MM-DD', mandatory:false, message:'請選擇完成時間'},
                     { label:'處理進度' , prop:'processStatus',format:'MaintainProcessOptions', mandatory:false, message:'請選擇處理進度'},
-                    { label:'處理內容' , prop:'processContent',format:'', mandatory:true, message:'請輸入內容'},
-                    { label:'備註' , prop:'note',format:'', mandatory:false,message:'請輸入備註'},
-                    { label:'設備' , prop:'linkDevices',format:'', mandatory:false,message:'請選擇角色'},
-                    { label:'改善廠商' , prop:'linkContactUnits',format:'', mandatory:false,message:'請選擇角色'},
-                    { label:'檢修申報項目' , prop:'linkInspectionLacks',format:'', mandatory:false,message:'請選擇角色'}
+                    { label:'處理內容' , prop:'processContent',format:'processContentSelect', mandatory:true, message:'請輸入內容'},
+                    { label:'改善廠商' , prop:'linkContactUnits',format:'contactunitSelect', mandatory:true,message:'請選擇廠商',type:'array',typemessage:''},
+                    { label:'檢修申報' , prop:'linkInspectionLacks',format:'inspectionSelect', mandatory:false,message:'請選擇申報',type:'array',typemessage:''},
+                    { label:'設備' , prop:'linkDevices',format:'deviceSelect', mandatory:true,message:'請選擇設備',type:'array',typemessage:''},
+                    { label:'備註' , prop:'note',format:'textarea', mandatory:false,message:'請輸入備註'},
                 ]
-                this.formtablebuttonsName = ['編輯','刪除']
             }else if(index === 'delete'){
-                await this.$api.device.apiDeleteMaintainsList(content).then(async(response) => {
+                var isDelete = await this.$obj.Device.deleteMaintainList(content)
+                if(isDelete){
                     this.$message('刪除成功')
-                    await this.getBuildingMaintain()
-                })
-            }
-            else if(index === 'empty'){
+                    this.listQueryParams = {
+                        page: 1,
+                        limit: 10,
+                        total: 0
+                    }
+                    await this.init()
+                }
+            }else if(index === 'empty'){
+                this.dialogTitle = 'createmaintainlist'
+                this.dialogConfig = [{
+                                label: '名稱',
+                                prop: 'name',
+                                format:'MaintainContentOptions',
+                                mandatory:true, message:'請選擇名稱',isSelect:true,options:[],
+                                        selectType:'options',select:'',isSort:true
+                            },
+                            {
+                                label: '建立時間',
+                                prop: 'createdDate',
+                                format:'YYYY-MM-DD',
+                                mandatory:true, message:'請選擇建立時間',isSelect:true,options:[],
+                                        selectType:'dateOfDate',select:'',isSort:true
+                            }]
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'create'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'create'
             }else if(index === 'openfiles'){
-                await this.getMaintainListFiles(content)
+                this.dialogTitle = 'uploadFiles'
                 this.maintainListId = content
+                this.maintainFiles = await this.$obj.Files.getBuildingMaintainListFiles(this.maintainListId)
                 this.dialogButtonsName = []
-                this.dialogTitle = 'maintainList'
                 this.innerVisible = true
                 this.dialogStatus = 'upload'
-            }else if(index === 'openmaintain'){
-                this.dialogButtonsName = []
-                this.dialogTitle = 'maintain'
-                this.innerVisible = true
-                this.dialogStatus = 'maintain'
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
-            console.log(title ,index,content)
-            if(index === 'update'){
-                await this.$api.device.apiPatchMaintainsList(JSON.stringify(content)).then(async(response) => {
-                    this.$message('更新成功')
-                    await this.getBuildingMaintain()
-                })
-                 this.innerVisible = false
-            }else if(index === 'create'){
-                await this.$api.device.apiPostMaintainsList(JSON.stringify(content)).then(async(response) => {
-                    this.$message('新增成功')
-                    await this.getBuildingMaintain()
-                })
-                 this.innerVisible = false
-            }else if(index === 'createfile'){
-                const formData = new FormData()
-                content.forEach(item => {
-                formData.append('file', item.raw)
-                })
-                await this.$api.files.apiPostMaintainsListFiles(this.maintainListId,formData).then(async(response)=>{
-                    this.$message('新增成功')
-                    await this.getMaintainListFiles(this.maintainListId)
-                })
-            }else if(index == 'deletefile'){
-                await this.$api.files.apiDeleteFile(content).then(async(response) =>{
-                    this.$message('刪除成功')
-                    await this.getMaintainListFiles(this.maintainListId)
-                })
-            }else if(index == 'cancel'){
-                this.innerVisible = false
+            console.log(title ,index,JSON.stringify(content))
+            if(title === 'maintain'){
+                await this.handleMaintain(title,index,content)
+            }else{
+                if(index === 'create' || index === 'update'){
+                    this.$delete(content,'linkMaintains')
+                    var isOk = index === 'update' ? 
+                    await this.$obj.Device.updateMaintainList(JSON.stringify(content)) : 
+                    await this.$obj.Device.postMaintainList(JSON.stringify(content))
+                    if(isOk){
+                        index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+                        await this.init()
+                        this.innerVisible = false
+                    }
+                }else if(index === 'createfile'){
+                    const formData = new FormData();
+                        content.forEach(item => {
+                        formData.append('file', item.raw)
+                    })
+                    isOk = await this.$obj.Files.postBuildingMaintainListFiles(this.maintainListId,formData)
+                    if(isOk){
+                        this.$message('上傳成功')
+                        this.maintainFiles = await this.$obj.Files.getBuildingMaintainListFiles(this.maintainListId)
+                    }
+                }else if(index === 'deletefile'){
+                    isOk = await this.$obj.Files.deleteFiles(content)
+                    if(isOk){
+                        this.$message('刪除成功')
+                        this.maintainFiles = await this.$obj.Files.getBuildingMaintainListFiles(this.maintainListId)
+                    }
+                }else if(index === 'cancel'){
+                    this.innerVisible = false
+                }else if(index === 'clickPagination'){
+                    this.maintainlistQueryParams = content
+                    this.formtableData = this.maintainArray.filter((item, index) => 
+                        index <  this.maintainlistQueryParams.limit *  this.maintainlistQueryParams.page && 
+                        index >=  this.maintainlistQueryParams.limit * ( this.maintainlistQueryParams.page - 1))
+                }
             }
         },
+        async handleMaintain(title ,index, content){
+            this.dialogData = []
+            this.dialogTitle = 'maintain'
+            this.dialogConfig = []
+            if(index === 'empty'){
+                this.dialogConfig = this.formtableconfig
+                this.dialogSelect= [] //檢修申報下拉選單
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'createmaintain'},
+                { name:'返回',type:'info',status:'cancel'}]
+                this.innerVisible = true
+                this.dialogStatus = 'create'
+            }else if(index === 'open'){
+                this.dialogConfig = this.formtableconfig    
+                var temp = this.$deepClone(content)
+                temp = changeLink('maintain',temp,'open')
+                this.dialogData.push(temp)
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'updatemaintain'},
+                { name:'取消',type:'info',status:'cancel'}]
+                this.innerVisible = true
+                this.dialogStatus = 'update'
+            }else if(index === 'delete'){
+                var isDelete = await this.$obj.Device.deleteMaintain(content)
+                if(isDelete){
+                    this.$message('刪除成功')
+                    await this.init()
+                    var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
+                    await this.handleBlock('maintainList','open',data)
+                }
+            }else if(index === 'createmaintain' || index === 'updatemaintain'){
+                content = changeLink('maintain',content,'')
+                var isOk = index === 'createmaintain' ? 
+                await this.$obj.Device.postMaintain(this.maintainListId,JSON.stringify(content)) : 
+                await this.$obj.Device.updateMaintain(JSON.stringify(content))
+                if(isOk){
+                    index === 'updatemaintain' ? this.$message('更新成功') : this.$message('新增成功')
+                    await this.init()
+                    var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
+                    await this.handleBlock('maintainList','open',data)
+                }
+            }else if(index === 'cancel'){
+                this.maintainlistQueryParams = {
+                    page: 1,
+                    limit: 5,
+                    total: 0
+                }
+                var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
+                await this.handleBlock('maintainList','open',data)
+            }else if(index === 'openfiles'){
+                this.dialogTitle = 'maintain'
+                this.maintainId = content.id
+                this.maintainFiles = await this.$obj.Files.getBuildingMaintainFiles(this.maintainId)
+                this.dialogButtonsName = []
+                this.innerVisible = true
+                this.dialogStatus = 'upload'
+            }else if(index === 'createfile'){
+                const formData = new FormData();
+                    content.forEach(item => {
+                    formData.append('file', item.raw)
+                })
+                isOk = await this.$obj.Files.postBuildingMaintainFiles(this.maintainListId,this.maintainId,formData)
+                if(isOk){
+                    this.$message('上傳成功')
+                    this.maintainFiles = await this.$obj.Files.getBuildingMaintainFiles(this.maintainId)
+                    console.log(JSON.stringify(this.maintainFiles))
+                }
+            }else if(index === 'deletefile'){
+                isOk = await this.$obj.Files.deleteFiles(content)
+                if(isOk){
+                    this.$message('刪除成功')
+                    this.maintainFiles = await this.$obj.Files.getBuildingMaintainFiles(this.maintainId)
+                }
+            }
+        }
     }
 }
 </script>
 <style lang="scss" scoped>
-.chart-wrapper {
+    .chart-wrapper {
         background: #fff;
-        padding: 5px 16px 0;
-        margin-bottom: 32px;
-        height: 280px;
-        overflow-x:hidden;
-        overflow-y:auto;
+        padding: 10px 10px;
+        margin-bottom: 30px;
+        height: 150px;
         width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        .verticalhalfdiv{
+          width: 100%;
+          min-height: 50%;
+          .label{
+            min-width: 30%;
+            display:inline-block;
+            text-align:center;
+            font-size: 20px;
+          }
+          .content{
+            min-width: 60%;
+            display:inline-block;
+            font-size: 30px;
+          }
+        }
+        .horizontalhalfdiv{
+          height: 100%;
+          min-width: 50%;
+          .label{
+            min-width: 30%;
+            display:inline-block;
+            text-align:center;
+            font-size: 20px;
+            vertical-align:top;
+          }
+          .content{
+            min-width: 70%;
+            display:inline-block;
+            font-size: 24px;
+            .user{
+              padding: 0px 8px 8px 8px;
+            }
+          }
+        }
+        .report{
+            font-size: 50px;
+            color: red;
+        }
+    }
+    .wrapper{
+      background: #fff;
+      padding: 10px;
+      height: 720px;
+      
+      .block-wrapper {
+        margin-bottom: 32px;
+        height: 700px;
+        width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
     }
     .top{
         width: 100%;
-    }
-    .left {
-        float: left;
-        width: 520px;
-    }
-    .right {
-        overflow: hidden;
-        padding-left: 32px;
-        .chart-wrapper{
-            height: 700px;
-        }
     }
     .report{
         font-size: 70px;

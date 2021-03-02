@@ -5,6 +5,8 @@ const setting = {
   getUid(){ return store.getters.id},
   getBid(){ return store.getters.buildingid},
 
+  //取得所有選單設定
+  apiGetRouter(){ return req('get','/Index/menuList') },
   //取得所有類別
   apiGetBuildingOptions(){ return req('get','/settings/'+this.getBid()+'/options/a') },
   //取得指定的分類選單

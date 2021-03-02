@@ -1,4 +1,4 @@
-import { mercuryfireRoutes, constantRoutes , customerRoutes } from '@/router'
+import { mercuryfireRoutes, constantRoutes  } from '@/router'
 
 /**
  * Use meta.role to determine if the current user has permission
@@ -52,9 +52,7 @@ const actions = {
       let accessedRoutes
       if (roles) {
         accessedRoutes = mercuryfireRoutes || []
-      } else {
-        accessedRoutes = customerRoutes || []
-      }
+      } 
       commit('SET_ROUTES', accessedRoutes)
       resolve(accessedRoutes)
     })

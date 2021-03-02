@@ -25,26 +25,30 @@ let User = {
     createUser: async function(data){
         var data = await api.building.apiPostUser(data).then(async(response) => {
             return true
+        }).catch(error=>{
+            return false
         })
         return data
     },
     updateUser: async function(data){
         var data = await api.building.apiPatchUser(data).then(async(response) => {
             return true
+        }).catch(error=>{
+            return false
         })
         return data
     },
-    getBuildingUser: async function(){
-        await api.building.apiGetAllBuildingOfUser().then(response => {
-            response.result.sort((x,y) => x.id - y.id).forEach(item=>{
-                var _temp = {
-                  id: item.id,
-                  label: item.name,
-                  value: item.id
-                }
-                this.user.push(_temp)
-            })
-        })
-    },
+    // getBuildingUser: async function(){
+    //     await api.building.apiGetAllBuildingOfUser().then(response => {
+    //         response.result.sort((x,y) => x.id - y.id).forEach(item=>{
+    //             var _temp = {
+    //               id: item.id,
+    //               label: item.name,
+    //               value: item.id
+    //             }
+    //             this.user.push(_temp)
+    //         })
+    //     })
+    // },
 }
 export default User

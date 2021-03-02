@@ -19,6 +19,8 @@ const authority = {
     apiPatchAccessAuthority(data){ return req('patch','/accessAuthoritySetting',data) },
     apiDeleteAccessAuthority(accessAuthorityId){ return req('delete','/accessAuthoritySetting/'+accessAuthorityId) },
     apiGetCheckAccessAuthority(){ return req('get','/accessAuthoritySetting/checkAssign') },
+    apiPatchBuildingAccountAccessAuthority(accountId){ 
+        return req('patch','/accessAuthoritySetting/index/'+accountId+'/building/'+this.getBid(),data) }, //建立帳號及場所關聯(提供帳號是否可查看該場所使用)
     //角色管理
     apiGetAllRoleAuthority(){ return req('get','/roleSetting/a') },
     apiGetRoleAuthority(roleId){ return req('get','/roleSetting/'+roleId) },

@@ -21,14 +21,15 @@
       @mouseleave="removeClass(item.id)"
       :class="[{ active:classenable && item.id == current },{ select:item.id == selectFloor }]"
     >
-      <span v-if="item.floors > 0 ">{{ item.floors }} F</span>
-      <span v-else>B{{ -(item.floors) }} F</span>
+      <span>{{ item.label }} </span>
+      <!-- <span v-if="item.floors > 0 ">{{ item.floors }} F</span>
+      <span v-else>B{{ -(item.floors) }} F</span> -->
     </div>
   </div>
   <div v-else>
     <FloorSelect 
       style="margin-bottom: 20px;width:100%"
-      :selectData="allFloor" 
+      :selectData="buildingfloors" 
       v-on:handleFloorSelect="handleFloorSelect">
     </FloorSelect>
   </div>
@@ -47,7 +48,6 @@ export default {
       upFloors:[],
       downFloors:[],
       divFloor:[],
-      allFloor:[],
       selectRange:'0',
       selectFloor:'',
       current:0,
@@ -55,6 +55,9 @@ export default {
     }
   },
   computed:{
+    ...mapGetters([
+        'buildingfloors'
+    ]),
     mobile(){
       if (this.$store.state.app.device === 'mobile') {
         return true
@@ -63,47 +66,42 @@ export default {
       }
     }
   },
+  watch:{
+    buildingfloors:{
+      handler:async function(){
+        if(this.buildingfloors.length>0){
+          this.upFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == false)
+          this.downFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == true)
+          this.setRange()
+        }
+      },
+      immediate:true
+    },
+  },
   mounted() {
-    this.getBuildingFloors()
+    
   },
   methods: {
-    getBuildingFloors(){
+    setRange(){
       this.rangeOptions = []
-      this.upFloors = []
-      this.downFloors = []
-      this.allFloor = []
-      this.$api.building.apiGetBuildingFloors().then(response =>{
-        response.result.forEach(element => {
-          if(element.floors > 0){
-            this.upFloors.push(element)
-          }else{
-            this.downFloors.push(element)
-          }
-          var floor = {
-            id:element.id,
-            label:element.floors>0 ? element.floors+'F' : '地下'+element.floors.substr(1)+'F'
-          }
-          this.allFloor.push(floor)
-        })
-        if(this.upFloors.length >0){
-          var _count = Math.ceil(this.upFloors.length / 10)
-          for(var i=1;i<=_count;i++){
-            var _temp = {
+      if(this.upFloors.length >0){
+        var _count = Math.ceil(this.upFloors.length / 10)
+        for(var i=1;i<=_count;i++){
+          var _temp = {
               id:i,
               name:i*10-9+'F~'+i*10+'F'
-            }
-            this.rangeOptions.push(_temp)
           }
+          this.rangeOptions.push(_temp)
         }
+      }
         if(this.downFloors.length >0){
           var _temp = {
             id:0,
             name:'地下樓層'
-          }
-          this.rangeOptions.unshift(_temp)
         }
-        this.onSelectRange(0)
-      })
+        this.rangeOptions.unshift(_temp)
+      }
+      this.onSelectRange(0)
     },
     onSelectRange(val){
       this.selectRange = val

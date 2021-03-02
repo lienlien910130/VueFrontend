@@ -20,6 +20,17 @@
             :name="item.id"></el-tab-pane>
         </el-tabs>
 
+        <el-tabs 
+        v-else-if="title === 'floorOfHouse' && dialogData.length > 1" 
+        v-model="activeName" 
+        @tab-click="handleTabClick">
+            <el-tab-pane
+            v-for="(item) in dialogData"
+            :key="item.id"
+            :label="item.houseNumber"
+            :name="item.id"></el-tab-pane>
+        </el-tabs>
+
         <!-- dialogStatus : 一般表單/upload/lack/authority -->
         <keep-alive>
 
@@ -72,12 +83,13 @@
                     </el-date-picker>
                 </span>
 
-                <el-select
+                <!-- <el-select
                     v-else-if="item.format =='select' || item.format =='userInfo' ||
                     item.format == 'deviceSelect' || item.format =='contactunitSelect' || 
                     item.format == 'floorOfHouseSelect' "
                     v-model="temp[item.prop]"
                     filterable
+                    multiple
                     placeholder="請選擇"
                     style="width:100%"
                     >
@@ -88,10 +100,11 @@
                         :value="item.id"
                         >
                         </el-option>  
-                </el-select>
+                </el-select> -->
 
                 <el-select
-                    v-else-if="item.format =='roleSelect' "
+                    v-else-if="item.format =='select' || item.format =='userInfo' ||
+                    item.format == 'floorOfHouseSelect' || item.format =='roleSelect' "
                     v-model="temp[item.prop]"
                     filterable
                     multiple 
@@ -108,10 +121,30 @@
                 </el-select>
 
                 <el-select
+                    v-else-if="item.format == 'deviceSelect' || item.format =='contactunitSelect' || 
+                    item.format == 'inspectionSelect' "
+                    v-model="temp[item.prop]"
+                    filterable
+                    multiple 
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                        <el-option
+                        v-for="(item,index) in selectfilter(item.format)"
+                        :key="index"
+                        :label="item.label"
+                        :value="item.id"
+                        >
+                        </el-option>  
+                </el-select>
+
+                <el-select
                     v-else-if="item.format =='DeviceOptions' 
                     || item.format =='BrandOptions' || 
                     item.format =='MaintainContentOptions' 
-                    || item.format =='MaintainProcessOptions' || item.format == 'DeviceStatusOptions' "
+                    || item.format =='MaintainProcessOptions' || item.format == 'DeviceStatusOptions' 
+                    || item.format == 'ContactUnitOptions' || item.format == 'LackStatusOptions'
+                    "
                     v-model="temp[item.prop]"
                     filterable
                     placeholder="請選擇"
@@ -120,7 +153,7 @@
                         <el-option
                         v-for="(item,index) in optionfilter(item.format)"
                         :key="index"
-                        :label="item.label"
+                        :label="item.textName"
                         :value="item.id"
                         >
                         </el-option>  
@@ -143,6 +176,16 @@
                     <el-option label="角色管理" key="9" value="roleSetting"></el-option>
                     <el-option label="帳號管理" key="10" value="accountSetting"></el-option>
                     <el-option label="設定" key="11" value="settings"></el-option>
+                </el-select>
+
+                <el-select
+                    v-else-if="item.format =='processContentSelect'"
+                    v-model="temp[item.prop]"
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                    <el-option label="檢修申報" key="1" value="檢修申報"></el-option>
+                    <el-option label="一般檢查" key="2" value="一般檢查"></el-option>
                 </el-select>
 
                 <el-select
@@ -201,14 +244,14 @@
                 type="textarea">
                 </el-input>
 
-                <div v-else-if="item.format =='openmaintain'">
-                    <Table
-                       :list-query-params.sync="listQueryParams"
-                       v-bind="tableAttrs"
-                       v-on="tableEvent">
-                    </Table>
+                <div v-else-if="item.format =='openmaintain' ">
+                    <DialogTable 
+                        :list-query-params.sync="listQueryParams"
+                        v-bind="tableAttrs" 
+                        v-on="tableEvent">
+                    </DialogTable>  
                 </div>
-
+                
                 <el-input v-else
                 v-model="temp[item.prop]" >
                 </el-input>
@@ -221,7 +264,13 @@
         v-bind="uploadAttrs" 
         v-on:handleFilesUpload="handleFilesUpload"></Upload>   
         
-        <el-table
+        <DialogTable 
+        v-if="dialogStatus === 'lack'"
+        :list-query-params.sync="listQueryParams"
+        v-bind="tableAttrs" 
+        v-on="tableEvent"></DialogTable>  
+        
+        <!-- <el-table
         v-if="dialogStatus === 'lack'"
             :data="origin"
             border
@@ -281,9 +330,9 @@
                                 style="width:100%"
                                 >
                                     <el-option
-                                    v-for="(item,index) in dialogOptions"
+                                    v-for="(item,index) in optionfilter('LackStatusOptions')"
                                     :key="index"
-                                    :label="item.label"
+                                    :label="item.textName"
                                     :value="item.id"
                                     >
                                     </el-option>  
@@ -317,7 +366,7 @@
             </template>
             </el-table-column>
 
-        </el-table>
+        </el-table> -->
 
         <el-table
             v-if="dialogStatus === 'authority'"
@@ -376,14 +425,20 @@
 </template>
 
 <script>
+import { changeLink } from '@/utils'
+import { mapGetters } from 'vuex'
 export default {
     components:{
         Upload:() => import('@/components/Upload/index.vue'),
         Table: () => import('@/components/Table/index.vue'),
+        DialogTable: () => import('@/components/Table/Table.vue'),
     },
     props:{
         dialogData: {
-            type: Array
+            type: Array,
+            default: function () {
+                return []
+            }
         },
         visible: {
             type: Boolean,
@@ -413,10 +468,10 @@ export default {
             type: Array
         },
         files:{
-            type: Array
-        },
-        dialogOptions: {
-            type: Array
+            type: Array,
+            default: function () {
+                return []
+            }
         },
         specialId:{
             type: String,
@@ -424,22 +479,24 @@ export default {
         },
         //表單內的表格
         formtableData: {
-            type: Array
-        },
-        itemkey: {
             type: Array,
-            dafault : Math.random()
+            default: function () {
+                return []
+            }
         },
         formtableconfig: {
             type: Array
         },
-        formtablebuttonsName: {
-            type: Array
+        listQueryParams:{
+            type:Object
         }
     },
     watch:{
-        dialogData(){
-            this.init()
+        dialogData:{ 
+            handler:function(){
+                this.init()
+            },
+            immediate:true
         },
         treeData(){
             this.$nextTick(()=>{
@@ -448,6 +505,12 @@ export default {
         }
     },
     computed:{
+        ...mapGetters([
+            'buildingoptions',
+            'buildingusers',
+            'buildingdevices',
+            'buildingcontactunit'
+        ]),
         label() {
             if (this.$store.state.app.device === 'mobile') {
                 return 'top'
@@ -459,7 +522,7 @@ export default {
             if (this.$store.state.app.device === 'mobile') {
                 return "90%"
             } else {
-                if(this.title == 'maintain'){
+                if(this.title == 'maintainList' || this.title == 'lack'){
                     return "1400px"
                 }
                 return "1000px"
@@ -483,22 +546,21 @@ export default {
         },
         tableAttrs(){
             return {
+                title:this.title,
                 tableData: this.formtableData,
-                itemkey:this.itemkey,
-                config:this.formtableconfig,
-                buttonsName:this.formtablebuttonsName
+                config:this.formtableconfig
             }
         },
         tableEvent(){
             return {
-                clickPagination:this.handleTableRow,
-                handleTableRow:this.handleTableRow
+                clickPagination:this.clickPagination,
+                handleTableClick:this.handleTableClick
             }
         },
         optionfilter(){
             return function (a) {
                 if(a !== null ){
-                    let _array = this.dialogOptions.filter((item, index) => 
+                    let _array = this.buildingoptions.filter((item, index) => 
                         item.classType == a 
                     )
                     return _array
@@ -507,25 +569,53 @@ export default {
                 }
             }   
         },
+        selectfilter(){
+            return function (value) {
+                if(value !== null ){
+                    switch(value){
+                        case 'deviceSelect':
+                            return this.buildingdevices.map(v => {
+                                        this.$set(v, 'value', v.id) 
+                                        this.$set(v, 'label', v.name) 
+                                        this.$set(v, 'id', v.id) 
+                                        return v
+                                    })
+                        case 'contactunitSelect':
+                            return this.buildingcontactunit.map(v => {
+                                        this.$set(v, 'value', v.id) 
+                                        this.$set(v, 'label', v.name) 
+                                        this.$set(v, 'id', v.id) 
+                                        return v
+                                    })
+                        case 'inspectionSelect':
+                            return this.selectData
+                        
+                    }
+                    // let _array = this.buildingoptions.filter((item, index) => 
+                    //     item.classType == a 
+                    // )
+                    // return _array
+                }else{
+                    return ""
+                }
+            }  
+        },
         stringToBr(){
             return function (a) {
                 return a.replace(/{ln}/g, "<br/>")
             }
         },
         changeLabel(){
-            return function (a) {
-                if(a !== null){
-                    var temp = this.dialogOptions.filter((item, index) => 
-                    item.id == a 
-                )
-                    return temp[0].label
+            return function (value) {
+                if(value !== null){
+                    let _array = this.buildingoptions.filter((item, index) => 
+                        item.id == value 
+                    )
+                    return _array[0].textName
                 }
                 return ""
             }
         }
-    },
-    mounted(){
-        this.init()
     },
     data() {
         return {
@@ -537,11 +627,6 @@ export default {
             temp:{},
             rangevalue: [],
             origin:[],
-            listQueryParams:{
-                page: 1,
-                limit: 10,
-                total: 0
-            },
             pictLoading:false,
             isSelectAll:false
         }
@@ -561,6 +646,13 @@ export default {
                 }
             }else{
                 this.temp = {}
+                if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
+                    this.$nextTick(() => {
+                        if(this.$refs.dataForm !== undefined){
+                            this.$refs.dataForm.clearValidate()
+                        }
+                    })
+                }
             }
         },
         treeSelection(){
@@ -583,72 +675,45 @@ export default {
             this.pictLoading = false
         },
         handleClickOption(status){
+            console.log('Dialog_handleClickOption',status,this.dialogStatus)
             if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                 this.temp['checkStartDate'] = this.rangevalue[0]
                 this.temp['checkEndDate'] = this.rangevalue[1]
             }
-            const tempData = Object.assign({}, this.temp)
-            var data = status == 'authoritycreate' ? this.treeData : tempData
-            this.$emit('handleDialog',this.title, status , data)
-        },
-        onAddRow(){
-            if(this.title == 'reportInspectio'){
-                var _temp = {
-                    "lackItem":"",
-                    "lackContent":"",
-                    "improveContent":"",
-                    "status":null,
-                    "isEdit":true
-                }
-            }else{
-                var _temp = {
-                    "lackItem":"",
-                    "lackContent":"",
-                    "notPassReason":"",
-                    "accordLaws":"",
-                    "improvePlan":"",
-                    "status":null,
-                    "isEdit":true
-                }
-            }
-            this.origin.push(_temp)
-        },
-        handleLackClick(index,row){
-            console.log(index,JSON.stringify(row))
-            if(index === 'cancel'){
-                var _temp =  JSON.stringify(this.dialogData)
-                this.origin = JSON.parse(_temp)
-            }else if(index === 'delete'){
-                this.$confirm('是否確定刪除該筆資料?', '提示', {
-                confirmButtonText: '確定',
-                cancelButtonText: '取消',
-                type: 'warning',
-                center: true
-                }).then(() => {
-                    this.$emit('handleDialog','Lack', index , row.id)
-                }).catch(() => {
+            if(status !== 'cancel' && status !== 'cancellack' && status !== 'empty' && this.dialogStatus !== 'upload' && 
+            this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
+                this.$refs.dataForm.validate((valid) => {
+                    if (valid) {
+                        const tempData = Object.assign({}, this.temp)
+                        var data = status == 'authoritycreate' ? this.treeData : tempData
+                        this.$emit('handleDialog',this.title, status , data)     
+                    } else {
+                        this.$message.error('請輸入完整資訊!');
+                        return false
+                    }
                 })
-            }else if(index === 'create' || index === 'update'){
-                if(row.lackItem === '' || row.lackContent === '' || row.status === null){
-                    this.$message({
-                        message: '請輸入缺失項目 & 缺失內容 & 改善狀態',
-                        type: 'warning'
-                    })
-                }else{
-                    row.status = parseInt(row.status)
-                    this.$emit('handleDialog','Lack', index , row)
-                }
-            }else if(index === 'open'){
-                if(row.status !== null){
-                    row.status = row.status.toString()
-                }
-                row.isEdit = true
             }
+            if(status == 'cancel' || status == 'cancellack' || status == 'empty'){
+                this.$emit('handleDialog',this.title, status , '')
+            }
+            
+            // const tempData = Object.assign({}, this.temp)
+            // var data = status == 'authoritycreate' ? this.treeData : tempData
+            // this.$emit('handleDialog',this.title, status , data)
+        },
+        handleTableClick(title,index,row){
+            this.$emit('handleDialog', title , index , row)
+        },
+        clickPagination(){
+            this.$emit('handleDialog', this.title , 'clickPagination' , this.listQueryParams)
         },
         async handleTabClick(tab, event) {
-            await this.$api.building.apiGetUser(tab.name).then(response => {
-                this.temp = response.result[0]
-            })
+            if(this.title === 'user'){
+                this.temp = this.buildingusers.filter((element,index) => element.id == tab.name)[0]
+            }else{
+                var data = this.$deepClone(await this.$obj.Building.getBuildingOfHouseById(tab.name))
+                this.temp = changeLink('floorOfHouse',data,'open')
+            }
         },
         async handleFilesUpload(index,title,data) { 
             this.$emit('handleDialog',this.title, index , data)

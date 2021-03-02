@@ -1,413 +1,434 @@
 <template>
   <div>
-    <!-- 表頭 -->
-    <!-- <div v-if="title" class="table-title">{{ title }}</div> -->
-    <el-button class="filter-item" style="margin-left: 10px;" type="primary" @click="handleCreate">
-        新增
-    </el-button>
-    <!-- 表格主體 -->
     <el-table
-      :ref="ref"
-      v-loading="listLoading"
+      :key="itemkey"
       :data="tableData"
       border
-      :element-loading-text="loadingText"
-      :header-cell-style="{ backgroundColor: '#e5e9f2', color: '#333' }"
       highlight-current-row
-      stripe
-      size="small"
-      empty-text="暫無數據"
-      :default-sort = "{prop: sort, order: 'descending'}"
-    >
-    <!-- 有展開 -->
-    <el-table-column v-if="isExpand" :type="isExpand == true ? 'expand' : undefined">
-      <template slot-scope="scope" >
-        <el-form label-position="left" inline class="demo-table-expand" >
-          <el-form-item
-                 v-for="(item, index) in config_all"
-                 :key="index"
-                 :prop="item.prop"
-                 :label="item.label"
-                >
-                <span v-if="item.format == 'YYYY' | item.format === 'YYYY-MM-DD'">{{ dataStr(scope.row[item.prop],item.format) }}</span>
-                <el-tag 
-                v-else-if="item.format == 'tag' "
-                :type=" scope.row[item.prop] === false ? 'danger' : '' "
-                > {{ tagChange(scope.row[item.prop]) }}</el-tag>
-
-                <span v-else> {{ scope.row[item.prop] }}</span>
-            </el-form-item>
-        </el-form>
-      </template>
-    </el-table-column> 
-
-    <el-table-column v-if="isShowNumber"  type="index" :index="tableIndex"></el-table-column>
-   
-    <el-table-column
-    v-for="(item, index) in config"
-      :key="index"
-      :label="item.label"
-      :prop="item.prop"
-      sortable >
-      <template slot-scope="scope">
-        <span v-if="item.format == 'YYYY' | item.format === 'YYYY-MM-DD'">
-          {{ dataStr(scope.row[item.prop],item.format) }}</span>
-                <el-tag 
-                v-else-if="item.format == 'tag' "
-                :type=" scope.row[item.prop] === false ? 'danger' : '' "
-                > {{ tagChange(scope.row[item.prop]) }}</el-tag>
-
-                <span v-else> {{ scope.row[item.prop] }}</span>
-      </template>
-    </el-table-column>
-   
-      <!-- 表格操作按鈕欄 -->
-      <el-table-column
-        v-if="isHasButtons"
-        class="clearfix"
-        :width="optionColumnWidth+'px'"
+      style="width: 100%;"
+      empty-text="暫無資料"
       >
-        <template slot-scope="scope">
-          <!-- 基本操作 -->
-          <span
-            v-for="(option, index) in buttonsName"
-            :key="index"
-            class="button-margin-left"
-          >
-            <el-button
-              size="small"
-              :type="index == 0 ? 'primary' : ''"
-              @click="handleClickOption(scope.$index, scope.row, option,$event)"
-            >
-              <span >{{ option }}</span>
-            </el-button>
-          </span>
 
-        </template>
-      </el-table-column>
-    </el-table>
+            <el-table-column
+            fixed
+            type="index">
+            </el-table-column>
 
-    <!-- 分頁組件 -->
-    <div v-if="isShowPagination && total > 0" class="pagination-container">
-      <el-pagination
-        background
-        layout="total, sizes, prev, pager, next, jumper"
-        :current-page="page"
-        :page-sizes="pageSizeList"
-        :page-size="limit"
-        :total="total"
-        @current-change="handleCurrentChange"
-        @size-change="handleSizeChange"
-      ></el-pagination>
-    </div>
+            <el-table-column 
+                v-for="(item,index) in config"
+                align="left" 
+                :label="item.label" 
+                :key="index" 
+                :prop="item.prop" 
+                sortable
+                header-align="center"
+                >
+                <template slot-scope="scope">
+                  <div v-if="scope.column.property == 'lackContent'"
+                        v-html="stringToBr(scope.row[scope.column.property])"></div>
+                        <span v-else-if="scope.column.property == 'status'">
+                        {{  changeLabel(scope.row[item.prop]) }}
+                        </span>
 
+                        <span v-else-if="scope.column.property == 'dateOfFailure' || 
+                          scope.column.property == 'dateOfCallRepair' || 
+                          scope.column.property == 'completedTime' " style="width:150px"> 
+                            {{ scope.row[scope.column.property] | dataStr }}</span>
+                          <span v-else-if="scope.column.property == 'processStatus'"> 
+                            {{  changeLabel(scope.row[scope.column.property]) }}
+                          </span>
+                          <span v-else-if="scope.column.property == 'linkDevices'"> 
+                            {{ changeDevice(scope.row[scope.column.property]) }}
+                          </span>
+                          <span v-else-if="scope.column.property == 'linkContactUnits'"> 
+                            {{ changeContainUnit(scope.row[scope.column.property]) }}
+                          </span>
+                          <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
+                            <i v-if="scope.row[scope.column.property].length == 0" class="el-icon-close"></i>
+                            <i v-else class="el-icon-check"></i>
+                          </span>
 
-    <el-dialog v-el-drag-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm"  :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        
-        <el-form-item 
-            v-for="(item, index) in config_all"
-            :key="index"
-            :prop="item.prop"
-            :label="item.label"
-        >
-          <el-date-picker 
-          v-if="item.format == 'YYYY'" 
-          v-model="temp[item.prop]" type="year" /> 
-         
-          <el-date-picker 
-          v-else-if="item.format == 'YYYY-MM-DD'" 
-          v-model="temp[item.prop]" type="date" /> 
+                        <span v-else>{{  scope.row[item.prop] }}</span>
+                    <!-- <span v-if="scope.row['isEdit'] === false">
+                        <div v-if="scope.column.property == 'lackContent'"
+                        v-html="stringToBr(scope.row[scope.column.property])"></div>
+                        <span v-else-if="scope.column.property == 'status'">
+                        {{  changeLabel(scope.row[item.prop]) }}
+                        </span>
 
-          <el-checkbox 
-          v-else-if="item.format == 'tag' "
-          v-model="temp[item.prop]"
-          >
-          {{ checkboxChange(temp[item.prop]) }}
+                        <span v-else-if="scope.column.property == 'dateOfFailure' || 
+                          scope.column.property == 'dateOfCallRepair' || 
+                          scope.column.property == 'completedTime' " style="width:150px"> 
+                            {{ scope.row[scope.column.property] | dataStr }}</span>
+                          <span v-else-if="scope.column.property == 'processStatus'"> 
+                            {{  changeLabel(scope.row[scope.column.property]) }}
+                          </span>
+                          <span v-else-if="scope.column.property == 'linkDevices'"> 
+                            {{ changeDevice(scope.row[scope.column.property]) }}
+                          </span>
+                          <span v-else-if="scope.column.property == 'linkContactUnits'"> 
+                            {{ changeContainUnit(scope.row[scope.column.property]) }}
+                          </span>
+                          <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
+                            <i v-if="scope.row[scope.column.property].length == 0" class="el-icon-close"></i>
+                            <i v-else class="el-icon-check"></i>
+                          </span>
 
-          </el-checkbox>
+                        <span v-else>{{  scope.row[item.prop] }}</span>
+                    </span>
+                    <span v-else>
+                        <span v-if="scope.column.property == 'lackItem'">
+                            <span style="color:red">*必填</span>
+                            <el-input v-model="scope.row[item.prop]"></el-input>
+                        </span>
+                        <span v-else-if="scope.column.property == 'lackContent'">
+                            <span style="color:red">*必填</span>
+                            <el-input
+                                v-model="scope.row[item.prop]" 
+                                :autosize="{ minRows: 4, maxRows: 8}"
+                                type="textarea"></el-input>
+                        </span>
+                        <el-input v-else-if="scope.column.property == 'improveContent' || 
+                          scope.column.property == 'notPassReason' || 
+                          scope.column.property == 'accordLaws' || 
+                          scope.column.property == 'improvePlan' ||
+                          scope.column.property == 'note' " 
+                          v-model="scope.row[item.prop]" 
+                          :autosize="{ minRows: 4, maxRows: 8}"
+                          type="textarea">
+                        </el-input>
+                        <span v-else-if="scope.column.property == 'status'">
+                            <span style="color:red">*必填</span>
+                            <el-select
+                                v-model="scope.row[item.prop]"
+                                placeholder="請選擇"
+                                style="width:100%"
+                                >
+                                    <el-option
+                                    v-for="(item,index) in optionfilter('LackStatusOptions')"
+                                    :key="index"
+                                    :label="item.textName"
+                                    :value="item.id"
+                                    >
+                                    </el-option>  
+                            </el-select>
+                        </span>
+                        <span v-else-if="scope.column.property == 'dateOfFailure' || 
+                          scope.column.property == 'dateOfCallRepair' || 
+                          scope.column.property == 'completedTime' ">
+                          <span style="color:red">*必填</span>
+                          <el-date-picker  
+                          :ref="item.prop"
+                          :name="item.prop"
+                          v-model="temp[item.prop]" 
+                          value-format="yyyy-MM-dd" 
+                          style="width:100%"
+                          type="date" /> 
+                        </span>
+                        
+                        <span v-else-if="scope.column.property == 'processStatus'">
+                            <span style="color:red">*必填</span>
+                            <el-select
+                                v-model="scope.row[item.prop]"
+                                placeholder="請選擇"
+                                style="width:100%"
+                                filterable
+                                >
+                                    <el-option
+                                    v-for="(item,index) in optionfilter('LackStatusOptions')"
+                                    :key="index"
+                                    :label="item.textName"
+                                    :value="item.id"
+                                    >
+                                    </el-option>  
+                            </el-select>
+                        </span>
+                        <span v-else-if="scope.column.property == 'processContent'">
+                            <span style="color:red">*必填</span>
+                            <el-select
+                                v-model="scope.row[item.prop]"
+                                placeholder="請選擇"
+                                style="width:100%"
+                                filterable
+                                >
+                                  <el-option value="檢修申報" label="檢修申報">檢修申報</el-option>
+                                  <el-option value="一般檢查" label="一般檢查">一般檢查</el-option>  
+                            </el-select>
+                        </span>
+                        <span v-else-if="scope.column.property == 'linkDevices'">
+                            <span style="color:red">*必填</span>
+                            <el-select
+                                v-model="scope.row[item.prop]"
+                                placeholder="請選擇"
+                                style="width:100%"
+                                filterable
+                                >
+                                    <el-option
+                                    v-for="(item,index) in buildingdevices"
+                                    :key="index"
+                                    :label="item.name"
+                                    :value="item.id"
+                                    >
+                                    </el-option>  
+                            </el-select>
+                        </span>
+                        <span v-else-if="scope.column.property == 'linkContactUnits'">
+                            <span style="color:red">*必填</span>
+                            <el-select
+                                v-model="scope.row[item.prop]"
+                                placeholder="請選擇"
+                                style="width:100%"
+                                filterable
+                                >
+                                    <el-option
+                                    v-for="(item,index) in buildingcontactunit"
+                                    :key="index"
+                                    :label="item.name"
+                                    :value="item.id"
+                                    >
+                                    </el-option>  
+                            </el-select>
+                        </span>
+                        <span v-else-if="scope.column.property == 'linkInspectionLacks'">
+                            <span style="color:red">*必填</span>
+                            <el-select
+                                v-model="scope.row[item.prop]"
+                                placeholder="請選擇"
+                                style="width:100%"
+                                filterable
+                                >
+                                    <el-option
+                                    v-for="(item,index) in buildingdevices"
+                                    :key="index"
+                                    :label="item.name"
+                                    :value="item.id"
+                                    >
+                                    </el-option>  
+                            </el-select>
+                        </span>
+                    </span> -->
+                </template>
+            </el-table-column>
+            
+            <el-table-column
+            fixed="right"
+            label="操作">
+            <template slot="header" >
+                <i class="el-icon-circle-plus-outline" 
+                @click="handleTableClick('empty','')" 
+                style="cursor: pointer;font-size:25px;float:right"></i>
+            </template>
+            <template slot-scope="scope">
+                <el-button v-if="title !== 'lack'" @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
+                  <i class="el-icon-folder-opened"  
+                  style="cursor: pointer;float:right"></i>
+                </el-button>
+                <el-button @click="handleTableClick('open',scope.row)" type="primary" size="small">編輯</el-button>
+                <el-button type="info" size="small" @click="handleTableClick('delete',scope.row)">刪除</el-button> 
+                <!-- <span v-if="scope.row['isEdit'] == false">
+                    <el-button @click="handleTableClick('open',scope.row)" type="primary" size="small">編輯</el-button>
+                    <el-button type="info" size="small" @click="handleTableClick('delete',scope.row)">刪除</el-button>    
+                </span>
+                <span v-else>
+                    <el-button v-if="scope.row['id'] !== undefined"
+                    @click="handleTableClick('update',scope.row)" type="primary" size="small">儲存</el-button>
+                    <el-button v-else
+                    @click="handleTableClick('create',scope.row)" type="primary" size="small">儲存</el-button>
+                    <el-button type="info" size="small" @click="handleTableClick('cancel',scope.row)">取消</el-button>
+                </span> -->
+            </template>
+            </el-table-column>
+        </el-table>
 
-          <el-input v-else
-          :ref="item.prop"
-          :name="item.prop"
-          v-model="temp[item.prop]" >
-          </el-input>
-
-        </el-form-item>
-        
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="cancelData()">
-          取消
-        </el-button>
-        <el-button type="primary" @click="sendData()">
-          儲存
-        </el-button>
-      </div>
-    </el-dialog>
-
-
+        <div v-if="total > 0 " class="pagination-container">
+            <el-pagination
+              background
+              layout="total, sizes, prev, pager, next, jumper"
+              :current-page="page"
+              :page-sizes="pageSizeList"
+              :page-size="limit"
+              :total="total"
+              @current-change="handleCurrentChange"
+              @size-change="handleSizeChange"
+            ></el-pagination>
+        </div>
   </div>
 </template>
 
 <script>
-
-import moment from 'moment';
-import elDragDialog from '@/directive/el-drag-dialog'
+import { mapGetters } from 'vuex'
+import moment from 'moment'
 
 export default {
-  name: 'AppTable',
-  directives: { elDragDialog },
-  props: {
-    isShowNumber: {
-      type: Boolean,
-      default: true
-    },
-    isExpand: {
-      type: Boolean,
-      default: false
-    },
-    isShowPagination: {
-      type: Boolean,
-      default: true
-    },
-    isHasButtons: {
-      type: Boolean,
-      default: true
+  props:{
+    itemkey: {
+      type: Number,
+      dafault : Math.random()
     },
     title: {
       type: String
     },
-    tableData: {
+    tableData:{
+      type: Array
+    },
+    config:{
       type: Array,
       required: true
-    },
-    config: {
-      type: Array,
-      required: true
-    },
-    config_all: {
-      type: Array,
-      required: true
-    },
-    loadingText: {
-      type: String,
-      default: '加載中...'
-    },
-    loadingStatus: {
-      type: Boolean,
-      default: false
     },
     listQueryParams: {
       type: Object
     },
-    buttonsName: {
-      type: Array
-    },
-    optionColumnWidth: {
-      type: Number,
-      default: 100
-    },
     pageSizeList: {
       type: Array,
       default: function() {
-        return [15, 30, 50, 100]
+        return [5, 10, 30, 50]
       }
     },
-    sort: {
-      type: String
+  },
+  data(){
+    return {
+      temp:[]
     }
   },
-  watch: {
-    sort:{
-      deep:true,
-      immediate:true
+  filters:{
+    dataStr: function(value){
+        return moment(value).format('YYYY-MM-DD')
     }
   },
-  computed: {
-    // 看是否是多選表格
-    ref: function() {
-      return undefined
+  computed:{
+    ...mapGetters([
+      'buildingoptions',
+      'buildingusers',
+      'buildingdevices',
+      'buildingcontactunit'
+    ]),
+    changeLabel(){
+            return function (value) {
+                if(value !== null){
+                    let _array = this.buildingoptions.filter((item, index) => 
+                        item.id == value 
+                    )
+                    return _array[0].textName
+                }
+                return ""
+            }
     },
-    // 第幾頁
+    optionfilter(){
+      return function (a) {
+        if(a !== null ){
+          let _array = this.buildingoptions.filter((item, index) => 
+            item.classType == a 
+            )
+          return _array
+        }else{
+          return ""
+        }
+      }   
+    },
+    changeDevice(){
+      return function (val) {
+        var array = []
+        if(val !== null){
+          val.forEach(item=>{
+            var data = this.buildingdevices.filter(element=>{
+              return item.id == element.id
+            })
+            array.push(data[0].name)
+          })
+          return array.toString()
+        }
+        return ''
+      }
+    },
+    changeContainUnit(){
+      return function (val) {
+        var array = []
+        if(val !== null){
+          val.forEach(item=>{
+            var data = this.buildingcontactunit.filter(element=>{
+              return item.id == element.id
+            })
+            array.push(data[0].name)
+          })
+          return array.toString()
+        }
+        return ''
+      } 
+    },
+    changeUserName(){
+      return function (val) {
+        var array = []
+        if(val !== null){
+          val.forEach(item=>{
+            var data = this.buildingusers.filter(element=>{
+              return item.id == element.id
+            })
+            array.push(data[0].name)
+          })
+          return array.toString()
+        }
+        return ''
+      } 
+    },
+    changeLinkRoles(){
+      return function (val) {
+        var array = []
+        if(val !== null){
+          val.forEach(element => {
+          var data = this.$obj.Authority.buildingRole.filter(item=>{
+              return item.id == element
+            })
+            array.push(data[0].name)
+          })
+          return array.toString()
+        }
+        return ''
+      } 
+    },
+    stringToBr(){
+        return function (a) {
+            return a.replace(/{ln}/g, "<br/>")
+        }
+    },
     page: function() {
       return this.listQueryParams.page || 1
     },
-    // 每頁數據數
     limit: function() {
-      return this.listQueryParams.limit || 15
+      return this.listQueryParams.limit || 10
     },
-    // 數據總數
     total: function() {
       return this.listQueryParams.total || 0
-    },
-    // 獲取當前loading的狀態
-    listLoading: function() {
-      return this.loadingStatus
-    },
-    dataStr(){
-        return function (a,b) {
-            return moment(a).format(b)
-        }
-    },
-    tagChange(){
-        return function (a) {
-            if(this.title == 'ReportInspectio' | this.title == 'ReportPublic'){
-                switch(a){
-                    case false:
-                        return '未改善'
-                        break;
-                    case true:
-                        return '已改善'
-                        break;    
-                }
-            }else if(this.title == 'ContactUnit'){
-                switch(a){
-                    case false:
-                        return '未配合'
-                        break;
-                    case true:
-                        return '配合中'
-                        break;    
-                }
-            }
-        }
-    },
-    checkboxChange(){
-      return function (a) {
-            if(this.title == 'ReportInspectio' | this.title == 'ReportPublic'){
-              return '改善'
-            }else if(this.title == 'ContactUnit'){
-               return '配合'
-            }
-      }
     }
-
   },
-  data() {
-    return {
-          dialogFormVisible: false,
-          textMap: {
-            update: '編輯',
-            create: '新增'
-          },
-          dialogStatus: '',
-          temp: {},
-          origin:[] 
-      }
-  },
-  methods: {
-    handleCreate() {
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        //this.$refs['dataForm'].clearValidate()
-      })
-      this.temp = {}
-    },
-    // 刪除跟編輯的操作
-    handleClickOption(index, row, option) {
-      if (option === '刪除') {
+  methods:{
+    handleTableClick(index,row){
+      var title = this.title === 'maintainList' ? 'maintain' : ''
+      if(index === 'delete'){
         this.$confirm('是否確定刪除該筆資料?', '提示', {
-          confirmButtonText: '確定',
-          cancelButtonText: '取消',
-          type: 'warning',
-          center: true
+        confirmButtonText: '確定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
         }).then(() => {
-          this.dialogStatus = 'delete'
-          if(this.title == 'Floor'){
-            let content = {
-              id: row.id,
-              fid: row.id
-            }
-            this.$emit('subOpitonButton', this.dialogStatus, content)
-          }else{
-            this.$emit('subOpitonButton', this.dialogStatus, row.id)
-          }
-        }).catch(() => {
-          this.dialogStatus = ''
-        });
-      } else {
-        this.dialogStatus = 'update'
-        this.dialogFormVisible = true
-        this.$nextTick(() => {
-            //this.$refs.form.clearValidate()
-        })
-        this.temp = Object.assign({}, row)
-      } 
-    },
-    cancelData(){
-       this.dialogFormVisible = false
-    },
-    //新增或更新的操作
-    sendData(){
-      const tempData = Object.assign({}, this.temp)
-      this.$emit('subOpitonButton', this.dialogStatus, tempData)
-      // this.$refs.dataForm.validate(valid =>{
-      //   if(valid){
-      //     this.$message('submit!')
-      //     this.$emit('subOpitonButton', this.dialogStatus, this.temp)
-      //   }
-      // })
+        this.$emit('handleTableClick',title, index , row.id)
+        }).catch(() => {})
+      }else{
+        this.$emit('handleTableClick',title, index , row)
+      }
     },
     // 改變翻頁組件中每頁數據總數
     handleSizeChange(val) {
       this.listQueryParams.limit = val
-      // 改變翻頁數目，將頁面=1
-      this.listQueryParams.page = 1
+      this.listQueryParams.page = 1 // 改變翻頁數目，將頁面=1
       this.$emit('update:listQueryParams', this.listQueryParams)
-      this.$emit('subClickPagination', this.listQueryParams)
+      this.$emit('clickPagination', this.listQueryParams)
     },
-
     // 跳到當前是第幾頁
     handleCurrentChange(val) {
       this.listQueryParams.page = val
       this.$emit('update:listQueryParams', this.listQueryParams)
-      this.$emit('subClickPagination', this.listQueryParams)
-    },
-
-    // 重寫索引生成方法
-    tableIndex(index) {
-      const i = (this.page - 1) * this.limit + index + 1
-      return i
+      this.$emit('clickPagination', this.listQueryParams)
     },
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.image-size {
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-}
-.table-title {
-  margin-top: 10px;
-  font-size: 18px;
-}
-
-.button-margin-left {
-  margin-left: 8px;
-}
-.link {
-  cursor: pointer;
-  color: #4876ff;
-}
-.el-table {
-  .el-table__empty-block {
-    height: unset;
-  }
-}
- .demo-table-expand {
-    font-size: 0;
-  }
-  .demo-table-expand label {
-    width: 200px;
-    color: #99a9bf;
-  }
-  .demo-table-expand .el-form-item {
-    margin-right: 0;
-    margin-bottom: 0;
-    width: 100%;
-  }
-</style>

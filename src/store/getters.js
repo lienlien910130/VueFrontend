@@ -13,7 +13,13 @@ const getters = {
   vercom: state => state.version.components,
   msg: state => state.websocket.msg,
   buildingid : state => state.building.buildingid,
+  buildinginfo : state => state.building.buildinginfo,
   buildingarray : state => state.building.buildingarray,
+  buildingoptions : state => state.building.buildingoptions,
+  buildingcontactunit : state => state.building.buildingcontactunit,
+  buildingusers : state => state.building.buildingusers,
+  buildingfloors : state => state.building.buildingfloors,
+  buildingdevices : state => state.building.buildingdevices,
   json: state => state.graphic.json,
   permission_routes: state => state.permission.routes
 }

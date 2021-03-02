@@ -37,7 +37,9 @@
           <el-button type="primary" @click="resetCanvas(true)" :disabled="disabled">復原位置</el-button>
           <el-button type="primary" @click="saveCanvasToImage(true)" :disabled="disabled">匯出圖片</el-button>
           <el-button type="primary" :disabled="disabled">歷史紀錄</el-button>
-          <el-checkbox-group v-model="checkList" style="display:inline;margin-left:20px;" >
+          <el-checkbox-group 
+          v-model="checkList" 
+          style="display:inline;margin-left:20px;" >
             <el-checkbox label="未分類" border></el-checkbox>
             <el-checkbox label="警戒區" border></el-checkbox>
             <el-checkbox label="防護區" border></el-checkbox>
@@ -195,7 +197,7 @@ export default {
           response.result.forEach(element => {
             var _temp = {
               id:element.id,
-              label:element.floors>0 ? element.floors+'F' : '地下'+element.floors.substr(1)+'F'
+              label:element.floor>0 ? element.floor+'F' : '地下'+element.floor.substr(1)+'F'
             }
             this.selectData.push(_temp)
           })

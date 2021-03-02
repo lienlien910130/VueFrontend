@@ -14,7 +14,8 @@ import App from './App.vue'
 import store from './store/index.js'
 import router from './router'
 import SIdentify from './views/login/components/identify.vue'
-import socket from './utils/socket';
+import socket from './utils/socket'
+import indexedDB from './utils/indexedDB'
 import api from './api'
 import obj from './object'
 import { deepClone } from './utils/index'
@@ -41,6 +42,7 @@ Vue.config.productionTip = false
 Vue.config.debug = false
 Vue.config.devtools = false
 Vue.prototype.$socket = socket
+Vue.prototype.$indexedDB = indexedDB
 Vue.prototype.$qs = qs
 Vue.prototype.$api = api
 Vue.prototype.$obj = obj

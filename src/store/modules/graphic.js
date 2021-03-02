@@ -1,9 +1,10 @@
-import { 
-    getGraphicJson, setGraphicJson} from '../../utils/auth'
+import  { 
+  // getGraphicJson,setGraphicJson,removeGraphicJson 
+}  from '../../utils/auth'
 
 const getDefaultState = () => {
     return {
-      json: getGraphicJson()
+      json: ''
     }
   }
   
@@ -22,10 +23,17 @@ const actions = {
     sendJson({ commit } , json){
       return new Promise((resolve, reject) => {
         commit('SET_JSON', json)
-        setGraphicJson(json)
+        //setGraphicJson(json)
         resolve()
       })
-    }
+    },
+    resetGraphicJson({ commit }) {
+      return new Promise(resolve => {
+        //removeGraphicJson()
+        commit('RESET_STATE')
+        resolve()
+      })
+    },
 }
 
 export default {

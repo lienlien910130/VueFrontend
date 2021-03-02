@@ -1,7 +1,7 @@
 <template>
     <div class="editor-container">
-      <div v-if="account == 'mf01'">
-        水星專用
+      <div v-if="account == 'System'">
+        系統管理員
       </div>
       <div v-else >
         <el-row :gutter="32">
@@ -98,7 +98,8 @@ export default {
     buildingid:{
       handler:async function(){
         await this.getBuildingDevicesManage()
-      }
+      },
+      immediate:true
     },
   },
   data() {
@@ -112,9 +113,9 @@ export default {
     }
   },
   async mounted() {
-    if(this.buildingid !== undefined){
-      await this.getBuildingDevicesManage()
-    }
+    // if(this.buildingid !== undefined){
+    //   await this.getBuildingDevicesManage()
+    // }
   },
   methods: {
     loadMore() {

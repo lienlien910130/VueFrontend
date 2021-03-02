@@ -95,12 +95,19 @@
                             <el-button 
                             v-else-if="option.format == 'userInfo' "
                             type="text" @click="handleClickOption('opendialog',item[option.prop])" 
-                            style="padding-top:0px;padding-bottom:0px">查看</el-button>
+                            style="padding-top:0px;padding-bottom:0px">
+                                {{ multipleStr('user',item[option.prop]) }}
+                            </el-button>
 
-                            <span 
+                            <span v-else-if="option.format == 'openmaintain' ">
+                                {{ changeMaintain(item[option.prop]) }}
+                            </span>
+                            <!-- <el-button
                             v-else-if="option.format == 'openmaintain' "
-                            type="text" 
-                            style="padding-top:0px;padding-bottom:0px">{{ changeMaintain(item[option.prop]) }}</span>
+                            type="text" @click="handleClickOption('openmaintain',item[option.prop])" 
+                            style="padding-top:0px;padding-bottom:0px">
+                                {{ changeMaintain(item[option.prop]) }}
+                            </el-button> -->
 
                             <el-button
                             v-else-if="option.format == 'openfiles' "
@@ -122,7 +129,7 @@
                             type="text"
                             style="padding:0px"
                             >
-                                {{ selectStr(item[option.prop]) }}
+                                {{ multipleStr('floorOfHouse',item[option.prop]) }}
                             </el-button>
 
                             <el-button v-else-if="option.format == 'deviceSelect' " 
@@ -138,7 +145,7 @@
                             type="text"
                             style="padding:0px"
                             >
-                                {{ selectStr(item[option.prop]) }}
+                                {{ multipleStr('contactunit',item[option.prop]) }}
                             </el-button>
 
                             <el-button 
@@ -190,7 +197,8 @@
 </template>
 
 <script>
-import moment from 'moment';
+import moment from 'moment'
+import { mapGetters } from 'vuex'
 
 export default {
     props:{
@@ -199,7 +207,12 @@ export default {
             required: true
         },
         buttonsName: {
-            type: Array
+            type: Array,
+            default: function() {
+                return [
+                { name:'編輯',type:'primary',status:'open'},
+                { name:'刪除',type:'info',status:'delete'}]
+            }
         },
         isHasButtons: {
             type: Boolean,
@@ -213,12 +226,12 @@ export default {
             type: String
         },
         selectData: {
-            type: Array
+            type: Array,
+            default: function() {
+                return []
+            }
         },
         deviceList: {
-            type: Array
-        },
-        options: {
             type: Array
         },
         selectSetting: {
@@ -238,6 +251,12 @@ export default {
         },
     },
     computed: {
+        ...mapGetters([
+            'buildingoptions',
+            'buildingusers',
+            'buildingdevices',
+            'buildingcontactunit'
+        ]),
         label() {
             if (this.$store.state.app.device === 'mobile') {
                 return 'top'
@@ -292,7 +311,7 @@ export default {
                             return '已改善'
                             break;    
                     }
-                }else if(this.title == 'contactunit'){
+                }else if(this.title == 'contactUnit'){
                     switch(a){
                         case false:
                             return '未配合'
@@ -304,7 +323,7 @@ export default {
                 }
             }
         },
-        selectStr(){
+        selectStr(){ //單選
             return function (a) {
                 if(a !== null && a !== undefined){
                     let _array = this.selectData.filter((item, index) => 
@@ -316,13 +335,34 @@ export default {
                 }
             }   
         },
+        multipleStr(){ //多個
+            return function (type,value) {
+                var array = []
+                var temp = []
+                type === 'user' ?  temp = this.buildingusers : 
+                type === 'contactunit' ?  temp = this.buildingcontactunit : temp = this.selectData 
+                if(value !== null && value !== undefined ){
+                    value.forEach(item=>{
+                        var data = temp.filter(element=>{
+                            return item.id == element.id
+                        })
+                        if(data.length>0){
+                            type === 'floorOfHouse' ? array.push(data[0].houseNumber) : array.push(data[0].name)
+                        }
+                    })
+                    return array.toString()
+                }else{
+                    return ""
+                }
+            }   
+        },
         optionfilter(){
             return function (a) {
-                if(a !== null ){
-                    let _array = this.options.filter((item, index) => 
+                if(a !== null && a !== undefined && this.buildingoptions.length>0){
+                    let _array = this.buildingoptions.filter((item, index) => 
                         item.id == a 
                     )
-                    return _array[0].label
+                    return _array[0].textName
                 }else{
                     return ""
                 }

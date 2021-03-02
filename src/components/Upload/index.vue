@@ -33,9 +33,14 @@
                 </el-radio>
                 <el-link 
                     class="link" 
-                    :href="downloadfile(item.id)" target="_blank" >
+                    :href="downloadfile(item.id)"   target="_blank">
                     【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
                 </el-link>
+                <!-- <el-button 
+                    class="link" 
+                    @click="downloadfile(item.id)" >
+                    【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
+                </el-button> -->
                 <span>
                     <i class="el-icon-delete del" 
                     style="float:right;font-size: 25px;margin-top:5px" 
@@ -143,6 +148,12 @@
             }
         },
         downloadfile(fileid) {
+            // const bufferUrl = btoa(new Uint8Array(await this.$obj.Files.downloadFiles(fileid)).reduce((data, byte) => data + String.fromCharCode(byte), ''))
+            // let link = document.createElement('a')
+            // link.href = 'data:image/png;base64,' + bufferUrl
+            // link.download = 'qrCode.png'
+            // link.click()
+            //this.imageSrc = 'data:image/png;base64,' + bufferUrl
             return "http://192.168.88.65:59119/basic/fileDownload/" + fileid
         },
         async deletefile(fileId) {

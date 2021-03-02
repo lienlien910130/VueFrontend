@@ -6,6 +6,7 @@ let Authority = {
     getBuildingMenu: async function(){
         var data = await api.authority.apiGetBuildingMainMenuAuthority().then(response => {
             var result = response.result.sort((x,y) => x.sort - y.sort)
+            console.log(JSON.stringify(result))
             this.buildingMenu = result
             var array = [{
                 id:'-1',

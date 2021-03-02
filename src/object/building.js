@@ -2,8 +2,9 @@ import api from '@/api'
 
 let Building = {
     building : {},
-    userArray:[],
+    buildinguserArray:[],
     buildingContactunit:[],
+    buildingCommittee:[],
     buildingArray :[],
     
     getBuildingDefaultState : function() {
@@ -22,17 +23,17 @@ let Building = {
             id:''
         }
     },
-    getAllBuilding: async function(isSelect){
+    getAllBuilding: async function(){
         var data = await api.building.apiGetBuilding().then(response => {
             var result = response.result.sort((x,y) => x.id - y.id)
-            var mapArray = result.map(v => {
-                return {
-                    id:v.id,
-                    value: v.id,
-                    label: v.buildingName
-                }
-            })
-            this.buildingArray = mapArray
+            // var mapArray = result.map(v => {
+            //     return {
+            //         id:v.id,
+            //         value: v.id,
+            //         label: v.buildingName
+            //     }
+            // })
+            this.buildingArray = result
             // if(isSelect){
             //     var mapArray = result.map(v => {
             //         return {
@@ -52,10 +53,8 @@ let Building = {
     },
     getBuildingInfo: async function(){
         var data = await api.building.apiGetBuildingInfo().then(response => {
-            this.building = response.result[0]
-            return response.result[0]
+            return response.result
         }).catch(error=>{
-            this.building = this.getBuildingDefaultState()
             return []
         })
         return data
@@ -84,6 +83,31 @@ let Building = {
         })
         return data
     },
+    getBuildingFloors: async function(){
+        var data = await api.building.apiGetBuildingFloors().then(response => {
+            var floors = []
+            response.result.forEach(element => {
+                var _temp = {
+                  id:element.id,
+                  label:element.floor>0 ? element.floor+'F' : '地下 '+element.floor.substr(1)+'F'
+                }
+                floors.push(_temp)
+            })
+            return floors
+        }).catch(error=>{
+            this.building = this.getBuildingDefaultState()
+            return []
+        })
+        return data
+    },
+    getBuildingFloor: async function(floorId){
+        var data = await api.building.apiGetFloor(floorId).then(response => {
+            return response.result[0]
+        }).catch(error=>{
+            return []
+        })
+        return data
+    },
     postBuildingFloor: async function(buildingId,data){
         var data = await api.building.apiPostFloors(buildingId,data).then(response => {
             return true
@@ -92,31 +116,172 @@ let Building = {
         })
         return data
     },
+    updateBuildingFloor: async function(data){
+        var data = await api.building.apiPatchFloors(data).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
     getBuildingUser: async function(){
         var data = await api.building.apiGetAllBuildingOfUser().then(response => {
-            response.result.sort((x,y) => x.id - y.id).forEach(item=>{
-                var _temp = {
-                  id: item.id,
-                  label: item.name,
-                  value: item.id
-                }
-                this.userArray.push(_temp)
-            })
-            return this.userArray
+            var result = response.result.sort((x,y) => x.id - y.id)
+            this.buildinguserArray = result
+            // response.result.sort((x,y) => x.id - y.id).forEach(item=>{
+            //     var _temp = {
+            //       id: item.id,
+            //       label: item.name,
+            //       value: item.id
+            //     }
+            //     this.userArray.push(_temp)
+            // })
+            return result
         }).catch(error=>{
-            this.userArray = []
             return []
         })
         return data
     },
     getBuildingContactunit: async function(){
         var data = await api.building.apiGetBuildingContactUnit().then(response => {
-            this.buildingContactunit = response.result.sort((x,y) => x.id - y.id)
-            return response.result.sort((x,y) => x.id - y.id)
+            var result = response.result.sort((x,y) => x.id - y.id)
+            // if(isSelect){
+            //     var mapArray = result.map(v => {
+            //         return {
+            //             id:v.id,
+            //             value: v.id,
+            //             label: v.buildingName
+            //         }
+            //     })
+            //     this.buildingArray = mapArray
+            //     return mapArray
+            // }
+            return result
         }).catch(error=>{
             return []
         })
         return data
     },
+    postBuildingContactunit: async function(data){
+        var data = await api.building.apiPostContactUnit(data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    updateBuildingContactunit: async function(data){
+        var data = await api.building.apiPatchContactUnit(data).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    deleteBuildingContactunit: async function(contactunitId){
+        var data = await api.building.apiDeleteContactUnit(contactunitId).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    getManagementList: async function(){
+        var data = await api.building.apiGetCommittee().then(response => {
+            var result = response.result.sort((x,y) => x.id - y.id)
+            this.buildingCommittee = result
+            // if(isSelect){
+            //     var mapArray = result.map(v => {
+            //         return {
+            //             id:v.id,
+            //             value: v.id,
+            //             label: v.buildingName
+            //         }
+            //     })
+            //     this.buildingArray = mapArray
+            //     return mapArray
+            // }
+            return result
+        }).catch(error=>{
+            return []
+        })
+        return data
+    },
+    postManagementList: async function(data){
+        var data = await api.building.apiPostCommittee(data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    updateManagementList: async function(data){
+        var data = await api.building.apiPatchCommittee(data).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    deleteManagementList: async function(committeeId){
+        var data = await api.building.apiDeleteCommittee(committeeId).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    getBuildingOfHouse: async function(){
+        var data = await api.building.apiGetBuildingOfHouse().then(response => {
+            var result = response.result.sort((x,y) => x.id - y.id)
+            return result
+        }).catch(error=>{
+            return []
+        })
+        return data
+    },
+    getBuildingOfHouseById: async function(usageOfFloorId){
+        var data = await api.building.apiGetHouse(usageOfFloorId).then(response => {
+            return response.result[0]
+        }).catch(error=>{
+            return []
+        })
+        return data
+    },
+    getBuildingFloorOfHouse: async function(floorId){
+        var data = await api.building.apiGetFloorOfHouse(floorId).then(response => {
+            var result = response.result.sort((x,y) => x.id - y.id)
+            return result
+        }).catch(error=>{
+            return []
+        })
+        return data
+    },
+    postBuildingOfHouse: async function(floorId,data){
+        var data = await api.building.apiPostFloorOfHouse(floorId,data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    updateBuildingOfHouse: async function(data){
+        var data = await api.building.apiPatchFloorOfHouse(data).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    deleteBuildingOfHouse: async function(floorofhouseId){
+        var data = await api.building.apiDeleteFloorOfHouse(floorofhouseId).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    
+    
 }
 export default Building

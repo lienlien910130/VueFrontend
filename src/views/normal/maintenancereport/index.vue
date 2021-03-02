@@ -1,52 +1,68 @@
 <template>
         <div class="editor-container">
-          <el-row :gutter="32">
-            <div class="chart-wrapper">
-              <span>{{ this.$obj.Building.building.buildingName }}</span>
-              <span class="report">2020</span>
-            </div>
-            <div :class="chartwrapper">
-              <!-- <div
-                            v-for="(item,index) in this.$obj.Building.building.owner"
-                            :key="index">
-                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
-                              </div>
-                       <div
-                            v-for="(item,index) in this.$obj.Building.building.firemanager"
-                            :key="index">
-                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
-                              </div>-->
-                    </div> 
-            <!-- <el-form  class="report-form" :inline="inline" :model="form" label-width="auto" label-position="left">
+          <el-row :gutter="20">
+            <el-col :xs="24" :sm="24" :md="24" :lg="12">
+              <div class="chart-wrapper">
+                <div class="verticalhalfdiv">
+                  <div class="label">
+                    <span>場所名稱 :</span>
+                  </div>
+                  <div class="content">
+                    <span> {{ this.buildinginfo[0].buildingName }}</span> 
+                  </div>
+                </div>
+                <div class="verticalhalfdiv">
+                  <div class="label">
+                    <span>下次申報時間 :</span>
+                  </div>
+                  <div class="content">
+                    <span class="report"> 2021/03/20 </span> 
+                  </div>
+                </div>
+              </div>
+            </el-col>
+            <el-col :xs="24" :sm="24" :md="24" :lg="12">
+              <div class="chart-wrapper">
                 <el-col :xs="24" :sm="24" :md="24" :lg="12">
-                    <div class="chart-wrapper">
-                      <el-form-item label="場所名稱">
-                        <span>{{ this.$obj.Building.building.buildingName }}</span>
-                      </el-form-item>
-                      <el-form-item label="下次檢修時間">
-                        <span class="report">{{ form.repair }}</span>
-                      </el-form-item>
+                  <div class="horizontalhalfdiv">
+                    <div class="label">
+                      <span>管理權人 :</span>
                     </div>
+                    <div class="content">
+                      <div
+                        v-for="(item,index) in this.buildinginfo[0].linkOwners"
+                        :key="index" class="user">
+                        <div style="padding-bottom:2px">
+                            姓名 ： {{ item.name }}
+                        </div>
+                        <div>
+                            電話 ： {{ item.cellPhoneNumber }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="12">
-                    <div :class="chartwrapper">
-                        <el-form-item label="管理權人">
-                            <div
-                            v-for="(item,index) in form.owner"
-                            :key="index">
-                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
-                              </div>
-                        </el-form-item>
-                        <el-form-item label="防火管理人">
-                            <div
-                            v-for="(item,index) in form.firemanager"
-                            :key="index">
-                             姓名 ： {{ item.name }} ， 電話 ： {{ item.cellPhoneNumber }}
-                              </div>
-                        </el-form-item>
+                  <div class="horizontalhalfdiv">
+                    <div class="label">
+                      <span>防火管理人 :</span>
                     </div>
+                    <div class="content">
+                      <div
+                        v-for="(item,index) in this.buildinginfo[0].linkFireManagers"
+                        :key="index" class="user">
+                        <div style="padding-bottom:2px">
+                            姓名 ： {{ item.name }}
+                        </div>
+                        <div>
+                            電話 ： {{ item.cellPhoneNumber }}
+                        </div>
+                      </div> 
+                    </div>
+                  </div>
                 </el-col>
-              </el-form> -->
+              </div>
+            </el-col>
           </el-row>
           <el-row :gutter="32">
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
@@ -178,6 +194,7 @@ export default {
             lackFileId:'', //缺失檔案id
             dialogButtonsName:[],
             dialogConfig:[],
+            dialogTitle:'',
             dialogData:[],
             dialogStatus:'',
             innerVisible:false,
@@ -188,18 +205,36 @@ export default {
                 total: 0
             },
             selectSetting:[],
-            sortArray:[]
+            sortArray:[],
+            formtableData:[],
+            formtableconfig:[
+              { label:'項目' , prop:'lackItem',format:'', mandatory:true, message:'請輸入項目'},
+              { label:'內容' , prop:'lackContent',format:'textarea',  mandatory:true,message:'請輸入內容'},
+              { label:'改善內容' , prop:'improveContent',format:'textarea', mandatory:false, message:'請輸入改善內容'},
+              { label:'處理進度' , prop:'status',format:'LackStatusOptions', mandatory:true, message:'請選擇處理進度'}
+            ],
+            lacklistQueryParams:{
+                page: 1,
+                limit: 10,
+                total: 0
+            },
+            origin:[],
+            lackorigin:[],
         }
     },
-    async mounted() {
-      await this.getOptions() 
-      await this.getBuildingMaintenanceReport() //檢修申報
-      await this.setSelectSetting()
+    watch: {
+      buildingid:{
+        handler:async function(){
+            await this.init()
+        },
+        immediate:true
+      },
     },
     computed: {
       ...mapGetters([
         'id',
-        'buildingid'
+        'buildingid',
+        'buildinginfo'
       ]),
       inline() {
             if (this.$store.state.app.device === 'mobile') {
@@ -232,35 +267,58 @@ export default {
       },
       dialogAttrs(){
         return{
-            title:'reportInspectio',
+            title:this.dialogTitle,
             visible: this.innerVisible,
             dialogData: this.dialogData,
             dialogStatus: this.dialogStatus,
             buttonsName: this.dialogButtonsName,
-            dialogOptions:this.options,
             config: this.dialogConfig,
             files:this.files,
-            specialId:this.lackFileId
+            specialId:this.lackFileId,
+             //表格
+            formtableData: this.formtableData,
+            formtableconfig:this.formtableconfig,
+            listQueryParams:this.lacklistQueryParams
         }
       }
   },
   methods: {
+    async init(){
+      this.lacklistQueryParams = {page: 1,limit: 10,total: 0}
+      await this.saveBuildingMaintenanceReport()
+      await this.getBuildingMaintenanceReport() 
+      await this.setSelectSetting()
+    },
+    async inspectioninit(){
+      this.lacklistQueryParams = {page: 1,limit: 10,total: 0}
+      await this.saveInspectionLack()
+      await this.getInspectionLack() 
+    },
+    async saveBuildingMaintenanceReport(){
+      var data = await this.$obj.Report.getBuildingInspection()
+      this.origin = this.$deepClone(data)
+    },
     async getBuildingMaintenanceReport(sort = null) { //取得檢修申報
       this.blockData = []
-      var data = []
-      await this.$api.report.apiGetBuildingInspection().then(response => {
-        this.listQueryParams.total = response.result.length
-        this.origin = JSON.stringify(response.result)  
-        data = response.result
-        this.selectSetting.forEach(element=>{
-            if(element.select !== ''){
-              data = data.filter((item, index) => item[element.prop] == element.select )
-            }
-        })
-        data = data.filter((item, index) => 
+      var data = this.$deepClone(this.origin)
+      this.listQueryParams.total = data.length
+      this.selectSetting.forEach(element=>{
+        if(element.select !== ''){
+          data = data.filter(function(item,index){
+              if(typeof item[element.prop] !== 'object'){
+                  return item[element.prop] == element.select
+              }else{
+                  if(item[element.prop].length > 0){
+                    return item[element.prop][0].id == element.select
+                  }
+              }
+          })
+        }
+      })
+      data = data.filter((item, index) => 
         index < this.listQueryParams.limit * this.listQueryParams.page && 
         index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
-        if(sort !== '' && sort !== null){
+      if(sort !== '' && sort !== null){
           if(sort == 'declareDeadline' || sort == 'declareDate' || sort == 'declarationImproveDate'){
             data = data.sort(function(x,y){
               var date1 = x[sort].split(' ')
@@ -292,70 +350,47 @@ export default {
                 return x.isImproved - y.isImproved
             })
         }
-        this.blockData = data
-      })
+      this.blockData = data
     },  
     async setSelectSetting(){
       this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
       this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
     },
-    async getInspectionFiles(id){ //取得檢修申報的附件文檔
-      this.inspectionId = id
-      this.files = []
-      await this.$api.files.apiGetInspectionFiles(id).then(response =>{
-        this.files = response.result.sort((x,y) => x.id - y.id)
-      })
+    async saveInspectionLack(){
+      var data =  await this.$obj.Report.getInspectionLack(this.inspectionId)
+      this.lackorigin = this.$deepClone(data)
     },
-    async getInspectionLackFileOfId(id){ //取得import檔案id
-      this.lackFileId = ''
-      await this.$api.report.apiGetInspection(id).then(response =>{
-          this.lackFileId = response.result[0].imported.toString()
-      })
-    },
-    async setLackFile(fileId,cover){ //設定缺失檔案
-      await this.$api.report.apiPostInspectionLackFiles(this.inspectionId,parseInt(fileId),cover).then(response =>{
-        this.$message('上傳成功')
-      })
-      await this.getInspectionLackFileOfId(this.inspectionId)
-    },
-    async getOptions(){
-      await this.$api.setting.apiGetOptions('LackStatusOptions').then(response => {
-        var _temp = response.result.sort((x,y) => x.id - y.id)
-        this.options = _temp.map(v => {
-          this.$set(v, 'value', v.id) 
-          this.$set(v, 'label', v.textName) 
-          this.$set(v, 'id', v.id) 
-          return v
-        })
-      })
-    },
-    async getInspectionLack(id){ //取得缺失內容
-      this.inspectionId = id
-      await this.$api.report.apiGetInspectionLack(id).then(response =>{
-        console.log(JSON.stringify(response))
-        var _temp = response.result.sort((x,y) => x.id - y.id)
-        this.dialogData = _temp.map(v => {
-          this.$set(v, 'isEdit', false) 
-          return v
-        })
-      })
+    async getInspectionLack(){ //取得缺失內容
+      var data =  this.$deepClone(this.lackorigin)
+      this.lacklistQueryParams.total = data.length
+      this.formtableData = data.filter((item, index) => 
+          index < this.lacklistQueryParams.limit * this.lacklistQueryParams.page && 
+          index >= this.lacklistQueryParams.limit * (this.lacklistQueryParams.page - 1))
     },
     async handleBlock(title,index, content) { //檢修申報的操作
       console.log(index,JSON.stringify(content))
       this.dialogData = []
+      this.dialogTitle = 'reportInspectio'
       if(index === 'open'){
-          this.dialogData.push(content)
-          this.dialogButtonsName = [
+        var temp = this.$deepClone(content)
+        this.dialogData.push(temp)
+        this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'update'},
           { name:'取消',type:'info',status:'cancel'}]
-          this.dialogConfig = this.tableConfig
-          this.innerVisible = true
-          this.dialogStatus = 'update'
+        this.dialogConfig = this.tableConfig
+        this.innerVisible = true
+        this.dialogStatus = 'update'
       }else if(index === 'delete'){
-          await this.$api.report.apiDeleteInspection(content).then(async(response) => {
-            this.$message('刪除成功')
-            await this.getBuildingMaintenanceReport()
-          })
+        var isDelete = await this.$obj.Report.deleteInspection(content)
+        if(isDelete){
+          this.$message('刪除成功')
+          this.listQueryParams = {
+                page: 1,
+                limit: 10,
+                total: 0
+          }
+          await this.init()
+        }
       }else if(index === 'empty'){
           this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'create'},
@@ -364,88 +399,165 @@ export default {
           this.innerVisible = true
           this.dialogStatus = 'create'
       }else if(index === 'openfiles'){
-          await this.getInspectionFiles(content)
-          await this.getInspectionLackFileOfId(content)
-          this.dialogButtonsName = []
-          this.innerVisible = true
-          this.dialogStatus = 'upload'
-      }else if(index === 'openlacks'){
-        await this.getInspectionLack(content)
+        this.inspectionId = content
+        this.files = await this.$obj.Files.getBuildingInspectionFiles(this.inspectionId)
+        this.lackFileId = await this.$obj.Report.getInspection(this.inspectionId)
         this.dialogButtonsName = []
         this.innerVisible = true
-        this.dialogConfig = this.lackconfig
+        this.dialogStatus = 'upload'
+      }else if(index === 'openlacks'){
+        this.dialogTitle = 'lack'
+        this.inspectionId = content
+        this.dialogButtonsName = []
+        await this.inspectioninit()
         this.dialogStatus = 'lack'
+        this.innerVisible = true
       }
     },
     async handleDialog(title ,index, content){ //Dialog相關操作
-        console.log(title ,index,content)
+        console.log(title ,index,JSON.stringify(content))
+        var isOk = false
         if(title === 'reportInspectio'){
-          if(index === 'update'){
-              await this.$api.report.apiPatchInspection(JSON.stringify(content)).then(async(response)  => {
-                this.$message('更新成功')
-                await this.getBuildingMaintenanceReport()
-              })
-          }else if(index === 'create'){
-              await this.$api.report.apiPostInspection(JSON.stringify(content)).then(async(response)  => {
-                this.$message('新增成功')
-                await this.getBuildingMaintenanceReport()
-              })
+          if(index === 'update' || index === 'create'){
+            isOk = index === 'update' ? 
+              await this.$obj.Report.updateInspection(JSON.stringify(content)) :
+              await this.$obj.Report.postInspection(JSON.stringify(content))
+            if(isOk){
+              index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+              await this.init()
+            }
+            this.innerVisible = false
           }else if(index === 'createfile'){
               const formData = new FormData();
                 content.forEach(item => {
                   formData.append('file', item.raw)
               })
-              await this.$api.files.apiPostInspectionFiles(this.inspectionId,formData).then(async(response)  =>{
-                  this.$message('上傳成功')
-                  await this.getInspectionFiles(this.inspectionId)
-              })
+              isOk = await this.$obj.Files.postBuildingInspectionFiles(this.inspectionId,formData)
+              if(isOk){
+                this.$message('上傳成功')
+                this.files = await this.$obj.Files.getBuildingInspectionFiles(this.inspectionId)
+              }
           }else if(index === 'deletefile'){
-              await this.$api.files.apiDeleteFile(content).then(async(response)  =>{
-                this.$message('刪除成功')
-                await this.getInspectionFiles(this.inspectionId)
-              })
-          }else if(index === 'changeAgain'){
-              await this.setLackFile(content,true)
-          }else if(index === 'changeFirst'){
-              await this.setLackFile(content,false)
+            isOk = await this.$obj.Files.deleteFiles(content)
+            if(isOk){
+              this.$message('刪除成功')
+              this.files = await this.$obj.Files.getBuildingInspectionFiles(this.inspectionId)
+            }
+          }else if(index !== 'cancel'){
+            isOk = await this.$obj.Report.postInspectionFiles(this.inspectionId,parseInt(content),
+            index === 'changeAgain' ? true : false)
+            if(isOk){
+              this.$message('更新成功')
+              this.lackFileId = await this.$obj.Report.getInspection(this.inspectionId)
+            }
+          }else{
+            this.innerVisible = false
           }
-          this.innerVisible = false 
         }else{
           await this.handleLackDialog(title,index,content)
         }
     },
     async handleLackDialog(title ,index, content){ //LackDialog相關操作
-        console.log(title ,index,content)
-        if(index === 'create'){
-          await this.$api.report.apiPostInspectionLack(this.inspectionId,JSON.stringify(content)).then(response => {
-            this.$message('新增成功')
-          })
-        }else if(index === 'update'){
-          await this.$api.report.apiPatchInspectionLack(content).then(response => {
-            this.$message('更新成功')
-          })
+        this.dialogData = []
+        this.dialogTitle = 'lack'
+        this.dialogConfig = []
+        if(index === 'empty'){
+          this.dialogConfig = this.formtableconfig
+          this.dialogSelect= [] //檢修申報下拉選單
+          this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'createlack'},
+          { name:'返回',type:'info',status:'cancellack'}]
+          this.innerVisible = true
+          this.dialogStatus = 'create'
+        }else if(index === 'open'){
+          this.dialogConfig = this.formtableconfig    
+          this.dialogData.push(content)
+          this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'updatelack'},
+          { name:'取消',type:'info',status:'cancellack'}]
+          this.innerVisible = true
+          this.dialogStatus = 'update'
         }else if(index === 'delete'){
-          await this.$api.report.apiDeleteInspectionLack(content).then(response => {
-            this.$message('刪除成功')
-          })
+          var isDelete = await this.$obj.Report.deleteInspectionLack(content)
+          if(isDelete){
+              this.$message('刪除成功')
+              await this.inspectioninit()
+          }
+        }else if(index === 'createlack' || index === 'updatelack'){
+          var isOk = index === 'createlack' ? 
+          await this.$obj.Report.postInspectionLack(this.inspectionId,JSON.stringify(content)) : 
+          await this.$obj.Report.updateInspectionLack(JSON.stringify(content))
+          if(isOk){
+              index === 'updatelack' ? this.$message('更新成功') : this.$message('新增成功')
+              await this.handleBlock('lack','openlacks',this.inspectionId)
+          }
+        }else if(index === 'cancel'){
+          this.innerVisible = false
+          this.lacklistQueryParams = {
+            page: 1,
+            limit: 10,
+            total: 0
+          }
+        }else if(index === 'cancellack'){
+          this.lacklistQueryParams = {
+            page: 1,
+            limit: 10,
+            total: 0
+          }
+          await this.handleBlock('lack','openlacks',this.inspectionId)
+        }else if(index === 'clickPagination'){
+          this.lacklistQueryParams = content
+          await this.getInspectionLack()
         }
-        await this.getInspectionLack(this.inspectionId)
     }
   }
 }
 </script>
 <style lang="scss" scoped>
-.el-form--inline .el-form-item{
-     margin-right:40px
-   }
-    .chart-wrapper {
+  .chart-wrapper {
         background: #fff;
-        padding: 10px 16px 0;
-        margin-bottom: 32px;
-        height: 110px;
+        padding: 10px 10px;
+        margin-bottom: 30px;
+        height: 150px;
         width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        .verticalhalfdiv{
+          width: 100%;
+          min-height: 50%;
+          .label{
+            min-width: 30%;
+            display:inline-block;
+            text-align:center;
+            font-size: 20px;
+          }
+          .content{
+            min-width: 60%;
+            display:inline-block;
+            font-size: 30px;
+          }
+        }
+        .horizontalhalfdiv{
+          height: 100%;
+          min-width: 50%;
+          .label{
+            min-width: 30%;
+            display:inline-block;
+            text-align:center;
+            font-size: 20px;
+            vertical-align:top;
+          }
+          .content{
+            min-width: 70%;
+            display:inline-block;
+            font-size: 24px;
+            .user{
+              padding: 0px 8px 8px 8px;
+            }
+          }
+        }
         .report{
-            font-size: 60px;
+            font-size: 50px;
             color: red;
         }
     }

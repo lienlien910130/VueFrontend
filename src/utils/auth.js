@@ -4,7 +4,6 @@ const TokenKey = '_token'
 const Version = '_version'
 const USERid = '_ID'
 const BuildingID = '_buildingid'
-const GraphicJson = '_graphic'
 
 export function getVersion() {
   return Cookies.get(Version)
@@ -41,7 +40,6 @@ export function setID(userid) {
 export function removeID() {
   return Cookies.remove(USERid)
 }
-
 export function getBuildingid() {
   return Cookies.get(BuildingID)
 }
@@ -52,24 +50,4 @@ export function setBuildingid(buildingID) {
 
 export function removeBuildingid() {
   return Cookies.remove(BuildingID)
-}
-
-export function getBuildingArray() {
-  return Cookies.get(BuildingArray)
-}
-
-export function setBuildingArray(buildingArray) {
-  return Cookies.set(BuildingArray, buildingArray)
-}
-
-export function removeBuildingArray() {
-  return Cookies.remove(BuildingArray)
-}
-
-export function getGraphicJson() {
-  return Cookies.get(GraphicJson)
-}
-
-export function setGraphicJson(graphicjson) {
-  return Cookies.set(GraphicJson, graphicjson)
 }

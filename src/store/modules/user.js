@@ -1,8 +1,12 @@
-import { getToken, setToken, removeToken, 
-  setID, getID, removeID, removeVersion,
-  removeBuildingid } from '../../utils/auth'
+import { 
+  getToken,setToken,removeToken, 
+  getID,setID,removeID,
+  removeVersion,removeBuildingid
+}  from '../../utils/auth'
+import idb from '../../utils/indexedDB'
 import { resetRouter } from '../../router'
 import user from '../../api/user.js'
+import store from '../index.js'
 
 // 個人資料
 const getDefaultState = () => {
@@ -47,10 +51,12 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       user.apiPostLogin({ account: username.trim(), password: password }).then(response => {
+        idb.getDb()
         commit('SET_TOKEN', response.accessToken) //store 儲存
         setToken(response.accessToken) //cookie儲存
         commit('SET_USER', response.userId) //store 儲存
         setID(response.userId) //cookie儲存
+        store.dispatch('building/setbuildingarray',response.buildingList)
         resolve()
       }).catch(error => {
         console.log("error.response.status=>" + error.response.status);
@@ -65,7 +71,6 @@ const actions = {
           reject('登入失敗，請重新登入')
         }
         const { account, name, accountLevel } = response.result[0]
-
         // roles must be a non-empty array
         // if (!roles) {
         //   reject('getInfo: roles must be a non-null array!')
@@ -80,17 +85,17 @@ const actions = {
       })
     })
   },
-
   // user logout
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
       removeToken() // must remove  token  first
-        resetRouter()
-        removeID()
-        removeVersion()
-        removeBuildingid()
-        commit('RESET_STATE')
-        resolve()
+      removeID()
+      removeVersion()
+      removeBuildingid()
+      idb.deleteDb()
+      commit('RESET_STATE')
+      resetRouter()
+      resolve()
     })
   },
 
@@ -100,6 +105,8 @@ const actions = {
       removeToken() // must remove  token  first
       removeID()
       removeVersion()
+      removeBuildingid()
+      idb.deleteDb()
       commit('RESET_STATE')
       resolve()
     })

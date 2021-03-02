@@ -374,21 +374,98 @@ export async function changeLabel(selectType,value){
 }
 
 export async function setSelectSetting(config,list){
-  var data  = config.filter((item,index)=>item.isSelect == true)
+  var data = []
+  data  = config.filter((item,index)=>item.isSelect == true)
   for(let item of data){
+    item.options = []
     var _temp = removeDuplicates(list,item.prop)
     for(let obj of _temp) {
-        if(obj[item.prop] !== '' && obj[item.prop] !== null){
-          var label = await changeLabel(item.selectType,obj[item.prop])
-          item.options.push({
-              id:obj.id,
-              value:obj[item.prop],
-              label:label
-          }) 
+        if(obj[item.prop] !== '' && obj[item.prop] !== null ){
+          var label = typeof obj[item.prop] !== 'object' ? 
+            await changeLabel(item.selectType,obj[item.prop]) : 
+            obj[item.prop].length>0 ? await changeLabel(item.selectType,obj[item.prop][0].id) : ''
+          var value = typeof obj[item.prop] !== 'object' ? obj[item.prop] :
+            obj[item.prop].length>0 ? obj[item.prop][0].id : ''
+          if(value !== '' && label !== ''){
+            item.options.push({
+                id:obj.id,
+                value:value,
+                label:label
+            }) 
+          }
         }
     }
   }
   return data
+}
+
+export function changeLink(title,content,action){
+  if(title === 'floorOfHouse'){
+    var array = []
+    action === 'open' ? 
+      content.linkOwners.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+      content.linkOwners.length !== 0 ?
+      content.linkOwners.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+      array.push({ id:content.linkOwners.id == undefined ? content.linkOwners : content.linkOwners.id })
+    content.linkOwners = array
+    array = []
+    action === 'open' ? 
+      content.linkUsers.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+      content.linkUsers.length !== 0 ?
+      content.linkUsers.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+      array.push({ id:content.linkUsers.id == undefined ? content.linkUsers : content.linkUsers.id })
+    content.linkUsers = array 
+  }else if(title === 'committee'){
+    var array = []
+    action === 'open' ? 
+      content.linkUsageOfFloors.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+      content.linkUsageOfFloors.length !== 0 ?
+      content.linkUsageOfFloors.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+        array.push({ id:content.linkUsageOfFloors.id == undefined ? 
+          content.linkUsageOfFloors : content.linkUsageOfFloors.id })
+    content.linkUsageOfFloors = array
+  }else if(title === 'equipment'){
+    var array = []
+    action === 'open' ? 
+      content.linkKeeperUnits.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+      content.linkKeeperUnits.length !== 0 ?
+        content.linkKeeperUnits.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+        array.push({ id:content.linkKeeperUnits.id == undefined ? 
+          content.linkKeeperUnits : content.linkKeeperUnits.id })
+    content.linkKeeperUnits = array
+    array = []
+    action === 'open' ? 
+      content.linkMaintainVendors.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
+      content.linkMaintainVendors.length !== 0 ?
+        content.linkMaintainVendors.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+        array.push({ id:content.linkMaintainVendors.id == undefined ? content.linkMaintainVendors : content.linkMaintainVendors.id })
+    content.linkMaintainVendors = array
+  }else if(title === 'maintain'){
+    var array = []
+    action === 'open' ? 
+      content.linkDevices.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+      content.linkDevices.length !== 0 ?
+        content.linkDevices.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
+        // array.push({ id:content.linkDevices.id == undefined ? 
+        //   content.linkDevices : content.linkDevices.id })
+    content.linkDevices = array
+    array = []
+    action === 'open' ? 
+      content.linkInspectionLacks.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
+      content.linkInspectionLacks.length !== 0 ?
+        content.linkInspectionLacks.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
+        // array.push({ id:content.linkInspectionLacks.id == undefined ? content.linkInspectionLacks : content.linkInspectionLacks.id })
+
+    content.linkInspectionLacks = array
+    array = []
+    action === 'open' ? 
+      content.linkContactUnits.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
+      content.linkContactUnits.length !== 0 ?
+        content.linkContactUnits.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
+        // array.push({ id:content.linkContactUnits.id == undefined ? content.linkContactUnits : content.linkContactUnits.id })
+      content.linkContactUnits = array
+  }
+  return content
 }
 /**
  * @param {Array} arr

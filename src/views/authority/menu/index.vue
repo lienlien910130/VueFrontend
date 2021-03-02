@@ -3,17 +3,10 @@
            <el-row :gutter="32">
                <el-col :xs="24" :sm="24" :md="24" :lg="7">
                     <div class="chart-wrapper">
-                        <!-- <Select 
-                            class="select right-menu-item"
-                            v-bind="selectAttrs" 
-                            v-on:handleSelect="handleSelect"
-                            style="width:100%">
-                        </Select> -->
-
-                        <menu-tree 
+                        <menuTree
                             v-bind="treeAttrs"
                             v-on:handleTreeNode="handleTreeNode">
-                        </menu-tree>
+                        </menuTree>
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
@@ -37,7 +30,6 @@ import { mapGetters } from 'vuex'
 export default {
     components:{ 
         Table: () => import('@/components/Table/index.vue'),
-        Select: () => import('@/components/Select/index.vue'),
         menuTree: () => import('@/components/Tree/menuTree.vue'),
         Dialog:() => import('@/components/Dialog/index.vue'),
     },

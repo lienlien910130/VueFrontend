@@ -32,7 +32,7 @@
               v-for="item in selectData"
               :key="item.id"
               @click.native="handleSelect(item)">
-                {{ item.label }}
+                {{ item.buildingName }}
               </el-dropdown-item>
             </el-dropdown-menu>
         </el-dropdown>
@@ -174,10 +174,6 @@ export default {
         var t = new Date().toLocaleString()
         _this.date = new Date()
       }, 1000)
-      await this.getBuilding()
-      // if(this.account !== 'mf01'){
-      //   await this.getBuilding()
-      // }
   },
   filters: {
       formatDate:function (value) {
@@ -193,8 +189,12 @@ export default {
       }
   },
   watch:{
-      buildingarray(){
-        console.log('buildingarray',this.buildingarray)
+      buildingarray:{
+        handler:async function(){
+          this.selectData = this.buildingarray
+          this.handleSelect(this.selectData[0])
+        },
+        immediate:true
       }
   },
   beforeDestroy() { 
@@ -216,34 +216,24 @@ export default {
       await this.$store.dispatch('user/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
-    async getBuilding() {
-      this.selectData = await this.$obj.Building.getAllBuilding(true)
-      this.$store.dispatch('building/setbuildingid',this.selectData[0].id)
-      this.$store.dispatch('building/setbuildingarray',this.$obj.Building.buildingArray)
-      this.buildingName = this.selectData[0].label
-      // await this.$api.building.apiGetBuilding().then(response=>{
-      //   this.$store.dispatch('building/setbuildingid',response.result[0].id)
-      //   console.log(JSON.stringify(response.result))
-      //   response.result.forEach(item => {
-      //         let _array = { 
-      //             id : item.id, 
-      //             label: item.buildingName, 
-      //             value: item.id,
-      //             up: item.floorsOfAboveGround,
-      //             down: item.floorsOfUnderground
-      //         }
-      //         this.options.push(_array)  
-      //       })
-      //   this.selectData = this.options
-      // })
-      // this.handleSelect(this.selectData)
+    async init(){ //儲存 設定/廠商資料/建築物用戶/設備/樓層
+      this.$store.dispatch('building/setbuildingoptions',await this.$obj.Setting.getAllOption())
+      this.$store.dispatch('building/setbuildingcontactunit',await this.$obj.Building.getBuildingContactunit())
+      this.$store.dispatch('building/setbuildingusers',await this.$obj.Building.getBuildingUser())
+      this.$store.dispatch('building/setbuildingdevices',await this.$obj.Device.getBuildingDevicesManage())
+      this.$store.dispatch('building/setbuildingfloors',await this.$obj.Building.getBuildingFloors())
+      //var data = await this.$obj.Authority.getBuildingMenu()
+      //console.log('Navbardone',JSON.stringify(data))
     },
     handleSelect(content){
-      this.$store.dispatch('building/setbuildingid',content.id)
-      this.buildingName = content.label
+       if(content !== undefined){
+          this.$store.dispatch('building/setbuildingid',content.id)
+          this.buildingName = content.buildingName
+          this.init()
+       }
     },
     padDate(value) {
-        return value <10 ? '0' + value:value;
+        return value <10 ? '0' + value:value
     }
   }
 }

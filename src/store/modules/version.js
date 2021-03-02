@@ -1,5 +1,4 @@
-import { getversion } from '@/api/user'
-import { setVersion } from '@/utils/auth'
+import { getVersion,setVersion } from '@/utils/auth'
 
 
 
@@ -36,18 +35,18 @@ const mutations = {
   const actions = {
     getversion({ commit }, url) {
         return new Promise((resolve, reject) => {
-          getversion(url).then(response => {
-            console.log('version=>'+JSON.stringify(response))
-            commit('SET_VER_COMPONENT', response.data.version.components)
-            commit('SET_VER_ID', response.data.version.id)
-            commit('SET_VER_NAME', response.data.version.name)
-            commit('SET_VER_LOGO', response.data.version.logo)
-            setVersion(response.data.version.components)
-            resolve()
-          }).catch(error => {
-            console.log('error=>'+error)
-            reject(error)
-          })
+          // getversion(url).then(response => {
+          //   console.log('version=>'+JSON.stringify(response))
+          //   commit('SET_VER_COMPONENT', response.data.version.components)
+          //   commit('SET_VER_ID', response.data.version.id)
+          //   commit('SET_VER_NAME', response.data.version.name)
+          //   commit('SET_VER_LOGO', response.data.version.logo)
+          //   setVersion(response.data.version.components)
+          //   resolve()
+          // }).catch(error => {
+          //   console.log('error=>'+error)
+          //   reject(error)
+          // })
         })
       }
   }
