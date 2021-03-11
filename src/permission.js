@@ -43,19 +43,20 @@ router.beforeEach(async(to, from, next) => {
             await store.dispatch('building/setroles',await obj.Authority.getAllRole()) //跟大樓無關連
             await store.dispatch('building/setbuildingusers',await obj.Building.getBuildingUser()) ////跟大樓無關連
             const isSystem = store.getters.id == '1'
+            console.log('isSystem',isSystem,buildingID)
             if(isSystem){ //系統管理員=>取得所有大樓清單
               store.dispatch('building/setbuildingarray',await obj.Building.getAllBuilding())
             }
             if(buildingID){ //已經有選過大樓
               console.log('已選擇過建築物大樓')
-              await store.dispatch('building/setbuildingid', buildingID)
-              await store.dispatch('building/getbuildinginfo')
-              if(!isSystem) await store.dispatch('building/getbuildingarray') 
-              await store.dispatch('permission/setRoutes') //設定選單資料庫&側邊選單欄
-              await store.dispatch('building/getbuildingoptions')
-              await store.dispatch('building/getbuildingfloors')
-              await store.dispatch('building/getbuildingcontactunit')
-              await store.dispatch('building/getbuildingdevices')
+              // await store.dispatch('building/setbuildingid', buildingID)
+              // await store.dispatch('building/getbuildinginfo')
+              // if(!isSystem) await store.dispatch('building/getbuildingarray') 
+              // await store.dispatch('permission/setRoutes') //設定選單資料庫&側邊選單欄
+              // await store.dispatch('building/getbuildingoptions')
+              // await store.dispatch('building/getbuildingfloors')
+              // await store.dispatch('building/getbuildingcontactunit')
+              // await store.dispatch('building/getbuildingdevices')
             }else{ //第一次登入 選單初始化
               const accessRoutes = await store.dispatch('permission/generateRoutes', isSystem) //設定選單
               router.addRoutes(accessRoutes)

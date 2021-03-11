@@ -105,7 +105,7 @@ const actions = {
     })
   },
   async generateRoutes({ commit }, roles) {
-    let accessedRoutes
+    let accessedRoutes = []
     if (roles) {
       accessedRoutes = mercuryfireRoutes || []
     } 
