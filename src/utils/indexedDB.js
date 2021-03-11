@@ -34,6 +34,8 @@ export default {
                 db.createObjectStore("buildingUsers", { autoIncrement: true, keyPath:'id' })
                 db.createObjectStore("buildingDevices", { autoIncrement: true, keyPath:'id' })
                 db.createObjectStore("buildingOptions", { autoIncrement: true, keyPath:'id' }) 
+                var temp = db.createObjectStore("CacheImage", { autoIncrement: true, keyPath:'id' })
+                temp.createIndex("codeIndex","code",{unique:true})
 			}
 		})
 	},
@@ -164,4 +166,80 @@ export default {
             }
 		})
 	},
+
+    findCacheImageByIndex(db, imageId) {
+        return this.findByIndex(db, 'CacheImage', 'codeIndex', imageId)
+    },
+
+    findByIndex(db, tableName, indexName, searchContent) {
+        return new Promise((resolve, reject) => {
+            let tx = db.transaction(tableName, 'readonly')
+            let store = tx.objectStore(tableName)
+            let index = store.index(indexName)
+            let request = index.get(searchContent)
+            request.onsuccess = function () {
+                let data = request.result
+                if(data !== undefined) {
+                    resolve(data)
+                } else {
+                    resolve(null)
+                }
+            }
+        })
+    },
+
+    loadImage(data) {
+        return new Promise((resolve, reject) => {
+            let fileReader = new FileReader()
+            fileReader.readAsArrayBuffer(data)
+            //转换成base64
+            fileReader.onload = (e) => {
+                let base64 = e.target.result
+                resolve(base64)
+            }
+        })
+    },
+    saveOrUpdate(db, tableName, data) {
+        return new Promise((resolve, reject) => {
+            let tx = db.transaction(tableName, 'readwrite')
+            let store = tx.objectStore(tableName)
+            let request = store.put(data)
+            request.onsuccess = function () {
+                resolve()
+            };
+            request.onerror = function (e) {
+                reject(e)
+            }
+        })
+    },
+    saveCacheImage(db, data) {
+        return this.saveOrUpdate(db, 'CacheImage', data);
+    },
+    loadCacheImage(imageId,data) { 
+        // let db = await this.getDb()
+        // return new Promise((resolve, reject) => {
+        //     this.findCacheImageByIndex(db, imageId).then((data) => {
+        //         if(!data) { //儲存圖片
+        //             this.loadImage(data).then((base64) => {
+        //                 resolve(base64)
+        //                 this.saveCacheImage(db, {
+        //                     imageId: imageId,
+        //                     data: data})
+        //             })
+        //         } else {
+        //             //链接改变，重新下载图片
+        //             if(data.url !== imageUrl) {
+        //                 this.loadImage(data).then((base64) => {
+        //                     resolve(base64)
+        //                     this.saveCacheImage(db, {
+        //                         imageId: imageId,
+        //                         data: data})
+        //                 })
+        //             } else {
+        //                 resolve(data.base64)
+        //             }
+        //         }
+        //     })
+        // })
+    }
 }

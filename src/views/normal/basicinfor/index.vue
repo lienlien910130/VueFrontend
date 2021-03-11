@@ -372,14 +372,15 @@ export default {
     
     async getFloorImage(){ //載入平面圖
       if(this.floorImageId == null){
-        this.imageSrc = -1
+          this.imageSrc = -1
       }else{
-        this.loading = true
-        var data = await this.$obj.Files.getBuildingFloorImage(this.floorImageId)
-        const bufferUrl = btoa(new Uint8Array(data).reduce((data, byte) => 
-          data + String.fromCharCode(byte), ''))
+          this.loading = true
+          var data = await this.$obj.Files.getBuildingFloorImage(this.floorImageId)
+          console.log(data)
+          const bufferUrl = btoa(new Uint8Array(data).reduce((data, byte) => 
+            data + String.fromCharCode(byte), ''))
           this.imageSrc = 'data:image/png;base64,' + bufferUrl
-        this.loading = false
+          this.loading = false
       }
     },
     async getFloorOfHouse(){ //取得大樓所有門牌

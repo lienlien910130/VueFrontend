@@ -99,13 +99,14 @@
     },
     data() {
       return {
-        fileList:[],
-        isDisabled:true,
-        importFiles:[],
-        choose:'',
-        isLt10M:true,
-        isType:true,
-        disable:[]
+            input:'',
+            fileList:[],
+            isDisabled:true,
+            importFiles:[],
+            choose:'',
+            isLt10M:true,
+            isType:true,
+            disable:[]
       }
     },
     mounted(){
@@ -114,19 +115,31 @@
     methods: {
         handleChange(file, fileList) {
             console.log(file,fileList)
-            const m = file.size / 1024 / 1024 < 10
+            const m = file.size / 1024 / 1024 
             const array = file.name.split('.')
             const t = array[1] !== 'dwg'
-            if (!m && t) {
-                this.disable.push(file)
-                this.$message.error('上傳檔案不能超過10MB!')
-            }else if (m && !t) {
+            file.name = file.name + ' --- 大小:' + file.size
+            if (!t) {
                 this.disable.push(file)
                 this.$message.error('dwg檔請壓縮成zip檔再上傳')
-            }else if(!m && !t){
+            }else if(m > 10){
                 this.disable.push(file)
-                this.$message.error('檔案大小及格式有錯誤,請移除錯誤檔案再進行上傳')
+                this.$message.error('上傳檔案不能超過10MB!')
+                file.name = '(X)'+ file.name + ' --- 大小:' + file.size
             }
+
+            // if (!m && t) {
+            //     this.disable.push(file)
+            //     this.$message.error('上傳檔案不能超過10MB!')
+            // }else if (m && !t) {
+            //     this.disable.push(file)
+            //     this.$message.error('dwg檔請壓縮成zip檔再上傳')
+            // }else if(!m && !t){
+            //     this.disable.push(file)
+            //     this.$message.error('檔案大小及格式有錯誤,請移除錯誤檔案再進行上傳')
+            // }
+            
+            fileList.sort((x,y)=>y.size-x.size)
             this.importFiles = fileList
             if (this.importFiles.length > 0) {
                 this.isDisabled = false

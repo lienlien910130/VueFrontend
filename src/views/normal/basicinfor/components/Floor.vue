@@ -19,5 +19,6 @@ export default {
   background-size: 100% 100%;
   background-repeat: no-repeat;
   max-width: 100%;
+  height: 650px;
 }
 </style>
