@@ -235,7 +235,8 @@ export default {
             var data = this.buildingarray.filter(element=>{
               return item.id == element.id
             })
-            array.push(data[0].buildingName)
+            if(data.length) array.push(data[0].buildingName)
+           
           })
           return array.toString()
         }
