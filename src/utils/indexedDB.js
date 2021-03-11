@@ -23,6 +23,9 @@ export default {
 			request.onupgradeneeded = e => {
 				console.log('onupgradeneeded')
 				let db = e.target.result
+                var temp = db.createObjectStore("menu", { autoIncrement: true, keyPath:'id' })
+                temp.createIndex("codeIndex","code",{unique:true})
+                db.createObjectStore("roles", { autoIncrement: true, keyPath:'id' })
                 db.createObjectStore("buildingInfo", { autoIncrement: true, keyPath:'id' })
                 db.createObjectStore("buildingFloors", { autoIncrement: true, keyPath:'id' })
                 db.createObjectStore("graphicJson", { autoIncrement: true, keyPath:'id' })
@@ -74,6 +77,38 @@ export default {
 			// }
 		})
 	},
+    async getValueByIndex(code){
+        console.log('code',code)
+        let db = await this.getDb()
+        return new Promise(resolve => {
+			let trans = db.transaction(["menu"],'readwrite')
+            let store = trans.objectStore("menu")
+            let index = store.index("codeIndex")
+            index.get(code).onsuccess=function(e){
+                var data = e.target.result
+                if(data !== undefined){
+                    resolve(data.id)
+                }else{
+                    resolve()
+                }
+            }
+            index.get(code).onerror = e => {
+                reject(e)
+            }
+		})
+        // var transaction= db.transaction("menu")
+        // var store = transaction.objectStore("menu")
+        // var index = store.index("codeIndex")
+        // index.get(code).onsuccess=function(e){
+        //     var data = e.target.result
+        //     console.log(JSON.stringify(data),data.id)
+        //     return data.id
+        // }
+        // index.get(code).onerror = e => {
+        //     console.log('Error getValueByIndex', e)
+        //     return ''
+        // }
+    },
     async saveValue(tableName,data) {
 		let db = await this.getDb()
 		return new Promise(resolve => {

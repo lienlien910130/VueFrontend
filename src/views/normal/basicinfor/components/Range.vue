@@ -16,7 +16,7 @@
       class="floordiv" 
       v-for="item in divFloor" 
       :key="item.id" 
-      @click="onSelectFloor(item.id)"
+      @click="onSelectFloor(item)"
       @mouseover="addClass(item.id)"
       @mouseleave="removeClass(item.id)"
       :class="[{ active:classenable && item.id == current },{ select:item.id == selectFloor }]"
@@ -68,8 +68,8 @@ export default {
   },
   watch:{
     buildingfloors:{
-      handler:async function(){
-        if(this.buildingfloors.length>0){
+      handler:async function(newValue,oldValue){
+        if(this.buildingfloors.length>0 && oldValue == undefined ){
           this.upFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == false)
           this.downFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == true)
           this.setRange()
@@ -114,8 +114,8 @@ export default {
       }
     },
     onSelectFloor(val) {
-      this.selectFloor = val
-      this.$emit('handleBuildingFloorSelect',this.selectFloor)
+      this.selectFloor = val.id
+      this.$emit('handleBuildingFloorSelect',val)
     },
     addClass(index){
         this.classenable = true

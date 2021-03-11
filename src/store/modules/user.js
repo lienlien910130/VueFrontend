@@ -7,6 +7,7 @@ import idb from '../../utils/indexedDB'
 import { resetRouter } from '../../router'
 import user from '../../api/user.js'
 import store from '../index.js'
+import obj from '@/object'
 
 // 個人資料
 const getDefaultState = () => {
@@ -59,7 +60,7 @@ const actions = {
         store.dispatch('building/setbuildingarray',response.buildingList)
         resolve()
       }).catch(error => {
-        console.log("error.response.status=>" + error.response.status);
+        console.log("error.response.status=>" + error)
         reject(error)
       })
     })
@@ -70,16 +71,15 @@ const actions = {
         if (!response) {
           reject('登入失敗，請重新登入')
         }
-        const { account, name, accountLevel } = response.result[0]
-        // roles must be a non-empty array
-        // if (!roles) {
-        //   reject('getInfo: roles must be a non-null array!')
-        // }
-        commit('SET_ROLES', ['admin'])
+        const { account, name, linkRoles } = response.result[0]
+        var roles = []
+        linkRoles.forEach(element => {
+            roles.push(element.id)
+        })
         commit('SET_ACCOUNT', account)
         commit('SET_NAME', name)
-        commit('SET_LEVEL', accountLevel)
-        resolve(response[0])
+        commit('SET_ROLES', roles)
+        resolve(roles)
       }).catch(error => {
         reject(error)
       })
@@ -88,10 +88,10 @@ const actions = {
   // user logout
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
-      removeToken() // must remove  token  first
+      removeToken() 
       removeID()
       removeVersion()
-      removeBuildingid()
+      store.dispatch('building/resetBuildingid')
       idb.deleteDb()
       commit('RESET_STATE')
       resetRouter()
@@ -102,12 +102,13 @@ const actions = {
   // remove token
   resetToken({ commit }) {
     return new Promise(resolve => {
-      removeToken() // must remove  token  first
+      removeToken() 
       removeID()
       removeVersion()
-      removeBuildingid()
+      store.dispatch('building/resetBuildingid')
       idb.deleteDb()
       commit('RESET_STATE')
+      resetRouter()
       resolve()
     })
   }

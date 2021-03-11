@@ -12,7 +12,7 @@ const setting = {
   //取得指定的分類選單
   apiGetOptionById(optionId){ return req('get','/settings/'+optionId+'/options') },
   apiGetOptions(optionName){ return req('get','/settings/'+this.getBid()+'/options/'+optionName) },
-  apiPostOption(data){ return req('post','/settings/'+this.getBid()+'/options ',data) },
+  apiPostOption(data){ return req('post','/settings/'+this.getBid()+'/options',data) },
   apiPatchOption(data){ return req('patch','/settings/options',data) },
   apiDeleteOption(optionId){ return req('delete','/settings/'+optionId+'/options') },
 

@@ -83,28 +83,9 @@
                     </el-date-picker>
                 </span>
 
-                <!-- <el-select
-                    v-else-if="item.format =='select' || item.format =='userInfo' ||
-                    item.format == 'deviceSelect' || item.format =='contactunitSelect' || 
-                    item.format == 'floorOfHouseSelect' "
-                    v-model="temp[item.prop]"
-                    filterable
-                    multiple
-                    placeholder="請選擇"
-                    style="width:100%"
-                    >
-                        <el-option
-                        v-for="(item,index) in selectData"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.id"
-                        >
-                        </el-option>  
-                </el-select> -->
-
                 <el-select
                     v-else-if="item.format =='select' || item.format =='userInfo' ||
-                    item.format == 'floorOfHouseSelect' || item.format =='roleSelect' "
+                    item.format == 'floorOfHouseSelect' "
                     v-model="temp[item.prop]"
                     filterable
                     multiple 
@@ -122,7 +103,7 @@
 
                 <el-select
                     v-else-if="item.format == 'deviceSelect' || item.format =='contactunitSelect' || 
-                    item.format == 'inspectionSelect' "
+                    item.format == 'inspectionSelect' || item.format =='roleSelect' ||  item.format =='buildingSelect' "
                     v-model="temp[item.prop]"
                     filterable
                     multiple 
@@ -270,104 +251,6 @@
         v-bind="tableAttrs" 
         v-on="tableEvent"></DialogTable>  
         
-        <!-- <el-table
-        v-if="dialogStatus === 'lack'"
-            :data="origin"
-            border
-            highlight-current-row
-            style="width: 100%;"
-            empty-text="暫無資料"
-            >
-
-            <el-table-column
-            fixed
-            type="index">
-            </el-table-column>
-
-            <el-table-column 
-                v-for="(item,index) in config"
-                align="left" 
-                :label="item.label" 
-                :key="index" 
-                :prop="item.prop" 
-                sortable
-                header-align="center"
-                >
-                <template slot-scope="scope">
-                    <span v-if="scope.row['isEdit'] === false">
-                        <div v-if="scope.column.property == 'lackContent'"
-                        v-html="stringToBr(scope.row[scope.column.property])"></div>
-                        <span v-else-if="scope.column.property == 'status'">
-                        {{  changeLabel(scope.row[item.prop]) }}
-                        </span>
-                        <span v-else>{{  scope.row[item.prop] }}</span>
-                    </span>
-                    <span v-else>
-                        <span v-if="scope.column.property == 'lackItem'">
-                            <span style="color:red">*必填</span>
-                            <el-input v-model="scope.row[item.prop]"></el-input>
-                        </span>
-                        <span v-else-if="scope.column.property == 'lackContent'">
-                            <span style="color:red">*必填</span>
-                            <el-input
-                                v-model="scope.row[item.prop]" 
-                                :autosize="{ minRows: 4, maxRows: 8}"
-                                type="textarea"></el-input>
-                        </span>
-                        <el-input v-else-if="scope.column.property == 'improveContent' || 
-                        scope.column.property == 'notPassReason' || 
-                        scope.column.property == 'accordLaws' || 
-                        scope.column.property == 'improvePlan'" 
-                        v-model="scope.row[item.prop]" 
-                        :autosize="{ minRows: 4, maxRows: 8}"
-                        type="textarea"></el-input>
-
-                        <span v-else-if="scope.column.property == 'status'">
-                            <span style="color:red">*必填</span>
-                            <el-select
-                                v-model="scope.row[item.prop]"
-                                placeholder="請選擇"
-                                style="width:100%"
-                                >
-                                    <el-option
-                                    v-for="(item,index) in optionfilter('LackStatusOptions')"
-                                    :key="index"
-                                    :label="item.textName"
-                                    :value="item.id"
-                                    >
-                                    </el-option>  
-                            </el-select>
-                        </span>
-                        
-                    </span>
-                </template>
-            </el-table-column>
-            
-            <el-table-column
-            fixed="right"
-            label="操作">
-            <template slot="header" >
-                <i class="el-icon-circle-plus-outline" 
-                @click="onAddRow" 
-                style="cursor: pointer;font-size:25px;float:right"></i>
-            </template>
-            <template slot-scope="scope">
-                <span v-if="scope.row['isEdit'] == false">
-                    <el-button @click="handleLackClick('open',scope.row)" type="primary" size="small">編輯</el-button>
-                    <el-button type="info" size="small" @click="handleLackClick('delete',scope.row)">刪除</el-button>    
-                </span>
-                <span v-else>
-                    <el-button v-if="scope.row['id'] !== undefined"
-                    @click="handleLackClick('update',scope.row)" type="primary" size="small">儲存</el-button>
-                    <el-button v-else
-                    @click="handleLackClick('create',scope.row)" type="primary" size="small">儲存</el-button>
-                    <el-button type="info" size="small" @click="handleLackClick('cancel',scope.row)">取消</el-button>
-                </span>
-            </template>
-            </el-table-column>
-
-        </el-table> -->
-
         <el-table
             v-if="dialogStatus === 'authority'"
             :data="treeData"
@@ -394,12 +277,12 @@
             label="權限"
             min-width="80%">
             <template slot-scope="scope">
-                <el-checkbox-group v-model="scope.row.accessAuthorities" @change="handleCheckedChange(scope.row)">
+                <el-checkbox-group v-model="accessArray" @change="handleCheckedChange(scope.row)">
                     <el-checkbox 
                     v-for="item in scope.row.linkAccessAuthorities"
                     :key="item.id"
                     :label="item.id">
-                    {{ item.name }}
+                    {{ item.name  }}
                     </el-checkbox>
                 </el-checkbox-group>
             </template>
@@ -464,9 +347,17 @@ export default {
         selectData: {
             type: Array
         },
+        //auth
         treeData: {
             type: Array
         },
+        accessAuthorities: {
+            type: Array,
+            default: function () {
+                return []
+            }
+        },
+        //upload
         files:{
             type: Array,
             default: function () {
@@ -498,10 +389,14 @@ export default {
             },
             immediate:true
         },
-        treeData(){
-            this.$nextTick(()=>{
-                this.treeSelection()
-            })
+        treeData:{ 
+            handler:function(){
+                this.$nextTick(()=>{
+                    this.$refs.authorityTable.clearSelection()
+                    this.accessArray = this.$deepClone(this.accessAuthorities)
+                    this.treeSelection()
+                })
+            },
         }
     },
     computed:{
@@ -509,7 +404,9 @@ export default {
             'buildingoptions',
             'buildingusers',
             'buildingdevices',
-            'buildingcontactunit'
+            'buildingcontactunit',
+            'buildingroles',
+            'buildingarray'
         ]),
         label() {
             if (this.$store.state.app.device === 'mobile') {
@@ -575,26 +472,35 @@ export default {
                     switch(value){
                         case 'deviceSelect':
                             return this.buildingdevices.map(v => {
-                                        this.$set(v, 'value', v.id) 
-                                        this.$set(v, 'label', v.name) 
-                                        this.$set(v, 'id', v.id) 
-                                        return v
-                                    })
+                                this.$set(v, 'value', v.id) 
+                                this.$set(v, 'label', v.name) 
+                                this.$set(v, 'id', v.id) 
+                                return v
+                            })
                         case 'contactunitSelect':
                             return this.buildingcontactunit.map(v => {
-                                        this.$set(v, 'value', v.id) 
-                                        this.$set(v, 'label', v.name) 
-                                        this.$set(v, 'id', v.id) 
-                                        return v
-                                    })
+                                this.$set(v, 'value', v.id) 
+                                this.$set(v, 'label', v.name) 
+                                this.$set(v, 'id', v.id) 
+                                return v
+                            })
                         case 'inspectionSelect':
                             return this.selectData
-                        
+                        case 'roleSelect' :
+                            return this.buildingroles.map(v => {
+                                this.$set(v, 'value', v.id) 
+                                this.$set(v, 'label', v.name) 
+                                this.$set(v, 'id', v.id) 
+                                return v
+                            })
+                        case 'buildingSelect' :
+                            return this.buildingarray.map(v => {
+                                this.$set(v, 'value', v.id) 
+                                this.$set(v, 'label', v.buildingName) 
+                                this.$set(v, 'id', v.id) 
+                                return v
+                            })
                     }
-                    // let _array = this.buildingoptions.filter((item, index) => 
-                    //     item.classType == a 
-                    // )
-                    // return _array
                 }else{
                     return ""
                 }
@@ -615,6 +521,17 @@ export default {
                 }
                 return ""
             }
+        },
+        changeAccess(){
+            return function (value) {
+                if(value !== null){
+                    let _array = this.selectData.filter((item, index) => 
+                        item.id == value 
+                    )
+                    return _array[0].name
+                }
+                return ""
+            }
         }
     },
     data() {
@@ -628,7 +545,8 @@ export default {
             rangevalue: [],
             origin:[],
             pictLoading:false,
-            isSelectAll:false
+            isSelectAll:false,
+            accessArray:[]
         }
     },
     methods: {
@@ -657,44 +575,49 @@ export default {
         },
         treeSelection(){
             this.pictLoading = true
-            this.$refs.authorityTable.clearSelection()
             var _temp = this.treeData
             for(var i =0;i<_temp.length;i++){
-                if(_temp[i].accessAuthorities.length>0){
-                    this.$refs.authorityTable.toggleRowSelection(_temp[i],true)
-                }
-                if(_temp[i].children.length >0){
-                    var _below = _temp[i].children
-                    for(var x=0;x<_below.length;x++){
-                        if(_below[x].accessAuthorities.length>0){
+                _temp[i].linkAccessAuthorities.forEach(item=>{
+                    var index = this.accessArray.indexOf(item.id)
+                    if(index !== -1){
+                        this.$refs.authorityTable.toggleRowSelection(_temp[i],true)
+                    }
+                })
+                var _below = _temp[i].children
+                for(var x=0;x<_below.length;x++){
+                    _below[x].linkAccessAuthorities.forEach(item=>{
+                        var index = this.accessArray.indexOf(item.id)
+                        if(index !== -1){
                             this.$refs.authorityTable.toggleRowSelection(_below[x],true)
                         }
-                    }
+                    })
                 }
             }
             this.pictLoading = false
         },
         handleClickOption(status){
-            console.log('Dialog_handleClickOption',status,this.dialogStatus)
+            console.log(this.title , status , this.dialogStatus)
             if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                 this.temp['checkStartDate'] = this.rangevalue[0]
                 this.temp['checkEndDate'] = this.rangevalue[1]
             }
-            if(status !== 'cancel' && status !== 'cancellack' && status !== 'empty' && this.dialogStatus !== 'upload' && 
+            if(status !== 'cancel' && status !== 'cancellack' && status !== 'empty' && 
+            this.dialogStatus !== 'upload' && 
             this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
                 this.$refs.dataForm.validate((valid) => {
                     if (valid) {
                         const tempData = Object.assign({}, this.temp)
-                        var data = status == 'authoritycreate' ? this.treeData : tempData
-                        this.$emit('handleDialog',this.title, status , data)     
+                        this.$emit('handleDialog',this.title, status , tempData)     
                     } else {
-                        this.$message.error('請輸入完整資訊!');
+                        this.$message.error('請輸入完整資訊')
                         return false
                     }
                 })
             }
-            if(status == 'cancel' || status == 'cancellack' || status == 'empty'){
-                this.$emit('handleDialog',this.title, status , '')
+            if(status == 'cancel' || status == 'cancellack' || 
+            status == 'empty' || status == 'authoritycreate'){
+                var data = status == 'authoritycreate' ? this.accessArray : ''
+                this.$emit('handleDialog',this.title, status , data)
             }
             
             // const tempData = Object.assign({}, this.temp)
@@ -734,8 +657,7 @@ export default {
                     this.$message('刪除成功')
                     await this.getAllAccessAuthority()
                 })
-            }
-            else if(option === '新增'){
+            }else if(option === '新增'){
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'create'},
                 { name:'取消',type:'info',status:'cancel'}]
@@ -743,61 +665,71 @@ export default {
                 this.dialogStatus = 'create'
             }
         },
-        async handleSelectionChange(selection, row){
-            var isSelect = selection.filter((obj,index)=> obj.id == row.id)
-            if(isSelect.length > 0){ //選取
-                if(row.linkMainMenus.length>0){
-                    row.children.forEach(children =>{
-                        this.$refs.authorityTable.toggleRowSelection(children,true)
-                        if(children.linkAccessAuthorities.length > 0){
-                            children.accessAuthorities = []
-                            children.linkAccessAuthorities.forEach(ele=>{
-                                children.accessAuthorities.push(ele.id)
-                            })
+        async handleSelectionChange(selection, row){ //先檢查該列是否原先有被選取的選項 有的話先刪除 無的話則加入全部
+            var isSelect = selection.filter((item,index) => item.id == row.id)
+            var isLevelOne = row.children.length > 0 // 是否為第一層
+            if(!isLevelOne){
+                row.linkAccessAuthorities.forEach(item=>{
+                    if(isSelect.length == 0){
+                        var index = this.accessArray.indexOf(item.id)
+                        if(index !== -1){
+                            this.accessArray.splice(index, 1)
+                        }
+                    }else{
+                        this.accessArray.push(item.id)
+                    }
+                })
+            }else{
+                row.children.forEach(children=>{
+                    children.linkAccessAuthorities.forEach(item=>{
+                        var index = this.accessArray.indexOf(item.id)
+                        if(isSelect.length > 0){
+                            this.$refs.authorityTable.toggleRowSelection(children,true)
+                            if(index === -1){
+                                this.accessArray.push(item.id)
+                            }
+                        }else{
+                            this.$refs.authorityTable.toggleRowSelection(children,false)
+                            this.accessArray.splice(index, 1)
                         }
                     })
-                }else{
-                    row.accessAuthorities = []
-                    row.linkAccessAuthorities.forEach(ele=>{
-                        row.accessAuthorities.push(ele.id)
-                    })
-                }
-            }else{
-                row.accessAuthorities = []
-                if(row.linkMainMenus.length>0){
-                    row.children.forEach(ele=>{
-                        this.$refs.authorityTable.toggleRowSelection(ele,false)
-                        ele.accessAuthorities = []
-                    })
+                })
+            }
+            console.log(JSON.stringify(this.accessArray))
+        },
+        async handleCheckedChange(row){ //選取checkbox時table該列要勾選
+            var isHas = false
+            var data = row.linkAccessAuthorities
+            for(let acc of data ){
+                var index = this.accessArray.indexOf(acc.id)
+                if(index !== -1){
+                    isHas = true
                 }
             }
-            
-        },
-        async handleCheckedChange(row){
-            if(row.accessAuthorities.length>0){
+            if(isHas){
                 this.$refs.authorityTable.toggleRowSelection(row,true)
             }else{
                 this.$refs.authorityTable.toggleRowSelection(row,false)
             }
         },
         async handleSelectionAll(val){
-            // console.log(JSON.stringify(val))
+            console.log(JSON.stringify(val))
             // if(!this.isSelectAll){
-            //     val.forEach( item => {
-            //         if(item.children.length>0){
-            //             item.children.forEach(children=>{
-            //                 this.$refs.authorityTable.toggleRowSelection(children,true)
-            //             })
-            //         }
+            //     val.forEach(async(item) => {
+            //         await this.handleSelectionChange(val,item)
+            //         item.children.forEach(async(children)=>{
+            //             this.$refs.authorityTable.toggleRowSelection(children,true)
+            //             await this.handleSelectionChange(val,children)   
+            //         })
             //     })
             //     this.isSelectAll = true
-            // }else{
-            //     this.treeData.forEach( item => {
-            //         if(item.children.length>0){
-            //             item.children.forEach(children=>{
-            //                 this.$refs.authorityTable.toggleRowSelection(children,false)
-            //             })
-            //         }
+            //  }else{
+            //     this.$refs.authorityTable.clearSelection()
+            //     this.treeData.forEach(obj=>{
+            //         obj.accessAuthorities = []
+            //         obj.children.forEach(ele=>{
+            //             ele.accessAuthorities = []
+            //         })
             //     })
             //     this.isSelectAll = false
             // }

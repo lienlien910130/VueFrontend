@@ -33,7 +33,7 @@ const errorHandle = (status,msg) =>{
             tip(msg)
             break;
         default:
-          console.log('resq未攔截到的錯誤:'+msg);
+          console.log('resq未攔截到的錯誤:'+msg)
     }
 }
 
@@ -43,6 +43,10 @@ service.interceptors.request.use(
     if (store.getters.token) { 
         config.headers.Authorization = 'Bearer ' + getToken()
     }
+    if(store.getters.menuId){
+        config.headers.menu = store.getters.menuId
+    }
+    config.headers.loadReverse = true
     return config
   },
   error => {

@@ -1,7 +1,7 @@
-/**
- * Created by PanJiaChen on 16/11/18.
- */
+
+
 import api from '@/api'
+import store from '@/store'
 /**
  * Parse the time to string
  * @param {(Object|string|number)} time
@@ -321,17 +321,32 @@ export function removeDuplicates(originalArray, prop) {
 }
 
 export async function changeLabel(selectType,value){
+  console.log(selectType,value)
   var label = ''
   switch(selectType){
       case 'options':
-          await api.setting.apiGetOptionById(value).then(response=>{
-              label = response.result[0].textName
-          })    
+          if(store.getters.buildingoptions.length == 0){
+            await api.setting.apiGetOptionById(value).then(response=>{
+                label = response.result[0].textName
+            }) 
+          }else{
+            let options = store.getters.buildingoptions.filter((item, index) => 
+                item.id == value 
+            )
+            label = options[0].textName
+          }
           break;
       case 'contactunit': 
-          await api.building.apiGetContactUnit(value).then(response=>{
-              label = response.result[0].name
-          })
+          if(store.getters.buildingcontactunit == 0){
+              await api.building.apiGetContactUnit(value).then(response=>{
+                  label = response.result[0].name
+              })
+          }else{
+            let contactunit = store.getters.buildingcontactunit.filter((item, index) => 
+                  item.id == value 
+              )
+            label = contactunit[0].name
+          }
           break;
       case 'usageOfFloor': 
           await api.building.apiGetHouse(value).then(response=>{
@@ -339,9 +354,17 @@ export async function changeLabel(selectType,value){
           })
           break;
       case 'user': 
-          await api.building.apiGetUser(value).then(response=>{
+          if(store.getters.buildingusers.length == 0){
+            await api.building.apiGetUser(value).then(response=>{
               label = response.result[0].name
-          })  
+            })
+          }else{
+            let user = store.getters.buildingusers.filter((item, index) => 
+                  item.id == value 
+              )
+            label = user[0].name
+          }
+            
           break;
       case 'collaborateBool': 
           label = value == true ? '配合中' : '未配合'
@@ -464,6 +487,32 @@ export function changeLink(title,content,action){
         content.linkContactUnits.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
         // array.push({ id:content.linkContactUnits.id == undefined ? content.linkContactUnits : content.linkContactUnits.id })
       content.linkContactUnits = array
+  }else if(title === 'auth'){
+    var array = []
+    action === 'open' ? 
+      content.linkRoles.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+      content.linkRoles.length !== 0 ?
+      content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+        array.push({ id:content.linkRoles.id == undefined ? 
+          content.linkRoles : content.linkRoles.id })
+    content.linkRoles = array
+  }else if(title === 'user'){
+    var array = []
+    action === 'open' ? 
+      content.linkRoles.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+      content.linkRoles.length !== 0 ?
+      content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+        array.push({ id:content.linkRoles.id == undefined ? 
+          content.linkRoles : content.linkRoles.id })
+    content.linkRoles = array
+    array = []
+    action === 'open' ? 
+      content.linkBuildings.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+      content.linkBuildings.length !== 0 ?
+      content.linkBuildings.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+        array.push({ id:content.linkBuildings.id == undefined ? 
+          content.linkBuildings : content.linkBuildings.id })
+    content.linkBuildings = array
   }
   return content
 }

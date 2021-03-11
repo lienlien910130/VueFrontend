@@ -199,10 +199,12 @@ export default {
       dialogSelect:[],
       userConfig : [
         { label:'姓名' , prop:'name', mandatory:true, message:'請輸入姓名'},
-        { label:'身份證' , prop:'identityCard', mandatory:true,message:'請輸入身份證',pattern:/^[A-Z][1|2]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true},
+        { label:'身份證' , prop:'identityCard', mandatory:true,message:'請輸入身份證',
+        pattern:/^[A-Z][1|2]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true},
         { label:'生日' , prop:'birthday',format:'YYYY-MM-DD', mandatory:true,message:'請輸入生日'},
         { label:'電話' , prop:'callNumber', mandatory:true,message:'請輸入電話'},
-        { label:'手機號碼' , prop:'cellPhoneNumber', mandatory:true, message:'請輸入手機號碼',pattern:/^[0][9]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true},
+        { label:'手機號碼' , prop:'cellPhoneNumber', mandatory:true, message:'請輸入手機號碼',
+        pattern:/^[0][9]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true},
         { label:'緊急電話' , prop:'emergencyNumber', mandatory:false},   
         { label:'電子信箱' , prop:'email', mandatory:true,message:'請輸入電子信箱',pattern:/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true},    
         { label:'備註' , prop:'note', mandatory:false,format:'textarea'}, 
@@ -226,14 +228,13 @@ export default {
            options:[],selectType:'usageOfFloor',select:'',isSort:true},
           { label:'職稱' , prop:'title', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
           { label:'姓名' , prop:'userName', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
-          { label:'電話' , prop:'callNumber', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
+          { label:'電話' , prop:'callNumber', mandatory:true, message:'請輸入內容',
+          pattern:/^[0][9]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,isSelect:false,isSort:false},
           { label:'緊急電話' , prop:'emergencyNumber', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
           { label:'備註' , prop:'note',format:'textarea', mandatory:false,isSelect:false,isSort:false }],
       floorConfig: [
           { label:'戶號' , prop:'houseNumber', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
           { label:'場所名稱' , prop:'placeName', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
-          // { label:'緊急連絡人' , prop:'name',format:'hide',isSelect:false,isSort:false},
-          // { label:'電話' , prop:'cellphonenumber',format:'hide',isSelect:false,isSort:false},
           { label:'收容人數' , prop:'capacity',mandatory:true,message:'請輸入內容',isSelect:false,isSort:false},
           { label:'所有人資料' , prop:'linkOwners',format:'userInfo', mandatory:true, message:'請選擇用戶',
           isSelect:false,isSort:false,type:'array',typemessage:''},
@@ -287,15 +288,16 @@ export default {
       },
       immediate:true
     },
-    async activeFloor(val){ 
-      await this.getFloorImageId()
-      if(val == 'IN'){
-        await this.floorOfHouseinit()
-      }else if(val == 'IM'){
-        this.getFloorImage()
-      }else {
-        this.floorFiles = await this.$obj.Files.getBuildingFloorFiles(this.selectFloor)
-      }
+    async activeFloor(val){
+      if(this.selectFloor !== ''){
+        if(val == 'IN'){
+          await this.floorOfHouseinit()
+        }else if(val == 'IM'){
+          this.getFloorImage()
+        }else {
+          this.floorFiles = await this.$obj.Files.getBuildingFloorFiles(this.selectFloor)
+        }
+      } 
     },
     async activeName(val){ 
       this.blockData = []
@@ -307,9 +309,11 @@ export default {
            options:[],selectType:'usageOfFloor',select:'',isSort:true},
           { label:'職稱' , prop:'title', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
           { label:'姓名' , prop:'userName', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
-          { label:'電話' , prop:'callNumber', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
+          { label:'電話' , prop:'callNumber', mandatory:true, message:'請輸入內容',
+          pattern:/^[0][9]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,isSelect:false,isSort:false},
           { label:'緊急電話' , prop:'emergencyNumber', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
-          { label:'備註' , prop:'note',format:'textarea', mandatory:false,isSelect:false,isSort:false }],
+          { label:'備註' , prop:'note',format:'textarea', mandatory:false,isSelect:false,isSort:false }
+          ],
         await this.getFloorOfHouse()
         await this.managementListinit()
       }else if(val == 'Vender'){
@@ -317,7 +321,8 @@ export default {
           { label:'公司名稱' , prop:'name', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true},
           { label:'類別' , prop:'type', format:'ContactUnitOptions', mandatory:true, message:'請選擇類別',
           isSelect:true,options:[],selectType:'options',select:'',isSort:true },
-          { label:'電話' , prop:'contactNumber',mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
+          { label:'電話' , prop:'contactNumber',mandatory:true, message:'請輸入內容',
+          pattern:/^[0][9]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,isSelect:false,isSort:false},
           { label:'地址' , prop:'address', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false},
           { label:'備註' , prop:'note',format:'textarea', mandatory:false,isSelect:false,isSort:false},
           { label:'狀態' , prop:'collaborate', format:'tag', mandatory:false, message:'請輸入內容',
@@ -364,11 +369,11 @@ export default {
       await this.getFloorList()
       await this.setFloorSelectSetting()
     },
-    async getFloorImageId(){ //儲存floorimageID
-      var floordata = await this.$obj.Building.getBuildingFloor(this.selectFloor)
-      floordata.floorPlanID == null ? this.floorImageId = null : 
-      this.floorImageId = (floordata.floorPlanID).toString()
-    }, 
+    // async getFloorImageId(){ //儲存floorimageID
+    //   var floordata = await this.$obj.Building.getBuildingFloor(this.selectFloor)
+    //   floordata.floorPlanID == null ? this.floorImageId = null : 
+    //   this.floorImageId = (floordata.floorPlanID).toString()
+    // }, 
     async getFloorImage(){ //載入平面圖
       if(this.floorImageId == null){
         this.imageSrc = -1
@@ -389,7 +394,6 @@ export default {
           this.$set(v, 'value', v.id) 
           return v
       })
-      console.log(JSON.stringify(this.selectData))
     },
     async saveManagementList(){
       var data = await this.$obj.Building.getManagementList()
@@ -580,8 +584,8 @@ export default {
     },
     async handleBuildingFloorSelect(content){ //選擇樓層後的操作
       this.isChoose = true
-      this.selectFloor = content
-      await this.getFloorImageId()
+      this.selectFloor = content.id
+      content.floorPlanID == null ? this.floorImageId = null : this.floorImageId = (content.floorPlanID).toString()
       if(this.activeFloor == 'IN'){
         await this.floorOfHouseinit()
       }else if(this.activeFloor == 'IM'){
@@ -611,9 +615,10 @@ export default {
           id:this.selectFloor,
           FloorPlanID:parseInt(data)
         }
-        isOk = await this.$obj.Building.updateBuildingFloor(_temp)
+        isOk = await this.$obj.Building.updateBuildingFloor(JSON.stringify(_temp))
         if(isOk){
           this.floorImageId = data
+          this.$store.dispatch('building/setbuildingfloors',await this.$obj.Building.getBuildingFloors())
         }
       }
       if(isOk){
@@ -663,9 +668,6 @@ export default {
           }) : isDelete = await this.$obj.Building.deleteBuildingOfHouse(content)
 
         }else if(title === 'contactUnit'){
-          // var devices = this.buildingdevices.filter(function(item,index){
-          //   return item.linkKeeperUnits.filter((item,index)=> item.id == content)
-          // })
           var devices =  this.buildingdevices.filter(function(item,index){
             var data = item.linkKeeperUnits.filter((item,index)=> item.id == content)
             if(data.length>0){
@@ -679,11 +681,11 @@ export default {
         }
         if(isDelete){
             this.$message('刪除成功')
-            title === 'floorOfHouse' ? await this.floorOfHouseinit() :
-            title === 'committee' ? await this.managementListinit() : await this.contactunitListinit()
             title === 'floorOfHouse' ? 
               this.floorlistQueryParams = {page: 1,limit: 10, total: 0} : 
               this.listQueryParams = {page: 1,limit: 10, total: 0} 
+            title === 'floorOfHouse' ? await this.floorOfHouseinit() :
+            title === 'committee' ? await this.managementListinit() : await this.contactunitListinit()
         }
       }else if(index === 'empty'){
         this.dialogButtonsName = [
@@ -723,8 +725,8 @@ export default {
       }else if(index === 'cancel'){
         this.innerVisible = false
       }else{
-        var isOk = index === 'create' ? await this.$obj.User.createUser(content) : 
-        await this.$obj.User.updateUser(content)
+        var isOk = index === 'create' ? await this.$obj.User.createUser(JSON.stringify(content)) : 
+        await this.$obj.User.updateUser(JSON.stringify(content))
         if(isOk){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           this.$store.dispatch('building/setbuildingusers',await this.$obj.Building.getBuildingUser())

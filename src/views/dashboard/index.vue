@@ -97,7 +97,7 @@ export default {
   watch:{
     buildingid:{
       handler:async function(){
-        await this.getBuildingDevicesManage()
+        //await this.getBuildingDevicesManage()
       },
       immediate:true
     },

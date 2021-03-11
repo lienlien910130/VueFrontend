@@ -34,8 +34,23 @@ export default {
         Dialog:() => import('@/components/Dialog/index.vue'),
     },
     watch:{
-        async buildingid(){
-            this.data = await this.$obj.Authority.getBuildingMenu()
+        menu:{
+            handler:async function(){
+                this.tableData = []
+                this.listQueryParams = {
+                    page: 1,
+                    limit: 10,
+                    total: 0
+                }
+                this.data = this.$deepClone(this.menu)
+                if(this.selectId !== ''){
+                   var d = this.data.filter((item, index) => item.id == this.selectId )
+                   console.log('menu',JSON.stringify(d))
+                    this.tableData = d[0].children 
+                    this.listQueryParams.total = d[0].children.length
+                }
+            },
+            immediate:true
         }
     },
     data(){
@@ -61,7 +76,6 @@ export default {
                 limit: 10,
                 total: 0
             },
-            buttonsName: ['編輯','刪除'],
             //Dialog
             dialogButtonsName:[],
             dialogTitle:'',
@@ -92,7 +106,8 @@ export default {
     },
     computed: {
         ...mapGetters([
-            'buildingid'
+            'buildingid',
+            'menu'
         ]),
         treeAttrs(){
             return{
@@ -105,13 +120,12 @@ export default {
                 title:'mainMenu',
                 tableData: this.tableData,
                 config:this.config,
-                buttonsName:this.buttonsName,
-                hasPagin:false,
                 selectId:this.selectId
             }
         },
         tableEvent(){
             return {
+                clickPagination:this.changePage,
                 handleTableRow:this.handleTableRow
             }
         },
@@ -126,50 +140,48 @@ export default {
             }
         },
     },
-    async mounted() {
-        this.data = await this.$obj.Authority.getBuildingMenu()
-    },
     methods:{
-        // async getAllRoutes() {
-        //     this.data = getRoutes(this.$store.getters.permission_routes)
-        //     this.listQueryParams.total = 0
-        // },
-        // async getSelectData(){
-        //     var data = await this.$obj.Building.getAllBuilding(true)
-        //     this.selectData = data
-        // },
-        // async handleSelect(content){
-        //     this.$store.dispatch('building/setbuildingid',content[0].id)
-        //     this.data = await this.$obj.Authority.getBuildingMenu()
-        // },
-        async handleTreeNode(node,data){
-            this.tableData = data.children
-            this.selectId = data.id
+        async changePage(){
+            var data = this.$deepClone(this.original)
+            this.tableData = data.filter(
+                (item, index) => 
+                index < this.listQueryParams.limit * this.listQueryParams.page && 
+                index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
+            .sort((x,y) => x.sort - y.sort)
+            this.listQueryParams.total = data.length
         },
-        async handleTableRow(index, row, option){
-            console.log(index, row, option)
+        async handleTreeNode(node,data){
+            this.original = this.$deepClone(data.children)
+            this.selectId = data.id
+            this.listQueryParams = {
+                page: 1,
+                limit: 10,
+                total: 0
+            }
+            this.changePage()
+        },
+        async handleTableRow( row, option){
+            console.log( row, option)
             this.dialogData = []
             this.dialogConfig = this.config
-            if(option === '編輯'){
+            if(option === 'open'){
                 this.dialogData.push(row)
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
-            }else if(option === '刪除'){
+            }else if(option === 'delete'){
                 var temp = this.selectId
                 var isOk = await this.$obj.Authority.deleteBuildingMenu(row.id)
                 if(isOk){
                     this.selectId = ''
                     this.$message('刪除成功')
-                    this.data = await this.$obj.Authority.getBuildingMenu()
                     this.selectId = temp
-                    var d = this.data[0].children.filter((item, index) => item.id == this.selectId )
-                    this.tableData = this.selectId == '-1' ? this.data[0].children : d[0].children
+                    this.$store.dispatch('permission/setmenu',await this.$obj.Authority.getBuildingMenu())
                 }
             }
-            else if(option === '新增'){
+            else if(option === 'create'){
                 if(this.selectId == ''){
                     this.$message({
                         message: '請選擇要新增的父節點',
@@ -186,30 +198,16 @@ export default {
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,content)
-            if(index === 'update'){
+            if(index == 'update' || index == 'create'){
                 content.sort = content.sort.toString()
-                this.data = await this.$obj.Authority.updateBuildingMenu(JSON.stringify(content))
-                if(this.data){
-                    this.$message('更新成功')
-                    this.selectId = ''
-                    this.data = await this.$obj.Authority.getBuildingMenu()
-                }
-                this.tableData = []
-            }else if(index === 'create'){
-                content.sort = content.sort.toString()
-                var isOk = false
-                if(this.selectId == '-1'){
-                    isOk = await this.$obj.Authority.postBuildingMenu(null,JSON.stringify(content))
-                }else{
-                    isOk = await this.$obj.Authority.postBuildingMenu(this.selectId,JSON.stringify(content))
-                }
+                var isOk = index == 'update' ? 
+                    await this.$obj.Authority.updateBuildingMenu(JSON.stringify(content)) :
+                    await this.$obj.Authority.postBuildingMenu(this.selectId,JSON.stringify(content))
                 if(isOk){
-                    this.$message('新增成功')
-                    this.selectId = ''
-                    this.data = await this.$obj.Authority.getBuildingMenu()
-                }
-                this.tableData = []
-            }
+                    index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
+                    this.$store.dispatch('permission/setmenu',await this.$obj.Authority.getBuildingMenu())
+                }    
+            }   
             this.innerVisible = false
         },
     }

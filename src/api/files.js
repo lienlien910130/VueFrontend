@@ -13,7 +13,7 @@ const files = {
     apiGetFloorFiles(floorId){ return req('get','/basic/Floors/'+floorId+'/filesList') } ,
     apiPostFloorFiles(floorId,data){ return req('post','/basic/'+this.getUid()+'/Floors/'+floorId+'/fileUpload',data,true) } ,
     //樓層平面圖檔案
-    apiGetFloorImage(filesId){ return req('get','/basic/fileDownload/'+filesId+'/r',null,true) } ,
+    apiGetFloorImage(filesId){ return req('get','/Public/fileDownload/'+filesId+'/r',null,true) } ,
 
     //門牌檔案
     apiGetFloorOfHouseFiles(floorofhouseId){ return req('get','/basic/usageOfFloors/'+floorofhouseId+'/filesList') } ,

@@ -7,6 +7,7 @@ import fabric from 'fabric'
 import vcolorpicker from 'vcolorpicker'
 import locale from 'element-ui/lib/locale/lang/zh-TW'
 import 'element-ui/lib/theme-chalk/index.css'
+import logForTranslate from '@/utils/logForTranslate.js'
 
 import '@/styles/index.scss' // global css
 
@@ -47,6 +48,7 @@ Vue.prototype.$qs = qs
 Vue.prototype.$api = api
 Vue.prototype.$obj = obj
 Vue.prototype.$deepClone = deepClone
+Vue.prototype.$logForTranslate = logForTranslate
 
 new Vue({
   el: '#app',

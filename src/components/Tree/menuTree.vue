@@ -15,7 +15,7 @@
             >
               <span class="custom-tree-node" slot-scope="{ node,data }" @click="select(node, data)">
                   <span >
-                    {{ node.label }}
+                    {{ data.name }}
                   </span>
               </span>
             </el-tree>    
@@ -26,11 +26,17 @@
 <script>
 export default {
     props:['data','selectId'],
-    data(){
-        return{
-        }
-    },
     watch:{
+      data:{
+        handler:function(){
+          if(this.selectId !== ''){
+            this.$nextTick(()=>{
+              this.$refs.tree.setCurrentKey(this.selectId)
+            })
+          }
+        },
+        immediate:true
+      },
       selectId:{
         handler:function(){
           if(this.selectId !== ''){

@@ -26,25 +26,6 @@ let Building = {
     getAllBuilding: async function(){
         var data = await api.building.apiGetBuilding().then(response => {
             var result = response.result.sort((x,y) => x.id - y.id)
-            // var mapArray = result.map(v => {
-            //     return {
-            //         id:v.id,
-            //         value: v.id,
-            //         label: v.buildingName
-            //     }
-            // })
-            this.buildingArray = result
-            // if(isSelect){
-            //     var mapArray = result.map(v => {
-            //         return {
-            //             id:v.id,
-            //             value: v.id,
-            //             label: v.buildingName
-            //         }
-            //     })
-            //     this.buildingArray = mapArray
-            //     return mapArray
-            // }
             return result
         }).catch(error=>{
             return []
@@ -89,13 +70,13 @@ let Building = {
             response.result.forEach(element => {
                 var _temp = {
                   id:element.id,
-                  label:element.floor>0 ? element.floor+'F' : '地下 '+element.floor.substr(1)+'F'
+                  label:element.floor>0 ? element.floor+'F' : '地下 '+element.floor.substr(1)+'F',
+                  floorPlanID:element.floorPlanID
                 }
                 floors.push(_temp)
             })
             return floors
         }).catch(error=>{
-            this.building = this.getBuildingDefaultState()
             return []
         })
         return data
@@ -145,17 +126,6 @@ let Building = {
     getBuildingContactunit: async function(){
         var data = await api.building.apiGetBuildingContactUnit().then(response => {
             var result = response.result.sort((x,y) => x.id - y.id)
-            // if(isSelect){
-            //     var mapArray = result.map(v => {
-            //         return {
-            //             id:v.id,
-            //             value: v.id,
-            //             label: v.buildingName
-            //         }
-            //     })
-            //     this.buildingArray = mapArray
-            //     return mapArray
-            // }
             return result
         }).catch(error=>{
             return []

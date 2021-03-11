@@ -10,14 +10,6 @@
     <div class="right-menu">
       <el-row style="height:45px">
         <template v-if="device!=='mobile'">
-        
-        <!-- <i class="el-icon-office-building icon" /> -->
-          <!-- <Select 
-          class="select right-menu-item"
-          v-bind="selectAttrs" 
-          v-on:handleSelect="handleSelect">
-          </Select> -->
-
         <el-dropdown 
           class="avatar-container right-menu-item" trigger="click">
             <div class="avatar-wrapper">
@@ -36,7 +28,7 @@
               </el-dropdown-item>
             </el-dropdown-menu>
         </el-dropdown>
-
+        <i v-if="id == '1'" class="el-icon-circle-plus-outline icon" @click="handleTo"></i>
         <Screenfull id="screenfull" class="right-menu-item hover-effect" />
       </template>
 
@@ -142,6 +134,7 @@
 </template>
 
 <script>
+
 import { mapGetters } from 'vuex'
 
 var padDate = function (value) {
@@ -159,7 +152,11 @@ export default {
       'name',
       'id',
       'device',
-      'buildingarray'
+      'buildingarray',
+      'permission_routes',
+      'roles',
+      'buildinginfo',
+      'buildingid'
     ]),
     selectAttrs() {
       return {
@@ -191,11 +188,23 @@ export default {
   watch:{
       buildingarray:{
         handler:async function(){
+          if(this.buildingid){
+            var temp = this.buildingarray.filter((item,index)=>item.id == this.buildingid)
+            if(temp.length == 0){
+              this.$store.dispatch('building/resetBuildingid')
+              location.reload()
+            }
+          }
           this.selectData = this.buildingarray
-          this.handleSelect(this.selectData[0])
         },
         immediate:true
-      }
+      },
+      buildinginfo:{
+        handler:async function(){
+          this.buildingName = this.buildinginfo.length !== 0 ? this.buildinginfo[0].buildingName : '請選擇建築物'
+        },
+        immediate:true
+      },
   },
   beforeDestroy() { 
     if (this.timer) 
@@ -206,30 +215,36 @@ export default {
   data() {
     return {
       selectData:[],
-      options:[],
       date: new Date(),
-      buildingName:''
+      buildingName:'請選擇建築物'
     }
   },
   methods: {
+    handleTo(){
+      this.$router.push('/building')
+    },
     async logout() {
       await this.$store.dispatch('user/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
-    async init(){ //儲存 設定/廠商資料/建築物用戶/設備/樓層
-      this.$store.dispatch('building/setbuildingoptions',await this.$obj.Setting.getAllOption())
-      this.$store.dispatch('building/setbuildingcontactunit',await this.$obj.Building.getBuildingContactunit())
-      this.$store.dispatch('building/setbuildingusers',await this.$obj.Building.getBuildingUser())
-      this.$store.dispatch('building/setbuildingdevices',await this.$obj.Device.getBuildingDevicesManage())
-      this.$store.dispatch('building/setbuildingfloors',await this.$obj.Building.getBuildingFloors())
-      //var data = await this.$obj.Authority.getBuildingMenu()
-      //console.log('Navbardone',JSON.stringify(data))
-    },
-    handleSelect(content){
+    async handleSelect(content){
        if(content !== undefined){
+          const loading = this.$loading({
+              lock: true,
+              text: '設定建築物中，請稍後...',
+              spinner: 'el-icon-loading',
+              background: 'rgba(0, 0, 0, 0.7)'
+          })
           this.$store.dispatch('building/setbuildingid',content.id)
-          this.buildingName = content.buildingName
-          this.init()
+          this.$store.dispatch('permission/setRoutes')
+          this.$store.dispatch('building/setbuildinginfo',await this.$obj.Building.getBuildingInfo())
+          this.$store.dispatch('building/setbuildingoptions',await this.$obj.Setting.getAllOption())
+          this.$store.dispatch('building/setbuildingcontactunit',await this.$obj.Building.getBuildingContactunit())
+          this.$store.dispatch('building/setbuildingdevices',await this.$obj.Device.getBuildingDevicesManage())
+          this.$store.dispatch('building/setbuildingfloors',await this.$obj.Building.getBuildingFloors())
+          this.$router.push('/')
+          console.log('Navbardone')
+          loading.close()
        }
     },
     padDate(value) {

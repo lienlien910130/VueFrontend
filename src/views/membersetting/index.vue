@@ -64,9 +64,16 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 export default {
     components:{
         SettingBlock:() => import('./components/SettingBlock.vue')
+    },
+    computed:{
+      ...mapGetters([
+          'buildingcontactunit',
+          'buildingdevices'
+      ]),
     },
     data(){
         return{
@@ -90,14 +97,8 @@ export default {
             }
         },
         async getOptions(){ //取得大樓的所有分類
-            this.options = []
-            await this.$api.setting.apiGetBuildingOptions().then(response => {
-                var _temp = response.result.sort((x,y) => x.id - y.id)
-                this.options = _temp.map(v => {
-                this.$set(v, 'textName', v.textName) 
-                return v
-                })
-            })
+            this.options = await this.$obj.Setting.getAllOption()
+            this.$store.dispatch('building/setbuildingoptions',this.options)
         },
         optionsFilter(title){
             let data = this.options.filter((item, index) => 
@@ -139,60 +140,96 @@ export default {
                     classType:index,
                     textName:content
             }
-            await this.$api.setting.apiPostOption(temp).then(response =>{
-                    this.$message("新增成功")
-            })
-            await this.getOptions()
+            var isOk = await this.$obj.Setting.postOption(JSON.stringify(temp))
+            if(isOk){
+                this.$message("新增成功")
+                await this.getOptions()
+            }
         },
         async UpdateData(content){
-            await this.$api.setting.apiPatchOption(content).then(response =>{
+            var isOk = await this.$obj.Setting.updateOption(JSON.stringify(content))
+            if(isOk){
                 this.$message("更新成功")
                 this.type = 'view'
                 this.current = ''
-            })
-            await this.getOptions()
+                await this.getOptions()
+            }
         },
         async DeleteData(content){
-            await this.$api.setting.apiDeleteOption(content).then(response =>{
+            var isOk = await this.$obj.Setting.deleteOption(content)
+            if(isOk){
                 this.$message("刪除成功")
-            })
-            await this.getOptions()
+                await this.getOptions()
+            }
         },
         async CheckDelete(index,content){
             switch(index){
                 case 'ContactUnitOptions':
-                    var array = []
-                    await this.$api.building.apiGetBuildingContactUnit().then(async(response) => {
-                        array = response.result.filter((item, index) => 
-                            item.type == content )
-                        if(array.length){ //有資料
-                            this.$message({
-                                showClose: true,
-                                message: '該類別尚有廠商資料，請先刪除廠商資料!',
-                                type: 'warning'
-                            });
-                        }else{
-                            await this.DeleteData(content)
-                        }
-                    })
+                    var array = this.buildingcontactunit.filter((item,index)=> item.type == content)
+                    if(array.length){ //有資料
+                        this.$message({
+                            showClose: true,
+                            message: '該類別尚有廠商資料，請先刪除關聯的資料',
+                            type: 'warning'
+                        })
+                    }else{
+                        await this.DeleteData(content)
+                    }
                     break;
                 case 'DeviceOptions':
-                    await this.DeleteData(content)
+                    var array = this.buildingdevices.filter((item,index)=> item.type == content)
+                    if(array.length){ //有資料
+                        this.$message({
+                            showClose: true,
+                            message: '該類別尚有設備資料，請先刪除關聯的資料',
+                            type: 'warning'
+                        })
+                    }else{
+                        await this.DeleteData(content)
+                    }
                     break;
-                case 'MaintainContentOptions':
-                    
+                case 'MaintainContentOptions': //尚未解決
+                    var maintainList = await this.$obj.Device.getBuildingMaintainList()
+                    var array = maintainList.filter((item,index)=> item.name == content)
+                    if(array.length){ //有資料
+                        this.$message({
+                            showClose: true,
+                            message: '該類別尚有維護保養資料，請先刪除關聯的資料',
+                            type: 'warning'
+                        })
+                    }else{
+                        await this.DeleteData(content)
+                    }
                     break;
                 case 'BrandOptions':
-                    
+                    var array = this.buildingdevices.filter((item,index)=> item.brand == content)
+                    if(array.length){ //有資料
+                        this.$message({
+                            showClose: true,
+                            message: '該類別尚有設備資料，請先刪除關聯的資料',
+                            type: 'warning'
+                        })
+                    }else{
+                        await this.DeleteData(content)
+                    }
                     break;
                 case 'LackStatusOptions':
-                    
+                    await this.DeleteData(content)
                     break;
                 case 'MaintainProcessOptions':
-                    
+                    await this.DeleteData(content)
                     break;
                 case 'DeviceStatusOptions':
-                    
+                    var array = this.buildingdevices.filter((item,index)=> item.status == content)
+                    if(array.length){ //有資料
+                        this.$message({
+                            showClose: true,
+                            message: '該類別尚有設備資料，請先刪除關聯的資料',
+                            type: 'warning'
+                        })
+                    }else{
+                        await this.DeleteData(content)
+                    }
                     break;
             }
         }

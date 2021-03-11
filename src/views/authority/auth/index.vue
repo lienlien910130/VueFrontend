@@ -26,19 +26,13 @@
 </template>
 <script>
 import { mapGetters } from 'vuex'
+import { changeLink } from '@/utils/index'
 
 export default {
     components:{ 
         Table: () => import('@/components/Table/index.vue'),
         menuTree: () => import('@/components/Tree/menuTree.vue'),
         Dialog:() => import('@/components/Dialog/index.vue'),
-    },
-    watch:{
-        async buildingid(){
-            this.data = await this.$obj.Authority.getBuildingMenu()
-            await this.getAllRoles()
-            await this.$obj.Setting.getAllOption()
-        }
     },
     data(){
         return{
@@ -66,7 +60,6 @@ export default {
                 limit: 10,
                 total: 0
             },
-            buttonsName: ['編輯','刪除'],
             //Dialog
             dialogButtonsName:[],
             dialogTitle:'',
@@ -79,7 +72,8 @@ export default {
     },
     computed: {
         ...mapGetters([
-            'buildingid'
+            'buildingid',
+            'menu'
         ]),
         treeAttrs(){
             return{
@@ -92,9 +86,7 @@ export default {
                 title:'accessAuthority',
                 tableData: this.tableData,
                 config:this.config,
-                buttonsName:this.buttonsName,
-                selectId:this.selectId,
-                filterData:this.dialogSelect
+                selectId:this.selectId
             }
         },
         tableEvent(){
@@ -111,31 +103,32 @@ export default {
                 dialogStatus: this.dialogStatus,
                 buttonsName: this.dialogButtonsName,
                 config: this.dialogConfig,
-                selectData: this.dialogSelect,
             }
         },
     },
-    async mounted() {
-        this.data = await this.$obj.Authority.getBuildingMenu()
-        await this.getAllRoles()
-        await this.$obj.Setting.getAllOption()
+    watch:{
+        menu:{
+            handler:async function(){
+                this.data = this.$deepClone(this.menu)
+                if(this.selectId !== ''){
+                   var d = this.data.filter((item, index) => item.id == this.selectId )
+                    this.tableData = d[0].children     
+                }
+            },
+            immediate:true
+        }
     },
     methods:{
-        async getAllRoles(){
-            this.dialogSelect = []
-            var roles = await this.$obj.Authority.getRole()
-            roles.forEach(item=>{
-                var _temp = {
-                    id: item.id,
-                    label: item.name,
-                    value: item.id
-                }
-                this.dialogSelect.push(_temp)
-            })
+        async init(){
+            await this.setAccessAuthority()
+            await this.getAccessAuthority()
+        },
+        async setAccessAuthority(){
+            this.original = this.$deepClone(await this.$obj.Authority.getMenuAccessAuthority(this.selectId))
+            console.log(JSON.stringify(this.original))
         },
         async getAccessAuthority(){
-            var data = await this.$obj.Authority.getMenuAccessAuthority(this.selectId)
-            console.log(JSON.stringify(data))
+            var data = this.$deepClone(this.original)
             this.tableData = data.filter(
                 (item, index) => 
                 index < this.listQueryParams.limit * this.listQueryParams.page && 
@@ -145,27 +138,34 @@ export default {
         },
         async handleTreeNode(node,data){
             this.selectId = data.id
-            await this.getAccessAuthority()
+            this.listQueryParams = {
+                page: 1,
+                limit: 10,
+                total: 0
+            }
+            await this.init()
         },
-        async handleTableRow(index, row, option){
-            console.log(index, row, option)
+        async handleTableRow(row, option){
+            console.log(row, option)
             this.dialogData = []
             this.dialogConfig = this.config
-            if(option === '編輯'){
-                this.dialogData.push(row)
+            if(option === 'open'){
+                var temp = this.$deepClone(row)
+                temp = changeLink('auth',temp,'open')
+                this.dialogData.push(temp)
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
-            }else if(option === '刪除'){
+            }else if(option === 'delete'){
                 var isOk = await this.$obj.Authority.deleteMenuAccessAuthority(row.id)
                 if(isOk){
                     this.$message('刪除成功')
-                    await this.getAccessAuthority()
+                    this.$store.dispatch('permission/setmenu',await this.$obj.Authority.getBuildingMenu())
+                    await this.init()
                 }
-            }
-            else if(option === '新增'){
+            }else if(option === 'create'){
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'create'},
                 { name:'取消',type:'info',status:'cancel'}]
@@ -175,39 +175,22 @@ export default {
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,content)
-            if(index === 'update'){
+            if(index !== 'cancel'){
                 content.sort = content.sort.toString()
-                var link = content.linkRoles
-                content.linkRoles = []
-                link.forEach(item=>{
-                    var temp = {
-                        id : item
-                    }
-                    content.linkRoles.push(temp)
-                })
-                var isOk = await this.$obj.Authority.updateMenuAccessAuthority(JSON.stringify(content))
-                if(isOk){
-                    this.$message('更新成功')
-                    await this.getAccessAuthority()
-                }
-            }else if(index === 'create'){
-                    content.sort = content.sort.toString()
-                    var link = content.linkRoles
-                    content.linkRoles = []
-                    link.forEach(item=>{
-                        var temp = {
-                            id : item
-                        }
-                        content.linkRoles.push(temp)
-                    })
+                content = changeLink('auth',content,'')
+                if(index === 'create'){
                     content.linkMainMenus = [{
                         id : this.selectId
                     }]
-                    var isOk = await this.$obj.Authority.postMenuAccessAuthority(JSON.stringify(content))
-                    if(this.data){
-                        this.$message('新增成功')
-                        await this.getAccessAuthority()
-                    }
+                }
+                var isOk = index === 'update' ? 
+                    await this.$obj.Authority.updateMenuAccessAuthority(JSON.stringify(content)) :
+                    await this.$obj.Authority.postMenuAccessAuthority(JSON.stringify(content))
+                if(isOk){
+                    index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+                    this.$store.dispatch('permission/setmenu',await this.$obj.Authority.getBuildingMenu())
+                    await this.init()
+                }
             }
             this.innerVisible = false
         },

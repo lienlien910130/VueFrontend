@@ -181,8 +181,8 @@ export default {
         floorsOfAboveGround: [{ required: true, trigger: 'blur', validator: vaildateInt }],
         floorsOfUnderground: [{ required: true, trigger: 'blur', validator: vaildateInt }],
         licenseNumber: [{ required: true, trigger: 'blur', validator: validateText }],
-        linkOwners: [{ required: true, trigger: 'change', message: '請選擇所有權人' }],
-        linkFireManagers: [{ required: true, trigger: 'change', message: '請選擇防火管理人' }]
+        linkOwners: [{ required: true, trigger: 'blur', message: '請選擇所有權人' }],
+        linkFireManagers: [{ required: true, trigger: 'blur', message: '請選擇防火管理人' }]
       },
       linkOwners:'',
       linkFireManagers:'',
@@ -190,6 +190,12 @@ export default {
     }
   },
   watch:{
+    buildinginfo:{
+      handler:async function(){
+        this.form = this.$deepClone(this.buildinginfo[0])
+      },
+      immediate:true
+    },
     buildingusers:{
       handler:async function(){
         this.buildingUsers = this.buildingusers.map(v => {
@@ -198,9 +204,6 @@ export default {
             this.$set(v, 'id', v.id) 
             return v
           })
-        if(this.buildinginfo.length !== 0){
-          this.form = this.$deepClone(this.buildinginfo[0])
-        }
       },
       immediate:true
     }

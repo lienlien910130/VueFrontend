@@ -300,7 +300,7 @@ export default {
       await this.getPublicSafeLack() 
     },
     async saveBuildingPublicSafeReport(){
-      var data = await this.$obj.Report.getBuildingInspection()
+      var data = await this.$obj.Report.getBuildingPublicSafe()
       this.origin = this.$deepClone(data)
     },
     async getBuildingPublicSafeReport(sort = null) { 

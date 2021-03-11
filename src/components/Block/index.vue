@@ -38,7 +38,7 @@
                             </el-option>
                         </el-select>
                     </span>
-                    
+
                     <el-button
                         class="filter-item" 
                         type="primary" 
@@ -50,11 +50,9 @@
 
             <div 
             class="list"  
-            v-infinite-scroll="loadMore"  
-            infinite-scroll-disabled="disabled"  
-            infinite-scroll-immediate="false">
+            >
               <div 
-              v-for="(item,index) in loadlist" 
+              v-for="(item,index) in blockData" 
               :key="index"
               >
               <el-col :xs="24" :sm="12" :md="6" :lg="6">
@@ -174,7 +172,7 @@
               </el-col>
               </div>
             </div>
-            <p v-if="loading">加載中...</p>
+            <!-- <p v-if="loading">加載中...</p> -->
         </div>
         
     </el-row>
@@ -395,39 +393,19 @@ export default {
             return this.listQueryParams.total || 0
         }
     },
-    watch: {
-        blockData:function(){
-            this.loadlist = this.blockData.slice(0, 9);
-            this.count = 9
-        }
-    },
     data() {
         return {
-            loading : false,
-            count : 9,
             textMap: {
                 update: '編輯',
                 create: '新增'
             },
             dialogStatus: '',
             temp: {},
-            loadlist:[],
             rangevalue: [],
             sort:''
         }
     },
     methods: {
-        loadMore() {
-            this.loading = true;
-            setTimeout(() => {
-                this.count += 3;
-                if(this.count >= this.blockData.length){
-                    this.count = this.blockData.length
-                }
-                this.loadlist = this.blockData.slice(0, this.count);
-                this.loading = false;
-            }, 500);
-        },
         handleClickOption(status,row) {
             if (status === 'delete') {
                 this.$confirm('是否確定刪除該筆資料?', '提示', {

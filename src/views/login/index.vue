@@ -8,7 +8,7 @@
         <div ref="title" class="title-container">
           <img class="pic" :src="src"/>
         </div>
-        <span>帳號:mf44，密碼:1234</span>
+        <!-- <span>帳號:mf44，密碼:1234</span> -->
         <el-form-item prop="username">
           <el-input
             ref="username"
@@ -150,7 +150,7 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
+          this.$store.dispatch('user/login', this.loginForm).then((response) => {
             this.$router.push({ path:  '/' }) //登入成功後跳轉的頁面
             this.loading = false
           }).catch(() => {

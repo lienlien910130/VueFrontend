@@ -80,7 +80,6 @@ export default {
         tableData: this.tableData,
         itemkey:this.itemkey,
         config:this.tableconfig,
-        buttonsName:this.tablebuttonsName,
         title:'building'
       }
     },
@@ -148,17 +147,16 @@ export default {
       },
       tableData:[],
       tableconfig:[
-      { label:'名稱' , prop:'buildingName'},
-      { label:'地址' , prop:'address'},
-      { label:'面積' , prop:'area'},
-      { label:'高度' , prop:'height'},
-      { label:'地上樓層' , prop:'floorsOfAboveGround'},
-      { label:'地下樓層' , prop:'floorsOfUnderground'},
-      { label:'使用執照字號' , prop:'licenseNumber'},
-      { label:'管理權人' , prop:'linkOwners'},
-      { label:'防火管理人' , prop:'linkFireManagers'}
-      ],
-      tablebuttonsName:['編輯','刪除']
+        { label:'名稱' , prop:'buildingName'},
+        { label:'地址' , prop:'address'},
+        { label:'面積' , prop:'area'},
+        { label:'高度' , prop:'height'},
+        { label:'地上樓層' , prop:'floorsOfAboveGround'},
+        { label:'地下樓層' , prop:'floorsOfUnderground'},
+        { label:'使用執照字號' , prop:'licenseNumber'},
+        { label:'管理權人' , prop:'linkOwners'},
+        { label:'防火管理人' , prop:'linkFireManagers'}
+      ]
     }
   },
   async mounted() {
@@ -168,8 +166,7 @@ export default {
     async getAllBuilding(){
       this.tableData = []
       var data = await this.$obj.Building.getAllBuilding()
-      this.$store.dispatch('building/setbuildingid',data[0].id)
-      this.$store.dispatch('building/setbuildingarray',this.$obj.Building.buildingArray)
+      this.$store.dispatch('building/setbuildingarray',data)
       this.listQueryParams.total = data.length
       this.tableData = data.filter((item, index) => 
         index < this.listQueryParams.limit * this.listQueryParams.page && 
@@ -178,6 +175,12 @@ export default {
       })
     },
     async onPost() {
+        const loading = this.$loading({
+            lock: true,
+            text: '建立建築物中，請稍後...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+        })
         this.floorsArray = []
         await this.crefloor('up',this.form.floorsOfAboveGround)
         await this.crefloor('down',this.form.floorsOfUnderground)
@@ -189,6 +192,7 @@ export default {
                 this.onCancel()
                 await this.postFloor(buildingId)
                 await this.getAllBuilding()
+                loading.close()
               }
           }
         })
@@ -218,23 +222,23 @@ export default {
     async crefloor(index,val) {
       if (index == "up") {
         for (var i = 1; i <= val; i++) {
-          var floor = { floors: i.toString() }
+          var floor = { floor: i.toString() }
           await this.floorsArray.push(floor)
         }
       } else {
         for (var i = 1; i <= val; i++) {
           var count = -i
-          var floor = { floors: count.toString() }
+          var floor = { floor: count.toString() }
           await this.floorsArray.push(floor)
         }
       }
     },
-    async handleTableRow(index, row, option){
-        console.log(index, row, option)
-        if(option === '編輯'){
+    async handleTableRow(row, option){
+        console.log(row,JSON.stringify(option))
+        if(option === 'open'){
           this.type = 'edit'
           this.form = this.$deepClone(row)
-        }else if(option === '刪除'){
+        }else if(option === 'delete'){
           var isOk = await this.$obj.Building.deleteBuilding(row.id)
           if(isOk){
             this.$message('刪除成功')

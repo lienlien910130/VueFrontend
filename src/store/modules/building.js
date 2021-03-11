@@ -1,17 +1,12 @@
 import  {
-  getBuildingid,setBuildingid,removeBuildingid,
-  // getBuildingArray,setBuildingArray,removeBuildingArray,
-  // getBuildingOptions,setBuildingOptions,removeBuildingOptions,
-  // getBuildingContactunit,setBuildingContactunit,removeBuildingContactunit,
-  // getBuildingUsers,setBuildingUsers,removeBuildingUsers,
-  // getBuildingDevices,setBuildingDevices,removeBuildingDevices,
-  
+  getBuildingid,setBuildingid,removeBuildingid
  }  from '../../utils/auth'
 import idb from '../../utils/indexedDB'
-import obj from '@/object'
+
 // 個人資料
 const getDefaultState = () => {
   return {
+    roles:[],
     buildingid: getBuildingid() ,
     buildinginfo: [],
     buildingarray : [],
@@ -28,6 +23,9 @@ const state = getDefaultState()
 const mutations = {
   RESET_STATE: (state) => {
     Object.assign(state, getDefaultState())
+  },
+  SET_ROLES: (state, roles) => {
+    state.roles = roles
   },
   SET_BUILDINGID: (state, buildingid) => {
     state.buildingid = buildingid
@@ -56,13 +54,26 @@ const mutations = {
 }
 
 const actions = {
+  async getroles({ commit }) { //從網頁資料庫取出來儲存在store上
+    let roles = await idb.getValue('roles')
+    console.log('roles',roles)
+    commit('SET_ROLES', roles)
+  },
+  setroles({ commit }, roles) { 
+    return new Promise((resolve, reject) => {
+      commit('SET_ROLES', roles)
+      idb.deleteData('roles')
+      idb.saveValue('roles',roles)
+      resolve()
+    })
+  },
   async setbuildingid({ commit }, buildingid){
     commit('SET_BUILDINGID', buildingid)
     setBuildingid(buildingid)
-    var data = await obj.Building.getBuildingInfo()
-    idb.deleteData('buildingInfo')
-    idb.saveValue('buildingInfo',data)
-    commit('SET_BUILDINGINFO', data)
+  },
+  async getbuildinginfo({ commit }) { //從網頁資料庫取出來儲存在store上
+    let buildinginfo = await idb.getValue('buildingInfo')
+    commit('SET_BUILDINGINFO', buildinginfo)
   },
   setbuildinginfo({ commit }, buildinginfo) { 
     return new Promise((resolve, reject) => {

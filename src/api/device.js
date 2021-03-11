@@ -6,7 +6,7 @@ const device = {
     getBid(){ return store.getters.buildingid},
 
     //設備管理
-    apiGetBuildingDevicesManagement(){ return req('get','/devicesManagement/buildings/'+this.getBid()+'/devices') },
+    apiGetBuildingDevicesManagement(){ return req('get','/index/buildings/'+this.getBid()+'/devices') },
     apiGetDevicesManagement(deviceId){ return req('get','/devicesManagement/'+deviceId+'/devices') },
     apiPostDevicesManagement(data){ return req('post','/devicesManagement/'+this.getBid()+'/devices',data) },
     apiPatchDevicesManagement(data){ return req('patch','/devicesManagement/devices',data) },
@@ -25,7 +25,6 @@ const device = {
     apiPostMaintains(maintainListId,data){ return req('post','/maintainManagement/maintains/'+maintainListId+'/list',data) },
     apiPatchMaintains(data){ return req('patch','/maintainManagement/maintains/list',data) },
     apiDeleteMaintains(maintainId){ return req('delete','/maintainManagement/maintains/list/'+maintainId) },
-
 
 }
 

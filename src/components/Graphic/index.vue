@@ -377,6 +377,7 @@ export default {
     },
     objects(val){
       if(val !== null){ 
+        console.log(JSON.parse(val))
         this.loadObjects(JSON.parse(val))
       }else{
         this.canvas.clear()

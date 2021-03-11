@@ -31,35 +31,20 @@
                 {{ scope.row[scope.column.property] | changeStatus }}</span>
               <span v-else-if="scope.column.property == 'removable'"> 
                 {{ scope.row[scope.column.property] | changeRemoveable }}</span>
-              <!-- <span v-else-if="scope.column.property == 'dateOfFailure' || 
-              scope.column.property == 'dateOfCallRepair' || 
-              scope.column.property == 'completedTime' "> 
-                {{ scope.row[scope.column.property] | dataStr }}</span>
-              <span v-else-if="scope.column.property == 'processStatus'"> 
-                {{  optionfilter(scope.row[scope.column.property]) }}
-              </span>
-              <span v-else-if="scope.column.property == 'linkDevices'"> 
-                {{ changeDevice(scope.row[scope.column.property]) }}
-              </span>
-              <span v-else-if="scope.column.property == 'linkContactUnits'"> 
-                {{ changeContainUnit(scope.row[scope.column.property]) }}
-              </span>
-              <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
-                <i v-if="scope.row[scope.column.property] == null " class="el-icon-close"></i>
-                <i v-else class="el-icon-check"></i>
-              </span> -->
               <span v-else-if="scope.column.property == 'linkOwners' || 
               scope.column.property == 'linkFireManagers'"> 
                 {{ changeUserName(scope.row[scope.column.property]) }}
               </span>
               <span v-else-if="scope.column.property == 'linkRoles'"> 
                 {{  changeLinkRoles(scope.row[scope.column.property]) }}</span>
+              <span v-else-if="scope.column.property == 'linkBuildings'"> 
+                {{  changeLinkBuilding(scope.row[scope.column.property]) }}</span>
               <span v-else >{{  scope.row[scope.column.property] }}</span>
           </template>
         </el-table-column>
     </template>
     <el-table-column
-      width="200px"
+      width="250px"
       align="right">
       <template slot="header" >
           <el-input
@@ -73,11 +58,22 @@
             :key="index"
             class="button-margin-left"
           >
+            
             <el-button
-              :type="index == 0 ? 'primary' : index == 1 ? 'info' : 'danger' "
-              @click="handleClickOption(scope.$index, scope.row, option,$event)"
+              v-if="option.status !== 'delete'"
+              :type="option.type"
+              size="small"
+              @click="handleClickOption( scope.row, option.status)"
             >
-              <span>{{ option }}</span>
+              <span>{{ option.name }}</span>
+            </el-button>
+            <el-button
+              v-else-if="scope.row.removable !== false"
+              :type="option.type"
+              size="small"
+              @click="handleClickOption( scope.row, option.status)"
+            >
+              <span>{{ option.name }}</span>
             </el-button>
         </span>
       </template>
@@ -129,7 +125,12 @@ export default {
       type: Array
     },
     buttonsName: {
-      type: Array
+      type: Array,
+      default: function() {
+      return [
+        { name:'編輯',type:'primary',status:'open'},
+        { name:'刪除',type:'info',status:'delete'}]
+      }
     },
     pageSizeList: {
       type: Array,
@@ -165,7 +166,9 @@ export default {
       'buildingoptions',
       'buildingusers',
       'buildingdevices',
-      'buildingcontactunit'
+      'buildingcontactunit',
+      'buildingroles',
+      'buildingarray'
     ]),
     optionfilter(){
       return function (a) {
@@ -224,13 +227,28 @@ export default {
         return ''
       } 
     },
+    changeLinkBuilding(){
+      return function (val) {
+        var array = []
+        if(val !== null){
+          val.forEach(item=>{
+            var data = this.buildingarray.filter(element=>{
+              return item.id == element.id
+            })
+            array.push(data[0].buildingName)
+          })
+          return array.toString()
+        }
+        return ''
+      } 
+    },
     changeLinkRoles(){
       return function (val) {
         var array = []
         if(val !== null){
-          val.forEach(element => {
-          var data = this.$obj.Authority.buildingRole.filter(item=>{
-              return item.id == element
+          val.forEach(item => {
+          var data = this.buildingroles.filter(element=>{
+              return item.id == element.id
             })
             array.push(data[0].name)
           })
@@ -251,26 +269,26 @@ export default {
   },
   data(){
     return{
-      search:'',
-      original:[]
+      search:''
     }
   },
   methods:{
     OpenCreate(){
-      this.$emit('handleTableRow', '', '', '新增')
+      this.$emit('handleTableRow', '', 'create')
     },
-    handleClickOption(index, row, option) {
-      if(option == '刪除'){
+    handleClickOption(row, option) {
+      console.log('handleClickOption',JSON.stringify(row),option)
+      if(option == 'delete'){
         this.$confirm('是否確定刪除該筆資料?', '提示', {
           confirmButtonText: '確定',
           cancelButtonText: '取消',
           type: 'warning',
           center: true
         }).then(() => {
-            this.$emit('handleTableRow', index, row, option)
+            this.$emit('handleTableRow',  row, option)
         })
       }else{
-        this.$emit('handleTableRow', index, row, option)
+        this.$emit('handleTableRow',  row, option)
       }
     },
     // 改變翻頁組件中每頁數據總數
@@ -285,22 +303,7 @@ export default {
       this.listQueryParams.page = val
       this.$emit('update:listQueryParams', this.listQueryParams)
       this.$emit('clickPagination', this.listQueryParams)
-    },
-    onAddRow(){
-      this.original = this.$deepClone(this.tableData)
-      var _temp = {
-          "dateOfFailure":"",
-          "dateOfCallRepair":"",
-          "completedTime":"",
-          "processContent":"",
-          "note":"",
-          "linkDevices":[],
-          "linkInspectionLacks":[],
-          "linkContactUnits":[],
-          "isEdit":true
-      }
-      this.tableData.push(_temp)
-    },
+    }
   }
 }
 </script>

@@ -140,7 +140,6 @@ export default {
             dialogStatus:'',
             dialogData:[],
             dialogButtonsName:[],
-            // groupData:[],
             origin:[],
             selectGroup:'',
             listQueryParams:{

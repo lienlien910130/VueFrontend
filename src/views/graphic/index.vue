@@ -109,7 +109,8 @@ export default {
     computed:{
       ...mapGetters([
           'id',
-          'buildingid'
+          'buildingid',
+          'buildingfloors'
       ]),
       floorselectAttrs() {
         return {
@@ -187,54 +188,48 @@ export default {
           blockChange:[]
         }
     },
-    mounted(){
-      this.getfloors()
+    watch: {
+      buildingfloors:{
+        handler:async function(){
+            this.selectData = this.buildingfloors
+        },
+        immediate:true
+      },
     },
     methods:{
-      getfloors() {
-        this.selectData = []
-        this.$api.building.apiGetBuildingFloors().then(response => {
-          response.result.forEach(element => {
-            var _temp = {
-              id:element.id,
-              label:element.floor>0 ? element.floor+'F' : '地下'+element.floor.substr(1)+'F'
-            }
-            this.selectData.push(_temp)
-          })
-        })
-      },
       async handleSelect(content){
-        this.floorId = content[0].id
-        await this.getFloorImageId()
+        console.log(JSON.stringify(content))
+        this.floorId = content.id
+        this.floorImageId = content.floorPlanID !== null ? (content.floorPlanID).toString() : null
         await this.getFloorImage()
         await this.getFloorGraphic()
       },
+      // async getFloorImageId(){ //儲存floorimageID
+      //   var floordata = await this.$obj.Building.getBuildingFloor(this.selectFloor)
+      //   floordata.floorPlanID == null ? this.floorImageId = null : 
+      //   this.floorImageId = (floordata.floorPlanID).toString()
+      // },
       async getFloorGraphic(){ //取得圖控檔案
-        await this.$api.graphic.apiGetFloorIdToGraphicFile(this.floorId).then(response =>{
-          this.$store.dispatch('graphic/sendJson',response.result.codeContent)
-          this.objects = response.result.codeContent
-        })
+        this.objects = await this.$obj.Files.getFloorGraphicFiles(this.floorId)
+        console.log(JSON.stringify(this.objects))
+        this.$store.dispatch('graphic/sendJson',this.objects)
+
+        // await this.$api.graphic.apiGetFloorIdToGraphicFile(this.floorId).then(response =>{
+        //   this.$store.dispatch('graphic/sendJson',response.result.codeContent)
+        //   this.objects = response.result.codeContent
+        // })
       },
-      async getFloorImageId(){ //儲存floorimageID
-        await this.$api.building.apiGetFloor(this.floorId).then(response=> {
-            if(response.result[0].floorPlanID !== null){
-              this.floorImageId = (response.result[0].floorPlanID).toString()
-            }else{
-              this.floorImageId = null
-            }
-        })
-      }, 
       async getFloorImage(){ //載入平面圖
         if(this.floorImageId == null){
           this.imageSrc = ""
           this.disabled = true
           this.changeType('view')
         }else{
-          await this.$api.files.apiGetFloorImage(this.floorImageId).then(response=> {
-              const bufferUrl = btoa(new Uint8Array(response).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-              this.imageSrc = 'data:image/png;base64,' + bufferUrl
-              this.disabled = false
-          })
+          var data = await this.$obj.Files.getBuildingFloorImage(this.floorImageId)
+          const bufferUrl = btoa(new Uint8Array(data).reduce((data, byte) => 
+          data + String.fromCharCode(byte), ''))
+          this.imageSrc = 'data:image/png;base64,' + bufferUrl
+          this.disabled = false
         }
       },  
       // sendToCanvas(){

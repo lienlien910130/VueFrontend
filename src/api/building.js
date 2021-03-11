@@ -5,7 +5,7 @@ const building = {
     getUid(){ return store.getters.id},
     getBid(){ return store.getters.buildingid},
     //基本資料
-    apiGetBuilding(){ return req('get','/index/buildings/a') } , //取得帳號的所有建築物
+    apiGetBuilding(){ return req('get','/index/buildings/a') } , //取得所有建築物
     apiGetBuildingInfo(){ return req('get','/index/buildings/'+this.getBid()) } , //取得該建築物的基本資料
     apiPostBuilding(data){ return req('post','/index/buildings',data) },
     apiDeleteBuilding(buildingId){ return req('delete','/index/buildings/'+buildingId) },
@@ -16,15 +16,15 @@ const building = {
     apiPatchCommittee(data){ return req('patch','/basic/community-management-committee',data) },
     apiDeleteCommittee(committeeId){ return req('delete','/basic/'+committeeId+'/community-management-committee') },
     //廠商
-    apiGetBuildingContactUnit(){ return req('get','/basic/'+this.getBid()+'/contact-unit') },
+    apiGetBuildingContactUnit(){ return req('get','/index/'+this.getBid()+'/contact-unit') },
     apiGetContactUnit(contactUnitId){ return req('get','/basic/contact-unit/'+contactUnitId) },
     apiPostContactUnit(data){ return req('post','/basic/'+this.getBid()+'/contact-unit',data) },
     apiPatchContactUnit(data){ return req('patch','/basic/contact-unit',data) },
     apiDeleteContactUnit(contactunitId){ return req('delete','/basic/'+contactunitId+'/contact-unit') },
     //樓層
-    apiGetBuildingFloors(){ return req('get','/basic/building/'+this.getBid()+'/a/floors') },
+    apiGetBuildingFloors(){ return req('get','/index/building/'+this.getBid()+'/a/floors') },
     apiGetFloor(floorId){ return req('get','/basic/floors/'+floorId) },
-    apiPostFloors(buildingId,data){ return req('post','/basic/building/'+buildingId+'/floors',data) },
+    apiPostFloors(buildingId,data){ return req('post','/index/building/'+buildingId+'/floors',data) },
     apiPatchFloors(data){ return req('patch','/basic/floors',data) },
     apiDeleteFloors(floorId){ return req('delete','/basic/floors/'+floorId) },
     //門牌資料
@@ -35,7 +35,7 @@ const building = {
     apiPatchFloorOfHouse(data){ return req('patch','/basic/usage-of-floors',data) },
     apiDeleteFloorOfHouse(floorofhouseId){ return req('delete','/basic/'+floorofhouseId+'/usage-of-floors') },
     //使用者資料
-    apiGetAllBuildingOfUser(){ return req('get','/basic/a/house-holders') },
+    apiGetAllBuildingOfUser(){ return req('get','/index/a/house-holders') },
     apiGetUser(userId){ return req('get','/basic/house-holders/'+userId) },
     apiPostUser(data){ return req('post','/basic/house-holders',data) },
     apiPatchUser(data){ return req('patch','/basic/house-holders',data) },

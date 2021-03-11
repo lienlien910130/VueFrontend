@@ -13,7 +13,6 @@ export default {
     // }
   },
   async created(){
-　　//在頁面載入時讀取sessionStorage裡的狀態資訊
     //this.initsocket()
  
     // if (localStorage.getItem("store") ) {

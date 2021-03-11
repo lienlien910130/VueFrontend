@@ -23,7 +23,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 
 export default {
     props:{
@@ -41,20 +40,23 @@ export default {
       }
     },
     watch: {
-        selectData: function(){
+      selectData:{
+        handler:async function(){
           if(this.title == 'Building' || this.title == 'GraphicFloor'){
             this.defaultvalue = this.selectData[0].id
             this.currentSel(this.defaultvalue)
           }else if(this.title == 'contactunit' || this.title == 'equipment'){
             this.defaultvalue = 'all'
           }
-        }
+        },
+        immediate:true
+      }
     },
     methods: {
         currentSel(select){
           const tempData = this.selectData.filter((item, index) => 
               item.id == select )
-          this.$emit('handleSelect', tempData.length>0 ? tempData : undefined)
+          this.$emit('handleSelect', tempData.length>0 ? tempData[0] : undefined)
         }
     },
   }
