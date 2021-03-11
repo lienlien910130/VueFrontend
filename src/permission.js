@@ -43,7 +43,6 @@ router.beforeEach(async(to, from, next) => {
             await store.dispatch('building/setroles',await obj.Authority.getAllRole()) //跟大樓無關連
             await store.dispatch('building/setbuildingusers',await obj.Building.getBuildingUser()) ////跟大樓無關連
             const isSystem = store.getters.id == '1'
-            console.log('isSystem',isSystem,buildingID)
             if(isSystem){ //系統管理員=>取得所有大樓清單
               store.dispatch('building/setbuildingarray',await obj.Building.getAllBuilding())
             }

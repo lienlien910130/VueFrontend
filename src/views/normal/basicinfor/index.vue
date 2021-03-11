@@ -369,11 +369,7 @@ export default {
       await this.getFloorList()
       await this.setFloorSelectSetting()
     },
-    // async getFloorImageId(){ //儲存floorimageID
-    //   var floordata = await this.$obj.Building.getBuildingFloor(this.selectFloor)
-    //   floordata.floorPlanID == null ? this.floorImageId = null : 
-    //   this.floorImageId = (floordata.floorPlanID).toString()
-    // }, 
+    
     async getFloorImage(){ //載入平面圖
       if(this.floorImageId == null){
         this.imageSrc = -1

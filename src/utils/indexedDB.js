@@ -38,13 +38,18 @@ export default {
 		})
 	},
     async deleteDb(){
+        console.log('deleteDb')
         let db = await this.getDb()
         db.close()
         var DBDeleteReq = window.indexedDB.deleteDatabase(DB_NAME)
         DBDeleteReq.onsuccess = function(event) { 
             console.log("Database deleted successfully")
             DB = null
-        }            
+        } 
+        DBDeleteReq.onerror = e => {
+            console.log("error",e)
+            reject(e)
+        }          
     },
     async getValue(tableName,id=null) {
 		let db = await this.getDb()

@@ -224,6 +224,7 @@ export default {
       this.$router.push('/building')
     },
     async logout() {
+      console.log('logout')
       await this.$store.dispatch('user/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
@@ -245,6 +246,7 @@ export default {
           this.$router.push('/')
           console.log('Navbardone')
           loading.close()
+          this.$store.dispatch('app/openSideBar')
        }
     },
     padDate(value) {

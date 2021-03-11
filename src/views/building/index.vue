@@ -26,14 +26,14 @@
                 </el-form-item>
                 <el-form-item label="層數" prop="floorsOfAboveGround">
                     <el-input ref="floorsOfAboveGround" name="floorsOfAboveGround" 
-                    v-model.number="form.floorsOfAboveGround" type="number" min="0">
+                    v-model.number="form.floorsOfAboveGround" type="number" min="0" :disabled="disable">
                     <template slot="prepend">地上</template>
                     <template slot="append">樓</template>
                     </el-input>
                 </el-form-item>
                 <el-form-item prop="floorsOfUnderground">
                     <el-input ref="floorsOfUnderground" name="floorsOfUnderground" 
-                    v-model.number="form.floorsOfUnderground" type="number" min="0">
+                    v-model.number="form.floorsOfUnderground" type="number" min="0" :disabled="disable">
                     <template slot="prepend">地下</template>
                     <template slot="append">樓</template>
                     </el-input>
@@ -156,7 +156,8 @@ export default {
         { label:'使用執照字號' , prop:'licenseNumber'},
         { label:'管理權人' , prop:'linkOwners'},
         { label:'防火管理人' , prop:'linkFireManagers'}
-      ]
+      ],
+      disable:false
     }
   },
   async mounted() {
@@ -215,6 +216,7 @@ export default {
     onCancel() {
       this.form = {}
       this.type = 'create'
+      this.disable = false
       this.$nextTick(() => {
         this.$refs.form.clearValidate()
       })
@@ -238,6 +240,7 @@ export default {
         if(option === 'open'){
           this.type = 'edit'
           this.form = this.$deepClone(row)
+          this.disable = true
         }else if(option === 'delete'){
           var isOk = await this.$obj.Building.deleteBuilding(row.id)
           if(isOk){

@@ -1,62 +1,76 @@
 <template>
-    <el-form
-        label-position="left" 
-        label-width="auto" 
-    >
-    <el-form-item label="上傳檔案">
-        <el-upload
-            ref="upload"
-            action="upload"
-            :on-remove="handleRemove"
-            :on-change="handleChange"
-            :before-remove="beforeRemove"
-            :auto-upload="false"
-            multiple
-            :limit="limit"
-            :on-exceed="handleExceed"
-            :file-list="fileList">
-            <el-button slot="trigger"  type="primary" icon="el-icon-folder-opened" >選取文件</el-button>
-            <el-button type="success"
-                :disabled="isDisabled" 
-                @click="onUpload"
-                style="margin-left:10px" 
-                icon="el-icon-upload">上傳</el-button>
-        </el-upload>
-    </el-form-item>
-    <el-form-item label="檔案">
-        <div class="files">
-            <div 
-                v-for="(item,index) in files" :key="item.id" class="filesdiv">
-                <el-radio 
-                v-if="title === 'floor' || title === 'reportInspectio' "
-                v-model="choose" :label="item.id">{{ title === 'floor' ? '平面圖' : '缺失內容'}}
-                </el-radio>
-                <el-link 
-                    class="link" 
-                    :href="downloadfile(item.id)"   target="_blank">
-                    【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
-                </el-link>
-                <!-- <el-button 
-                    class="link" 
-                    @click="downloadfile(item.id)" >
-                    【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
-                </el-button> -->
-                <span>
-                    <i class="el-icon-delete del" 
-                    style="float:right;font-size: 25px;margin-top:5px" 
-                    @click="deletefile(item.id)" />
-                </span>
+    <div>
+        <el-form
+            label-position="left" 
+            label-width="auto" 
+            :inline="true"
+        >
+        <el-form-item style="width:30%">
+            <el-upload
+                ref="upload"
+                action="upload"
+                :on-remove="handleRemove"
+                :on-change="handleChange"
+                :before-remove="beforeRemove"
+                :auto-upload="false"
+                multiple
+                :file-list="fileList">
+                <el-button slot="trigger"  type="primary" icon="el-icon-folder-opened" >選取</el-button>
+                <el-button type="success"
+                    :disabled="isDisabled" 
+                    @click="onUpload"
+                    style="margin-left:10px" 
+                    icon="el-icon-upload">上傳</el-button>
+                <el-button 
+                    v-if="title === 'reportInspectio' || title === 'floor' " 
+                    type="primary" @click="onChange">
+                    {{ title === 'floor' ? '平面圖' : '缺失內容'}}
+                </el-button>
+                <el-button slot="trigger"  type="primary" icon="el-icon-delete" >刪除</el-button>
+            </el-upload>
+        </el-form-item>
+        <el-form-item  style="width:70%;padding-left:8px">
+            <el-input v-model="input" placeholder="請輸入內容" style="margin-bottom:10px">
+                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+            </el-input>
+            <div class="files">
+                <div 
+                    v-for="(item,index) in files" :key="item.id" class="filesdiv">
+                    <!-- <el-radio 
+                    v-if="title === 'floor' || title === 'reportInspectio' "
+                    v-model="choose" :label="item.id">{{ title === 'floor' ? '平面圖' : '缺失內容'}}
+                    </el-radio> -->
+                    <el-radio v-model="choose" :label="item.id"></el-radio>
+
+                    <el-link 
+                        class="link" 
+                        :href="downloadfile(item.id)"   target="_blank">
+                        【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
+                    </el-link>
+                    <!-- <el-button 
+                        class="link" 
+                        @click="downloadfile(item.id)" >
+                        【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
+                    </el-button> -->
+                    <!-- <span>
+                        <i class="el-icon-delete del" 
+                        style="float:right;font-size: 25px;margin-top:5px" 
+                        @click="deletefile(item.id)" />
+                    </span> -->
+                </div>
             </div>
-        </div>
-    </el-form-item>
-    <el-form-item v-if="title === 'reportInspectio' || title === 'floor' " label="">
-        <el-button type="primary" @click="onChange">
-            {{ title === 'floor' ? '設定為平面圖' : '設定為缺失內容'}}</el-button>
-    </el-form-item>
-    <!-- <el-form-item v-if="title === 'floor'" label="">
-        <el-button type="primary" @click="onChangeFloorImage">設定為平面圖</el-button>
-    </el-form-item> -->
-    </el-form>
+        </el-form-item>
+        <!-- <el-form-item v-if="title === 'reportInspectio' || title === 'floor' " label="">
+            <el-button type="primary" @click="onChange">
+                {{ title === 'floor' ? '設定為平面圖' : '設定為缺失內容'}}</el-button>
+        </el-form-item> -->
+        <!-- <el-form-item v-if="title === 'floor'" label="">
+            <el-button type="primary" @click="onChangeFloorImage">設定為平面圖</el-button>
+        </el-form-item> -->
+        </el-form>
+    </div>
+    
+
 <!-- accept="image/jpeg,image/gif,image/png,application/pdf" -->
 </template>
 
@@ -129,12 +143,12 @@
                 this.isDisabled = true
             }
         },
-        handleExceed(files, fileList) {
-            this.$message({
-                message: '限制檔案上傳數為'+this.limit+'，請勿超出範圍',
-                type: 'warning'
-            })
-        },
+        // handleExceed(files, fileList) {
+        //     this.$message({
+        //         message: '限制檔案上傳數為'+this.limit+'，請勿超出範圍',
+        //         type: 'warning'
+        //     })
+        // },
         beforeRemove(file, fileList) {
             return this.$confirm(`確定移除 ${ file.name }？`)
         },
@@ -154,7 +168,7 @@
             // link.download = 'qrCode.png'
             // link.click()
             //this.imageSrc = 'data:image/png;base64,' + bufferUrl
-            return "http://192.168.88.65:59119/basic/fileDownload/" + fileid
+            return "http://192.168.88.65:59119/Public/fileDownload/" + fileid
         },
         async deletefile(fileId) {
             this.$confirm('是否確定刪除該筆資料?', '提示', {
@@ -198,9 +212,26 @@
     }
   }
 </script>
-
+<style >
+.el-form--inline .el-form-item__content{
+    width: 100%;
+}
+</style>
 <style lang="scss" scoped>
+
+.el-form--inline .el-form-item{
+    margin-right: 0px;
+}
+
+.files {
+    width: 100%;
+    height: 570px;
+    overflow-x:hidden;
+    overflow-y:auto;
+}
+
 i{
     cursor: pointer;
+    padding-right: 10px;
 }
 </style>

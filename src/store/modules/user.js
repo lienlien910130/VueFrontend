@@ -88,11 +88,12 @@ const actions = {
   // user logout
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
+      idb.deleteDb()
+      store.dispatch('app/closeSideBar', { withoutAnimation: false })
       removeToken() 
       removeID()
       removeVersion()
       store.dispatch('building/resetBuildingid')
-      idb.deleteDb()
       commit('RESET_STATE')
       resetRouter()
       resolve()

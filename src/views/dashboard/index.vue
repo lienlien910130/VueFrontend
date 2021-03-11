@@ -3,7 +3,10 @@
       <div v-if="account == 'System'">
         系統管理員
       </div>
-      <div v-else >
+      <div v-else-if="buildingid == undefined">
+        請選擇建築物
+      </div>
+      <div v-else>
         <el-row :gutter="32">
         <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">

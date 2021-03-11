@@ -22,7 +22,7 @@ const errorHandle = (status,msg) =>{
             tip(msg)
             break;
         case 401:
-            tip('登入過期，請重新登入')
+            //tip('登入過期，請重新登入')
             store.dispatch('user/resetToken')
             location.reload()
             break;
@@ -82,7 +82,7 @@ service.interceptors.response.use(
 
 // export default service
 export default function(method,url,data = null,isHeader = false) {
-    console.log('method:'+method+'//url:'+url+'//data:'+data+'//isHeader:'+isHeader)
+    console.log('method:'+method+' || url:'+url+' || data:'+data+' || isHeader:'+isHeader)
     method = method.toLowerCase()
     if(method == 'post'){   
         if(isHeader !== false){ //檔案上傳
