@@ -222,7 +222,9 @@
                 <el-input v-else-if="item.format =='textarea'"
                 v-model="temp[item.prop]" 
                 :autosize="{ minRows: 4, maxRows: 8}"
-                type="textarea">
+                maxlength="200"
+                type="textarea"
+                show-word-limit>
                 </el-input>
 
                 <div v-else-if="item.format =='openmaintain' ">
@@ -234,7 +236,10 @@
                 </div>
                 
                 <el-input v-else
-                v-model="temp[item.prop]" >
+                v-model="temp[item.prop]" 
+                :maxlength="item.maxlength"
+                show-word-limit
+                >
                 </el-input>
 
             </el-form-item>

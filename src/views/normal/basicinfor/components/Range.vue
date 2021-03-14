@@ -69,6 +69,7 @@ export default {
   watch:{
     buildingfloors:{
       handler:async function(newValue,oldValue){
+        console.log(this.buildingfloors.length>0 && oldValue == undefined )
         if(this.buildingfloors.length>0 && oldValue == undefined ){
           this.upFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == false)
           this.downFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == true)

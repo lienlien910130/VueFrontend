@@ -320,7 +320,7 @@ export function removeDuplicates(originalArray, prop) {
   return newArray
 }
 
-export async function changeLabel(selectType,value){
+export async function changeLabel(selectType,value,selectdata){
   console.log(selectType,value)
   var label = ''
   switch(selectType){
@@ -349,9 +349,10 @@ export async function changeLabel(selectType,value){
           }
           break;
       case 'usageOfFloor': 
-          await api.building.apiGetHouse(value).then(response=>{
-              label = response.result[0].houseNumber
-          })
+          let usageOfFloor = selectdata.filter((item, index) => 
+              item.id == value.id
+          )
+          label = usageOfFloor[0].houseNumber
           break;
       case 'user': 
           if(store.getters.buildingusers.length == 0){
@@ -396,27 +397,55 @@ export async function changeLabel(selectType,value){
   return label
 }
 
-export async function setSelectSetting(config,list){
-  var data = []
-  data  = config.filter((item,index)=>item.isSelect == true)
+export async function setSelectSetting(config,list,selectdata = null){
+  var data = config.filter((item,index)=>item.isSelect == true) //可篩選的
   for(let item of data){
+    console.log(item)
+    var array = []
     item.options = []
-    var _temp = removeDuplicates(list,item.prop)
+    for(let element of list){
+      array.push(element[item.prop])
+    }
+    var concatarray = array.reduce(
+      function(a, b) {
+        return a.concat(b)
+      },[]
+    )
+    //單一 or 物件
+    var _temp = 
+      item.selectType == 'contactunit' 
+      || item.selectType == 'usageOfFloor' 
+      || item.selectType == 'user'  ?  
+          removeDuplicates(concatarray,'id') : 
+          concatarray.filter(function(element, index, arr){
+              return arr.indexOf(element) === index
+          })
+      
+    console.log(JSON.stringify(concatarray))
+    console.log(JSON.stringify(_temp))
     for(let obj of _temp) {
-        if(obj[item.prop] !== '' && obj[item.prop] !== null ){
-          var label = typeof obj[item.prop] !== 'object' ? 
-            await changeLabel(item.selectType,obj[item.prop]) : 
-            obj[item.prop].length>0 ? await changeLabel(item.selectType,obj[item.prop][0].id) : ''
-          var value = typeof obj[item.prop] !== 'object' ? obj[item.prop] :
-            obj[item.prop].length>0 ? obj[item.prop][0].id : ''
-          if(value !== '' && label !== ''){
-            item.options.push({
-                id:obj.id,
-                value:value,
-                label:label
-            }) 
-          }
-        }
+      console.log('typeof',typeof obj)
+      var label = await changeLabel(item.selectType,obj,selectdata)
+      var value = typeof obj == 'object' ? obj.id : obj
+      item.options.push({
+            id:obj.id,
+            value:value,
+            label:label
+      })
+        // if(obj[item.prop] !== '' && obj[item.prop] !== null ){
+        //   var label = typeof obj[item.prop] !== 'object' ? 
+        //     await changeLabel(item.selectType,obj[item.prop]) : 
+        //     obj[item.prop].length>0 ? await changeLabel(item.selectType,obj[item.prop][0].id) : ''
+        //   var value = typeof obj[item.prop] !== 'object' ? obj[item.prop] :
+        //     obj[item.prop].length>0 ? obj[item.prop][0].id : ''
+        //   if(value !== '' && label !== ''){
+        //     item.options.push({
+        //         id:obj.id,
+        //         value:value,
+        //         label:label
+        //     }) 
+        //   }
+        // }
     }
   }
   return data

@@ -99,6 +99,7 @@ let Building = {
     },
     updateBuildingFloor: async function(data){
         var data = await api.building.apiPatchFloors(data).then(async(response) => {
+            console.log(JSON.stringify(response))
             return true
         }).catch(error=>{
             return false
@@ -159,18 +160,6 @@ let Building = {
     getManagementList: async function(){
         var data = await api.building.apiGetCommittee().then(response => {
             var result = response.result.sort((x,y) => x.id - y.id)
-            this.buildingCommittee = result
-            // if(isSelect){
-            //     var mapArray = result.map(v => {
-            //         return {
-            //             id:v.id,
-            //             value: v.id,
-            //             label: v.buildingName
-            //         }
-            //     })
-            //     this.buildingArray = mapArray
-            //     return mapArray
-            // }
             return result
         }).catch(error=>{
             return []

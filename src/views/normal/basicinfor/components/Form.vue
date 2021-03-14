@@ -1,8 +1,10 @@
 <template>
-  <div class="app-container">
+  <div>
     <el-form class="buildinginfo" 
     ref="form" :model="form" 
-    :rules="formRules" :label-position="label" label-width="auto">
+    :rules="formRules" 
+    :label-position="label" 
+    label-width="auto">
       <el-form-item label="名稱" prop="buildingName">
         <el-input ref="buildingName" name="buildingName" v-model="form.buildingName" :disabled="type === 'view' ? true : false" />
       </el-form-item>
@@ -103,12 +105,13 @@ import { mapGetters } from 'vuex'
 export default {
   computed: {
     ...mapGetters([
+        'device',
         'buildingid',
         'buildingusers',
         'buildinginfo'
     ]),
     label() {
-      if (this.$store.state.app.device === 'mobile') {
+      if (this.device === 'mobile') {
         return 'top'
       } else {
         return 'left'
@@ -192,7 +195,9 @@ export default {
   watch:{
     buildinginfo:{
       handler:async function(){
-        this.form = this.$deepClone(this.buildinginfo[0])
+        if(this.buildinginfo.length){
+          this.form = this.$deepClone(this.buildinginfo[0])
+        }
       },
       immediate:true
     },
@@ -257,7 +262,11 @@ export default {
 .line {
   text-align: center;
 }
-
+.buildinginfo{
+  height:560px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 
 </style>
 

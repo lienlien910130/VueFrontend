@@ -15,24 +15,38 @@
                 :auto-upload="false"
                 multiple
                 :file-list="fileList">
-                <el-button slot="trigger"  type="primary" icon="el-icon-folder-opened" >選取</el-button>
+                <el-button  type="primary" icon="el-icon-folder-opened" ></el-button>
                 <el-button type="success"
                     :disabled="isDisabled" 
                     @click="onUpload"
-                    style="margin-left:10px" 
-                    icon="el-icon-upload">上傳</el-button>
-                <el-button 
-                    v-if="title === 'reportInspectio' || title === 'floor' " 
-                    type="primary" @click="onChange">
-                    {{ title === 'floor' ? '平面圖' : '缺失內容'}}
-                </el-button>
-                <el-button slot="trigger"  type="primary" icon="el-icon-delete" >刪除</el-button>
+                    icon="el-icon-upload"></el-button>
+               
             </el-upload>
+            
         </el-form-item>
         <el-form-item  style="width:70%;padding-left:8px">
-            <el-input v-model="input" placeholder="請輸入內容" style="margin-bottom:10px">
-                <i slot="prefix" class="el-input__icon el-icon-search"></i>
-            </el-input>
+            <div style="display:table;width:100%">
+                <div style="display:table-cell;width:80%">
+                    <el-input v-model="input" placeholder="請輸入內容" style="margin-bottom:10px;width:100%">
+                    <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                    </el-input>
+                </div>
+                <div style="display:table-cell;width:20%">
+                    <div style="display:table;width:100%">
+                        <div style="display:table-cell;width:20%">
+                            <el-button  type="info" icon="el-icon-delete" @click="deletefile"></el-button>
+                        </div>
+                        <div style="display:table-cell;width:80%">
+                            <el-button 
+                                v-if="title === 'reportInspectio' || title === 'floor' " 
+                                type="danger" @click="onChange">
+                                {{ title === 'floor' ? '平面圖' : '缺失內容'}}
+                            </el-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="files">
                 <div 
                     v-for="(item,index) in files" :key="item.id" class="filesdiv">
@@ -40,12 +54,12 @@
                     v-if="title === 'floor' || title === 'reportInspectio' "
                     v-model="choose" :label="item.id">{{ title === 'floor' ? '平面圖' : '缺失內容'}}
                     </el-radio> -->
-                    <el-radio v-model="choose" :label="item.id"></el-radio>
+                    <el-checkbox v-model="deleteItem" :label="item.id">【{{ index+1 }}】</el-checkbox>
 
                     <el-link 
                         class="link" 
-                        :href="downloadfile(item.id)"   target="_blank">
-                        【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
+                        :href="downloadfile(item.id)"   target="_blank" :style="check(item.id)">
+                        {{ item.fileOriginalName }}.{{item.extName}}
                     </el-link>
                     <!-- <el-button 
                         class="link" 
@@ -106,13 +120,26 @@
             choose:'',
             isLt10M:true,
             isType:true,
-            disable:[]
+            disable:[],
+            deleteItem:[]
       }
     },
-    mounted(){
-        this.choose = this.specialId
+    watch:{
+        specialId:{
+            handler:async function(){
+                this.choose = this.specialId
+            },
+            immediate:true
+        },
     },
     methods: {
+        check(val){
+            if(val == this.choose){
+                return {color:'red'}
+            }else{
+                return {color:'#606266'}
+            }
+        },
         handleChange(file, fileList) {
             console.log(file,fileList)
             const m = file.size / 1024 / 1024 
@@ -183,14 +210,14 @@
             //this.imageSrc = 'data:image/png;base64,' + bufferUrl
             return "http://192.168.88.65:59119/Public/fileDownload/" + fileid
         },
-        async deletefile(fileId) {
+        async deletefile() {
             this.$confirm('是否確定刪除該筆資料?', '提示', {
                 confirmButtonText: '確定',
                 cancelButtonText: '取消',
                 type: 'warning',
                 center: true
             }).then(async() => {
-                if(fileId === this.specialId){
+                if(this.deleteItem.indexOf(this.specialId) !== -1){
                     this.$message({
                         message: this.title === 'floor' ?
                         '此檔為平面圖，請先設定其他檔為平面圖再進行刪除' : 
@@ -198,29 +225,40 @@
                         type: 'warning'
                     })
                 }else{
-                    this.$emit('handleFilesUpload','deletefile',this.title,fileId)
+                    this.$emit('handleFilesUpload','deletefile',this.title,this.deleteItem)
                 }
             })
         },
         onChange(){
-            if(this.title === 'reportInspectio' && this.specialId !== '0'){ //不是第一次設定缺失
-                this.$confirm('缺失內容檔案已上傳過，重新上傳會將舊有資料全部刪除，請問是否確認上傳?',
-                 '提示', {
-                    confirmButtonText: '確定',
-                    cancelButtonText: '取消',
+            if(this.deleteItem.length > 1){
+                this.$message({
+                    message: '只能選一個',
                     type: 'warning'
-                }).then(() => {
-                    this.$emit('handleFilesUpload','changeAgain',this.title,this.choose)
-                    this.importFiles = []
-                    this.fileList = []
-                }).catch(()=>{
-                    this.choose = this.specialId
                 })
-            }else if(this.title === 'reportInspectio' && this.specialId === '0'){ //第一次設定缺失內容檔案
-                this.$emit('handleFilesUpload','changeFirst',this.title,this.choose)  
             }else{
-                this.$emit('handleFilesUpload','change',this.title,this.choose)  
+                console.log(this.deleteItem[0])
+                if(this.title === 'reportInspectio' && this.specialId !== '0'){ //不是第一次設定缺失
+                    this.$confirm('缺失內容檔案已上傳過，重新上傳會將舊有資料全部刪除，請問是否確認上傳?',
+                    '提示', {
+                        confirmButtonText: '確定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        this.$emit('handleFilesUpload','changeAgain',this.title,this.deleteItem[0])
+                        this.importFiles = []
+                        this.fileList = []
+                    }).catch(()=>{
+                        this.choose = this.specialId
+                    })
+                }else if(this.title === 'reportInspectio' && this.specialId === '0'){ //第一次設定缺失內容檔案
+                    this.$emit('handleFilesUpload','changeFirst',this.title,this.deleteItem[0])  
+                }else{
+                    this.$emit('handleFilesUpload','change',this.title,this.deleteItem[0])  
+                    this.deleteItem = []
+                    this.choose = this.deleteItem[0]
+                } 
             }
+            
         }
     }
   }

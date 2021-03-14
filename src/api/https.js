@@ -24,7 +24,7 @@ const errorHandle = (status,msg) =>{
         case 401:
             //tip('登入過期，請重新登入')
             store.dispatch('user/resetToken')
-            location.reload()
+            //location.reload()
             break;
         case 403:
             tip('權限不足')

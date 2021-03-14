@@ -56,117 +56,139 @@
               :key="index"
               >
               <el-col :xs="24" :sm="12" :md="6" :lg="6">
-                <div class="dashboard-wrapper">
-                    <div 
-                    v-for="(option,index) in config"
-                    :key="index"
-                    width="100%"
-                    >
-                        <div :style="{display:'inline-block',width:labelstyle}">
-                            <span>{{ option.label }} :</span>
-                        </div>
-                        <div :style="{display:'inline-block',width:itemstyle}">
-                            <span 
-                            v-if="option.format == 'YYYY' | option.format === 'YYYY-MM-DD'">
-                            {{ dataStr(item[option.prop],option.format) }}
-                            </span>
-                            
-                            <span 
-                            v-else-if="option.format == 'range' ">
-                                {{ dataStr(item['checkStartDate'],'YYYY-MM-DD') }} 
-                                <span v-if="item['checkStartDate'] !== null">~</span> 
-                                {{ dataStr(item['checkEndDate'],'YYYY-MM-DD') }}
-                            </span>
+                <div class="dashboard-wrapper" :style="FirstheightChange">
+                    <div class="wrapper" :style="heightChange">
+                        <div 
+                        v-for="(option,index) in rowlabel"
+                        :key="index"
+                        width="100%"
+                        
+                        >
+                            <div :style="{display:'inline-block','vertical-align':'top','padding-top':'5px',width:labelstyle}">
+                                <span>{{ option.label }} :</span>
+                            </div>
+                            <div :style="{display:'inline-block','word-break':'break-all','padding-top':'5px',width:itemstyle,}">
+                                <span 
+                                v-if="option.format == 'YYYY' | option.format === 'YYYY-MM-DD'">
+                                {{ dataStr(item[option.prop],option.format) }}
+                                </span>
+                                
+                                <span 
+                                v-else-if="option.format == 'range' ">
+                                    {{ dataStr(item['checkStartDate'],'YYYY-MM-DD') }} 
+                                    <span v-if="item['checkStartDate'] !== null">~</span> 
+                                    {{ dataStr(item['checkEndDate'],'YYYY-MM-DD') }}
+                                </span>
 
-                            <el-tag 
-                            v-else-if="option.format == 'tag' "
-                            :class="item[option.prop] === false ? 'tag-co' : 'tag-noco' "
-                            > 
-                                {{ tagChange(item[option.prop]) }}
-                            </el-tag>
+                                <el-tag 
+                                v-else-if="option.format == 'tag' "
+                                :class="item[option.prop] === false ? 'tag-co' : 'tag-noco' "
+                                > 
+                                    {{ tagChange(item[option.prop]) }}
+                                </el-tag>
 
-                            <span 
-                            v-else-if="option.format == 'select' ">
-                            {{ selectStr(item[option.prop]) }}
-                            </span>
+                                <span 
+                                v-else-if="option.format == 'select' ">
+                                {{ selectStr(item[option.prop]) }}
+                                </span>
 
-                            <el-button 
-                            v-else-if="option.format == 'userInfo' "
-                            type="text" @click="handleClickOption('opendialog',item[option.prop])" 
-                            style="padding-top:0px;padding-bottom:0px">
-                                {{ multipleStr('user',item[option.prop]) }}
-                            </el-button>
+                                <!-- <el-button 
+                                v-else-if="option.format == 'userInfo' "
+                                type="text" @click="handleClickOption('opendialog',item[option.prop])" 
+                                style="padding-top:0px;padding-bottom:0px">
+                                    {{ multipleStr('user',item[option.prop]) }}
+                                </el-button> -->
 
-                            <span v-else-if="option.format == 'openmaintain' ">
-                                {{ changeMaintain(item[option.prop]) }}
-                            </span>
-                            <!-- <el-button
-                            v-else-if="option.format == 'openmaintain' "
-                            type="text" @click="handleClickOption('openmaintain',item[option.prop])" 
-                            style="padding-top:0px;padding-bottom:0px">
-                                {{ changeMaintain(item[option.prop]) }}
-                            </el-button> -->
+                                <span 
+                                v-else-if="option.format == 'userInfo' " 
+                                @click="handleClickOption('opendialog',item[option.prop])"
+                                style="color:#66b1ff;cursor:pointer">
+                                    {{ multipleStr('user',item[option.prop]) }}
+                                </span>
 
-                            <el-button
-                            v-else-if="option.format == 'openfiles' "
-                            type="text" @click="handleClickOption('openfiles',item['id'])" 
-                            style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
-                            <span 
-                            v-else-if="option.format == 'MaintainContentOptions' || 
-                            option.format == 'DeviceOptions' || 
-                            option.format == 'MaintainProcessOptions' || 
-                            option.format == 'BrandOptions' || option.format == 'ContactUnitOptions' ||
-                            option.format == 'DeviceStatusOptions' "
-                            >
-                            {{ optionfilter(item[option.prop]) }}
-                            </span>
-                            
-                            <el-button v-else-if="option.format == 'floorOfHouseSelect' " 
-                            @click="handleClickOption('openfloorofhouse',item[option.prop])"
-                            type="text"
-                            style="padding:0px"
-                            >
-                                {{ multipleStr('floorOfHouse',item[option.prop]) }}
-                            </el-button>
+                                <span v-else-if="option.format == 'openmaintain' ">
+                                    {{ changeMaintain(item[option.prop]) }}
+                                </span>
+                                <!-- <el-button
+                                v-else-if="option.format == 'openmaintain' "
+                                type="text" @click="handleClickOption('openmaintain',item[option.prop])" 
+                                style="padding-top:0px;padding-bottom:0px">
+                                    {{ changeMaintain(item[option.prop]) }}
+                                </el-button> -->
 
-                            <el-button v-else-if="option.format == 'deviceSelect' " 
-                            @click="toAnotherPage('Equipment',item[option.prop],'')"
-                            type="text"
-                            style="padding:0px"
-                            >
-                                {{ deviceStr(item[option.prop]) }}
-                            </el-button>
+                                <el-button
+                                v-else-if="option.format == 'openfiles' "
+                                type="text" @click="handleClickOption('openfiles',item['id'])" 
+                                style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
-                            <el-button v-else-if="option.format == 'contactunitSelect' " 
-                            @click="toAnotherPage('Basic',item[option.prop],'co')"
-                            type="text"
-                            style="padding:0px"
-                            >
-                                {{ multipleStr('contactunit',item[option.prop]) }}
-                            </el-button>
+                                <span 
+                                v-else-if="option.format == 'MaintainContentOptions' || 
+                                option.format == 'DeviceOptions' || 
+                                option.format == 'MaintainProcessOptions' || 
+                                option.format == 'BrandOptions' || option.format == 'ContactUnitOptions' ||
+                                option.format == 'DeviceStatusOptions' "
+                                >
+                                {{ optionfilter(item[option.prop]) }}
+                                </span>
+                                
+                                <!-- <el-button v-else-if="option.format == 'floorOfHouseSelect' " 
+                                @click="handleClickOption('openfloorofhouse',item[option.prop])"
+                                type="text"
+                                style="padding:0px"
+                                >
+                                    {{ multipleStr('floorOfHouse',item[option.prop]) }}
+                                </el-button> -->
 
-                            <el-button 
-                            v-else-if="option.format == 'openlacks' "
-                            type="text" @click="handleClickOption('openlacks',item['id'])" 
-                            style="padding-top:0px;padding-bottom:0px">查看</el-button>
+                                <span 
+                                v-else-if="option.format == 'floorOfHouseSelect' " 
+                                @click="handleClickOption('openfloorofhouse',item[option.prop])"
+                                style="color:#66b1ff;cursor:pointer">
+                                    {{ multipleStr('floorOfHouse',item[option.prop]) }}
+                                </span>
 
-                            <span v-else>{{ item[option.prop] }}</span>
+                                <el-button v-else-if="option.format == 'deviceSelect' " 
+                                @click="toAnotherPage('Equipment',item[option.prop],'')"
+                                type="text"
+                                style="padding:0px"
+                                >
+                                    {{ deviceStr(item[option.prop]) }}
+                                </el-button>
+
+                                <el-button v-else-if="option.format == 'contactunitSelect' " 
+                                @click="toAnotherPage('Basic',item[option.prop],'co')"
+                                type="text"
+                                style="padding:0px"
+                                >
+                                    {{ multipleStr('contactunit',item[option.prop]) }}
+                                </el-button>
+
+                                <el-button 
+                                v-else-if="option.format == 'openlacks' "
+                                type="text" @click="handleClickOption('openlacks',item['id'])" 
+                                style="padding-top:0px;padding-bottom:0px">查看</el-button>
+
+                                <span v-else>{{ item[option.prop] }}</span>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div v-if="isHasButtons" style="float:right;margin-top:5px">
-                        <span
-                        v-for="(button, index) in buttonsName"
-                        :key="index"
-                        >
-                        <el-button
-                        :type="index == 0 ? 'primary' : 'info'"
-                        @click="handleClickOption(button.status,item)"
-                        >
-                        <span >{{ button.name }}</span>
-                        </el-button>
-                        </span>
+                    <div class="footer">
+                        <div v-if="isHasButtons" style="float:right;margin-top:10px">
+                            <span
+                            v-for="(button, index) in buttonsName"
+                            :key="index"
+                            >
+                            <!-- <i v-if="index == 0" class="el-icon-view icon" @click="handleClickOption(button.status,item)"></i>
+                            <i v-else class="el-icon-delete icon" @click="handleClickOption(button.status,item)"></i> -->
+                            <el-button
+                            :type="index == 0 ? 'primary' : 'info'"
+                            @click="handleClickOption(button.status,item)"
+                            size="mini"
+                            >
+                            <span >{{ button.name }}</span>
+                            </el-button>
+                            </span>
+                        </div>
                     </div>
                 </div>
               </el-col>
@@ -221,7 +243,8 @@ export default {
             required: true
         },
         title: {
-            type: String
+            type: String,
+            required: true
         },
         selectData: {
             type: Array,
@@ -244,7 +267,7 @@ export default {
         pageSizeList: {
             type: Array,
             default: function() {
-                return [10, 30, 50, 100]
+                return [12, 30, 50, 100]
             }
         },
     },
@@ -281,6 +304,21 @@ export default {
                 return '60%'
             } else {
                 return '60%'
+            }
+        },
+        heightChange(){
+            console.log(this.title)
+            if(this.title == 'committee' || this.title == 'contactUnit'){
+                return { height : '100px'}
+            }else if(this.title == 'floorOfHouse'){
+                return { height : '185px'}
+            }
+        },
+        FirstheightChange(){
+            if(this.title == 'committee' || this.title == 'contactUnit'){
+                return { height : '160px'}
+            }else if(this.title == 'floorOfHouse'){
+                return { height : '245px'}
             }
         },
         noMore () {
@@ -393,6 +431,14 @@ export default {
             return this.listQueryParams.total || 0
         }
     },
+    watch:{
+        config:{
+            handler:async function(){
+                this.rowlabel = this.config.filter((item,index)=> item.isHidden == false)
+            },
+            immediate:true
+        }
+    },
     data() {
         return {
             textMap: {
@@ -402,7 +448,8 @@ export default {
             dialogStatus: '',
             temp: {},
             rangevalue: [],
-            sort:''
+            sort:'',
+            rowlabel:[]
         }
     },
     methods: {
@@ -460,13 +507,10 @@ export default {
 }
 .dashboard-wrapper{
     background-color: rgb(219,231,237);
-    padding: 16px 16px;
+    padding: 5px 15px 15px 15px;
     margin-top: 10px;
     margin-bottom: 10px;
-    overflow-x:hidden;
-    overflow-y:auto;
-    line-height: 25px;
-
+    
     .tag-co{
         background-color:rgb(237,237,237);
         color: red;
@@ -478,6 +522,11 @@ export default {
     .tag-mid{
         background-color:rgb(237,237,237);
         color: #e6a23c;
+    }
+    .wrapper{
+        overflow-x:hidden;
+        overflow-y:auto;
+        line-height: 25px;
     }
 }
 .files {
@@ -499,4 +548,9 @@ export default {
   margin-bottom: 10px;
 }
 
+.icon{
+    font-size:20px;
+    padding:0px 8px;
+    cursor: pointer;
+}
 </style>

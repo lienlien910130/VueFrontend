@@ -1,3 +1,4 @@
+import obj from '@/object'
 const DB_NAME = 'mercuryfire'
 const DB_VERSION = 1
 let DB
@@ -34,8 +35,8 @@ export default {
                 db.createObjectStore("buildingUsers", { autoIncrement: true, keyPath:'id' })
                 db.createObjectStore("buildingDevices", { autoIncrement: true, keyPath:'id' })
                 db.createObjectStore("buildingOptions", { autoIncrement: true, keyPath:'id' }) 
-                var temp = db.createObjectStore("CacheImage", { autoIncrement: true, keyPath:'id' })
-                temp.createIndex("codeIndex","code",{unique:true})
+                var temp = db.createObjectStore("CacheImage", { autoIncrement: true, keyPath:'imageId' })
+                temp.createIndex("codeIndex","imageId",{unique:true})
 			}
 		})
 	},
@@ -51,7 +52,10 @@ export default {
         DBDeleteReq.onerror = e => {
             console.log("error",e)
             reject(e)
-        }          
+        }         
+        DBDeleteReq.onblocked = function () {
+            console.log("Couldn't delete database due to the operation being blocked");
+        }; 
     },
     async getValue(tableName,id=null) {
 		let db = await this.getDb()
@@ -85,7 +89,6 @@ export default {
 		})
 	},
     async getValueByIndex(code){
-        console.log('code',code)
         let db = await this.getDb()
         return new Promise(resolve => {
 			let trans = db.transaction(["menu"],'readwrite')
@@ -188,16 +191,9 @@ export default {
         })
     },
 
-    loadImage(data) {
-        return new Promise((resolve, reject) => {
-            let fileReader = new FileReader()
-            fileReader.readAsArrayBuffer(data)
-            //转换成base64
-            fileReader.onload = (e) => {
-                let base64 = e.target.result
-                resolve(base64)
-            }
-        })
+    async loadImage(imageId) {
+        var data = await obj.Files.getBuildingFloorImage(imageId)
+        return data
     },
     saveOrUpdate(db, tableName, data) {
         return new Promise((resolve, reject) => {
@@ -213,33 +209,29 @@ export default {
         })
     },
     saveCacheImage(db, data) {
-        return this.saveOrUpdate(db, 'CacheImage', data);
+        return this.saveOrUpdate(db, 'CacheImage', data)
     },
-    loadCacheImage(imageId,data) { 
-        // let db = await this.getDb()
-        // return new Promise((resolve, reject) => {
-        //     this.findCacheImageByIndex(db, imageId).then((data) => {
-        //         if(!data) { //儲存圖片
-        //             this.loadImage(data).then((base64) => {
-        //                 resolve(base64)
-        //                 this.saveCacheImage(db, {
-        //                     imageId: imageId,
-        //                     data: data})
-        //             })
-        //         } else {
-        //             //链接改变，重新下载图片
-        //             if(data.url !== imageUrl) {
-        //                 this.loadImage(data).then((base64) => {
-        //                     resolve(base64)
-        //                     this.saveCacheImage(db, {
-        //                         imageId: imageId,
-        //                         data: data})
-        //                 })
-        //             } else {
-        //                 resolve(data.base64)
-        //             }
-        //         }
-        //     })
-        // })
+    async loadCacheImage(imageId) { 
+        let db = await this.getDb()
+        return new Promise((resolve, reject) => {
+            this.findCacheImageByIndex(db, imageId).then((data) => {
+                if(!data) { //儲存圖片
+                    this.loadImage(imageId).then((response) => {
+                        const bufferUrl = btoa(new Uint8Array(response).reduce((data, byte) => 
+                        data + String.fromCharCode(byte), ''))
+                        var base64 = 'data:image/png;base64,' + bufferUrl
+                        resolve(base64)
+                        this.saveCacheImage(db, {
+                                imageId: imageId,
+                                data: response})
+                    })
+                } else {
+                    const bufferUrl = btoa(new Uint8Array(data.data).reduce((data, byte) => 
+                        data + String.fromCharCode(byte), ''))
+                    var base64 = 'data:image/png;base64,' + bufferUrl
+                    resolve(base64)
+                }
+            })
+        })
     }
 }
