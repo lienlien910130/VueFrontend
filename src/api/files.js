@@ -43,7 +43,7 @@ const files = {
         return req('post','/maintainManagement/'+maintainListId+'/maintains/list/'+maintainId+'/fileUpload',data,true) } ,
 
     //共用方法 刪除/下載
-    apiDeleteFile(fileId){ return req('delete','/Public/fileDelete/'+fileId) },
+    apiDeleteFile(data){ return req('post','/public/fileDelete',data) },
     apiGetFile(fileId){ return req('get','/Public/fileDownload/'+fileId) },
     
 }

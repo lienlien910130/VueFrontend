@@ -312,6 +312,8 @@ export default {
                 return { height : '100px'}
             }else if(this.title == 'floorOfHouse'){
                 return { height : '185px'}
+            }else if(this.title == 'maintain'){
+                return { height : '130px'}
             }
         },
         FirstheightChange(){
@@ -319,6 +321,8 @@ export default {
                 return { height : '160px'}
             }else if(this.title == 'floorOfHouse'){
                 return { height : '245px'}
+            }else if(this.title == 'maintain'){
+                return { height : '190px'}
             }
         },
         noMore () {
@@ -398,7 +402,7 @@ export default {
                     let _array = this.buildingoptions.filter((item, index) => 
                         item.id == a 
                     )
-                    return _array[0].textName
+                    return _array.length !== 0 ? _array[0].textName : ''
                 }else{
                     return ""
                 }

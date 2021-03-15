@@ -333,7 +333,7 @@ export async function changeLabel(selectType,value,selectdata){
             let options = store.getters.buildingoptions.filter((item, index) => 
                 item.id == value 
             )
-            label = options[0].textName
+            label = options.length !== 0 ? options[0].textName : ''
           }
           break;
       case 'contactunit': 
@@ -345,7 +345,7 @@ export async function changeLabel(selectType,value,selectdata){
             let contactunit = store.getters.buildingcontactunit.filter((item, index) => 
                   item.id == value 
               )
-            label = contactunit[0].name
+            label = contactunit.length !== 0 ? contactunit[0].name : ''
           }
           break;
       case 'usageOfFloor': 
@@ -363,9 +363,8 @@ export async function changeLabel(selectType,value,selectdata){
             let user = store.getters.buildingusers.filter((item, index) => 
                   item.id == value 
               )
-            label = user[0].name
+            label =  user.length !== 0 ? user[0].name : ''
           }
-            
           break;
       case 'collaborateBool': 
           label = value == true ? '配合中' : '未配合'
@@ -400,7 +399,6 @@ export async function changeLabel(selectType,value,selectdata){
 export async function setSelectSetting(config,list,selectdata = null){
   var data = config.filter((item,index)=>item.isSelect == true) //可篩選的
   for(let item of data){
-    console.log(item)
     var array = []
     item.options = []
     for(let element of list){
@@ -420,11 +418,7 @@ export async function setSelectSetting(config,list,selectdata = null){
           concatarray.filter(function(element, index, arr){
               return arr.indexOf(element) === index
           })
-      
-    console.log(JSON.stringify(concatarray))
-    console.log(JSON.stringify(_temp))
     for(let obj of _temp) {
-      console.log('typeof',typeof obj)
       var label = await changeLabel(item.selectType,obj,selectdata)
       var value = typeof obj == 'object' ? obj.id : obj
       item.options.push({

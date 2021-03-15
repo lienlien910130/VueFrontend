@@ -577,11 +577,14 @@ export default {
             await this.$obj.Files.postBuildingFloorFiles(this.selectFloor,formData) :
             await this.$obj.Files.postBuildingFloorOfHouseFiles(this.floorofhouseId,formData)
       }else if(index === 'deletefile'){
+        var array = []
         data.forEach(async(item)=>{
-          await this.$obj.Files.deleteFiles(item)
+          array.push(item)
         })
-        isOk = true
-        //isOk = await this.$obj.Files.deleteFiles(data)
+        var temp = {
+          id:array.toString()
+        }
+        isOk = await this.$obj.Files.deleteFiles(temp)
       }else{ //設定平面圖
         var _temp = {
           id:this.selectFloor,

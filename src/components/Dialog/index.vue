@@ -424,7 +424,7 @@ export default {
             if (this.$store.state.app.device === 'mobile') {
                 return "90%"
             } else {
-                if(this.title == 'maintainList' || this.title == 'lack'){
+                if(this.title == 'maintainList' || this.title == 'maintain' || this.title == 'lack'){
                     return "1400px"
                 }
                 return "1000px"

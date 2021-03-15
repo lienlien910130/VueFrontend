@@ -104,25 +104,25 @@ export default {
                 prop: 'name',
                 format:'MaintainContentOptions',
                 mandatory:true, message:'請選擇名稱',isSelect:true,options:[],
-                        selectType:'options',select:'',isSort:true
+                        selectType:'options',select:'',isSort:true,isHidden:false
               },
               {
                 label: '建立時間',
                 prop: 'createdDate',
                 format:'YYYY-MM-DD',
                 mandatory:true, message:'請選擇建立時間',isSelect:true,options:[],
-                        selectType:'dateOfDate',select:'',isSort:true
+                        selectType:'dateOfDate',select:'',isSort:true,isHidden:false
               },
               {
                 label: '細項',
                 prop: 'linkMaintains',
                 format:'openmaintain',
-                mandatory:false, message:'請選擇',isSelect:false,isSort:false,type:'array',typemessage:''
+                mandatory:false, message:'請選擇',isSelect:false,isSort:false,type:'array',typemessage:'',isHidden:false
               },
               {
                 label: '檢附文件',
                 prop: 'file',
-                format:'openfiles',isSelect:false,isSort:false
+                format:'openfiles',isSelect:false,isSort:false,isHidden:false
               },
             ],
             blockData:[],
@@ -239,13 +239,15 @@ export default {
             var data = this.$deepClone(this.origin)
             this.listQueryParams.total = data.length
             this.selectSetting.forEach(element=>{
-                if(element.select !== ''){
+                if(element.select != ''){
                     data = data.filter(function(item,index){
                         if(typeof item[element.prop] !== 'object'){
                             return item[element.prop] == element.select
-                        }else{
-                            if(item[element.prop].length > 0){
-                                return item[element.prop][0].id == element.select
+                        }else{ //物件形式
+                            for(let obj of item[element.prop]){
+                                if(obj.id == element.select){
+                                return item
+                                }
                             }
                         }
                     })
@@ -308,7 +310,7 @@ export default {
                     { label:'改善廠商' , prop:'linkContactUnits',format:'contactunitSelect', mandatory:true,message:'請選擇廠商',type:'array',typemessage:''},
                     { label:'檢修申報' , prop:'linkInspectionLacks',format:'inspectionSelect', mandatory:false,message:'請選擇申報',type:'array',typemessage:''},
                     { label:'設備' , prop:'linkDevices',format:'deviceSelect', mandatory:true,message:'請選擇設備',type:'array',typemessage:''},
-                    { label:'備註' , prop:'note',format:'textarea', mandatory:false,message:'請輸入備註'},
+                    { label:'備註' , prop:'note',format:'textarea', mandatory:false,message:'請輸入備註',maxlength:'200'},
                 ]
             }else if(index === 'delete'){
                 var isDelete = await this.$obj.Device.deleteMaintainList(content)
@@ -362,13 +364,13 @@ export default {
                     await this.$obj.Device.updateMaintainList(JSON.stringify(content)) : 
                     await this.$obj.Device.postMaintainList(JSON.stringify(content))
                     if(isOk){
+                        this.innerVisible = false
                         index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                         await this.init()
-                        this.innerVisible = false
                     }
                 }else if(index === 'createfile'){
-                    const formData = new FormData();
-                        content.forEach(item => {
+                    const formData = new FormData()
+                    content.forEach(item => {
                         formData.append('file', item.raw)
                     })
                     isOk = await this.$obj.Files.postBuildingMaintainListFiles(this.maintainListId,formData)
@@ -377,7 +379,14 @@ export default {
                         this.maintainFiles = await this.$obj.Files.getBuildingMaintainListFiles(this.maintainListId)
                     }
                 }else if(index === 'deletefile'){
-                    isOk = await this.$obj.Files.deleteFiles(content)
+                    var array = []
+                    content.forEach(async(item)=>{
+                        array.push(item)
+                    })
+                    var data = {
+                        id:array.toString()
+                    }
+                    isOk = await this.$obj.Files.deleteFiles(data)
                     if(isOk){
                         this.$message('刪除成功')
                         this.maintainFiles = await this.$obj.Files.getBuildingMaintainListFiles(this.maintainListId)
@@ -395,7 +404,7 @@ export default {
         async handleMaintain(title ,index, content){
             this.dialogData = []
             this.dialogTitle = 'maintain'
-            this.dialogConfig = []
+            //this.dialogConfig = []
             if(index === 'empty'){
                 this.dialogConfig = this.formtableconfig
                 this.dialogSelect= [] //檢修申報下拉選單
@@ -418,7 +427,8 @@ export default {
                 var isDelete = await this.$obj.Device.deleteMaintain(content)
                 if(isDelete){
                     this.$message('刪除成功')
-                    await this.init()
+                    await this.saveBuildingMaintain()
+                    await this.getBuildingMaintain()
                     var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
                     await this.handleBlock('maintainList','open',data)
                 }
@@ -429,7 +439,8 @@ export default {
                 await this.$obj.Device.updateMaintain(JSON.stringify(content))
                 if(isOk){
                     index === 'updatemaintain' ? this.$message('更新成功') : this.$message('新增成功')
-                    await this.init()
+                    await this.saveBuildingMaintain()
+                    await this.getBuildingMaintain()
                     var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
                     await this.handleBlock('maintainList','open',data)
                 }
@@ -460,7 +471,14 @@ export default {
                     console.log(JSON.stringify(this.maintainFiles))
                 }
             }else if(index === 'deletefile'){
-                isOk = await this.$obj.Files.deleteFiles(content)
+                var array = []
+                content.forEach(async(item)=>{
+                    array.push(item)
+                })
+                var data = {
+                    id:array.toString()
+                }
+                isOk = await this.$obj.Files.deleteFiles(data)
                 if(isOk){
                     this.$message('刪除成功')
                     this.maintainFiles = await this.$obj.Files.getBuildingMaintainFiles(this.maintainId)
