@@ -69,18 +69,18 @@ export default {
   watch:{
     buildingfloors:{
       handler:async function(newValue,oldValue){
-        console.log(this.buildingfloors.length>0 && oldValue == undefined )
-        if(this.buildingfloors.length>0 && oldValue == undefined ){
+        if(this.buildingfloors.length>0 && oldValue == undefined ){ //第一次建立
           this.upFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == false)
           this.downFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == true)
           this.setRange()
+        }else{ //修改平面圖
+          this.upFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == false)
+          this.downFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == true)
+          this.onSelectRange(this.selectRange)
         }
       },
       immediate:true
     },
-  },
-  mounted() {
-    
   },
   methods: {
     setRange(){

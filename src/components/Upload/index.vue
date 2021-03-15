@@ -15,19 +15,22 @@
                 :auto-upload="false"
                 multiple
                 :file-list="fileList">
-                <el-button  type="primary" icon="el-icon-folder-opened" ></el-button>
+                <el-button slot="trigger"  type="primary" icon="el-icon-folder-opened" ></el-button>
                 <el-button type="success"
                     :disabled="isDisabled" 
                     @click="onUpload"
                     icon="el-icon-upload"></el-button>
-               
             </el-upload>
-            
         </el-form-item>
+
         <el-form-item  style="width:70%;padding-left:8px">
             <div style="display:table;width:100%">
                 <div style="display:table-cell;width:80%">
-                    <el-input v-model="input" placeholder="請輸入內容" style="margin-bottom:10px;width:100%">
+                    <el-input v-model="input" 
+                    placeholder="請輸入關鍵字" 
+                    style="margin-bottom:10px;width:100%"
+                    @input="search"
+                    >
                     <i slot="prefix" class="el-input__icon el-icon-search"></i>
                     </el-input>
                 </div>
@@ -49,7 +52,7 @@
             
             <div class="files">
                 <div 
-                    v-for="(item,index) in files" :key="item.id" class="filesdiv">
+                    v-for="(item,index) in filescopy" :key="item.id" class="filesdiv">
                     <!-- <el-radio 
                     v-if="title === 'floor' || title === 'reportInspectio' "
                     v-model="choose" :label="item.id">{{ title === 'floor' ? '平面圖' : '缺失內容'}}
@@ -121,7 +124,8 @@
             isLt10M:true,
             isType:true,
             disable:[],
-            deleteItem:[]
+            deleteItem:[],
+            filescopy:[]
       }
     },
     watch:{
@@ -131,6 +135,12 @@
             },
             immediate:true
         },
+        files:{
+            handler:async function(){
+                this.filescopy = this.$deepClone(this.files)
+            },
+            immediate:true
+        }
     },
     methods: {
         check(val){
@@ -183,6 +193,17 @@
                 this.isDisabled = true
             }
         },
+        search(){
+            if(this.input !== ''){
+                this.filescopy = this.files.filter(item => {
+                    if (item.fileOriginalName.toLowerCase().includes(this.input.toLowerCase())) {
+                        return item
+                    }
+                })
+            }else{
+                this.filescopy = this.$deepClone(this.files)
+            }
+        },
         // handleExceed(files, fileList) {
         //     this.$message({
         //         message: '限制檔案上傳數為'+this.limit+'，請勿超出範圍',
@@ -211,23 +232,30 @@
             return "http://192.168.88.65:59119/Public/fileDownload/" + fileid
         },
         async deletefile() {
-            this.$confirm('是否確定刪除該筆資料?', '提示', {
-                confirmButtonText: '確定',
-                cancelButtonText: '取消',
-                type: 'warning',
-                center: true
-            }).then(async() => {
-                if(this.deleteItem.indexOf(this.specialId) !== -1){
-                    this.$message({
-                        message: this.title === 'floor' ?
-                        '此檔為平面圖，請先設定其他檔為平面圖再進行刪除' : 
-                        '此為缺失內容檔案，不可刪除',
-                        type: 'warning'
-                    })
-                }else{
-                    this.$emit('handleFilesUpload','deletefile',this.title,this.deleteItem)
-                }
-            })
+            if(this.deleteItem.length == 0){
+                this.$message({
+                    message: '請選擇要刪除的檔案',
+                    type: 'warning'
+                })
+            }else{
+                this.$confirm('是否確定刪除該筆資料?', '提示', {
+                    confirmButtonText: '確定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                }).then(async() => {
+                    if(this.deleteItem.indexOf(this.specialId) !== -1){
+                        this.$message({
+                            message: this.title === 'floor' ?
+                            '此檔為平面圖，請先設定其他檔為平面圖再進行刪除' : 
+                            '此為缺失內容檔案，不可刪除',
+                            type: 'warning'
+                        })
+                    }else{
+                        this.$emit('handleFilesUpload','deletefile',this.title,this.deleteItem)
+                    }
+                })
+            }
         },
         onChange(){
             if(this.deleteItem.length > 1){
@@ -236,7 +264,6 @@
                     type: 'warning'
                 })
             }else{
-                console.log(this.deleteItem[0])
                 if(this.title === 'reportInspectio' && this.specialId !== '0'){ //不是第一次設定缺失
                     this.$confirm('缺失內容檔案已上傳過，重新上傳會將舊有資料全部刪除，請問是否確認上傳?',
                     '提示', {
@@ -253,9 +280,18 @@
                 }else if(this.title === 'reportInspectio' && this.specialId === '0'){ //第一次設定缺失內容檔案
                     this.$emit('handleFilesUpload','changeFirst',this.title,this.deleteItem[0])  
                 }else{
-                    this.$emit('handleFilesUpload','change',this.title,this.deleteItem[0])  
-                    this.deleteItem = []
-                    this.choose = this.deleteItem[0]
+                    var name = this.files.filter((item,index)=> item.id == this.deleteItem[0])[0].extName
+                    if(name == 'png' || name == 'jpg'){
+                        this.$emit('handleFilesUpload','change',this.title,this.deleteItem[0])  
+                        this.deleteItem = []
+                        this.choose = this.deleteItem[0]
+                    }else{
+                        this.$message({
+                            message: '平面圖只能為png或jpg格式',
+                            type: 'warning'
+                        })
+                        this.deleteItem = []
+                    }
                 } 
             }
             

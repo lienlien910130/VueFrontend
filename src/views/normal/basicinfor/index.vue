@@ -499,42 +499,6 @@ export default {
           })
       }
       this.floorData = data
-      // await this.$api.building.apiGetFloorOfHouse(this.selectFloor).then(response => {
-      //   response.result.forEach( item => {
-      //       let content = {
-      //           id:item.id,
-      //           floor: item.floor,
-      //           houseNumber: item.houseNumber,
-      //           placeName:item.placeName,
-      //           name:item.linkUsers[0].name,
-      //           cellphonenumber:item.linkUsers[0].cellPhoneNumber,
-      //           capacity:item.capacity,
-      //           note:item.note,
-      //           linkOwners:item.linkOwners[0].id,
-      //           linkUsers:item.linkUsers[0].id
-      //       }
-      //       data.push(content)
-      //   })
-      //   this.floorlistQueryParams.total = response.result.length
-      //   this.floorselectSetting.forEach(element=>{
-      //       if(element.select != ''){
-      //           data = data.filter((item, index) => item[element.prop] == element.select )
-      //       }
-      //     })
-      //     data = data.filter((item, index) => 
-      //     index < this.floorlistQueryParams.limit * this.floorlistQueryParams.page && 
-      //     index >= this.floorlistQueryParams.limit * (this.floorlistQueryParams.page - 1))
-      //     if(sort !== '' && sort !== null){
-      //       data = data.sort(function(x,y){
-      //         return y[sort] - x[sort]
-      //       })
-      //     }else{
-      //         data = data.sort(function(x,y){
-      //           return y.id - x.id
-      //         })
-      //     }
-      //     this.floorData = data
-      // })
     },
     async setSelectSetting(){
       this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData,this.selectData)
@@ -626,7 +590,6 @@ export default {
         isOk = await this.$obj.Building.updateBuildingFloor(JSON.stringify(_temp))
         if(isOk){
           this.floorImageId = data
-          console.log(JSON.stringify(await this.$obj.Building.getBuildingFloors()))
           this.$store.dispatch('building/setbuildingfloors',await this.$obj.Building.getBuildingFloors())
         }
       }
@@ -798,6 +761,15 @@ export default {
 }
 </script>
 
+<style>
+.el-upload-list{
+  height:500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+</style>
+
 <style lang="scss" scoped>
 .block-wrapper {
     background: #fff;
@@ -839,8 +811,6 @@ export default {
     }
   }
 }
-
-
 
 
 @media (max-width:1024px) {
