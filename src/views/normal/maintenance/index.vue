@@ -203,7 +203,9 @@ export default {
     watch: {
       buildingid:{
         handler:async function(){
-            await this.init()
+            if(this.buildingid !== undefined){
+                await this.init()
+            }
         },
         immediate:true
       },
@@ -240,17 +242,7 @@ export default {
             this.listQueryParams.total = data.length
             this.selectSetting.forEach(element=>{
                 if(element.select != ''){
-                    data = data.filter(function(item,index){
-                        if(typeof item[element.prop] !== 'object'){
-                            return item[element.prop] == element.select
-                        }else{ //物件形式
-                            for(let obj of item[element.prop]){
-                                if(obj.id == element.select){
-                                return item
-                                }
-                            }
-                        }
-                    })
+                    data = data.filter((item,index)=> item[element.prop] == element.select)
                 }
             })
             data = data.filter((item, index) => 
@@ -431,6 +423,9 @@ export default {
                     await this.getBuildingMaintain()
                     var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
                     await this.handleBlock('maintainList','open',data)
+                }else{
+                    var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
+                    await this.handleBlock('maintainList','open',data)
                 }
             }else if(index === 'createmaintain' || index === 'updatemaintain'){
                 content = changeLink('maintain',content,'')
@@ -441,6 +436,9 @@ export default {
                     index === 'updatemaintain' ? this.$message('更新成功') : this.$message('新增成功')
                     await this.saveBuildingMaintain()
                     await this.getBuildingMaintain()
+                    var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
+                    await this.handleBlock('maintainList','open',data)
+                }else{
                     var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
                     await this.handleBlock('maintainList','open',data)
                 }

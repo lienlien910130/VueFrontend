@@ -101,42 +101,42 @@ export default {
                 prop: 'declareYear',
                 format:'YYYY',
                 mandatory:true, message:'請選擇年度',isSelect:true,options:[],
-                selectType:'dateOfYear',select:'',isSort:true
+                selectType:'dateOfYear',select:'',isSort:true,isHidden:false
               },
               {
                 label: '申報期限',
                 prop: 'declareDeadline',
                 format:'YYYY-MM-DD',
                 mandatory:true, message:'請選擇期限',isSelect:true,options:[],
-                selectType:'dateOfDate',select:'',isSort:true
+                selectType:'dateOfDate',select:'',isSort:true,isHidden:false
               },
               {
                 label: '申報日期',
                 prop: 'declareDate',
                 format:'YYYY-MM-DD',
                 mandatory:true, message:'請選擇日期',isSelect:true,options:[],
-                selectType:'dateOfDate',select:'',isSort:true
+                selectType:'dateOfDate',select:'',isSort:true,isHidden:false
               },
               {
                 label: '檢測日期',
                 prop: 'rangeDate',
-                format:'range',isSelect:false,isSort:false
+                format:'range',isSelect:false,isSort:false,isHidden:true,
                 // mandatory:true, message:'請選擇日期'
               },
               {
                 label: '專技人員',
                 prop: 'professName',isSelect:true,options:[],
-                        selectType:'',select:'',isSort:true
+                        selectType:'',select:'',isSort:true,isHidden:true,maxlength:'10'
               },
               {
                 label: '證號',
-                prop: 'certificateNumber',isSelect:false,isSort:true
+                prop: 'certificateNumber',isSelect:false,isSort:true,isHidden:true,maxlength:'20'
               },
               {
                 label: '改善期限',
                 prop: 'declarationImproveDate',
                 format:'YYYY-MM-DD',mandatory:true, message:'請選擇日期',isSelect:true,options:[],
-                        selectType:'dateOfDate',select:'',isSort:true
+                  selectType:'dateOfDate',select:'',isSort:true,isHidden:true
               },
               {
                 label: '改善狀況',
@@ -144,49 +144,23 @@ export default {
                 format:'tag',
                 type:'boolean',
                 mandatory:false, isPattern:false,trigger:'change',isSelect:true,options:[],
-                selectType:'reportBool',select:'',isSort:true
+                selectType:'reportBool',select:'',isSort:true,isHidden:false
               },
               {
                 label: '備註',
                 prop: 'note',
                 format:'textarea',
-                mandatory:false, isPattern:false,isSelect:false,isSort:false
+                mandatory:false, isPattern:false,isSelect:false,isSort:false,isHidden:true
               },
               {
                 label: '檢附文件',
                 prop: 'file',
-                format:'openfiles',isSelect:false,isSort:false
+                format:'openfiles',isSelect:false,isSort:false,isHidden:false
               },
               {
                 label: '缺失內容',
                 prop: 'missingContent',
-                format:'openlacks',isSelect:false,isSort:false
-              }
-            ],
-            lackconfig:[
-              {
-                label: '缺失項目',
-                prop: 'lackItem',
-              },
-              {
-                label: '缺失內容',
-                prop: 'lackContent',
-              },
-              {
-                label: '無法合格理由',
-                prop: 'notPassReason'
-              },
-              {
-                label: '法令依據',
-                prop: 'accordLaws'
-              },
-              {
-                label: '改善計劃',
-                prop: 'improvePlan'
-              },
-              {
-                label: '改善狀態',
-                prop: 'status',
+                format:'openlacks',isSelect:false,isSort:false,isHidden:false
               }
             ],
             blockData: [],
@@ -212,11 +186,11 @@ export default {
             sortArray:[],
             formtableData:[],
             formtableconfig:[
-              { label:'項目' , prop:'lackItem',format:'', mandatory:true, message:'請輸入項目'},
-              { label:'內容' , prop:'lackContent',format:'textarea',  mandatory:true,message:'請輸入內容'},
-              { label:'無法合格理由' , prop:'notPassReason',format:'textarea', mandatory:true, message:'請輸入無法合格理由'},
-              { label:'法令依據' , prop:'accordLaws',format:'textarea', mandatory:true, message:'請輸入法令依據'},
-              { label:'改善計畫' , prop:'improvePlan',format:'textarea', mandatory:false, message:'請輸入改善計畫'},
+              { label:'項目' , prop:'lackItem',format:'', mandatory:true, message:'請輸入項目',maxlength:'200'},
+              { label:'內容' , prop:'lackContent',format:'textarea',  mandatory:true,message:'請輸入內容',maxlength:'999'},
+              { label:'無法合格理由' , prop:'notPassReason',format:'textarea', mandatory:true, message:'請輸入無法合格理由',maxlength:'999'},
+              { label:'法令依據' , prop:'accordLaws',format:'textarea', mandatory:true, message:'請輸入法令依據',maxlength:'999'},
+              { label:'改善計畫' , prop:'improvePlan',format:'textarea', mandatory:false, message:'請輸入改善計畫',maxlength:'999'},
               { label:'處理進度' , prop:'status',format:'LackStatusOptions', mandatory:true, message:'請選擇處理進度'}
             ],
             lacklistQueryParams:{
@@ -231,7 +205,9 @@ export default {
     watch: {
       buildingid:{
         handler:async function(){
+          if(this.buildingid !== undefined){
             await this.init()
+          }
         },
         immediate:true
       },
@@ -488,7 +464,14 @@ export default {
               this.files = await this.$obj.Files.getBuildingPublicSafeFiles(this.publicSafeId)
             }
           }else if(index === 'deletefile'){
-            isOk = await this.$obj.Files.deleteFiles(content)
+            var array = []
+            content.forEach(async(item)=>{
+              array.push(item)
+            })
+            var temp = {
+              id:array.toString()
+            }
+            isOk = await this.$obj.Files.deleteFiles(temp)
             if(isOk){
               this.$message('刪除成功')
               this.files = await this.$obj.Files.getBuildingPublicSafeFiles(this.publicSafeId)

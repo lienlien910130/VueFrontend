@@ -28,10 +28,12 @@ export default {
             origin:[],
             tableData:[],
             config:[
-                { label:'帳號' , prop:'account', mandatory:true, message:'請輸入帳號'},
-                { label:'密碼' , prop:'password', mandatory:true, message:'請輸入密碼'},
-                { label:'用戶名' , prop:'name', mandatory:true,message:'請輸入用戶名'},
-                { label:'描述' , prop:'description',format:'textarea', mandatory:false,message:'請輸入描述'},
+                { label:'帳號' , prop:'account', mandatory:true, message:'請輸入帳號',maxlength:'10',
+                pattern:/[\w]{6,10}$/,errorMsg:'請輸入至少6位字元',isPattern: true},
+                { label:'密碼' , prop:'password', mandatory:true, message:'請輸入密碼',maxlength:'15',
+                pattern:/[\w]{6,10}$/,errorMsg:'請輸入至少6位數',isPattern: true},
+                { label:'用戶名' , prop:'name', mandatory:true,message:'請輸入用戶名',maxlength:'20'},
+                { label:'描述' , prop:'description',format:'textarea', mandatory:false,message:'請輸入描述',maxlength:'200'},
                 { label:'角色' , prop:'linkRoles',format:'roleSelect', mandatory:false,message:'請選擇角色',
                 isPattern:false,errorMsg:'',type:'array',typemessage:''},
                 { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
@@ -85,7 +87,9 @@ export default {
     watch:{
         buildingid:{
             handler:async function(){
-                await this.init()
+                if(this.buildingid !== undefined){
+                    await this.init()
+                }
             },
             immediate:true
         },
@@ -97,7 +101,6 @@ export default {
         },
         async setAllAccount(){
             this.origin = this.$deepClone(await this.$obj.Authority.getAllAccount())
-            console.log(JSON.stringify(this.origin))
         },
         async getAllAccount(){
             var data = this.$deepClone(this.origin)
@@ -138,7 +141,6 @@ export default {
             console.log(title ,index,content)
             if(index !== 'cancel'){
                 content = changeLink('user',content,'')
-                console.log(JSON.stringify(content))
                 var isOk = index === 'update' ? 
                     await this.$obj.Authority.updateAccount(JSON.stringify(content)) :
                     await this.$obj.Authority.postAccount(JSON.stringify(content))

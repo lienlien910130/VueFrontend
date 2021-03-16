@@ -148,20 +148,27 @@
                                 </span>
 
                                 <el-button v-else-if="option.format == 'deviceSelect' " 
-                                @click="toAnotherPage('Equipment',item[option.prop],'')"
+                                @click="toAnotherPage('devicesManagement',item[option.prop],'')"
                                 type="text"
                                 style="padding:0px"
                                 >
                                     {{ deviceStr(item[option.prop]) }}
                                 </el-button>
 
-                                <el-button v-else-if="option.format == 'contactunitSelect' " 
+                                <span 
+                                v-else-if="option.format == 'contactunitSelect' " 
+                                @click="toAnotherPage('sys-Basic',item[option.prop],'co')"
+                                style="color:#66b1ff;cursor:pointer">
+                                    {{ multipleStr('contactunit',item[option.prop]) }}
+                                </span>
+
+                                <!-- <el-button v-else-if="option.format == 'contactunitSelect' " 
                                 @click="toAnotherPage('Basic',item[option.prop],'co')"
                                 type="text"
                                 style="padding:0px"
                                 >
                                     {{ multipleStr('contactunit',item[option.prop]) }}
-                                </el-button>
+                                </el-button> -->
 
                                 <el-button 
                                 v-else-if="option.format == 'openlacks' "
@@ -314,6 +321,10 @@ export default {
                 return { height : '185px'}
             }else if(this.title == 'maintain'){
                 return { height : '130px'}
+            }else if(this.title == 'equipment'){
+                return { height : '220px'}
+            }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
+                return { height : '190px'}
             }
         },
         FirstheightChange(){
@@ -323,6 +334,10 @@ export default {
                 return { height : '245px'}
             }else if(this.title == 'maintain'){
                 return { height : '190px'}
+            }else if(this.title == 'equipment'){
+                return { height : '280px'}
+            }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
+                return { height : '250px'}
             }
         },
         noMore () {

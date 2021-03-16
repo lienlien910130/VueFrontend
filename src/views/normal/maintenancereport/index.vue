@@ -101,42 +101,42 @@ export default {
                 prop: 'declareYear',
                 format:'YYYY',
                 mandatory:true, message:'請選擇年度',isSelect:true,options:[],
-                selectType:'dateOfYear',select:'',isSort:true
+                selectType:'dateOfYear',select:'',isSort:true,isHidden:false
               },
               {
                 label: '申報期限',
                 prop: 'declareDeadline',
                 format:'YYYY-MM-DD',
                 mandatory:true, message:'請選擇期限',isSelect:true,options:[],
-                selectType:'dateOfDate',select:'',isSort:true
+                selectType:'dateOfDate',select:'',isSort:true,isHidden:false
               },
               {
                 label: '申報日期',
                 prop: 'declareDate',
                 format:'YYYY-MM-DD',
                 mandatory:true, message:'請選擇日期',isSelect:true,options:[],
-                selectType:'dateOfDate',select:'',isSort:true
+                selectType:'dateOfDate',select:'',isSort:true,isHidden:false
               },
               {
                 label: '檢測日期',
                 prop: 'rangeDate',
-                format:'range',isSelect:false,isSort:false
+                format:'range',isSelect:false,isSort:false,isHidden:true,
                 // mandatory:true, message:'請選擇日期'
               },
               {
                 label: '專技人員',
                 prop: 'professName',isSelect:true,options:[],
-                        selectType:'',select:'',isSort:true
+                        selectType:'',select:'',isSort:true,isHidden:true,maxlength:'10'
               },
               {
                 label: '證號',
-                prop: 'certificateNumber',isSelect:false,isSort:true
+                prop: 'certificateNumber',isSelect:false,isSort:true,isHidden:true,maxlength:'20'
               },
               {
                 label: '改善期限',
                 prop: 'declarationImproveDate',
                 format:'YYYY-MM-DD',mandatory:true, message:'請選擇日期',isSelect:true,options:[],
-                  selectType:'dateOfDate',select:'',isSort:true
+                  selectType:'dateOfDate',select:'',isSort:true,isHidden:true
               },
               {
                 label: '改善狀況',
@@ -144,51 +144,26 @@ export default {
                 format:'tag',
                 type:'boolean',
                 mandatory:false, isPattern:false,trigger:'change',isSelect:true,options:[],
-                selectType:'reportBool',select:'',isSort:true
+                selectType:'reportBool',select:'',isSort:true,isHidden:false
               },
               {
                 label: '備註',
                 prop: 'note',
                 format:'textarea',
-                mandatory:false, isPattern:false,isSelect:false,isSort:false
+                mandatory:false, isPattern:false,isSelect:false,isSort:false,isHidden:true
               },
               {
                 label: '檢附文件',
                 prop: 'file',
-                format:'openfiles',isSelect:false,isSort:false
+                format:'openfiles',isSelect:false,isSort:false,isHidden:false
               },
               {
                 label: '缺失內容',
                 prop: 'missingContent',
-                format:'openlacks',isSelect:false,isSort:false
+                format:'openlacks',isSelect:false,isSort:false,isHidden:false
               }
             ],
-            lackconfig:[
-              {
-                label: '缺失項目',
-                prop: 'lackItem',
-                mandatory:true, message:'請輸入缺失項目',format:'input'
-              },
-              {
-                label: '缺失內容',
-                prop: 'lackContent',
-                mandatory:true, message:'請輸入缺失內容',format:'textarea'
-              },
-              {
-                label: '改善狀況',
-                prop: 'improveContent',
-                mandatory:false, format:'textarea'
-              },
-              {
-                label: '改善狀態',
-                prop: 'status',
-                mandatory:false, format:'select'
-              },
-            ],
             blockData: [],
-            buttonsName:[
-                { name:'編輯',type:'primary',status:'open'},
-                { name:'刪除',type:'info',status:'delete'}], 
             files:[],
             inspectionId:'', //檢修申報id
             lackFileId:'', //缺失檔案id
@@ -208,10 +183,26 @@ export default {
             sortArray:[],
             formtableData:[],
             formtableconfig:[
-              { label:'項目' , prop:'lackItem',format:'', mandatory:true, message:'請輸入項目'},
-              { label:'內容' , prop:'lackContent',format:'textarea',  mandatory:true,message:'請輸入內容'},
-              { label:'改善內容' , prop:'improveContent',format:'textarea', mandatory:false, message:'請輸入改善內容'},
-              { label:'處理進度' , prop:'status',format:'LackStatusOptions', mandatory:true, message:'請選擇處理進度'}
+              {
+                label: '缺失項目',
+                prop: 'lackItem',
+                mandatory:true, message:'請輸入缺失項目',format:'input',maxlength:'200'
+              },
+              {
+                label: '缺失內容',
+                prop: 'lackContent',
+                mandatory:true, message:'請輸入缺失內容',format:'textarea',maxlength:'999'
+              },
+              {
+                label: '改善狀況',
+                prop: 'improveContent',
+                mandatory:false, format:'textarea',maxlength:'999'
+              },
+              {
+                label: '處理進度',
+                prop: 'status',
+                mandatory:false, format:'LackStatusOptions'
+              }
             ],
             lacklistQueryParams:{
                 page: 1,
@@ -225,7 +216,9 @@ export default {
     watch: {
       buildingid:{
         handler:async function(){
+          if(this.buildingid !== undefined){
             await this.init()
+          }
         },
         immediate:true
       },
@@ -253,7 +246,6 @@ export default {
       blockAttrs() {
           return {
             blockData: this.blockData,
-            buttonsName:this.buttonsName,
             config: this.tableConfig,
             title:'reportInspectio',
             sortArray:this.sortArray
@@ -438,17 +430,24 @@ export default {
                 this.files = await this.$obj.Files.getBuildingInspectionFiles(this.inspectionId)
               }
           }else if(index === 'deletefile'){
-            isOk = await this.$obj.Files.deleteFiles(content)
+            var array = []
+            content.forEach(async(item)=>{
+              array.push(item)
+            })
+            var temp = {
+              id:array.toString()
+            }
+            isOk = await this.$obj.Files.deleteFiles(temp)
             if(isOk){
               this.$message('刪除成功')
               this.files = await this.$obj.Files.getBuildingInspectionFiles(this.inspectionId)
             }
-          }else if(index !== 'cancel'){
+          }else if(index !== 'cancel'){ //更換缺失內容檔案
             isOk = await this.$obj.Report.postInspectionFiles(this.inspectionId,parseInt(content),
             index === 'changeAgain' ? true : false)
             if(isOk){
               this.$message('更新成功')
-              this.lackFileId = await this.$obj.Report.getInspection(this.inspectionId)
+              this.lackFileId = content
             }
           }else{
             this.innerVisible = false
@@ -463,7 +462,6 @@ export default {
         this.dialogConfig = []
         if(index === 'empty'){
           this.dialogConfig = this.formtableconfig
-          this.dialogSelect= [] //檢修申報下拉選單
           this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'createlack'},
           { name:'返回',type:'info',status:'cancellack'}]

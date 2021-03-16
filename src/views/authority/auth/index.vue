@@ -37,15 +37,13 @@ export default {
     data(){
         return{
             data:[],
-            selectData:[],
             original:[],
             tableData:[],
-            selectData:[],
             selectId:'',
             config:[
-                { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱'},
+                { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20'},
                 { label:'權限' , prop:'action', mandatory:true,format:'actionSelect',message:'請選擇權限'},
-                { label:'描述' , prop:'description',format:'textarea', mandatory:false, message:'請輸入描述'},
+                { label:'描述' , prop:'description',format:'textarea', mandatory:false, message:'請輸入描述',maxlength:'200'},
                 { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
                 isPattern:false,errorMsg:'',type:'boolean',typemessage:''},
                 { label:'排序' , prop:'sort',format:'number', 
@@ -125,7 +123,6 @@ export default {
         },
         async setAccessAuthority(){
             this.original = this.$deepClone(await this.$obj.Authority.getMenuAccessAuthority(this.selectId))
-            console.log(JSON.stringify(this.original))
         },
         async getAccessAuthority(){
             var data = this.$deepClone(this.original)
@@ -162,8 +159,8 @@ export default {
                 var isOk = await this.$obj.Authority.deleteMenuAccessAuthority(row.id)
                 if(isOk){
                     this.$message('刪除成功')
-                    this.$store.dispatch('permission/setmenu',await this.$obj.Authority.getBuildingMenu())
                     await this.init()
+                    this.$store.dispatch('permission/setmenu',await this.$obj.Authority.getBuildingMenu())
                 }
             }else if(option === 'create'){
                 this.dialogButtonsName = [

@@ -45,7 +45,6 @@ export default {
                 this.data = this.$deepClone(this.menu)
                 if(this.selectId !== ''){
                    var d = this.data.filter((item, index) => item.id == this.selectId )
-                   console.log('menu',JSON.stringify(d))
                     this.tableData = d[0].children 
                     this.listQueryParams.total = d[0].children.length
                 }
@@ -61,9 +60,9 @@ export default {
             tableData:[],
             selectId:'',
             config:[
-                { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱'},
-                { label:'Code' , prop:'code', mandatory:true,message:'請輸入Code'},
-                { label:'描述' , prop:'description',format:'textarea', mandatory:false, message:'請輸入描述'},
+                { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20'},
+                { label:'Code' , prop:'code', mandatory:true,message:'請輸入Code',maxlength:'20'},
+                { label:'描述' , prop:'description',format:'textarea', mandatory:false, message:'請輸入描述',maxlength:'200'},
                 { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
                 isPattern:false,errorMsg:'',type:'boolean',typemessage:''},
                 { label:'排序' , prop:'sort',format:'number', 
@@ -84,24 +83,6 @@ export default {
             dialogData:[],
             dialogStatus:'',
             innerVisible:false,
-        }
-    },
-    filters:{
-        changeicon(code){
-            switch (code){
-                case 'sys-DrawingControl':
-                    return 'el-icon-menu'
-                    break;
-                case 'sys-DevicesManagement':
-                    return 'el-icon-s-tools'
-                    break;
-                case 'sys-EmergencyResponse':
-                    return 'el-icon-warning-outline'
-                    break;
-                case 'sys-HistoryAnalysis':
-                    return 'el-icon-pie-chart'
-                    break;
-            }
         }
     },
     computed: {
@@ -180,8 +161,7 @@ export default {
                     this.selectId = temp
                     this.$store.dispatch('permission/setmenu',await this.$obj.Authority.getBuildingMenu())
                 }
-            }
-            else if(option === 'create'){
+            }else if(option === 'create'){
                 if(this.selectId == ''){
                     this.$message({
                         message: '請選擇要新增的父節點',

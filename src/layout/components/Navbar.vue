@@ -201,7 +201,9 @@ export default {
       },
       buildinginfo:{
         handler:async function(){
-          this.buildingName = this.buildinginfo.length !== 0 ? this.buildinginfo[0].buildingName : '請選擇建築物'
+          this.buildingName = this.buildinginfo.length === 0 ? 
+          '請選擇建築物' : this.buildinginfo[0].buildingName !== undefined ?
+          this.buildinginfo[0].buildingName : ''
         },
         immediate:true
       },

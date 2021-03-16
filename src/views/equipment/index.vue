@@ -65,73 +65,79 @@ export default {
                         prop: 'type',
                         format:'DeviceOptions',
                         mandatory:true, message:'請選擇設備種類',isSelect:true,options:[],
-                        selectType:'options',select:'',isSort:true
+                        selectType:'options',select:'',isSort:true,isHidden:false
                     },
                     {
                         label: '廠牌名稱',
                         prop: 'brand',
                         format:'BrandOptions',
                         mandatory:true, message:'請選擇廠牌名稱',isSelect:true,options:[],
-                        selectType:'options',select:'',isSort:true
+                        selectType:'options',select:'',isSort:true,isHidden:false
                     },
                     {
                         label: '設備型號',
                         prop: 'productId',
-                        mandatory:true, message:'請選擇廠牌名稱',isSelect:false,options:[],selectType:'',isSort:true
+                        mandatory:true, message:'請選擇廠牌名稱',isSelect:false,options:[],selectType:'',
+                        isSort:true,isHidden:false,maxlength:'20'
                     },
                     {
                         label: '設備名稱',
                         prop: 'name',
-                        mandatory:true, message:'請選擇設備名稱',isSelect:false,options:[],selectType:'',isSort:true
+                        mandatory:true, message:'請選擇設備名稱',isSelect:false,options:[],selectType:'',
+                        isSort:true,isHidden:false,maxlength:'20'
                     },
                     {
                         label: '國家認證編號',
                         prop: 'certificationNumber',
-                        mandatory:true, message:'請輸入國家認證編號',isSelect:false,options:[],selectType:'',isSort:true
+                        mandatory:true, message:'請輸入國家認證編號',isSelect:false,options:[],selectType:'',
+                        isSort:true,isHidden:true,maxlength:'20'
                     },
                     {
                         label: '購買日期',
                         prop: 'dateOfPurchase',
                         format:'YYYY-MM-DD',
-                        mandatory:true, message:'請選擇購買日期',isSelect:false,options:[],selectType:'',isSort:true
+                        mandatory:true, message:'請選擇購買日期',isSelect:false,options:[],selectType:'',
+                        isSort:true,isHidden:true
                     },
                     {
                         label: '保固日期',
                         prop: 'dateOfWarranty',
                         format:'YYYY-MM-DD',
-                        mandatory:true, message:'請輸入保固日期',isSelect:false,options:[],selectType:'',isSort:true
+                        mandatory:true, message:'請輸入保固日期',isSelect:false,options:[],selectType:'',
+                        isSort:true,isHidden:false
                     },
                     {
                         label: '位置設置',
                         prop: 'location',
-                        mandatory:true, message:'請輸入位置設置',isSelect:false,options:[],selectType:'',isSort:true
+                        mandatory:true, message:'請輸入位置設置',isSelect:false,options:[],selectType:'',
+                        isSort:true,isHidden:true,maxlength:'20'
                     },
                     {
                         label: '分類群組',
                         prop: 'groupID',
                         mandatory:true, message:'請輸入分類群組',isSelect:true,options:[],
-                        selectType:'group',select:'',isSort:true
+                        selectType:'group',select:'',isSort:true,isHidden:true,maxlength:'10'
                     },
                     {
                         label: '保管單位',
                         prop: 'linkKeeperUnits',
                         format:'contactunitSelect',
                         mandatory:true,trigger: 'change', message:'請選擇保管單位',isSelect:true,options:[],
-                        selectType:'contactunit',select:'',isSort:true,type:'array',typemessage:'' 
+                        selectType:'contactunit',select:'',isSort:true,type:'array',typemessage:'',isHidden:false
                     },
                     {
                         label: '維護廠商',
                         prop: 'linkMaintainVendors',
                         format:'contactunitSelect',
                         mandatory:true,trigger: 'change', message:'請選擇維護廠商',isSelect:true,options:[],
-                        selectType:'contactunit',select:'',isSort:true,type:'array',typemessage:'' 
+                        selectType:'contactunit',select:'',isSort:true,type:'array',typemessage:'',isHidden:true 
                     },
                     {
                         label: '設備狀況',
                         prop: 'status',
                         format:'DeviceStatusOptions',
                         mandatory:true, message:'請選擇設備狀況',isSelect:true,options:[],
-                        selectType:'options',select:'',isSort:true
+                        selectType:'options',select:'',isSort:true,isHidden:false
                     }
                 ],
             blockData:[],
@@ -154,13 +160,14 @@ export default {
     watch:{
         buildingid:{
             handler:async function(){
-                await this.init()
+                if(this.buildingid !== undefined){
+                    await this.init()
+                }
             },
             immediate:true
         },
     },
     async mounted() {
-        //await this.init()
         if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
             let _array = this.blockData.filter((item, index) => 
                 item.id == this.$route.params.target
@@ -187,9 +194,11 @@ export default {
                     data = data.filter(function(item,index){
                         if(typeof item[element.prop] !== 'object'){
                             return item[element.prop] == element.select
-                        }else{
-                            if(item[element.prop].length > 0){
-                                return item[element.prop][0].id == element.select
+                        }else{ //物件形式
+                            for(let obj of item[element.prop]){
+                                if(obj.id == element.select){
+                                return item
+                                }
                             }
                         }
                     })

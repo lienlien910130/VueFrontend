@@ -201,13 +201,14 @@ export default {
       userConfig : [
         { label:'姓名' , prop:'name', mandatory:true, message:'請輸入姓名'},
         { label:'身份證' , prop:'identityCard', mandatory:true,message:'請輸入身份證',
-        pattern:/^[A-Z][1|2]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true},
+        pattern:/^[A-Z]{1}[1-2]{1}[0-9]{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true},
         { label:'生日' , prop:'birthday',format:'YYYY-MM-DD', mandatory:true,message:'請輸入生日'},
         { label:'電話' , prop:'callNumber', mandatory:true,message:'請輸入電話'},
         { label:'手機號碼' , prop:'cellPhoneNumber', mandatory:true, message:'請輸入手機號碼',
-        pattern:/^[0][9]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true},
+        pattern:/^09\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true},
         { label:'緊急電話' , prop:'emergencyNumber', mandatory:false},   
-        { label:'電子信箱' , prop:'email', mandatory:true,message:'請輸入電子信箱',pattern:/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true},    
+        { label:'電子信箱' , prop:'email', mandatory:true,message:'請輸入電子信箱',
+        pattern:/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true},    
         { label:'備註' , prop:'note', mandatory:false,format:'textarea'}, 
       ],
       dialogData:[],
@@ -341,6 +342,7 @@ export default {
     }
   },
   async mounted() {
+    console.log(this.$route.params)
     if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
       this.activeName = 'Vender'
       this.selectData = []

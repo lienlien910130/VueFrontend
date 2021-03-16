@@ -151,7 +151,6 @@
             }
         },
         handleChange(file, fileList) {
-            console.log(file,fileList)
             const m = file.size / 1024 / 1024 
             const array = file.name.split('.')
             const t = array[1] !== 'dwg'
@@ -161,20 +160,9 @@
                 this.$message.error('dwg檔請壓縮成zip檔再上傳')
             }else if(m > 10){
                 this.disable.push(file)
-                this.$message.error('上傳檔案不能超過10MB!')
+                this.$message.error('上傳檔案不能超過10MB')
                 file.name = '(X)'+ file.name + ' --- 大小:' + file.size
             }
-
-            // if (!m && t) {
-            //     this.disable.push(file)
-            //     this.$message.error('上傳檔案不能超過10MB!')
-            // }else if (m && !t) {
-            //     this.disable.push(file)
-            //     this.$message.error('dwg檔請壓縮成zip檔再上傳')
-            // }else if(!m && !t){
-            //     this.disable.push(file)
-            //     this.$message.error('檔案大小及格式有錯誤,請移除錯誤檔案再進行上傳')
-            // }
             
             fileList.sort((x,y)=>y.size-x.size)
             this.importFiles = fileList
@@ -263,6 +251,11 @@
                     message: '只能選一個',
                     type: 'warning'
                 })
+            }else if(this.deleteItem.length == 0){
+                this.$message({
+                    message: '請選擇檔案',
+                    type: 'warning'
+                })
             }else{
                 if(this.title === 'reportInspectio' && this.specialId !== '0'){ //不是第一次設定缺失
                     this.$confirm('缺失內容檔案已上傳過，重新上傳會將舊有資料全部刪除，請問是否確認上傳?',
@@ -271,14 +264,34 @@
                         cancelButtonText: '取消',
                         type: 'warning'
                     }).then(() => {
-                        this.$emit('handleFilesUpload','changeAgain',this.title,this.deleteItem[0])
-                        this.importFiles = []
-                        this.fileList = []
+                        var name = this.files.filter((item,index)=> item.id == this.deleteItem[0])[0].extName
+                        if(name == 'pdf'){
+                            this.$emit('handleFilesUpload','changeAgain',this.title,this.deleteItem[0])
+                            this.importFiles = []
+                            this.fileList = []
+                            this.deleteItem = []
+                        }else{
+                            this.$message({
+                                message: '缺失內容檔案只能為pdf格式',
+                                type: 'warning'
+                            })
+                            this.deleteItem = []
+                        }
                     }).catch(()=>{
                         this.choose = this.specialId
                     })
                 }else if(this.title === 'reportInspectio' && this.specialId === '0'){ //第一次設定缺失內容檔案
-                    this.$emit('handleFilesUpload','changeFirst',this.title,this.deleteItem[0])  
+                    var name = this.files.filter((item,index)=> item.id == this.deleteItem[0])[0].extName
+                    if(name == 'pdf' || name == 'jpg'){
+                        this.$emit('handleFilesUpload','changeFirst',this.title,this.deleteItem[0]) 
+                        this.deleteItem = []
+                    }else{
+                        this.$message({
+                            message: '缺失內容檔案只能為pdf格式',
+                            type: 'warning'
+                        })
+                        this.deleteItem = []
+                    }
                 }else{
                     var name = this.files.filter((item,index)=> item.id == this.deleteItem[0])[0].extName
                     if(name == 'png' || name == 'jpg'){

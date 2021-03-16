@@ -30,7 +30,7 @@ const files = {
     apiGetPublicSafeFiles(reportPublicSafeListId){ return req('get',
     '/reportPublicSafe/'+reportPublicSafeListId+'/filesList') } ,
     apiPostPublicSafeFiles(reportPublicSafeListId,data){ 
-        return req('post','/reportInspection/'+this.getUid()+'/'+reportPublicSafeListId+'/fileUpload',data,true) } ,
+        return req('post','/reportPublicSafe/'+this.getUid()+'/'+reportPublicSafeListId+'/fileUpload',data,true) } ,
     
     //維護保養大項
     apiGetMaintainsListFiles(maintainListId){ return req('get','/maintainManagement/maintains/'+maintainListId+'/filesList') } ,

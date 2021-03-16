@@ -34,8 +34,8 @@ export default {
             treeData:[],
             tableData:[],
             config:[
-                { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱'},
-                { label:'描述' , prop:'description',format:'textarea', mandatory:false,message:'請輸入描述'},
+                { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20'},
+                { label:'描述' , prop:'description',format:'textarea', mandatory:false,message:'請輸入描述',maxlength:'200'},
                 { label:'排序' , prop:'sort',format:'number', mandatory:true, message:'請輸入排序',
                 isPattern:false,errorMsg:'',type:'number',typemessage:''},
                 { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
@@ -63,7 +63,7 @@ export default {
     },
     computed: {
         ...mapGetters([
-            'buildingroles',
+            'buildingid',
             'menu'
         ]),
         tableAttrs(){
@@ -96,7 +96,9 @@ export default {
     watch:{
         buildingid:{
             handler:async function(){
-                await this.init()
+                if(this.buildingid !== undefined){
+                    await this.init()
+                }
             },
             immediate:true
         },
@@ -134,7 +136,6 @@ export default {
                     }
                 }
             }
-            console.log(JSON.stringify(this.menu))
         },
         async handleTableRow(row, option){
             console.log(row, option)
@@ -165,7 +166,6 @@ export default {
             else if(option === 'distribution'){
                 this.selectRoleId = row.id
                 this.roleAccessAuthority = await this.$obj.Authority.getRoleAccessAuthority(this.selectRoleId)
-                console.log(JSON.stringify(this.roleAccessAuthority))
                 this.originalRoleAccessAuthority = this.$deepClone(this.roleAccessAuthority)
                 this.treeData = this.$deepClone(this.menu)
                 this.dialogButtonsName = [
@@ -188,6 +188,12 @@ export default {
                     await this.init()
                 }
             }else if(index === 'authoritycreate'){
+                const loading = this.$loading({
+                    lock: true,
+                    text: '更新權限中，請稍後...',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                })
                 var array = this.originalRoleAccessAuthority
                 var array2 = content
                 var remove = []
@@ -244,6 +250,7 @@ export default {
                     isOk = await this.$obj.Authority.updateRoleAccessAuthority(JSON.stringify(data))
                 }
                 if(isOk){
+                    loading.close()
                     this.$message('更新成功')
                     this.$store.dispatch('permission/setmenu',await this.$obj.Authority.getBuildingMenu())
                 }

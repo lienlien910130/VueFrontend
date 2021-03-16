@@ -343,7 +343,7 @@ export async function changeLabel(selectType,value,selectdata){
               })
           }else{
             let contactunit = store.getters.buildingcontactunit.filter((item, index) => 
-                  item.id == value 
+                  item.id == value.id
               )
             label = contactunit.length !== 0 ? contactunit[0].name : ''
           }
@@ -426,20 +426,6 @@ export async function setSelectSetting(config,list,selectdata = null){
             value:value,
             label:label
       })
-        // if(obj[item.prop] !== '' && obj[item.prop] !== null ){
-        //   var label = typeof obj[item.prop] !== 'object' ? 
-        //     await changeLabel(item.selectType,obj[item.prop]) : 
-        //     obj[item.prop].length>0 ? await changeLabel(item.selectType,obj[item.prop][0].id) : ''
-        //   var value = typeof obj[item.prop] !== 'object' ? obj[item.prop] :
-        //     obj[item.prop].length>0 ? obj[item.prop][0].id : ''
-        //   if(value !== '' && label !== ''){
-        //     item.options.push({
-        //         id:obj.id,
-        //         value:value,
-        //         label:label
-        //     }) 
-        //   }
-        // }
     }
   }
   return data
@@ -524,9 +510,9 @@ export function changeLink(title,content,action){
     action === 'open' ? 
       content.linkRoles.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
       content.linkRoles.length !== 0 ?
-      content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-        array.push({ id:content.linkRoles.id == undefined ? 
-          content.linkRoles : content.linkRoles.id })
+      content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
+        // array.push({ id:content.linkRoles.id == undefined ? 
+        //   content.linkRoles : content.linkRoles.id })
     content.linkRoles = array
     array = []
     action === 'open' ? 

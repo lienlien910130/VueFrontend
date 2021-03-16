@@ -154,6 +154,7 @@ let Files = {
         })
         return data
     },
+    
     deleteFiles: async function(id){
         var data = await api.files.apiDeleteFile(id).then(async(response) => {
             return true
