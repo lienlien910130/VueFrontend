@@ -27,14 +27,23 @@ export default {
     this.chart = null
   },
   watch: {
-    seriesData(val) {
-      this.setOptions({series:val})
-    },
-    percentage(){
-      if(this.percentage.length > 0){
+    percentage:{
+      handler:async function(){
+        if(this.percentage.length > 0){
           this.init()
         }
-    }
+      },
+      immediate:true
+    },
+    seriesData:{
+      handler:async function(val){
+        this.setOptions({series:val})
+      },
+      immediate:true
+    },
+    // seriesData(val) {
+    //   this.setOptions({series:val})
+    // }
   },
   methods: {
     init(){
@@ -46,6 +55,10 @@ export default {
       })
     },
     setOption(dataArray) {
+      var array = []
+      dataArray.forEach(item=>{
+        array.push(item.name)
+      })
       this.chart.setOption({
         tooltip: {
           trigger: 'item',
@@ -55,7 +68,7 @@ export default {
         legend: {
           left: 'center',
           bottom: '15',
-          data: ['良好', '損壞', '叫修中'],
+          data: array,
           textStyle:{ fontSize: 24 }
         },
         series: [

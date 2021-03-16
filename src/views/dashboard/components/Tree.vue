@@ -62,19 +62,17 @@ import { removeDuplicates } from '@/utils/index';
         deviceOptions:[]
       }
     },
-    async mounted(){
-     
-    },
     watch: {
       treeData:{
         handler:async function(){
           if(this.treeData.length > 0){
             await this.init()
           }
-        }
+        },
+        immediate:true
       },
       filterText(val) {
-        this.$refs.tree.filter(val);
+        this.$refs.tree.filter(val)
       },
       currentNode: function() {
         this.$nextTick(()=> {
@@ -84,11 +82,6 @@ import { removeDuplicates } from '@/utils/index';
           this.$refs.tree.setCurrentKey(this.currentNode)
         })
       }
-    },
-    computed:{
-      ...mapGetters([
-        'buildingid'
-      ]),
     },
     methods: {
       async init(){
@@ -121,7 +114,7 @@ import { removeDuplicates } from '@/utils/index';
       handleNodeClick(node,data) {
         // let routeData = this.$router.resolve({ name: 'Equipment', params: { target: data.id }})
         // window.open(routeData.href, '_blank')
-        this.$router.push({ name: 'Equipment', params: { target: data.id }})
+        this.$router.push({ name: 'devicesManagement', params: { target: data.id }})
       },
       filterNode(value, data) {
         if(value.length === 0) {

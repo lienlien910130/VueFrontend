@@ -162,18 +162,16 @@ export default {
             handler:async function(){
                 if(this.buildingid !== undefined){
                     await this.init()
+                    if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+                        let _array = this.blockData.filter((item, index) => 
+                            item.id == this.$route.params.target
+                        )
+                        await this.handleBlock('equipment','open',_array[0])
+                    } 
                 }
             },
             immediate:true
         },
-    },
-    async mounted() {
-        if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
-            let _array = this.blockData.filter((item, index) => 
-                item.id == this.$route.params.target
-            )
-            await this.handleBlock('equipment','open',_array[0])
-        }   
     },
     methods: {
         async init(){

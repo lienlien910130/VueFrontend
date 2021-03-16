@@ -1,9 +1,9 @@
 <template>
     <div class="editor-container">
-      <div v-if="account == 'System'">
+      <!-- <div v-if="account == 'System'">
         系統管理員
-      </div>
-      <div v-else-if="buildingid == undefined">
+      </div> -->
+      <div v-if="buildingid == undefined">
         請選擇建築物
       </div>
       <div v-else>
@@ -88,6 +88,7 @@ export default {
   computed: {
     ...mapGetters([
       'buildingid',
+      'buildingoptions',
       'account'
     ]),
     noMore () {
@@ -100,7 +101,9 @@ export default {
   watch:{
     buildingid:{
       handler:async function(){
-        //await this.getBuildingDevicesManage()
+        if(this.buildingid !== undefined){
+          await this.getBuildingDevicesManage()
+        }
       },
       immediate:true
     },
@@ -115,11 +118,6 @@ export default {
       currentNode: '',
     }
   },
-  async mounted() {
-    // if(this.buildingid !== undefined){
-    //   await this.getBuildingDevicesManage()
-    // }
-  },
   methods: {
     loadMore() {
       this.loading = true;
@@ -131,18 +129,21 @@ export default {
         this.loading = false;
       }, 2000)
     },
+
     async getBuildingDevicesManage() { //取得設備
       var _temp = []
       this.deviceData = await this.$obj.Device.getBuildingDevicesManage()
       var statusArray = removeDuplicates(this.deviceData,'status')
       for(let obj of statusArray) {
-        var statusObj = await this.$obj.Setting.getOption(obj.status)
+        // var statusObj = await this.$obj.Setting.getOption(obj.status)
+        var statusObj = this.buildingoptions.filter((item,index)=>item.id == obj.status)[0]
         _temp.push({
           value: obj.status,
-          name: statusObj[0].textName,
+          name: statusObj.textName,
           data: this.deviceData.filter((item, index) => item.status == obj.status)
         })
       }
+      console.log(JSON.stringify(_temp))
       this.deviceGroup = _temp
     },
     handleChartClick(value){
