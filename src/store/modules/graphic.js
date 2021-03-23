@@ -1,6 +1,4 @@
-import  { 
-  // getGraphicJson,setGraphicJson,removeGraphicJson 
-}  from '../../utils/auth'
+import idb from '../../utils/indexedDB'
 
 const getDefaultState = () => {
     return {
@@ -20,16 +18,20 @@ const getDefaultState = () => {
 }
   
 const actions = {
-    sendJson({ commit } , json){
+    async getJson({ commit }) { //從網頁資料庫取出來儲存在store上
+      let json = await idb.getValue('graphicJson')
+      commit('SET_JSON', json)
+    },
+    sendJson({ commit } ,data){
       return new Promise((resolve, reject) => {
-        commit('SET_JSON', json)
-        //setGraphicJson(json)
+        commit('SET_JSON', data[0].content)
+        idb.deleteData('graphicJson')
+        idb.saveValue('graphicJson',data)
         resolve()
       })
     },
     resetGraphicJson({ commit }) {
       return new Promise(resolve => {
-        //removeGraphicJson()
         commit('RESET_STATE')
         resolve()
       })

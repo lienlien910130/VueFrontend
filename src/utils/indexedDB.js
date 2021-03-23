@@ -37,6 +37,7 @@ export default {
                 db.createObjectStore("buildingOptions", { autoIncrement: true, keyPath:'id' }) 
                 var temp = db.createObjectStore("CacheImage", { autoIncrement: true, keyPath:'imageId' })
                 temp.createIndex("codeIndex","imageId",{unique:true})
+
 			}
 		})
 	},

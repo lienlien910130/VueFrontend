@@ -67,6 +67,7 @@ let Building = {
     getBuildingFloors: async function(){
         var data = await api.building.apiGetBuildingFloors().then(response => {
             var floors = []
+            //.sort((x,y) => x.floor - y.floor)
             response.result.forEach(element => {
                 var _temp = {
                   id:element.id,
@@ -99,7 +100,6 @@ let Building = {
     },
     updateBuildingFloor: async function(data){
         var data = await api.building.apiPatchFloors(data).then(async(response) => {
-            console.log(JSON.stringify(response))
             return true
         }).catch(error=>{
             return false

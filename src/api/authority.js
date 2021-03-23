@@ -36,7 +36,7 @@ const authority = {
     apiDeleteAccountAuthority(accountId){ return req('delete','/accountSetting/'+accountId) },
     //角色取得權限管理
     apiGetAccountAuthorityByRole(roleId){ return req('get','/roleSetting/'+this.getBid()+'/accessAuthorities/'+roleId) },
-    //角色管理修改權限
+    //角色管理修改權限 - 多筆更新
     apiPatchAuthorityByRole(data){ return req('patch','/roleSetting/accessAuthorities',data) },
     //選單取得權限管理
     apiGetAccountAuthorityByMenu(mainMenuId){ return req('get','/roleSetting/accessAuthorities/'+mainMenuId) },

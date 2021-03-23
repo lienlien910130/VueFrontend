@@ -1,7 +1,7 @@
 
 const getDefaultState = () => {
     return {
-      msg: ''
+      wsmsg: ''
     }
   }
   
@@ -11,14 +11,14 @@ const getDefaultState = () => {
     RESET_STATE: (state) => {
       Object.assign(state, getDefaultState())
     },
-    SET_MSG: (state, msg) => {
-      state.msg = msg
+    SET_MSG: (state, wsmsg) => {
+      state.wsmsg = wsmsg
     }
 }
   
 const actions = {
-    sendMsg({ commit } , msg){
-        commit('SET_MSG', msg)
+    sendMsg({ commit } , wsmsg){
+        commit('SET_MSG', wsmsg)
     }
 }
 

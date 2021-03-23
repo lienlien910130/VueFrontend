@@ -22,7 +22,7 @@ const errorHandle = (status,msg) =>{
             tip(msg)
             break;
         case 401:
-            //tip('登入過期，請重新登入')
+            tip('登入過期，請重新登入')
             store.dispatch('user/resetToken')
             //location.reload()
             break;
@@ -68,6 +68,7 @@ service.interceptors.response.use(
   error => {
       if(error) {
           //成功發出請求且收到resp，但有error
+          alert(error)
           errorHandle(error.response.status,error.response.data.error)
           return Promise.reject(error)
       } else {

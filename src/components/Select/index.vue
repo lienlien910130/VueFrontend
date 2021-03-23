@@ -5,6 +5,7 @@
   @change="currentSel" 
   placeholder="請選擇"
   filterable
+  :disabled="isSelect"
   >
     <el-option
     v-if="title=='contactunit' || title=='equipment' "
@@ -32,6 +33,10 @@ export default {
       },
       title: {
           type: String
+      },
+      isSelect: {
+          type: Boolean,
+          default: false
       },
     },
     data() {

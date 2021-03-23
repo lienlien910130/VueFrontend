@@ -56,7 +56,6 @@ const mutations = {
 const actions = {
   async getroles({ commit }) { //從網頁資料庫取出來儲存在store上
     let roles = await idb.getValue('roles')
-    console.log('roles',roles)
     commit('SET_ROLES', roles)
   },
   setroles({ commit }, roles) { 

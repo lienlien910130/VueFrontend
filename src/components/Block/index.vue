@@ -45,10 +45,17 @@
                         @click="handleClickOption('empty','')">
                             新增
                     </el-button>
+                    <el-button
+                        v-if="title == 'equipment'"
+                        class="filter-item" 
+                        type="primary" 
+                        @click="change('table')">
+                            點位
+                    </el-button>
                 </el-col>
             </div>
-
             <div 
+            v-if="isTable == false"
             class="list"  
             >
               <div 
@@ -62,7 +69,6 @@
                         v-for="(option,index) in rowlabel"
                         :key="index"
                         width="100%"
-                        
                         >
                             <div :style="{display:'inline-block','vertical-align':'top','padding-top':'5px',width:labelstyle}">
                                 <span>{{ option.label }} :</span>
@@ -92,13 +98,6 @@
                                 {{ selectStr(item[option.prop]) }}
                                 </span>
 
-                                <!-- <el-button 
-                                v-else-if="option.format == 'userInfo' "
-                                type="text" @click="handleClickOption('opendialog',item[option.prop])" 
-                                style="padding-top:0px;padding-bottom:0px">
-                                    {{ multipleStr('user',item[option.prop]) }}
-                                </el-button> -->
-
                                 <span 
                                 v-else-if="option.format == 'userInfo' " 
                                 @click="handleClickOption('opendialog',item[option.prop])"
@@ -106,16 +105,9 @@
                                     {{ multipleStr('user',item[option.prop]) }}
                                 </span>
 
-
                                 <span v-else-if="option.format == 'openmaintain' ">
                                     {{ changeMaintain(item[option.prop]) }}
                                 </span>
-                                <!-- <el-button
-                                v-else-if="option.format == 'openmaintain' "
-                                type="text" @click="handleClickOption('openmaintain',item[option.prop])" 
-                                style="padding-top:0px;padding-bottom:0px">
-                                    {{ changeMaintain(item[option.prop]) }}
-                                </el-button> -->
 
                                 <el-button
                                 v-else-if="option.format == 'openfiles' "
@@ -132,14 +124,6 @@
                                 {{ optionfilter(item[option.prop]) }}
                                 </span>
                                 
-                                <!-- <el-button v-else-if="option.format == 'floorOfHouseSelect' " 
-                                @click="handleClickOption('openfloorofhouse',item[option.prop])"
-                                type="text"
-                                style="padding:0px"
-                                >
-                                    {{ multipleStr('floorOfHouse',item[option.prop]) }}
-                                </el-button> -->
-
                                 <span 
                                 v-else-if="option.format == 'floorOfHouseSelect' " 
                                 @click="handleClickOption('openfloorofhouse',item[option.prop])"
@@ -161,14 +145,6 @@
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ multipleStr('contactunit',item[option.prop]) }}
                                 </span>
-
-                                <!-- <el-button v-else-if="option.format == 'contactunitSelect' " 
-                                @click="toAnotherPage('Basic',item[option.prop],'co')"
-                                type="text"
-                                style="padding:0px"
-                                >
-                                    {{ multipleStr('contactunit',item[option.prop]) }}
-                                </el-button> -->
 
                                 <el-button 
                                 v-else-if="option.format == 'openlacks' "
@@ -201,9 +177,69 @@
               </el-col>
               </div>
             </div>
-            <!-- <p v-if="loading">加載中...</p> -->
+            <div v-else>
+                <el-table
+                    :data="blockData"
+                    :key="itemkey"
+                    border
+                    highlight-current-row
+                    style="width: 100%;"
+                    empty-text="暫無資料"
+                    >
+                    <el-table-column
+                    fixed
+                    type="index">
+                    </el-table-column>
+
+                    <template v-for="(option,index) in tablelabel">
+                        <el-table-column 
+                        align="left" 
+                        :label="option.label" 
+                        :key="index" 
+                        :prop="option.prop" 
+                        sortable
+                        header-align="center"
+                        :width="option.width"
+                        >
+                        <template slot-scope="scope">
+                            <span v-if="scope.column.property == 'status'"> 
+                                {{ scope.row[scope.column.property] | changeStatus }}</span>
+                            <span v-else-if="scope.column.property == 'removable'"> 
+                                {{ scope.row[scope.column.property] | changeRemoveable }}</span>
+                            <span v-else-if="scope.column.property == 'linkOwners' || 
+                            scope.column.property == 'linkFireManagers'"> 
+                                {{ changeUserName(scope.row[scope.column.property]) }}
+                            </span>
+                            <span v-else-if="scope.column.property == 'linkRoles'"> 
+                                {{  changeLinkRoles(scope.row[scope.column.property]) }}</span>
+                            <span v-else-if="scope.column.property == 'linkBuildings'"> 
+                                {{  changeLinkBuilding(scope.row[scope.column.property]) }}</span>
+                            <span v-else >{{  scope.row[scope.column.property] }}</span>
+                        </template>
+                        </el-table-column>
+                    </template>
+                    <el-table-column
+                        width="250px"
+                        align="right">
+                        <template slot-scope="scope">
+                            <span
+                                v-for="(button, index) in buttonsName"
+                                :key="index"
+                                class="button-margin-left"
+                            >
+                                <el-button
+                                :type="index == 0 ? 'primary' : 'info'"
+                                @click="handleClickOption(button.status,scope.row)"
+                                size="mini"
+                                >
+                                <span >{{ button.name }}</span>
+                                </el-button>
+                            </span>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
         </div>
-        
     </el-row>
     <el-row>
         <div v-if="total > 0" class="pagination-container">
@@ -249,6 +285,9 @@ export default {
             type: Array,
             required: true
         },
+        tablelabel: {
+            type: Array
+        },
         title: {
             type: String,
             required: true
@@ -277,6 +316,10 @@ export default {
                 return [12, 30, 50, 100]
             }
         },
+        isTable:{
+            type: Boolean,
+            default: false
+        }
     },
     computed: {
         ...mapGetters([
@@ -468,7 +511,8 @@ export default {
             temp: {},
             rangevalue: [],
             sort:'',
-            rowlabel:[]
+            rowlabel:[],
+            itemkey: Math.random()
         }
     },
     methods: {
@@ -507,6 +551,13 @@ export default {
         blockSelect(){
             this.$emit('update:selectSetting', this.selectSetting)
             this.$emit('clickPagination',this.sort)
+        },
+        change(type){
+            if(type == 'table'){
+                this.isTable = true
+            }else{
+                this.isTable = false
+            }
         }
     }
 }

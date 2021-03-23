@@ -129,13 +129,11 @@ export default {
         this.loading = false;
       }, 2000)
     },
-
     async getBuildingDevicesManage() { //取得設備
       var _temp = []
       this.deviceData = await this.$obj.Device.getBuildingDevicesManage()
       var statusArray = removeDuplicates(this.deviceData,'status')
       for(let obj of statusArray) {
-        // var statusObj = await this.$obj.Setting.getOption(obj.status)
         var statusObj = this.buildingoptions.filter((item,index)=>item.id == obj.status)[0]
         _temp.push({
           value: obj.status,
@@ -143,7 +141,6 @@ export default {
           data: this.deviceData.filter((item, index) => item.status == obj.status)
         })
       }
-      console.log(JSON.stringify(_temp))
       this.deviceGroup = _temp
     },
     handleChartClick(value){

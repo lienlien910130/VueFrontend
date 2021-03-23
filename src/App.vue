@@ -7,14 +7,9 @@
 <script>
 export default {
   name: 'App',
-  computed: {
-    // getWsMsg() {
-    //     return this.$store.state.websocket.msg
-    // }
-  },
   async created(){
-    //this.initsocket()
- 
+    this.initsocket()
+  
     // if (localStorage.getItem("store") ) {
     //   this.$store.replaceState(Object.assign({}, this.$store.state,JSON.parse(sessionStorage.getItem("store"))))
     // }
@@ -42,12 +37,6 @@ export default {
     //this.$store.dispatch('building/getbuildingarray')
     
   },
-  watch: {
-    //監聽收來的訊息
-    // getWsMsg: function (data, val) {
-    //   console.log('data=>'+data); 
-    // }      
-  },
   methods: {
     initsocket(){
       //this.localSocket()
@@ -56,8 +45,7 @@ export default {
       }else{
         console.log("您的瀏覽器不支援 WebSocket!")
       }
-    },
-    
+    }
   }
     
 }

@@ -42,6 +42,16 @@ const files = {
     apiPostMaintainsFiles(maintainListId,maintainId,data){ 
         return req('post','/maintainManagement/'+maintainListId+'/maintains/list/'+maintainId+'/fileUpload',data,true) } ,
 
+    //用圖控檔案id找資料
+    apiGetFileIdToGraphicFile(supervisoryControlSystemId){ 
+        return req('get','/drawingControl/'+supervisoryControlSystemId+'/supervisoryControlSystems/file') },
+    //用樓層id找資料
+    apiGetFloorIdToGraphicFile(floorId){ 
+        return req('get','/drawingControl/floors/'+floorId+'/supervisoryControlSystems') },
+    apiPostGraphicFile(floorId,data){ 
+        return req('post','/drawingControl/'+this.getUid()+'/floors/'+floorId+'/supervisoryControlSystems/file',
+        data,true) },
+
     //共用方法 刪除/下載
     apiDeleteFile(data){ return req('post','/public/fileDelete',data) },
     apiGetFile(fileId){ return req('get','/Public/fileDownload/'+fileId) },

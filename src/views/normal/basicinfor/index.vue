@@ -570,6 +570,7 @@ export default {
       if(index === 'createfile'){
         const formData = new FormData()
         data.forEach(item => {
+          console.log(console.log(item.raw))
           formData.append('file', item.raw)
         })
         isOk = 

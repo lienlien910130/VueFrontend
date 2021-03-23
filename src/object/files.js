@@ -138,16 +138,15 @@ let Files = {
         return data
     },
     getFloorGraphicFiles: async function(floorId){
-        var data = await api.graphic.apiGetFloorIdToGraphicFile(floorId).then(response => {
-            console.log(JSON.stringify(response))
+        var data = await api.files.apiGetFloorIdToGraphicFile(floorId).then(response => {
             return response.result.codeContent
         }).catch(error=>{
             return null
         })
         return data
     },
-    postFloorGraphicFiles: async function(maintainListId,maintainId,formData){
-        var data = await api.files.apiPostMaintainsFiles(maintainListId,maintainId,formData).then(response => {
+    postFloorGraphicFiles: async function(floorId,data){
+        var data = await api.files.apiPostGraphicFile(floorId,data).then(response => {
             return true
         }).catch(error=>{
             return false

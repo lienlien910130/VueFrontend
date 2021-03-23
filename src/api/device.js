@@ -11,7 +11,8 @@ const device = {
     apiPostDevicesManagement(data){ return req('post','/devicesManagement/'+this.getBid()+'/devices',data) },
     apiPatchDevicesManagement(data){ return req('patch','/devicesManagement/devices',data) },
     apiDeleteDevicesManagement(deviceId){ return req('delete','/devicesManagement/'+deviceId+'/devices') },
-
+    //圖控更新設備-多筆更新
+    apiPatchGraphicDevices(data){ return req('patch','/drawingControl/devices',data) },
     //維護保養大項
     apiGetBuildingMaintainsList(){ return req('get','/maintainManagement/buildings/'+this.getBid()+'/maintains') },
     apiGetMaintainsList(maintainListId){ return req('get','/maintainManagement/maintains/'+maintainListId) },

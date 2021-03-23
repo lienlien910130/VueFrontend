@@ -229,6 +229,7 @@ export default {
                 console.log('移除',JSON.stringify(remove))
                 console.log('新增',JSON.stringify(add))
                 var isOk = false
+                var updateArray = []
                 for(let obj of remove){
                     var data = this.accessAuthority.filter((item,index)=> item.id == obj )[0]
                     var array = []
@@ -237,7 +238,7 @@ export default {
                         array.push({id:role.id})
                     })
                     data.linkRoles = array
-                    isOk = await this.$obj.Authority.updateRoleAccessAuthority(JSON.stringify(data))
+                    updateArray.push(data)
                 }
                 for(let obj of add){
                     var data = this.accessAuthority.filter((item,index)=> item.id == obj )[0]
@@ -247,8 +248,9 @@ export default {
                     })
                     array.push({id:this.selectRoleId})
                     data.linkRoles = array
-                    isOk = await this.$obj.Authority.updateRoleAccessAuthority(JSON.stringify(data))
+                    updateArray.push(data)
                 }
+                isOk = await this.$obj.Authority.updateRoleAccessAuthority(JSON.stringify(updateArray))
                 if(isOk){
                     loading.close()
                     this.$message('更新成功')

@@ -11,7 +11,10 @@ export default {
   mixins: [resize],
   props:{
     percentage:{
-      type:Array
+      type:Array,
+      default: function() {
+        return []
+      }
     }
   },
   data() {
@@ -35,12 +38,13 @@ export default {
       },
       immediate:true
     },
-    seriesData:{
-      handler:async function(val){
-        this.setOptions({series:val})
-      },
-      immediate:true
-    },
+    // seriesData:{
+    //   handler:async function(val){
+    //     console.log('seriesData',val)
+    //     this.setOptions({series:val})
+    //   },
+    //   immediate:true
+    // },
     // seriesData(val) {
     //   this.setOptions({series:val})
     // }

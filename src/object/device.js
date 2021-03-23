@@ -28,6 +28,14 @@ let Device = {
         })
         return data
     },
+    updateBuildingGraphicDevices: async function(data){ //多筆更新
+        var data = await api.device.apiPatchGraphicDevices(data).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
     deleteBuildingDevicesManage: async function(deviceId){
         var data = await api.device.apiDeleteDevicesManagement(deviceId).then(async(response) => {
             return true

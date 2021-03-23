@@ -265,6 +265,8 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'create'
+            }else if(index === 'point'){
+
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作

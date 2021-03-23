@@ -37,15 +37,24 @@
           <el-button type="primary" @click="resetCanvas(true)" :disabled="disabled">復原位置</el-button>
           <el-button type="primary" @click="saveCanvasToImage(true)" :disabled="disabled">匯出圖片</el-button>
           <el-button type="primary" :disabled="disabled">歷史紀錄</el-button>
+          <el-button type="primary" :disabled="disabled">點位設定</el-button>
           <el-checkbox-group 
           v-model="checkList" 
-          style="display:inline;margin-left:20px;" >
+          style="display:inline;margin-left:20px;" @change="changeblock" >
             <el-checkbox label="未分類" border></el-checkbox>
             <el-checkbox label="警戒區" border></el-checkbox>
             <el-checkbox label="防護區" border></el-checkbox>
             <el-checkbox label="放射區" border></el-checkbox>
             <el-checkbox label="撒水區" border></el-checkbox>
           </el-checkbox-group>
+          <el-alert
+            v-if="isSelect"
+            title="尚未存檔，請先存檔後再離開畫面"
+            type="warning"
+            center
+            :closable="false"
+            show-icon>
+          </el-alert>
         </el-row>
          <div class="block-wrapper">
           <el-row>
@@ -100,6 +109,8 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import idb from '@/utils/indexedDB'
+
 export default {
     components:{
       FloorSelect: () => import('@/components/Select/index.vue'),
@@ -110,12 +121,14 @@ export default {
       ...mapGetters([
           'id',
           'buildingid',
-          'buildingfloors'
+          'buildingfloors',
+          'wsmsg'
       ]),
       floorselectAttrs() {
         return {
           selectData: this.selectData,
-          title:'GraphicFloor'
+          title:'GraphicFloor',
+          isSelect: this.isSelect
         }
       },
       graphicAttrs(){
@@ -128,7 +141,8 @@ export default {
               type:this.type,
               imageSrc:this.imageSrc,
               objects:this.objects,
-              checkList:this.checkList
+              checkList:this.checkList,
+              floorId:this.floorId
             }
       },
       graphicEvent(){
@@ -141,7 +155,8 @@ export default {
             saveCanvasToImage: this.saveCanvasToImage,
             returnDeleteObjects: this.returnDeleteObjects,
             sendLabelChange:this.sendLabelChange,
-            sendBlcokChange:this.sendBlcokChange
+            sendBlcokChange:this.sendBlcokChange,
+            sendSaveToSelect:this.sendSaveToSelect
         }
       },
       objectListAttrs(){
@@ -178,63 +193,80 @@ export default {
           redoundo:null,
           addobject:null,
           tableData:[],
-          floorImageId:'',
           floorId:'',
           imageSrc:'',
           disabled:true,
           objects:null,
           checkList:[],
           labelChange:[],
-          blockChange:[]
+          blockChange:[],
+          isEdit:false,
+          isSelect:false
         }
     },
     watch: {
       buildingfloors:{
         handler:async function(){
-            this.selectData = this.buildingfloors
+          this.selectData = this.buildingfloors
+        },
+        immediate:true
+      },
+      wsmsg:{
+        handler:async function(){
+            var data = JSON.parse(this.wsmsg.data)
+            console.log(data)
+            var uid = data.id
+            var type = data.type
+            var conetnt = data.content
+            if(uid !== this.id && conetnt == this.floorId){
+              switch (type){
+                case 'enterGraphic':
+                  if(this.type == 'edit'){
+                    this.$socket.sendMag(this.id,'openEdit',this.floorId)
+                  }
+                  break;
+                case 'openEdit':
+                  this.isEdit = true
+                  break;
+                case 'closeEdit':
+                  this.isEdit = false
+                  break;
+              }
+            }
         },
         immediate:true
       },
     },
+    created(){
+      this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
+    },
     methods:{
       async handleSelect(content){
-        console.log(JSON.stringify(content))
+        if(this.type == 'edit'){
+          this.$socket.sendMsg(this.id,'closeEdit',this.floorId)
+        }
+        this.type = 'view'
         this.floorId = content.id
-        this.floorImageId = content.floorPlanID !== null ? (content.floorPlanID).toString() : null
-        await this.getFloorImage()
+        if(content.floorPlanID == null){
+            this.imageSrc = ""
+            this.disabled = true
+            this.changeType('view')
+        }else{
+            this.disabled = false
+            this.imageSrc = await idb.loadCacheImage((content.floorPlanID).toString())
+        }
         await this.getFloorGraphic()
+        await this.broadcast()
       },
-      // async getFloorImageId(){ //儲存floorimageID
-      //   var floordata = await this.$obj.Building.getBuildingFloor(this.selectFloor)
-      //   floordata.floorPlanID == null ? this.floorImageId = null : 
-      //   this.floorImageId = (floordata.floorPlanID).toString()
-      // },
       async getFloorGraphic(){ //取得圖控檔案
         this.objects = await this.$obj.Files.getFloorGraphicFiles(this.floorId)
-        console.log(JSON.stringify(this.objects))
-        this.$store.dispatch('graphic/sendJson',this.objects)
-
-        // await this.$api.graphic.apiGetFloorIdToGraphicFile(this.floorId).then(response =>{
-        //   this.$store.dispatch('graphic/sendJson',response.result.codeContent)
-        //   this.objects = response.result.codeContent
-        // })
       },
-      async getFloorImage(){ //載入平面圖
-        if(this.floorImageId == null){
-          this.imageSrc = ""
-          this.disabled = true
-          this.changeType('view')
-        }else{
-          var data = await this.$obj.Files.getBuildingFloorImage(this.floorImageId)
-          const bufferUrl = btoa(new Uint8Array(data).reduce((data, byte) => 
-          data + String.fromCharCode(byte), ''))
-          this.imageSrc = 'data:image/png;base64,' + bufferUrl
-          this.disabled = false
-        }
-      },  
-      // sendToCanvas(){
-      //   console.log(this.checkList)
-      // },
+      async broadcast(){
+        this.$socket.sendMsg(this.id,'enterGraphic',this.floorId)
+      },
+      changeblock(){
+        //console.log(this.checkList)
+      },
       resetCanvas(reset){
         this.reset = reset
       },
@@ -242,14 +274,23 @@ export default {
         this.save = save
       },
       changeType(type){
-        this.type = type
-        if(type == 'edit'){
-          this.checkList = ['未分類','警戒區','防護區','放射區','撒水區']
+        if(!this.isEdit){
+          this.type = type
+          if(type == 'edit'){
+            this.checkList = ['未分類','警戒區','防護區','放射區','撒水區']
+            this.$socket.sendMsg(this.id,'openEdit',this.floorId)
+          }else{
+            this.checkList = []
+            this.$socket.sendMsg(this.id,'closeEdit',this.floorId)
+          }
         }else{
-          this.checkList = []
+          alert('請勿同時使用該樓層圖控系統')
         }
       },
       //圖控的事件
+      sendSaveToSelect(val){
+        this.isSelect = val
+      },
       sendObjectListToLayer(val){ //圖控傳過來的所有物件清單,更新圖層節點用
         this.objectList = val
       },
@@ -269,13 +310,14 @@ export default {
       sendObjectRedoUndoToLayer(val){//圖控上一步下一步
         this.redoundo = val
       },
-      async sendFloorGraphicFile(state){
-        var _temp = {
-           "CodeContent" : state
-        }
-        await this.$api.graphic.apiPostGraphicFile(this.floorId,JSON.stringify(_temp)).then(response =>{
+      async sendFloorGraphicFile(state){ //儲存圖控檔案
+        const fileContent = new File([state], this.floorId+'.txt', { type: '' })
+        const formData = new FormData()
+        formData.append('file', fileContent)
+        var isOk = await this.$obj.Files.postFloorGraphicFiles(this.floorId,formData)
+        if(isOk){
           this.$message('儲存成功')
-        })
+        }
       },
       returnDeleteObjects(){ //重置圖層及圖控刪除的物件
         this.deleteObject = null
@@ -308,7 +350,7 @@ export default {
   height: 100%;
 }
 .graphic-editor-container {
-  padding: 20px;
+  padding: 0 20px 5px;
   background-color: rgb(209, 226, 236);
   position: relative;
   min-height: calc(100vh - 155px);
@@ -318,7 +360,7 @@ export default {
 
   .block-wrapper {
     background: #fff;
-    padding: 0px 16px 15px;
+    padding: 0px 5px 10px;
     margin-bottom: 32px;
   }
 

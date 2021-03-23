@@ -21,7 +21,7 @@ import store from '../store'
    //打开websocket
    wsOpen: function (e) {
      //开始websocket心跳
-     wsConnection.startWsHeartbeat();
+     wsConnection.startWsHeartbeat()
      console.log('ws success')
    },
    wsClose: function (e) {
@@ -29,13 +29,12 @@ import store from '../store'
      wsConnection.reconnect()
    },
    wsMsg: function (msg) {
-     //每次接收到服务端消息后 重置websocket心跳
-     wsConnection.resetHeartbeat();
-     //服务端发送来的消息存到vuex
-     store.dispatch('websocket/sendMsg',JSON.stringify(msg.data))
+     //重置websocket心跳
+     wsConnection.resetHeartbeat()
+     store.dispatch('websocket/sendMsg',msg)
    },
    wsError: function (err) {
-     console.log(err, 'ws error');
+     console.log(err, 'ws error')
      wsConnection.reconnect()
    },
    //重启websocket
@@ -68,7 +67,16 @@ import store from '../store'
      clearTimeout(_this.timeoutObj);
      clearTimeout(_this.serverTimeoutObj);
      _this.startWsHeartbeat()
+   },
+
+   sendMsg: function(id,type,content){
+    const msg = {
+      id:id,
+      type:type,
+      content: content
+    }
+    this.$ws.send(JSON.stringify(msg))
    }
- };
+ }
  
  export default wsConnection

@@ -5,7 +5,6 @@ import device from '@/api/device'
 import files from '@/api/files'
 import report from '@/api/report'
 import setting from '@/api/setting'
-import graphic from '@/api/graphic'
 import authority from '@/api/authority'
 
 export default {    
@@ -15,6 +14,5 @@ export default {
   files,
   report,
   setting,
-  graphic,
   authority
 }
