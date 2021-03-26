@@ -147,7 +147,6 @@ export default {
             dialogData:[],
             dialogButtonsName:[],
             origin:[],
-            selectGroup:'',
             listQueryParams:{
                 page: 1,
                 limit: 10,

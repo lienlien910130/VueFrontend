@@ -19,7 +19,7 @@
                             v-on:handleButton="handleButton"
                             ></SettingBlock>
                         </el-col>
-                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                        <!-- <el-col :xs="24" :sm="24" :md="24" :lg="8">
                             <SettingBlock
                             v-bind="settingAttrs('DeviceOptions')"
                             v-on:handleButton="handleButton"
@@ -30,7 +30,7 @@
                             v-bind="settingAttrs('BrandOptions')"
                             v-on:handleButton="handleButton"
                             ></SettingBlock>
-                        </el-col>
+                        </el-col> -->
                     </el-row>
                 </el-tab-pane>
                 <el-tab-pane label="維護保養">

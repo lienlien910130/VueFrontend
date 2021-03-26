@@ -133,16 +133,43 @@ export const Setting = [
   }
 ]
 export const DevicesManagement = [
+  // {
+  //   path: '/equipment',
+  //   component: Layout,
+  //   redirect: '/equipment/index',
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'devicesManagement',
+  //       component: () => import('@/views/equipment/index.vue'),
+  //       meta: { title: '設備管理', icon: 'icon', needLogin: true }
+  //     }
+  //   ]
+  // }
   {
     path: '/equipment',
     component: Layout,
     redirect: '/equipment/index',
+    name: 'sys-DevicesManagement',
+    meta: { title: '設備管理', icon: 'icon', needLogin: true  },
     children: [
       {
         path: 'index',
         name: 'devicesManagement',
-        component: () => import('@/views/equipment/index.vue'),
-        meta: { title: '設備管理', icon: 'icon', needLogin: true }
+        component: () => import('@/views/devicemanagement/equipment/index.vue'),
+        meta: { title: '設備清單', icon: 'one', needLogin: true }
+      },
+      {
+        path: 'type',
+        name: 'deviceTypesManagement',
+        component: () => import('@/views/devicemanagement/devicetype/index.vue'),
+        meta: { title: '設備種類', icon: 'two', needLogin: true }
+      },
+      {
+        path: 'address',
+        name: 'deviceAddressManagement',
+        component: () => import('@/views/devicemanagement/deviceaddress/index.vue'),
+        meta: { title: '點位設定', icon: 'icon', needLogin: true }
       }
     ]
   }

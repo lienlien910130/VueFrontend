@@ -40,7 +40,7 @@
           <el-button type="primary" :disabled="disabled">點位設定</el-button>
           <el-checkbox-group 
           v-model="checkList" 
-          style="display:inline;margin-left:20px;" @change="changeblock" >
+          style="display:inline;margin-left:20px;">
             <el-checkbox label="未分類" border></el-checkbox>
             <el-checkbox label="警戒區" border></el-checkbox>
             <el-checkbox label="防護區" border></el-checkbox>
@@ -68,28 +68,11 @@
           <el-row>
             <el-col :xs="24" :sm="24" :md="24" :lg="16">
               <div class="collapse-wrapper" >
-                <el-table
-                  class="realtime"
-                  :data="tableData" empty-text="暫無資料">
-                  <el-table-column
-                    prop="date"
-                    label="日期"
-                    width="180">
-                  </el-table-column>
-                  <el-table-column
-                    prop="name"
-                    label="時間"
-                    width="180">
-                  </el-table-column>
-                  <el-table-column
-                    prop="address"
-                    label="事件">
-                  </el-table-column>
-                  <el-table-column
-                    prop="address"
-                    label="點位名稱">
-                  </el-table-column>
-                </el-table>
+                <Table
+                  :list-query-params.sync="listQueryParams"
+                  v-bind="tableAttrs"
+                  v-on="tableEvent">
+                </Table>
               </div>
             </el-col>
             <el-col :xs="24" :sm="24" :md="24" :lg="8">
@@ -110,9 +93,11 @@
 <script>
 import { mapGetters } from 'vuex'
 import idb from '@/utils/indexedDB'
+import { formatTime } from '@/utils/index.js'
 
 export default {
     components:{
+      Table: () => import('@/components/Table/index.vue'),
       FloorSelect: () => import('@/components/Select/index.vue'),
       ObjectList: () => import('./components/ObjectList'),
       Graphic: () => import('@/components/Graphic/index.vue')
@@ -122,7 +107,8 @@ export default {
           'id',
           'buildingid',
           'buildingfloors',
-          'wsmsg'
+          'wsmsg',
+          'buildingdevices'
       ]),
       floorselectAttrs() {
         return {
@@ -142,7 +128,8 @@ export default {
               imageSrc:this.imageSrc,
               objects:this.objects,
               checkList:this.checkList,
-              floorId:this.floorId
+              floorId:this.floorId,
+              actionObj:this.actionObj
             }
       },
       graphicEvent(){
@@ -177,6 +164,20 @@ export default {
             returnObjectRedoUndo:this.returnObjectRedoUndo
         }
       },
+      tableAttrs(){
+        return {
+            title:'graphic',
+            tableData: this.tableData,
+            config:this.config,
+            hasColumn:false,
+            pageSizeList:[5,30,50]
+        }
+      },
+      tableEvent(){
+        return {
+            clickPagination:this.clickPagination
+        }
+      },
     },
     data() {
         return {
@@ -201,7 +202,22 @@ export default {
           labelChange:[],
           blockChange:[],
           isEdit:false,
-          isSelect:false
+          isSelect:false,
+          actionObj:null,
+          origindata:[],
+          tableData:[],
+          config:[
+                { label:'時間' , prop:'date'},
+                { label:'樓層' , prop:'floor'},
+                { label:'事件' , prop:'action'},
+                { label:'設備名稱' , prop:'name'},
+                { label:'點位名稱' , prop:'point'},
+          ],
+          listQueryParams:{
+            page: 1,
+            limit: 5,
+            total: 0
+          },
         }
     },
     watch: {
@@ -217,19 +233,46 @@ export default {
             console.log(data)
             var uid = data.id
             var type = data.type
-            var conetnt = data.content
-            if(uid !== this.id && conetnt == this.floorId){
+            var content = data.content
+            if(uid !== this.id){
               switch (type){
                 case 'enterGraphic':
-                  if(this.type == 'edit'){
+                  if(this.type == 'edit' && content == this.floorId){
                     this.$socket.sendMag(this.id,'openEdit',this.floorId)
                   }
                   break;
                 case 'openEdit':
-                  this.isEdit = true
+                  if(content == this.floorId){
+                    this.isEdit = true
+                  }
                   break;
                 case 'closeEdit':
-                  this.isEdit = false
+                  if(content == this.floorId){
+                    this.isEdit = false
+                  }
+                  break;
+                default:
+                  var cons = JSON.parse(content)
+                  var index = this.buildingfloors.findIndex(f=>f.id === cons.LinkDevice.FloorId)
+                  var index2 = this.buildingdevices.findIndex(d=>d.id === cons.LinkDevice.DeviceId)
+                  if(cons.LinkDevice.FloorId !== this.floorId){
+                    this.handleSelect(this.buildingfloors[index],cons)
+                  }else{
+                    this.actionObj = cons
+                  }
+                  var data = {
+                    date:formatTime(new Date(), '{y}-{m}-{d} {h}:{i}:{s}'),
+                    floor:this.buildingfloors[index].label,
+                    action:cons.Action,
+                    name:this.buildingdevices[index2].name,
+                    point:cons.SystemNumber+'-'+cons.CircuitNumber+'-'+cons.Address
+                  }
+                  this.origindata.push(data)
+                  this.listQueryParams.total = this.origindata.length
+                  this.origindata = this.origindata.sort( (a, b) => {
+                      return new Date(b.date) - new Date(a.date)
+                    })
+                  this.clickPagination()
                   break;
               }
             }
@@ -241,7 +284,7 @@ export default {
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
     },
     methods:{
-      async handleSelect(content){
+      async handleSelect(content, device = null){
         if(this.type == 'edit'){
           this.$socket.sendMsg(this.id,'closeEdit',this.floorId)
         }
@@ -257,15 +300,21 @@ export default {
         }
         await this.getFloorGraphic()
         await this.broadcast()
+        if(device !== null){
+          this.actionObj = device
+        }
+      },
+      async clickPagination(){
+          this.tableData = this.origindata.filter(
+            (item, index) => 
+            index < this.listQueryParams.limit * this.listQueryParams.page && 
+            index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
       },
       async getFloorGraphic(){ //取得圖控檔案
         this.objects = await this.$obj.Files.getFloorGraphicFiles(this.floorId)
       },
       async broadcast(){
         this.$socket.sendMsg(this.id,'enterGraphic',this.floorId)
-      },
-      changeblock(){
-        //console.log(this.checkList)
       },
       resetCanvas(reset){
         this.reset = reset

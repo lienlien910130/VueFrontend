@@ -34,6 +34,9 @@
                     <div @click="saveCanvasFile">
                       <i class="draw-icon icon-save"></i>
                     </div>
+                    <div @click="stopAnim">
+                      <i class="el-icon-remove-outline" style="font-size:25px"></i>
+                    </div>
                   </div>  
                 </el-form-item>
                 <el-form-item label="關聯設備">
@@ -115,9 +118,6 @@
                   :predefine="predefineColors" :disabled="isEdit !== true"></el-color-picker>
                 </el-form-item>
                 
-                <!-- <el-form-item>
-                  <el-button type="primary" @click="sendObj">廣播</el-button>
-                </el-form-item> -->
           </el-form>
         </div>
       </el-col>
@@ -171,6 +171,10 @@ export default {
     },
     floorId: {
       type: String
+    },
+    actionObj:{
+      type: Object,
+      default: null
     }
   },
   computed: {
@@ -196,6 +200,7 @@ export default {
   },
   data() {
     return {
+      hasAnimationStarted:false,
       setPointObj:null,
       updateArray:[],
       devicearray:[],
@@ -385,6 +390,19 @@ export default {
               this.canvas.renderAll()
             }
           }
+      },
+      actionObj:{
+        handler:async function(){
+          if(this.actionObj !== null){
+            console.log('actionObj',this.actionObj,this.actionObj.LinkDevice.DeviceId)
+            var index = this.canvas.getObjects().findIndex(o=>o.deviceId == this.actionObj.LinkDevice.DeviceId)
+            var obj = this.canvas.getObjects()[index]
+            obj.set({ visible : true})
+            this.setAnimate(obj,this.actionObj.Action)
+            this.canvas.renderAll()
+          }
+        },
+        immediate:true
       },
     // wsmsg: function () {
     //   // var data = JSON.parse(this.wsmsg.data)
@@ -624,6 +642,14 @@ export default {
               var item = constant.Equipment.filter((item,index) => 
                 item.id == original[i].srcId
               )
+              var index = self.devicearray.findIndex(d=>d.id === original[i].deviceId)
+              var pointstr = ''
+              if(index !== -1){
+                pointstr = 
+                  self.devicearray[index].systemNumber.replace(/\s*/g,'')+
+                  self.devicearray[index].circuitNumber.replace(/\s*/g,'')+
+                  self.devicearray[index].address.replace(/\s*/g,'')
+              }
               await self.addImageProcess(item[0].imgSrc).then((respone) => {
                 const image = new fabric.Image(respone, {
                   scaleX: object[i].scaleX,
@@ -631,15 +657,9 @@ export default {
                   top: object[i].top,
                   left: object[i].left,
                   visible: false,
-                  opacity:object[i].opacity
+                  opacity: pointstr !== '' ? 1 : object[i].opacity
                 }) 
                 self.canvas.add(image)
-                var index = self.devicearray.findIndex(d=>d.id === original[i].deviceId)
-                var pointstr = ''
-                if(index !== -1){
-                  pointstr = self.devicearray[index].systemNumber+self.devicearray[index].circuitNumber+self.devicearray[index].address
-                  pointstr = pointstr.replace(/\s*/g,'')
-                }
                 self.addCustomize(image,original[i].id,original[i].objectName,original[i].blockType,
                 original[i].srcId,original[i].deviceId,pointstr)
               }).catch((err)=>{
@@ -672,14 +692,7 @@ export default {
       var items = this.canvas.getActiveObjects()
       this.isImage = false
       this.isEdit = false
-      if(this.setPointObj !== null){
-        var index = this.canvas.getObjects().findIndex(d => d.id === this.setPointObj.id)
-        var point = this.canvas.getObjects()[index].devicepoint
-        this.sendDevicePointChange(this.setPointObj.deviceId,point)
-        this.setPointObj = null
-      }
       if(items.length === 1){
-        //this.animate(items[0])
         this.isEdit = true
         this.objectName = items[0].objectName
         this.blockType = items[0].blockType  
@@ -715,12 +728,6 @@ export default {
       this.$emit('sendActionToLayer','sel',items)
     },
     selectioncleared(e){ //回到預設值
-      if(this.setPointObj !== null){
-        var index = this.canvas.getObjects().findIndex(d => d.id === this.setPointObj.id)
-        var point = this.canvas.getObjects()[index].devicepoint
-        this.sendDevicePointChange(this.setPointObj.deviceId,point)
-        this.setPointObj = null
-      }
       this.objectName = ''
       this.blockType = '未分類'
       this.fontsize = '14'
@@ -1249,42 +1256,52 @@ export default {
           var index3 = this.devicearray.findIndex(d => d.id === originalDevice)
           this.devicearray[index3].disabled = false
         }
+        var index3 = this.devicearray.findIndex(d => d.id === this.deviceId)
+        var device = this.devicearray[index3]
+        device.disabled = true
         var index2 = this.updateArray.findIndex(d => d.id === this.deviceId && d.systemUsed == false )
         if(index2 !== -1){
             this.updateArray[index2].systemUsed = true
             this.updateArray[index2].linkFloors = [{id:this.floorId}]
-            this.updateArray[index2].systemNumber = ''
-            this.updateArray[index2].circuitNumber = ''
-            this.updateArray[index2].address = ''
+            this.updateArray[index2].systemNumber = device.systemNumber.replace(/\s*/g,'')
+            this.updateArray[index2].circuitNumber = device.circuitNumber.replace(/\s*/g,'')
+            this.updateArray[index2].address = device.address.replace(/\s*/g,'')
         }else{
             var data = { //新
               id:this.deviceId,
               systemUsed:true,
               linkFloors:[{id:this.floorId}],
-              systemNumber:'',
-              circuitNumber:'',
-              address:''
+              systemNumber:device.systemNumber.replace(/\s*/g,''),
+              circuitNumber:device.circuitNumber.replace(/\s*/g,''),
+              address:device.address.replace(/\s*/g,'')
             }
             this.updateArray.push(data)
         }
-        var index3 = this.devicearray.findIndex(d => d.id === this.deviceId)
-        this.devicearray[index3].disabled = true
+        var pointstr = device.systemNumber.replace(/\s*/g,'')+
+        device.circuitNumber.replace(/\s*/g,'')+device.address.replace(/\s*/g,'')
+        if(pointstr.length >= 8){
+          this.devicepoint = pointstr
+          this.canvas.getActiveObject().set({ devicepoint: this.devicepoint })
+          this.canvas.getActiveObject().set({ opacity: 1 })
+          this.isEditChange(true)
+        } 
         console.log(JSON.stringify(this.updateArray))
       }
     },
-    checkDevicePointChange(){
+    async checkDevicePointChange(){
       this.devicepoint = this.devicepoint.replace(/[^\d]/g,'')
-      if(this.devicepoint.length >= 8){
+      if(this.devicepoint.length == 10){
         this.canvas.getActiveObject().set({ devicepoint: this.devicepoint })
         this.canvas.getActiveObject().set({ opacity: 1 })
         this.isEditChange(true)
         this.setPointObj = this.canvas.getActiveObject()
+        await this.sendDevicePointChange(this.deviceId,this.devicepoint)
       }
     },
     async sendDevicePointChange(objId,point){
       var systemNumber = point.substr(0,2)
       var circuitNumber = point.substr(3,3)
-      var address = point.substr(6,5)
+      var address = point.slice(5)
       var index = this.updateArray.findIndex(d => d.id === objId && d.systemUsed == true)
       if(index !== -1){ 
         this.updateArray[index].systemNumber = systemNumber
@@ -1363,13 +1380,13 @@ export default {
             clonedObj.forEachObject(function(obj) {
               canvas.add(obj)
               self.addCustomize(obj,null,_clipboard.objectName,_clipboard.blockType,
-              _clipboard.srcId,_clipboard.deviceId,_clipboard.devicepoint) 
+              _clipboard.srcId,'','') 
             })
             clonedObj.setCoords()
           } else {
             canvas.add(clonedObj)
             self.addCustomize(clonedObj,null,_clipboard.objectName,_clipboard.blockType,
-            _clipboard.srcId,_clipboard.deviceId,_clipboard.devicepoint)  
+            _clipboard.srcId,'','')  
           }
           _clipboard.top += 10
           _clipboard.left += 10
@@ -1415,14 +1432,6 @@ export default {
             this.$socket.$ws
         }
     },
-    setAnimate(obj){
-        obj.animate('opacity', obj.opacity === 0.5 ? 1 : 0.5, {
-            duration: 1000,
-            onChange: this.canvas.renderAll.bind(this.canvas),
-            onComplete: () => this.setAnimate(obj),
-            easing: fabric.util.ease.easeInCubic
-        })
-    },
     openLegendWindows(){ // 打開圖例
       this.drawType = 'icon'
       const { href } = this.$router.resolve({
@@ -1457,6 +1466,7 @@ export default {
         this.redo.push(this.state) // 在做上一步時把目前狀態 push 到 redo 陣列
         this.state = lastJSON // 換成上一步的狀態
         this.$emit('sendObjectRedoUndoToLayer',this.canvas.getObjects())
+        this.isEditChange(true)
       })
     },
     doRedo () { //下一步
@@ -1469,6 +1479,7 @@ export default {
         this.undo.push(this.state)
         this.state = lastJSON
         this.$emit('sendObjectRedoUndoToLayer',this.canvas.getObjects())
+        this.isEditChange(true)
       })
     },
     searchBlockType(val){ //區塊顯示開關 先關閉全部再開啟對應的類型
@@ -1490,20 +1501,42 @@ export default {
       })
       this.canvas.renderAll()
     },
-    animate(obj) {
+    stopAnim(){
+      this.hasAnimationStarted = false
+    },
+    setAnimate(obj,type){
+      this.hasAnimationStarted = true
+      switch(type){
+        case '6666':
+          this.animateAddTop(obj)
+          break;
+        case '6664':
+          obj.animate('opacity', obj.opacity === 0.5 ? 1 : 0.5, {
+              duration: 500,
+              onChange: this.canvas.renderAll.bind(this.canvas),
+              onComplete: () => this.setAnimate(obj,'6664'),
+              abort: () => !this.hasAnimationStarted,
+              easing: fabric.util.ease.easeInCubic
+          })
+          break;  
+      }
+    },
+    animateAddTop(obj) {
       obj.animate('top', obj.top += 10  , {
-        duration: 200,
+        duration: 250,
         onChange: this.canvas.renderAll.bind(this.canvas),
-        onComplete: () => this.animate2(obj),
-        easing: fabric.util.ease.easeInBack
+        onComplete: () => this.animateLessTop(obj),
+        abort: () => !this.hasAnimationStarted,
+        easing: fabric.util.ease.easeInSine
       })
     },
-    animate2(obj) {
+    animateLessTop(obj) {
       obj.animate('top', obj.top -= 10  , {
-        duration: 200,
+        duration: 250,
         onChange: this.canvas.renderAll.bind(this.canvas),
-        onComplete: () => this.animate(obj),
-        easing: fabric.util.ease.easeInBack
+        onComplete: () => this.animateAddTop(obj),
+        abort: () => !this.hasAnimationStarted,
+        easing: fabric.util.ease.easeInSine
       })
     }
   }

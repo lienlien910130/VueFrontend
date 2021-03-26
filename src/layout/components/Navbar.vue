@@ -136,10 +136,8 @@
 <script>
 
 import { mapGetters } from 'vuex'
+import { formatTime } from '@/utils/index.js'
 
-var padDate = function (value) {
-  return value <10 ? '0' + value:value;
-}
 export default {
   components: {
     Select: () => import('@/components/Select/index.vue'),
@@ -168,21 +166,12 @@ export default {
   async mounted() {
       let _this = this
 	    this.timer = setInterval(() => { 
-        var t = new Date().toLocaleString()
         _this.date = new Date()
       }, 1000)
   },
   filters: {
       formatDate:function (value) {
-        var date = new Date(value)
-        var year = date.getFullYear()
-        var month = padDate(date.getMonth()+1)
-        var day = padDate(date.getDate())
-        var hours = padDate(date.getHours())
-        var minutes = padDate(date.getMinutes())
-        var seconds = padDate(date.getSeconds())
-        return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':'
-         + seconds
+        return formatTime(value, '{y}-{m}-{d} {h}:{i}:{s}')
       }
   },
   watch:{
@@ -250,9 +239,6 @@ export default {
           loading.close()
           this.$store.dispatch('app/openSideBar')
        }
-    },
-    padDate(value) {
-        return value <10 ? '0' + value:value
     }
   }
 }

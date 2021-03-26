@@ -14,7 +14,8 @@ const getDefaultState = () => {
     buildingcontactunit : [],
     buildingusers : [],
     buildingdevices : [],
-    buildingfloors:[]
+    buildingfloors:[],
+    deviceType:[]
   }
 }
 
@@ -50,6 +51,9 @@ const mutations = {
   },
   SET_BUILDINGFLOORS: (state, buildingfloors) => {
     state.buildingfloors = buildingfloors
+  },
+  SET_DEVICETYPE: (state, deviceType) => {
+    state.deviceType = deviceType
   }
 }
 
@@ -151,6 +155,12 @@ const actions = {
         commit('SET_BUILDINGFLOORS', buildingfloors)
         idb.deleteData('buildingFloors')
         idb.saveValue('buildingFloors',buildingfloors)
+        resolve()
+    })
+  },
+  setdeviceType({ commit }, deviceType) {
+    return new Promise((resolve, reject) => {
+        commit('SET_DEVICETYPE', deviceType)
         resolve()
     })
   },

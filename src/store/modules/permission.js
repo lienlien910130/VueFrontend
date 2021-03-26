@@ -45,7 +45,7 @@ function checktemplate(menu){
         return Setting
       case 'drawingControl':
         return DrawingControl
-      case 'devicesManagement':
+      case 'sys-DevicesManagement':
         return DevicesManagement
       case 'sys-Basic':
         return Basic

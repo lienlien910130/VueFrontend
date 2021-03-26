@@ -61,7 +61,7 @@
 
                     <el-link 
                         class="link" 
-                        :href="downloadfile(item.id)"   target="_blank" :style="check(item.id)">
+                        :href="downloadfile(item.id)"  :style="check(item.id)">
                         {{ item.fileOriginalName }}.{{item.extName}}
                     </el-link>
                     <!-- <el-button 

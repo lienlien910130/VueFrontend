@@ -1,8 +1,8 @@
 <template>
 <div>
   <el-button 
-    v-if="title !== 'building'" type="primary" 
-    @click="OpenCreate" style="float:right">新增</el-button>
+    v-if="title !== 'building' && title !== 'graphic'" type="primary" 
+    @click="title == 'address' ? OpenUpdate() : OpenCreate()" style="float:right">{{ title == 'address' ? '儲存' : '新增'}}</el-button>
   <el-table
     :data="tableData.filter(data => !search ||  data.name.toLowerCase().includes(search.toLowerCase()))"
     :key="itemkey"
@@ -10,7 +10,7 @@
     highlight-current-row
     style="width: 100%;"
     empty-text="暫無資料"
-            >
+    height="600">
     <el-table-column
       fixed
       type="index">
@@ -27,8 +27,10 @@
           :width="item.width"
         >
           <template slot-scope="scope">
-              <span v-if="scope.column.property == 'status'"> 
+              <span v-if="scope.column.property == 'status' && title !== 'address'"> 
                 {{ scope.row[scope.column.property] | changeStatus }}</span>
+              <span v-else-if="scope.column.property == 'status' && title == 'address'"> 
+                {{ optionfilter(scope.row[scope.column.property])  }}</span>
               <span v-else-if="scope.column.property == 'removable'"> 
                 {{ scope.row[scope.column.property] | changeRemoveable }}</span>
               <span v-else-if="scope.column.property == 'linkOwners' || 
@@ -39,13 +41,24 @@
                 {{  changeLinkRoles(scope.row[scope.column.property]) }}</span>
               <span v-else-if="scope.column.property == 'linkBuildings'"> 
                 {{  changeLinkBuilding(scope.row[scope.column.property]) }}</span>
+              <el-input v-else-if="scope.column.property == 'systemNumber' || 
+              scope.column.property == 'circuitNumber' ||
+              scope.column.property == 'address' "
+              v-model="scope.row[scope.column.property]"
+              :maxlength="item.maxlength"
+              show-word-limit
+              @change="checkupdate(scope.row)"
+              @input="scope.row[scope.column.property] = scope.row[scope.column.property].replace(/[^\d]/g,'').replace(/\s*/g,'')">
+              </el-input>
               <span v-else >{{  scope.row[scope.column.property] }}</span>
           </template>
         </el-table-column>
     </template>
     <el-table-column
+    v-if="hasColumn"
       width="250px"
-      align="right">
+      align="right"
+      >
       <template slot="header" >
           <el-input
           v-model="search"
@@ -58,7 +71,6 @@
             :key="index"
             class="button-margin-left"
           >
-            
             <el-button
               v-if="option.status !== 'delete'"
               :type="option.type"
@@ -112,6 +124,10 @@ export default {
       dafault : Math.random()
     },
     hasPagin:{
+      type:Boolean,
+      default:true
+    },
+    hasColumn:{
       type:Boolean,
       default:true
     },
@@ -270,12 +286,35 @@ export default {
   },
   data(){
     return{
+      updateArray:[],
       search:''
     }
   },
   methods:{
+    checkupdate(row){
+      var index = this.updateArray.findIndex(d => d.id === row.id)
+      if(index !== -1){
+        this.updateArray[index].systemNumber = row.systemNumber
+        this.updateArray[index].circuitNumber = row.circuitNumber
+        this.updateArray[index].address = row.address
+      }else{
+        var data = {
+          id:row.id,
+          systemNumber:row.systemNumber,
+          circuitNumber:row.circuitNumber,
+          address:row.address
+        }
+        this.updateArray.push(data)
+      }
+      console.log(JSON.stringify(this.updateArray))
+    },
     OpenCreate(){
+      console.log('OpenUpdate')
       this.$emit('handleTableRow', '', 'create')
+    },
+    OpenUpdate(){
+      console.log('OpenUpdate')
+      this.$emit('handleTableRow', this.updateArray)
     },
     handleClickOption(row, option) {
       console.log('handleClickOption',JSON.stringify(row),option)

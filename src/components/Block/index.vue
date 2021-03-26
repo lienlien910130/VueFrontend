@@ -368,6 +368,8 @@ export default {
                 return { height : '220px'}
             }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                 return { height : '190px'}
+            }else if(this.title == 'devicetype'){
+                return { height : '150px'}
             }
         },
         FirstheightChange(){
@@ -381,6 +383,8 @@ export default {
                 return { height : '280px'}
             }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                 return { height : '250px'}
+            }else if(this.title == 'devicetype'){
+                return { height : '210px'}
             }
         },
         noMore () {

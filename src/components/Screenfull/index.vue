@@ -24,12 +24,13 @@ export default {
     click() {
       if (!screenfull.enabled) {
         this.$message({
-          message: 'you browser can not work',
+          message: '無法使用全螢幕',
           type: 'warning'
         })
         return false
       }
       screenfull.toggle()
+      console.log(this.isFullscreen)
     },
     change() {
       this.isFullscreen = screenfull.isFullscreen

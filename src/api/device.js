@@ -13,6 +13,14 @@ const device = {
     apiDeleteDevicesManagement(deviceId){ return req('delete','/devicesManagement/'+deviceId+'/devices') },
     //圖控更新設備-多筆更新
     apiPatchGraphicDevices(data){ return req('patch','/drawingControl/devices',data) },
+    //點位設定-多筆更新
+    apiPatchDevicesAddress(data){ return req('patch','/deviceAddressManagement/s',data) },
+    //設備種類
+    apiGetDefaultFullType(){ return req('get','/deviceTypesManagement/fta') },
+    apiGetDevicesType(){ return req('get','/deviceTypesManagement/a') },
+    apiPostDevicesType(data){ return req('post','/deviceTypesManagement',data) },
+    apiPatchDevicesType(data){ return req('patch','/deviceTypesManagement',data) },
+    apiDeleteDevicesType(deviceTypeId){ return req('delete','/deviceTypesManagement/'+deviceTypeId) },
     //維護保養大項
     apiGetBuildingMaintainsList(){ return req('get','/maintainManagement/buildings/'+this.getBid()+'/maintains') },
     apiGetMaintainsList(maintainListId){ return req('get','/maintainManagement/maintains/'+maintainListId) },

@@ -116,5 +116,53 @@ let Device = {
         })
         return data
     },
+    updateDevicesAddress: async function(data){ //多筆更新
+        var data = await api.device.apiPatchDevicesAddress(data).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    getDefaultFullType: async function(){
+        var data = await api.device.apiGetDefaultFullType().then(response => {
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    },
+    getDeviceType: async function(){
+        var data = await api.device.apiGetDevicesType().then(response => {
+            return response.result.sort((x,y) => x.id - y.id)
+        }).catch(error=>{
+            return []
+        })
+        return data
+    },
+    postDeviceType: async function(data){
+        var data = await api.device.apiPostDevicesType(data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    updateDeviceType: async function(data){
+        var data = await api.device.apiPatchDevicesType(data).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
+    deleteDeviceType: async function(deviceTypeId){
+        var data = await api.device.apiDeleteDevicesType(deviceTypeId).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    },
 }
 export default Device
