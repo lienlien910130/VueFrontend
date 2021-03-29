@@ -301,7 +301,7 @@ export default {
             this.devicearray = this.$deepClone(this.buildingdevices)
             this.devices = this.devicearray.map(v => {
                 this.$set(v, 'value', v.id) 
-                this.$set(v, 'label', v.name) 
+                this.$set(v, 'label', v.linkDeviceTypes[0].name) 
                 this.$set(v,'disabled',v.systemUsed)
                 return v
             })

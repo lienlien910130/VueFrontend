@@ -11,12 +11,16 @@ const device = {
     apiPostDevicesManagement(data){ return req('post','/devicesManagement/'+this.getBid()+'/devices',data) },
     apiPatchDevicesManagement(data){ return req('patch','/devicesManagement/devices',data) },
     apiDeleteDevicesManagement(deviceId){ return req('delete','/devicesManagement/'+deviceId+'/devices') },
+    //設備清單-取得設備種類
+    apiGetDevicesTypeByDevicesManagement(){ return req('get','/devicesManagement/deviceType/a') },
     //圖控更新設備-多筆更新
     apiPatchGraphicDevices(data){ return req('patch','/drawingControl/devices',data) },
     //點位設定-多筆更新
     apiPatchDevicesAddress(data){ return req('patch','/deviceAddressManagement/s',data) },
     //設備種類
-    apiGetDefaultFullType(){ return req('get','/deviceTypesManagement/fta') },
+    apiGetDefaultFullType(){ return req('get','/index/deviceTypes/fta') },
+    //點位設定-取得設備種類
+    apiGetDevicesTypeByDevicesAddress(){ return req('get','/deviceAddressManagement/deviceType/a') },
     apiGetDevicesType(){ return req('get','/deviceTypesManagement/a') },
     apiPostDevicesType(data){ return req('post','/deviceTypesManagement',data) },
     apiPatchDevicesType(data){ return req('patch','/deviceTypesManagement',data) },

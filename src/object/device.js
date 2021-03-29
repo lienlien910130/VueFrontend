@@ -132,12 +132,27 @@ let Device = {
         })
         return data
     },
-    getDeviceType: async function(){
-        var data = await api.device.apiGetDevicesType().then(response => {
-            return response.result.sort((x,y) => x.id - y.id)
-        }).catch(error=>{
-            return []
-        })
+    getDeviceType: async function(type){
+        var data
+        if(type == 'devicesManagement'){
+            data = await api.device.apiGetDevicesTypeByDevicesManagement().then(response => {
+                return response.result.sort((x,y) => x.id - y.id)
+            }).catch(error=>{
+                return []
+            })
+        }else if(type == 'deviceTypesManagement'){
+            data = await api.device.apiGetDevicesType().then(response => {
+                return response.result.sort((x,y) => x.id - y.id)
+            }).catch(error=>{
+                return []
+            })
+        }else{
+            data = await api.device.apiGetDevicesTypeByDevicesAddress().then(response => {
+                return response.result.sort((x,y) => x.id - y.id)
+            }).catch(error=>{
+                return []
+            })
+        }
         return data
     },
     postDeviceType: async function(data){

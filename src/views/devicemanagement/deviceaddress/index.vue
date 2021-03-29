@@ -24,7 +24,7 @@ export default {
             tableData:[],
             config:[
                 { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20'},
-                { label:'類型' , prop:'type',format:'textarea', mandatory:false,message:'請輸入描述',maxlength:'200'},
+                { label:'類型' , prop:'linkDeviceTypes', mandatory:false,message:'請輸入描述',maxlength:'200'},
                 { label: '設備狀況',prop: 'status',format:'DeviceStatusOptions',mandatory:true, message:'請選擇設備狀況'},
                 { label:'系統' , prop:'systemNumber', mandatory:true, message:'請輸入系統編號',
                 isPattern:false,errorMsg:'',maxlength:'2'},
@@ -37,7 +37,8 @@ export default {
                 page: 1,
                 limit: 10,
                 total: 0
-            }
+            },
+            deviceType:[]
         }
     },
     computed: {
@@ -50,7 +51,8 @@ export default {
                 tableData: this.tableData,
                 config:this.config,
                 hasColumn:false,
-                pageSizeList:[50,100]
+                pageSizeList:[50,100],
+                filterData:this.deviceType
             }
         },
         tableEvent(){
@@ -64,6 +66,7 @@ export default {
         buildingid:{
             handler:async function(){
                 if(this.buildingid !== undefined){
+                    this.deviceType = await this.$obj.Device.getDeviceType('devicesAddress')
                     await this.init()
                 }
             },

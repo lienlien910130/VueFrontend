@@ -39,6 +39,8 @@
               </span>
               <span v-else-if="scope.column.property == 'linkRoles'"> 
                 {{  changeLinkRoles(scope.row[scope.column.property]) }}</span>
+              <span v-else-if="scope.column.property == 'linkDeviceTypes'"> 
+                {{  changeLinkDeviceType(scope.row[scope.column.property]) }}</span>
               <span v-else-if="scope.column.property == 'linkBuildings'"> 
                 {{  changeLinkBuilding(scope.row[scope.column.property]) }}</span>
               <el-input v-else-if="scope.column.property == 'systemNumber' || 
@@ -272,6 +274,21 @@ export default {
           return array.toString()
         }
         return ''
+      } 
+    },
+    changeLinkDeviceType(){
+      return function (val) {
+         var array = []
+          if(val !== null){
+            val.forEach(item => {
+            var data = this.filterData.filter(element=>{
+                return item.id == element.id
+              })
+              array.push(data[0].name)
+            })
+            return array.toString()
+          }
+          return ''
       } 
     },
     page: function() {

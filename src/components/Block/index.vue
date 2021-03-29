@@ -99,6 +99,11 @@
                                 </span>
 
                                 <span 
+                                v-else-if="option.format == 'fullType' ">
+                                {{ changefullType(item[option.prop]) }}
+                                </span>
+
+                                <span 
                                 v-else-if="option.format == 'userInfo' " 
                                 @click="handleClickOption('opendialog',item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
@@ -116,7 +121,6 @@
 
                                 <span 
                                 v-else-if="option.format == 'MaintainContentOptions' || 
-                                option.format == 'DeviceOptions' || 
                                 option.format == 'MaintainProcessOptions' || 
                                 option.format == 'BrandOptions' || option.format == 'ContactUnitOptions' ||
                                 option.format == 'DeviceStatusOptions' "
@@ -138,6 +142,13 @@
                                 >
                                     {{ deviceStr(item[option.prop]) }}
                                 </el-button>
+
+                                <span 
+                                v-else-if="option.format == 'deviceTypeSelect' " 
+                                @click="handleClickOption('openfloorofhouse',item[option.prop])"
+                                style="color:#66b1ff;cursor:pointer">
+                                    {{ changedeviceType(item[option.prop]) }}
+                                </span>
 
                                 <span 
                                 v-else-if="option.format == 'contactunitSelect' " 
@@ -326,7 +337,8 @@ export default {
             'buildingoptions',
             'buildingusers',
             'buildingdevices',
-            'buildingcontactunit'
+            'buildingcontactunit',
+            'deviceType'
         ]),
         label() {
             if (this.$store.state.app.device === 'mobile') {
@@ -425,6 +437,24 @@ export default {
                 }
             }
         },
+        changefullType(){
+            return function (val) {
+                if(val !== null && val !== undefined){
+                    var label = ''
+                    this.deviceType.filter(function(item, index){
+                        var array = item.options.filter((obj,index)=>{
+                           return obj.value == val
+                        })
+                        if(array.length){
+                           label = array[0].label 
+                        }
+                    })
+                    return label
+                }else{
+                    return ""
+                }
+            } 
+        },
         selectStr(){ //單選
             return function (a) {
                 if(a !== null && a !== undefined){
@@ -481,6 +511,18 @@ export default {
                     return ""
                 }
             } 
+        },
+        changedeviceType(){
+            return function (a) {
+                if(a !== null && a.length){
+                    let _array = this.selectData.filter((item, index) => 
+                        item.id == a[0].id
+                    )
+                    return _array[0].label
+                }else{
+                    return ""
+                }
+            }
         },
         changeMaintain(){
             return function (a) {

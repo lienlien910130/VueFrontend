@@ -102,8 +102,24 @@
                 </el-select>
 
                 <el-select
+                    v-else-if="item.format =='deviceTypeSelect'"
+                    v-model="temp[item.prop]"
+                    filterable
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                        <el-option
+                        v-for="(item,index) in selectData"
+                        :key="index"
+                        :label="item.label"
+                        :value="item.id"
+                        >
+                        </el-option>  
+                </el-select>
+
+                <el-select
                     v-else-if="item.format == 'deviceSelect' || item.format =='contactunitSelect' || 
-                    item.format == 'inspectionSelect' || item.format =='roleSelect' ||  item.format =='buildingSelect' "
+                    item.format == 'inspectionSelect' || item.format =='roleSelect' ||  item.format =='buildingSelect'"
                     v-model="temp[item.prop]"
                     filterable
                     multiple 
@@ -120,8 +136,27 @@
                 </el-select>
 
                 <el-select
-                    v-else-if="item.format =='DeviceOptions' 
-                    || item.format =='BrandOptions' || 
+                    v-else-if="item.format == 'fullType' "
+                    v-model="temp[item.prop]"
+                    filterable
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                        <el-option-group
+                        v-for="group in selectfilter('fullTypeSelect')"
+                        :key="group.label"
+                        :label="group.label">
+                        <el-option
+                            v-for="item in group.options"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                        </el-option-group>
+                </el-select>
+
+                <el-select
+                    v-else-if="item.format =='BrandOptions' || 
                     item.format =='MaintainContentOptions' 
                     || item.format =='MaintainProcessOptions' || item.format == 'DeviceStatusOptions' 
                     || item.format == 'ContactUnitOptions' || item.format == 'LackStatusOptions'
@@ -411,7 +446,8 @@ export default {
             'buildingdevices',
             'buildingcontactunit',
             'buildingroles',
-            'buildingarray'
+            'buildingarray',
+            'deviceType'
         ]),
         label() {
             if (this.$store.state.app.device === 'mobile') {
@@ -505,6 +541,8 @@ export default {
                                 this.$set(v, 'id', v.id) 
                                 return v
                             })
+                        case 'fullTypeSelect':
+                            return this.deviceType
                     }
                 }else{
                     return ""

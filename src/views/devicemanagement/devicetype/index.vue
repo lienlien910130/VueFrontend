@@ -30,7 +30,8 @@ export default {
     },
     computed:{
         ...mapGetters([
-            'buildingid'
+            'buildingid',
+            'deviceType'
         ]),
         blockAttrs() {
             return {
@@ -63,7 +64,8 @@ export default {
                     {
                         label: '設備類型',
                         prop: 'fullType',
-                        mandatory:true, message:'請輸入設備類型',isSelect:true,options:[],selectType:'',select:'',
+                        format:'fullType',
+                        mandatory:true, message:'請輸入設備類型',isSelect:true,options:[],selectType:'fullType',select:'',
                         isSort:true,isHidden:false,maxlength:'20'
                     },
                     {
@@ -111,8 +113,6 @@ export default {
         buildingid:{
             handler:async function(){
                 if(this.buildingid !== undefined){
-                    this.defaultFulltype = await this.$obj.Device.getDefaultFullType()
-                    console.log(JSON.stringify(this.defaultFulltype))
                     await this.init()
                 }
             },
@@ -126,7 +126,7 @@ export default {
             await this.setSelectSetting()
         },
         async saveBuildingDevicesTypeArray(){
-            var data = await this.$obj.Device.getDeviceType()
+            var data = await this.$obj.Device.getDeviceType('deviceTypesManagement')
             this.origin = this.$deepClone(data)
         },
         async getBuildingDevicesType(sort = null){

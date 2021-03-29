@@ -321,7 +321,7 @@ export function removeDuplicates(originalArray, prop) {
 }
 
 export async function changeLabel(selectType,value,selectdata){
-  console.log(selectType,value)
+  //console.log(selectType,value)
   var label = ''
   switch(selectType){
       case 'options':
@@ -366,6 +366,25 @@ export async function changeLabel(selectType,value,selectdata){
             label =  user.length !== 0 ? user[0].name : ''
           }
           break;
+      case 'fullType':
+          var dataArray = store.getters.deviceType == 0 ? 
+            await api.device.apiGetDefaultFullType() : 
+            store.getters.deviceType
+            dataArray.filter(function(item, index){
+              var array = item.options.filter((obj,index)=>{
+                return obj.value == value
+              })
+              if(array.length){
+                label = array[0].label 
+              }
+            })
+        break;
+      case 'deviceType':
+        let devicetype = selectdata.filter((item, index) => 
+              item.id == value.id
+        )
+        label = devicetype[0].name
+        break;
       case 'collaborateBool': 
           label = value == true ? '配合中' : '未配合'
           break;
@@ -374,19 +393,21 @@ export async function changeLabel(selectType,value,selectdata){
           break;
       case 'dateOfYear':
           if(value !== null){
-            var date = value.split(' ')
-            var _date = new Date(date[0])
-            label = _date.getFullYear()
+            label = formatTime(value, '{y}')
+            // var date = value.split(' ')
+            // var _date = new Date(date[0])
+            // label = _date.getFullYear()
           }
           break;
       case 'dateOfDate': 
           if(value !== null){
-            var _date = value.split(' ')
-            var date = new Date(_date[0])
-            var year=date.getFullYear()
-            var month= date.getMonth()+1<10 ? "0"+(date.getMonth()+1) : date.getMonth()+1
-            var day=date.getDate()<10 ? "0"+date.getDate() : date.getDate()
-            label =  year+"-"+month+"-"+day
+            label = formatTime(value, '{y}-{m}-{d}')
+            // var _date = value.split(' ')
+            // var date = new Date(_date[0])
+            // var year=date.getFullYear()
+            // var month= date.getMonth()+1<10 ? "0"+(date.getMonth()+1) : date.getMonth()+1
+            // var day=date.getDate()<10 ? "0"+date.getDate() : date.getDate()
+            // label =  year+"-"+month+"-"+day
           }
           break;
       default:
@@ -413,7 +434,7 @@ export async function setSelectSetting(config,list,selectdata = null){
     var _temp = 
       item.selectType == 'contactunit' 
       || item.selectType == 'usageOfFloor' 
-      || item.selectType == 'user'  ?  
+      || item.selectType == 'user' || item.selectType == 'deviceType'  ?  
           removeDuplicates(concatarray,'id') : 
           concatarray.filter(function(element, index, arr){
               return arr.indexOf(element) === index
@@ -472,6 +493,11 @@ export function changeLink(title,content,action){
         content.linkMaintainVendors.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
         array.push({ id:content.linkMaintainVendors.id == undefined ? content.linkMaintainVendors : content.linkMaintainVendors.id })
     content.linkMaintainVendors = array
+    array = []
+    action === 'open' ? 
+      content.linkDeviceTypes.forEach(item=>{ array = item.id == undefined ? item : item.id  }) :
+      array.push({ id:content.linkDeviceTypes.id == undefined ? content.linkDeviceTypes : content.linkDeviceTypes.id })
+    content.linkDeviceTypes = array
   }else if(title === 'maintain'){
     var array = []
     action === 'open' ? 

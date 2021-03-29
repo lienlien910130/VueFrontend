@@ -23,6 +23,7 @@ const getters = {
   buildingusers : state => state.building.buildingusers,
   buildingfloors : state => state.building.buildingfloors,
   buildingdevices : state => state.building.buildingdevices,
+  deviceType : state => state.building.deviceType,
   json: state => state.graphic.json,
   permission_routes: state => state.permission.routes
 }
