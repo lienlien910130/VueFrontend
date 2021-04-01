@@ -26,6 +26,7 @@
 <script>
 
 export default {
+    name: 'Select',
     props:{
       selectData: {
           type: Array,

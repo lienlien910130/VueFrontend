@@ -62,6 +62,11 @@ import { removeDuplicates } from '@/utils/index';
         deviceOptions:[]
       }
     },
+    computed:{
+      ...mapGetters([
+        'deviceType'
+      ]),
+    },
     watch: {
       treeData:{
         handler:async function(){
@@ -94,13 +99,22 @@ import { removeDuplicates } from '@/utils/index';
           }
           var typeArray = removeDuplicates(obj.data,'type') //去除掉重複的設備種類
           for(let item of typeArray){ //針對設備種類篩選對應的
-            var typeObj = await this.$obj.Setting.getOption(item.type)
+            var str 
+            this.deviceType.filter(function(element, index){
+              var array = element.options.filter((obj,index)=>{
+                return obj.value == item.linkDeviceTypes[0].fullType
+              })
+              if(array.length){
+                str = array[0].label 
+              }
+            })
+            //var typeObj = await this.$obj.Setting.getOption(item.type)
             var typedata = obj.data.filter((element,index)=>{
               return element.type == item.type
             })
             const _temp = { 
-                id: item.type,
-                name: typeObj[0].textName,
+                id: item.linkDeviceTypes[0].id,
+                name: str,
                 count:typedata.length,
                 leaf: false,
                 children: typedata

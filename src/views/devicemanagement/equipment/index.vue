@@ -30,7 +30,8 @@ export default {
     },
     computed:{
         ...mapGetters([
-            'buildingid'
+            'buildingid',
+            'deviceType'
         ]),
         blockAttrs() {
             return {
@@ -38,7 +39,7 @@ export default {
                 config: this.tableConfig,
                 title:'equipment',
                 sortArray:this.sortArray,
-                selectData:this.deviceType
+                selectData:this.devicetype
             }
         },
         blockEvent(){
@@ -55,7 +56,7 @@ export default {
                 dialogStatus: this.dialogStatus,
                 buttonsName: this.dialogButtonsName,
                 config: this.tableConfig,
-                selectData:this.deviceType
+                selectData:this.devicetype
             }
         }
     },
@@ -63,37 +64,18 @@ export default {
         return {
             tableConfig:[
                     {
+                        label: '設備名稱',
+                        prop: 'linkDeviceTypes',
+                        format:'deviceName',
+                        isHidden:false
+                    },
+                    {
                         label: '設備種類',
                         prop: 'linkDeviceTypes',
                         format:'deviceTypeSelect',
                         mandatory:true, message:'請選擇設備種類',isSelect:true,options:[],
                         selectType:'deviceType',select:'',isSort:true,isHidden:false,type:'string',typemessage:''
                     },
-                    // {
-                    //     label: '廠牌名稱',
-                    //     prop: 'brand',
-                    //     format:'BrandOptions',
-                    //     mandatory:true, message:'請選擇廠牌名稱',isSelect:true,options:[],
-                    //     selectType:'options',select:'',isSort:true,isHidden:false
-                    // },
-                    // {
-                    //     label: '設備型號',
-                    //     prop: 'productId',
-                    //     mandatory:true, message:'請選擇廠牌名稱',isSelect:false,options:[],selectType:'',
-                    //     isSort:true,isHidden:false,maxlength:'20'
-                    // },
-                    // {
-                    //     label: '設備名稱',
-                    //     prop: 'name',
-                    //     mandatory:true, message:'請選擇設備名稱',isSelect:false,options:[],selectType:'',
-                    //     isSort:true,isHidden:false,maxlength:'20'
-                    // },
-                    // {
-                    //     label: '國家認證編號',
-                    //     prop: 'certificationNumber',
-                    //     mandatory:true, message:'請輸入國家認證編號',isSelect:false,options:[],selectType:'',
-                    //     isSort:true,isHidden:true,maxlength:'20'
-                    // },
                     {
                         label: '購買日期',
                         prop: 'dateOfPurchase',
@@ -151,12 +133,12 @@ export default {
             origin:[],
             listQueryParams:{
                 page: 1,
-                limit: 10,
+                limit: 12,
                 total: 0
             },
             selectSetting:[],
             sortArray:[],
-            deviceType:[]
+            devicetype:[]
         }
     },
     watch:{
@@ -164,15 +146,24 @@ export default {
             handler:async function(){
                 if(this.buildingid !== undefined){
                     var data = await this.$obj.Device.getDeviceType('devicesManagement')
-                    this.deviceType = data.map(v => {
+                    this.devicetype = data.map(v => {
+                        var label = ''
+                        this.deviceType.filter(function(item, index){
+                            var array = item.options.filter((obj,index)=>{
+                                return obj.value == v.fullType
+                            })
+                            if(array.length){
+                                label = array[0].label 
+                            }
+                        })
                         this.$set(v, 'value', v.id) 
-                        this.$set(v, 'label', v.name) 
+                        this.$set(v, 'label', '【'+label+'】-- '+v.name) 
                         this.$set(v, 'id', v.id) 
                         return v
                     })
                     await this.init()
                     if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
-                        let _array = this.blockData.filter((item, index) => 
+                        let _array = this.origin.filter((item, index) => 
                             item.id == this.$route.params.target
                         )
                         await this.handleBlock('equipment','open',_array[0])
@@ -190,7 +181,6 @@ export default {
         },
         async saveBuildingDevicesManageArray(){
             var data = await this.$obj.Device.getBuildingDevicesManage()
-            console.log(JSON.stringify(data))
             this.origin = this.$deepClone(data)
         },
         async getBuildingDevicesManage(sort = null){
@@ -242,7 +232,7 @@ export default {
             this.blockData = data
         },
         async setSelectSetting(){
-            this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData,this.deviceType)
+            this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData,this.devicetype)
             this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
         },
         async handleBlock(title,index, content) { //設備

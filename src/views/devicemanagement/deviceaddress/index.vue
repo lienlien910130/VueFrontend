@@ -23,9 +23,9 @@ export default {
             originalDevice:[],
             tableData:[],
             config:[
-                { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20'},
+                { label:'名稱' , prop:'deviceName', mandatory:true, message:'請輸入名稱',maxlength:'20'},
                 { label:'類型' , prop:'linkDeviceTypes', mandatory:false,message:'請輸入描述',maxlength:'200'},
-                { label: '設備狀況',prop: 'status',format:'DeviceStatusOptions',mandatory:true, message:'請選擇設備狀況'},
+                { label:'設備狀況',prop: 'status',format:'DeviceStatusOptions',mandatory:true, message:'請選擇設備狀況'},
                 { label:'系統' , prop:'systemNumber', mandatory:true, message:'請輸入系統編號',
                 isPattern:false,errorMsg:'',maxlength:'2'},
                 { label:'迴路' , prop:'circuitNumber', mandatory:true, message:'請輸入迴路編號',

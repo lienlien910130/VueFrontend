@@ -25,6 +25,7 @@
 
 <script>
 export default {
+  name: 'menuTree',
     props:['data','selectId'],
     watch:{
       data:{

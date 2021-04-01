@@ -46,6 +46,13 @@
                             新增
                     </el-button>
                     <el-button
+                        v-if="title == 'maintain'"
+                        class="filter-item" 
+                        type="primary" 
+                        @click="change">
+                            檢視細項
+                    </el-button>
+                    <el-button
                         v-if="title == 'equipment'"
                         class="filter-item" 
                         type="primary" 
@@ -104,6 +111,11 @@
                                 </span>
 
                                 <span 
+                                v-else-if="option.format == 'deviceName' ">
+                                {{ changedeviceType(item[option.prop]) }}
+                                </span>
+
+                                <span 
                                 v-else-if="option.format == 'userInfo' " 
                                 @click="handleClickOption('opendialog',item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
@@ -145,9 +157,9 @@
 
                                 <span 
                                 v-else-if="option.format == 'deviceTypeSelect' " 
-                                @click="handleClickOption('openfloorofhouse',item[option.prop])"
+                                @click="toAnotherPage('deviceTypesManagement',item[option.prop],'')"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ changedeviceType(item[option.prop]) }}
+                                    {{ changefullType(item[option.prop][0]['fullType']) }}
                                 </span>
 
                                 <span 
@@ -189,66 +201,73 @@
               </div>
             </div>
             <div v-else>
+
                 <el-table
-                    :data="blockData"
+                    class="table"
                     :key="itemkey"
+                    :data="blockData"
                     border
                     highlight-current-row
                     style="width: 100%;"
                     empty-text="暫無資料"
                     >
-                    <el-table-column
-                    fixed
-                    type="index">
-                    </el-table-column>
 
-                    <template v-for="(option,index) in tablelabel">
-                        <el-table-column 
-                        align="left" 
-                        :label="option.label" 
-                        :key="index" 
-                        :prop="option.prop" 
-                        sortable
-                        header-align="center"
-                        :width="option.width"
-                        >
-                        <template slot-scope="scope">
-                            <span v-if="scope.column.property == 'status'"> 
-                                {{ scope.row[scope.column.property] | changeStatus }}</span>
-                            <span v-else-if="scope.column.property == 'removable'"> 
-                                {{ scope.row[scope.column.property] | changeRemoveable }}</span>
-                            <span v-else-if="scope.column.property == 'linkOwners' || 
-                            scope.column.property == 'linkFireManagers'"> 
-                                {{ changeUserName(scope.row[scope.column.property]) }}
-                            </span>
-                            <span v-else-if="scope.column.property == 'linkRoles'"> 
-                                {{  changeLinkRoles(scope.row[scope.column.property]) }}</span>
-                            <span v-else-if="scope.column.property == 'linkBuildings'"> 
-                                {{  changeLinkBuilding(scope.row[scope.column.property]) }}</span>
-                            <span v-else >{{  scope.row[scope.column.property] }}</span>
-                        </template>
-                        </el-table-column>
-                    </template>
-                    <el-table-column
-                        width="250px"
-                        align="right">
-                        <template slot-scope="scope">
-                            <span
-                                v-for="(button, index) in buttonsName"
-                                :key="index"
-                                class="button-margin-left"
-                            >
-                                <el-button
-                                :type="index == 0 ? 'primary' : 'info'"
-                                @click="handleClickOption(button.status,scope.row)"
-                                size="mini"
+                            <el-table-column
+                            fixed
+                            type="index">
+                            </el-table-column>
+
+                            <el-table-column 
+                                v-for="(item,index) in tablelabel"
+                                align="left" 
+                                :label="item.label" 
+                                :key="index" 
+                                :prop="item.prop" 
+                                sortable
+                                header-align="center"
                                 >
-                                <span >{{ button.name }}</span>
+                                <template slot-scope="scope">
+
+                                        <span v-if="scope.column.property == 'dateOfFailure' || 
+                                        scope.column.property == 'dateOfCallRepair' || 
+                                        scope.column.property == 'completedTime' " style="width:150px"> 
+                                            {{ scope.row[scope.column.property] | dataStr }}</span>
+                                        <span v-else-if="scope.column.property == 'processStatus'"> 
+                                            {{  optionfilter(scope.row[scope.column.property]) }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'linkDevices'"> 
+                                            <!-- {{ deviceStr(scope.row[scope.column.property]) }} -->
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'linkContactUnits'"> 
+                                            {{ multipleStr('contactunit',scope.row[scope.column.property]) }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
+                                            <i v-if="scope.row[scope.column.property].length == 0" class="el-icon-close"></i>
+                                            <i v-else class="el-icon-check"></i>
+                                        </span>
+
+                                        <span v-else>{{  scope.row[item.prop] }}</span>
+                                </template>
+                            </el-table-column>
+                            
+                            <el-table-column
+                            fixed="right"
+                            label="操作">
+                            <template slot="header" >
+                                <i class="el-icon-circle-plus-outline" 
+                                @click="handleTableClick('empty','')" 
+                                style="cursor: pointer;font-size:25px;float:right"></i>
+                            </template>
+                            <template slot-scope="scope">
+                                <el-button v-if="title !== 'lack'" @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
+                                <i class="el-icon-folder-opened"  
+                                style="cursor: pointer;float:right"></i>
                                 </el-button>
-                            </span>
-                        </template>
-                    </el-table-column>
-                </el-table>
+                                <el-button @click="handleTableClick('open',scope.row)" type="primary" size="small">編輯</el-button>
+                                <el-button type="info" size="small" @click="handleTableClick('delete',scope.row)">刪除</el-button> 
+                            </template>
+                            </el-table-column>
+                    </el-table>
             </div>
         </div>
     </el-row>
@@ -275,6 +294,15 @@ import moment from 'moment'
 import { mapGetters } from 'vuex'
 
 export default {
+    name:'Block',
+    components:{
+        Table: () => import('@/components/Table/Table.vue')
+    },
+    filters:{
+        dataStr: function(value){
+            return value !== null ? moment(value).format('YYYY-MM-DD') : ''
+        }
+    },
     props:{
         blockData: {
             type: Array,
@@ -377,7 +405,7 @@ export default {
             }else if(this.title == 'maintain'){
                 return { height : '130px'}
             }else if(this.title == 'equipment'){
-                return { height : '220px'}
+                return { height : '150px'}
             }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                 return { height : '190px'}
             }else if(this.title == 'devicetype'){
@@ -392,7 +420,7 @@ export default {
             }else if(this.title == 'maintain'){
                 return { height : '190px'}
             }else if(this.title == 'equipment'){
-                return { height : '280px'}
+                return { height : '210px'}
             }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                 return { height : '250px'}
             }else if(this.title == 'devicetype'){
@@ -518,7 +546,8 @@ export default {
                     let _array = this.selectData.filter((item, index) => 
                         item.id == a[0].id
                     )
-                    return _array[0].label
+                    var str = _array[0].label.split('--')
+                    return str[1]
                 }else{
                     return ""
                 }
@@ -537,7 +566,8 @@ export default {
         },
         total: function() {
             return this.listQueryParams.total || 0
-        }
+        },
+        
     },
     watch:{
         config:{
@@ -598,13 +628,15 @@ export default {
             this.$emit('update:selectSetting', this.selectSetting)
             this.$emit('clickPagination',this.sort)
         },
-        change(type){
-            if(type == 'table'){
-                this.isTable = true
-            }else{
-                this.isTable = false
-            }
-        }
+        change(){
+            this.$emit('changeTable',true)
+        },
+        clickPagination(){
+            
+        },
+        async handleTabClick(tab, event) {
+            
+        },
     }
 }
 </script>
@@ -643,6 +675,11 @@ export default {
         overflow-x:hidden;
         overflow-y:auto;
         line-height: 25px;
+
+        .table{
+            padding-right: 0px;
+            padding-left: 0px;
+        }
     }
 }
 .files {

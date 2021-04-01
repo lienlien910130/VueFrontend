@@ -39,6 +39,8 @@
               </span>
               <span v-else-if="scope.column.property == 'linkRoles'"> 
                 {{  changeLinkRoles(scope.row[scope.column.property]) }}</span>
+              <span v-else-if="scope.column.property == 'deviceName'"> 
+                {{  changeLinkDeviceName(scope.row['linkDeviceTypes']) }}</span>
               <span v-else-if="scope.column.property == 'linkDeviceTypes'"> 
                 {{  changeLinkDeviceType(scope.row[scope.column.property]) }}</span>
               <span v-else-if="scope.column.property == 'linkBuildings'"> 
@@ -114,6 +116,7 @@ import { mapGetters } from 'vuex'
 import moment from 'moment'
 
 export default {
+  name: 'TableIndex',
   props:{
     title: {
       type: String
@@ -186,7 +189,8 @@ export default {
       'buildingdevices',
       'buildingcontactunit',
       'buildingroles',
-      'buildingarray'
+      'buildingarray',
+      'deviceType'
     ]),
     optionfilter(){
       return function (a) {
@@ -276,16 +280,32 @@ export default {
         return ''
       } 
     },
+    changeLinkDeviceName(){
+      return function (val) {
+         var array = []
+          if(val !== null){
+            val.forEach(item => {
+              array.push(item.name) 
+             })
+            return array.toString()
+          }
+          return ''
+      }
+    },
     changeLinkDeviceType(){
       return function (val) {
          var array = []
           if(val !== null){
             val.forEach(item => {
-            var data = this.filterData.filter(element=>{
-                return item.id == element.id
+              this.deviceType.filter(function(element, index){
+                var data = element.options.filter((obj,index)=>{
+                  return obj.value == item.fullType
+                })
+                if(data.length){
+                  array.push(data[0].label) 
+                }
               })
-              array.push(data[0].name)
-            })
+             })
             return array.toString()
           }
           return ''

@@ -8,6 +8,7 @@ import vcolorpicker from 'vcolorpicker'
 import locale from 'element-ui/lib/locale/lang/zh-TW'
 import 'element-ui/lib/theme-chalk/index.css'
 import logForTranslate from '@/utils/logForTranslate.js'
+import '@/components/componentRegister.js'
 
 import '@/styles/index.scss' // global css
 
@@ -41,7 +42,7 @@ Vue.use(vcolorpicker)
 
 Vue.config.productionTip = false
 Vue.config.debug = false
-Vue.config.devtools = false
+Vue.config.devtools = true
 Vue.prototype.$socket = socket
 Vue.prototype.$indexedDB = indexedDB
 Vue.prototype.$qs = qs

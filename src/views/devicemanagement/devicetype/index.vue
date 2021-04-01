@@ -114,6 +114,13 @@ export default {
             handler:async function(){
                 if(this.buildingid !== undefined){
                     await this.init()
+                    if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0){
+                        console.log(this.$route.params.target)
+                        let _array = this.origin.filter((item, index) => 
+                            item.id == this.$route.params.target[0].id
+                        )
+                        await this.handleBlock('devicetype','open',_array[0])
+                    } 
                 }
             },
             immediate:true

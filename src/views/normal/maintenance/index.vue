@@ -80,118 +80,61 @@
           </el-row>
             <Dialog 
             v-if="innerVisible === true"
-            v-bind="dialogAttrs" 
+            v-bind="dialogAttrs"
             v-on:handleDialog="handleDialog"></Dialog>
         </div>
 </template>
 <script>
-import { mapGetters } from 'vuex'
+
 import { setSelectSetting,changeLink } from '@/utils/index'
+import { MaintainManagementList, MaintainManagement }  from '@/object/maintainManagement'
+import blockmixin from '@/mixin/blockmixin'
+import dialogmixin from '@/mixin/dialogmixin'
+import sharemixin  from '@/mixin/sharemixin'
 
 export default {
-    components:{ 
-      Block: () => import('@/components/Block/index.vue'),
-      Dialog:() => import('@/components/Dialog/index.vue'),
-    },
+    mixins:[sharemixin,blockmixin,dialogmixin],
     data(){
         return{
+            // dialogTitle:'',
+            // innerVisible:false,
+            // dialogData:[],
+            // dialogStatus:'',
+            // dialogButtonsName:[],
+            // dialogConfig:[],
+            // dialogSelect:[],
+
+
             maintainListId:'',
             maintainId:'',
+
             maintainFiles:[],
-            tableConfig: [
-              {
-                label: '名稱',
-                prop: 'name',
-                format:'MaintainContentOptions',
-                mandatory:true, message:'請選擇名稱',isSelect:true,options:[],
-                        selectType:'options',select:'',isSort:true,isHidden:false
-              },
-              {
-                label: '建立時間',
-                prop: 'createdDate',
-                format:'YYYY-MM-DD',
-                mandatory:true, message:'請選擇建立時間',isSelect:true,options:[],
-                        selectType:'dateOfDate',select:'',isSort:true,isHidden:false
-              },
-              {
-                label: '細項',
-                prop: 'linkMaintains',
-                format:'openmaintain',
-                mandatory:false, message:'請選擇',isSelect:false,isSort:false,type:'array',typemessage:'',isHidden:false
-              },
-              {
-                label: '檢附文件',
-                prop: 'file',
-                format:'openfiles',isSelect:false,isSort:false,isHidden:false
-              },
-            ],
-            blockData:[],
-            deviceList:[],
-            options:[],
-            innerVisible:false,
-            dialogStatus:'',
-            dialogData:[],
-            dialogTitle:'',
-            dialogSelect:[],
-            dialogConfig:[],
-            dialogButtonsName:[],
-            listQueryParams:{
-                page: 1,
-                limit: 10,
-                total: 0
-            },
+            formtableData:[],
+            formtableconfig:[],
             maintainlistQueryParams:{
                 page: 1,
                 limit: 5,
                 total: 0
             },
+            
+            options:[],
+            
             maintainArray:[], //存放linkmaintain
             origin:[], //存放maintainlist
             selectSetting:[],
-            sortArray:[],
-            formtableData:[],
-            formtableconfig:[],
-            
         }
     },
     computed: {
-        ...mapGetters([
-            'id',
-            'buildingid',
-            'buildinginfo',
-            'buildingdevices'
-        ]),
-        label() {
-            if (this.$store.state.app.device === 'mobile') {
-                return 'top'
-            } else {
-                return 'left'
-            }
-        },
-        blockAttrs() {
-            return {
-                blockData: this.blockData,
-                config: this.tableConfig,
-                title:'maintain',
-                deviceList:this.deviceList,
-                sortArray:this.sortArray
-            }
-        },
+        
         blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getBuildingMaintain
+                clickPagination:this.getBuildingMaintain,
+                changeTable:this.changeTable
             }
         },
-        dialogAttrs(){
+        appendAttrs(){
             return{
-                title:this.dialogTitle,
-                visible: this.innerVisible,
-                dialogData: this.dialogData,
-                dialogStatus: this.dialogStatus,
-                buttonsName: this.dialogButtonsName,
-                config: this.dialogConfig,
-                selectData: this.dialogSelect,
                 files:this.maintainFiles,
                 //表格
                 formtableData: this.formtableData,
@@ -199,16 +142,24 @@ export default {
                 listQueryParams:this.maintainlistQueryParams
             }
         }
+        // dialogAttrs(){
+        //     return{
+        //         title:this.dialogTitle,
+        //         visible: this.innerVisible,
+        //         dialogData: this.dialogData,
+        //         dialogStatus: this.dialogStatus,
+        //         buttonsName: this.dialogButtonsName,
+        //         config: this.dialogConfig,
+        //         selectData: this.dialogSelect,
+        //         files:this.maintainFiles,
+        //         //表格
+        //         formtableData: this.formtableData,
+        //         formtableconfig:this.formtableconfig,
+        //         listQueryParams:this.maintainlistQueryParams
+        //     }
+        // }
     },
     watch: {
-      buildingid:{
-        handler:async function(){
-            if(this.buildingid !== undefined){
-                await this.init()
-            }
-        },
-        immediate:true
-      },
       buildingdevices:{
         handler:async function(){
             this.deviceList = this.buildingdevices.map(v => {
@@ -223,6 +174,11 @@ export default {
     },
     methods:{
         async init(){   
+            this.tableConfig = MaintainManagementList.getConfig()
+            this.title = 'maintain'
+            await this.reload()
+        },
+        async reload(){
             this.maintainlistQueryParams = {
                 page: 1,
                 limit: 5,
@@ -233,7 +189,7 @@ export default {
             await this.setSelectSetting()
         },
         async saveBuildingMaintain(){
-            var data = await this.$obj.Device.getBuildingMaintainList()
+            var data = await MaintainManagementList.getBuildingMaintainList()
             this.origin = this.$deepClone(data)
         },
         async getBuildingMaintain(sort = null){ //取得大樓維護保養
@@ -268,6 +224,7 @@ export default {
                 })
             }
             this.blockData = data
+            console.log(JSON.stringify(this.blockData))
         },
         async setSelectSetting(){
             this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
@@ -294,12 +251,12 @@ export default {
                     index < this.maintainlistQueryParams.limit * this.maintainlistQueryParams.page && 
                     index >= this.maintainlistQueryParams.limit * (this.maintainlistQueryParams.page - 1))
                 this.formtableconfig = [
+                    { label:'系統' , prop:'processContent',format:'MaintainContentOptions', mandatory:true, message:'請選擇系統'},
                     { label:'故障日期' , prop:'dateOfFailure',format:'YYYY-MM-DD', mandatory:false, message:'請選擇故障日期'},
-                    { label:'叫修日期' , prop:'dateOfCallRepair',format:'YYYY-MM-DD',  mandatory:true,message:'請選擇叫修日期'},
+                    { label:'叫修日期' , prop:'dateOfCallRepair',format:'YYYY-MM-DD',  mandatory:false,message:'請選擇叫修日期'},
                     { label:'完成時間' , prop:'completedTime',format:'YYYY-MM-DD', mandatory:false, message:'請選擇完成時間'},
                     { label:'處理進度' , prop:'processStatus',format:'MaintainProcessOptions', mandatory:false, message:'請選擇處理進度'},
-                    { label:'處理內容' , prop:'processContent',format:'processContentSelect', mandatory:true, message:'請輸入內容'},
-                    { label:'改善廠商' , prop:'linkContactUnits',format:'contactunitSelect', mandatory:true,message:'請選擇廠商',type:'array',typemessage:''},
+                    { label:'改善廠商' , prop:'linkContactUnits',format:'contactunitSelect', mandatory:false,message:'請選擇廠商',type:'array',typemessage:''},
                     { label:'檢修申報' , prop:'linkInspectionLacks',format:'inspectionSelect', mandatory:false,message:'請選擇申報',type:'array',typemessage:''},
                     { label:'設備' , prop:'linkDevices',format:'deviceSelect', mandatory:true,message:'請選擇設備',type:'array',typemessage:''},
                     { label:'備註' , prop:'note',format:'textarea', mandatory:false,message:'請輸入備註',maxlength:'200'},
@@ -313,16 +270,14 @@ export default {
                         limit: 10,
                         total: 0
                     }
-                    await this.init()
+                    await this.reload()
                 }
             }else if(index === 'empty'){
                 this.dialogTitle = 'createmaintainlist'
                 this.dialogConfig = [{
                                 label: '名稱',
                                 prop: 'name',
-                                format:'MaintainContentOptions',
-                                mandatory:true, message:'請選擇名稱',isSelect:true,options:[],
-                                        selectType:'options',select:'',isSort:true
+                                mandatory:true, message:'請輸入名稱',isSelect:false,isSort:true,maxlength:'20'
                             },
                             {
                                 label: '建立時間',
@@ -358,7 +313,7 @@ export default {
                     if(isOk){
                         this.innerVisible = false
                         index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                        await this.init()
+                        await this.reload()
                     }
                 }else if(index === 'createfile'){
                     const formData = new FormData()
@@ -391,6 +346,33 @@ export default {
                         index <  this.maintainlistQueryParams.limit *  this.maintainlistQueryParams.page && 
                         index >=  this.maintainlistQueryParams.limit * ( this.maintainlistQueryParams.page - 1))
                 }
+            }
+        },
+        async changeTable(value){
+            this.isTable = value
+            if(value){
+                //console.log(JSON.stringify(this.origin))
+                var array = []
+                for(let element of this.origin){
+                    array.push(element['linkMaintains'])
+                }
+                var concatarray = array.reduce(
+                    function(a, b) {
+                        return a.concat(b)
+                    },[]
+                )
+                this.blockData = concatarray
+                this.tablelabel = [
+                    { label:'系統' , prop:'processContent',format:'MaintainContentOptions', mandatory:true, message:'請選擇系統'},
+                    { label:'故障日期' , prop:'dateOfFailure',format:'YYYY-MM-DD', mandatory:false, message:'請選擇故障日期'},
+                    { label:'叫修日期' , prop:'dateOfCallRepair',format:'YYYY-MM-DD',  mandatory:false,message:'請選擇叫修日期'},
+                    { label:'完成時間' , prop:'completedTime',format:'YYYY-MM-DD', mandatory:false, message:'請選擇完成時間'},
+                    { label:'處理進度' , prop:'processStatus',format:'MaintainProcessOptions', mandatory:false, message:'請選擇處理進度'},
+                    { label:'改善廠商' , prop:'linkContactUnits',format:'contactunitSelect', mandatory:false,message:'請選擇廠商',type:'array',typemessage:''},
+                    { label:'檢修申報' , prop:'linkInspectionLacks',format:'inspectionSelect', mandatory:false,message:'請選擇申報',type:'array',typemessage:''},
+                    { label:'設備' , prop:'linkDevices',format:'deviceSelect', mandatory:true,message:'請選擇設備',type:'array',typemessage:''},
+                    { label:'備註' , prop:'note',format:'textarea', mandatory:false,message:'請輸入備註',maxlength:'200'},
+                ]
             }
         },
         async handleMaintain(title ,index, content){

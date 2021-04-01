@@ -47,7 +47,7 @@
             :prop="item.prop"
             :label="item.label"
             v-show="item.format !== 'hide' &&  item.format !== 'openfiles' 
-            &&  item.format !== 'openlacks' "
+            &&  item.format !== 'openlacks' && item.format !== 'deviceName' "
             :rules="[
             { required: item.mandatory, message: item.message},
             item.isPattern ? { pattern: item.pattern , message:item.errorMsg } : 
@@ -348,12 +348,12 @@
 </template>
 
 <script>
-import { changeLink } from '@/utils'
+import { changeLink,formatTime } from '@/utils'
 import { mapGetters } from 'vuex'
 export default {
+    name:'Dialog',
     components:{
         Upload:() => import('@/components/Upload/index.vue'),
-        Table: () => import('@/components/Table/index.vue'),
         DialogTable: () => import('@/components/Table/Table.vue'),
     },
     props:{
@@ -437,6 +437,18 @@ export default {
                     this.treeSelection()
                 })
             },
+        },
+        dialogStatus:{
+            handler:function(){
+                if(this.dialogStatus == 'create'){
+                    console.log(this.temp,this.title,this.dialogStatus)
+                    var date = formatTime(new Date(), '{y}-{m}-{d}')
+                    if(this.title == 'createmaintainlist'){
+                        this.$set(this.temp, "createdDate", date)
+                    }
+                }
+            },
+            immediate:true
         }
     },
     computed:{
@@ -513,8 +525,17 @@ export default {
                     switch(value){
                         case 'deviceSelect':
                             return this.buildingdevices.map(v => {
+                                var label = ''
+                                this.deviceType.filter(function(item, index){
+                                    var array = item.options.filter((obj,index)=>{
+                                        return obj.value == v.linkDeviceTypes[0].fullType
+                                    })
+                                    if(array.length){
+                                        label = array[0].label 
+                                    }
+                                })
                                 this.$set(v, 'value', v.id) 
-                                this.$set(v, 'label', v.name) 
+                                this.$set(v, 'label', '【'+label+'】-- '+ v.linkDeviceTypes[0].name) 
                                 this.$set(v, 'id', v.id) 
                                 return v
                             })

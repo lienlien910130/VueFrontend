@@ -1,9 +1,7 @@
 import api from '@/api'
 
 let Device = {
-    buildingDevice:[],
-    buildingMaintain:[],
-
+    
     getBuildingDevicesManage: async function(){
         var data = await api.device.apiGetBuildingDevicesManagement().then(response => {
             return response.result.sort((x,y) => x.id - y.id)

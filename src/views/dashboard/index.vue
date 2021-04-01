@@ -138,7 +138,11 @@ export default {
         _temp.push({
           value: obj.status,
           name: statusObj.textName,
-          data: this.deviceData.filter((item, index) => item.status == obj.status)
+          data: this.deviceData.filter((item, index) => item.status == obj.status).map(v => {
+                  this.$set(v, 'name', v.linkDeviceTypes[0].name) 
+                  this.$set(v, 'type', v.linkDeviceTypes[0].fullType)
+                  return v
+              })
         })
       }
       this.deviceGroup = _temp

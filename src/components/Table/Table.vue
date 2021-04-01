@@ -24,8 +24,8 @@
                 header-align="center"
                 >
                 <template slot-scope="scope">
-                  <div v-if="scope.column.property == 'lackContent'"
-                        v-html="stringToBr(scope.row[scope.column.property])"></div>
+                        <div v-if="scope.column.property == 'lackContent'"
+                              v-html="stringToBr(scope.row[scope.column.property])"></div>
                         <span v-else-if="scope.column.property == 'status'">
                         {{  changeLabel(scope.row[item.prop]) }}
                         </span>
@@ -69,7 +69,7 @@
                 <el-button type="info" size="small" @click="handleTableClick('delete',scope.row)">刪除</el-button> 
             </template>
             </el-table-column>
-        </el-table>
+    </el-table>
 
         <div v-if="total > 0 " class="pagination-container">
             <el-pagination
@@ -91,6 +91,7 @@ import { mapGetters } from 'vuex'
 import moment from 'moment'
 
 export default {
+  name: 'Table',
   props:{
     itemkey: {
       type: Number,

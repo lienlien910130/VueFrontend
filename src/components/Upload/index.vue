@@ -93,7 +93,8 @@
 
 <script>
   export default {
-      props:{
+    name:'Upload',
+    props:{
         limit:{ 
             type: Number,
             default:5 

@@ -136,7 +136,7 @@ import { mapGetters } from 'vuex'
 
 
 export default {
-  name: "App",
+  name: "Graphic",
   props:{
     type: {
       type: String,

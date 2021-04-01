@@ -7,6 +7,7 @@ import echarts from 'echarts'
 import resize from './mixins/resize'
 
 export default {
+  name:'MixChart',
   mixins: [resize],
   props: {
     className: {

@@ -14,6 +14,7 @@
 
 <script>
 export default {
+  name:'AutoWidthOption',
   props: {
     value: {
       type: Boolean,
