@@ -22,13 +22,7 @@ export default {
             dialogStatus: this.dialogStatus,
             buttonsName: this.dialogButtonsName,
             config: this.dialogConfig,
-            selectData: this.dialogSelect,
-            
-            // files:this.maintainFiles,
-            // //表格
-            // formtableData: this.formtableData,
-            // formtableconfig:this.formtableconfig,
-            // listQueryParams:this.maintainlistQueryParams
+            selectData: this.dialogSelect
         }
     }
   }

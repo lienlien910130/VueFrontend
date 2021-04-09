@@ -1506,6 +1506,7 @@ export default {
     },
     setAnimate(obj,type){
       this.hasAnimationStarted = true
+      this.animateAddTop(obj)
       switch(type){
         case '6666':
           this.animateAddTop(obj)

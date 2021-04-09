@@ -30,7 +30,8 @@ export default {
         return false
       }
       screenfull.toggle()
-      console.log(this.isFullscreen)
+      console.log(!this.isFullscreen)
+      this.$store.dispatch('app/toggleScreen',!this.isFullscreen)
     },
     change() {
       this.isFullscreen = screenfull.isFullscreen

@@ -1,6 +1,7 @@
 const getters = {
   sidebar: state => state.app.sidebar,
   device: state => state.app.device,
+  fullscreen: state => state.app.fullscreen,
   token: state => state.user.token,
   menuId: state => state.permission.menuId,
   menu: state => state.permission.menu,

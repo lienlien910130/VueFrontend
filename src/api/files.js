@@ -35,12 +35,12 @@ const files = {
     //維護保養大項
     apiGetMaintainsListFiles(maintainListId){ return req('get','/maintainManagement/maintains/'+maintainListId+'/filesList') } ,
     apiPostMaintainsListFiles(maintainListId,data){ 
-        return req('post','/maintainManagement/1/maintains/'+maintainListId+'/fileUpload',data,true) } ,
+        return req('post','/maintainManagement/'+this.getUid()+'/maintains/'+maintainListId+'/fileUpload',data,true) } ,
 
     //維護保養細項
     apiGetMaintainsFiles(maintainId){ return req('get','/maintainManagement/maintains/list/'+maintainId+'/filesList') } ,
-    apiPostMaintainsFiles(maintainListId,maintainId,data){ 
-        return req('post','/maintainManagement/'+maintainListId+'/maintains/list/'+maintainId+'/fileUpload',data,true) } ,
+    apiPostMaintainsFiles(maintainId,data){ 
+        return req('post','/maintainManagement/'+this.getUid()+'/maintains/list/'+maintainId+'/fileUpload',data,true) } ,
 
     //用圖控檔案id找資料
     apiGetFileIdToGraphicFile(supervisoryControlSystemId){ 

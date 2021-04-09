@@ -46,7 +46,7 @@
             :key="index"
             :prop="item.prop"
             :label="item.label"
-            v-show="item.format !== 'hide' &&  item.format !== 'openfiles' 
+            v-show="item.format !== 'hide' &&  item.format !== 'LackStatusOptions' &&  item.format !== 'openfiles' 
             &&  item.format !== 'openlacks' && item.format !== 'deviceName' "
             :rules="[
             { required: item.mandatory, message: item.message},
@@ -83,12 +83,11 @@
                     </el-date-picker>
                 </span>
 
-                <el-select
+                <!-- <el-select
                     v-else-if="item.format =='select' || item.format =='userInfo' ||
                     item.format == 'floorOfHouseSelect' "
                     v-model="temp[item.prop]"
                     filterable
-                    multiple 
                     placeholder="請選擇"
                     style="width:100%"
                     >
@@ -99,9 +98,9 @@
                         :value="item.id"
                         >
                         </el-option>  
-                </el-select>
+                </el-select> -->
 
-                <el-select
+                <!-- <el-select
                     v-else-if="item.format =='deviceTypeSelect'"
                     v-model="temp[item.prop]"
                     filterable
@@ -115,26 +114,49 @@
                         :value="item.id"
                         >
                         </el-option>  
-                </el-select>
+                </el-select> -->
 
                 <el-select
                     v-else-if="item.format == 'deviceSelect' || item.format =='contactunitSelect' || 
-                    item.format == 'inspectionSelect' || item.format =='roleSelect' ||  item.format =='buildingSelect'"
+                    item.format =='roleSelect' ||  item.format =='buildingSelect'"
                     v-model="temp[item.prop]"
+                    value-key="id"
                     filterable
                     multiple 
                     placeholder="請選擇"
                     style="width:100%"
                     >
                         <el-option
-                        v-for="(item,index) in selectfilter(item.format)"
-                        :key="index"
+                        v-for="item in selectfilter(item.format)"
+                        :key="item.id"
                         :label="item.label"
-                        :value="item.id"
+                        :value="item"
                         >
                         </el-option>  
                 </el-select>
-
+                <!-- 檢修申報下拉選單 -->
+                <el-select
+                    v-else-if="item.format == 'inspectionSelect' "
+                    v-model="temp[item.prop]"
+                    filterable
+                    multiple
+                    value-key="id"
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                        <el-option-group
+                        v-for="group in selectfilter('inspectionSelect')"
+                        :key="group.label"
+                        :label="group.label">
+                        <el-option
+                            v-for="item in group.options"
+                            :key="item.id"
+                            :label="item.label"
+                            :value="item">
+                        </el-option>
+                        </el-option-group>
+                </el-select>
+                <!-- 設備種類下拉選單 -->
                 <el-select
                     v-else-if="item.format == 'fullType' "
                     v-model="temp[item.prop]"
@@ -154,7 +176,7 @@
                         </el-option>
                         </el-option-group>
                 </el-select>
-
+                <!-- 設定的下拉選單(單選) -->
                 <el-select
                     v-else-if="item.format =='BrandOptions' || 
                     item.format =='MaintainContentOptions' 
@@ -192,16 +214,6 @@
                     <el-option label="角色管理" key="9" value="roleSetting"></el-option>
                     <el-option label="帳號管理" key="10" value="accountSetting"></el-option>
                     <el-option label="設定" key="11" value="settings"></el-option>
-                </el-select>
-
-                <el-select
-                    v-else-if="item.format =='processContentSelect'"
-                    v-model="temp[item.prop]"
-                    placeholder="請選擇"
-                    style="width:100%"
-                    >
-                    <el-option label="檢修申報" key="1" value="檢修申報"></el-option>
-                    <el-option label="一般檢查" key="2" value="一般檢查"></el-option>
                 </el-select>
 
                 <el-select
@@ -263,11 +275,11 @@
                 </el-input>
 
                 <div v-else-if="item.format =='openmaintain' ">
-                    <DialogTable 
+                    <Table 
                         :list-query-params.sync="listQueryParams"
                         v-bind="tableAttrs" 
                         v-on="tableEvent">
-                    </DialogTable>  
+                    </Table>  
                 </div>
                 
                 <el-input v-else
@@ -279,17 +291,17 @@
 
             </el-form-item>
         </el-form>
-
+        <!-- 檔案 -->
         <Upload 
         v-if="dialogStatus === 'upload'"
         v-bind="uploadAttrs" 
         v-on:handleFilesUpload="handleFilesUpload"></Upload>   
-        
-        <DialogTable 
+        <!-- 缺失內容 -->
+        <Table 
         v-if="dialogStatus === 'lack'"
         :list-query-params.sync="listQueryParams"
         v-bind="tableAttrs" 
-        v-on="tableEvent"></DialogTable>  
+        v-on="tableEvent"></Table>  
         
         <el-table
             v-if="dialogStatus === 'authority'"
@@ -349,13 +361,11 @@
 
 <script>
 import { changeLink,formatTime } from '@/utils'
-import { mapGetters } from 'vuex'
+import computedmixin  from '@/mixin/computedmixin'
+
 export default {
     name:'Dialog',
-    components:{
-        Upload:() => import('@/components/Upload/index.vue'),
-        DialogTable: () => import('@/components/Table/Table.vue'),
-    },
+    mixins:[computedmixin],
     props:{
         dialogData: {
             type: Array,
@@ -452,15 +462,6 @@ export default {
         }
     },
     computed:{
-        ...mapGetters([
-            'buildingoptions',
-            'buildingusers',
-            'buildingdevices',
-            'buildingcontactunit',
-            'buildingroles',
-            'buildingarray',
-            'deviceType'
-        ]),
         label() {
             if (this.$store.state.app.device === 'mobile') {
                 return 'top'
@@ -526,16 +527,19 @@ export default {
                         case 'deviceSelect':
                             return this.buildingdevices.map(v => {
                                 var label = ''
+                                var name = ''
                                 this.deviceType.filter(function(item, index){
                                     var array = item.options.filter((obj,index)=>{
-                                        return obj.value == v.linkDeviceTypes[0].fullType
+                                        var fulltype = v.linkDeviceTypes.length !== 0 ? v.linkDeviceTypes[0].fullType : ''
+                                        return obj.value == fulltype
                                     })
                                     if(array.length){
                                         label = array[0].label 
+                                        name = v.name
                                     }
                                 })
                                 this.$set(v, 'value', v.id) 
-                                this.$set(v, 'label', '【'+label+'】-- '+ v.linkDeviceTypes[0].name) 
+                                this.$set(v, 'label', '【'+label+'】-- '+ name) 
                                 this.$set(v, 'id', v.id) 
                                 return v
                             })
@@ -570,33 +574,17 @@ export default {
                 }
             }  
         },
-        stringToBr(){
-            return function (a) {
-                return a.replace(/{ln}/g, "<br/>")
-            }
-        },
-        changeLabel(){
-            return function (value) {
-                if(value !== null){
-                    let _array = this.buildingoptions.filter((item, index) => 
-                        item.id == value 
-                    )
-                    return _array[0].textName
-                }
-                return ""
-            }
-        },
-        changeAccess(){
-            return function (value) {
-                if(value !== null){
-                    let _array = this.selectData.filter((item, index) => 
-                        item.id == value 
-                    )
-                    return _array[0].name
-                }
-                return ""
-            }
-        }
+        // changeAccess(){
+        //     return function (value) {
+        //         if(value !== null){
+        //             let _array = this.selectData.filter((item, index) => 
+        //                 item.id == value 
+        //             )
+        //             return _array[0].name
+        //         }
+        //         return ""
+        //     }
+        // }
     },
     data() {
         return {
@@ -607,7 +595,6 @@ export default {
             activeName:'',
             temp:{},
             rangevalue: [],
-            origin:[],
             pictLoading:false,
             isSelectAll:false,
             accessArray:[]
@@ -616,26 +603,32 @@ export default {
     methods: {
         init(){
             if(this.dialogData.length){
-                this.activeName = this.dialogData[0]['id']
-                this.temp = Object.assign({}, this.dialogData[0])
+                this.activeName = this.dialogData[0].getID()
+                this.temp = this.dialogData[0].clone(this.dialogData[0])
                 if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
-                    var _temp =  JSON.stringify(this.dialogData)
-                    this.origin = JSON.parse(_temp)
                     if(this.dialogData[0]['checkStartDate'] !== null){
                         this.rangevalue = [this.dialogData[0]['checkStartDate'],
                         this.dialogData[0]['checkEndDate']]
                     }
                 }
-            }else{
-                this.temp = {}
-                if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
-                    this.$nextTick(() => {
-                        if(this.$refs.dataForm !== undefined){
-                            this.$refs.dataForm.clearValidate()
-                        }
-                    })
-                }
             }
+            if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
+                this.$nextTick(() => {
+                    if(this.$refs.dataForm !== undefined){
+                        this.$refs.dataForm.clearValidate()
+                    }
+                })
+            }
+            // else{
+            //     this.temp = {}
+            //     if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
+            //         this.$nextTick(() => {
+            //             if(this.$refs.dataForm !== undefined){
+            //                 this.$refs.dataForm.clearValidate()
+            //             }
+            //         })
+            //     }
+            // }
         },
         treeSelection(){
             this.pictLoading = true
@@ -670,8 +663,7 @@ export default {
             this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
                 this.$refs.dataForm.validate((valid) => {
                     if (valid) {
-                        const tempData = Object.assign({}, this.temp)
-                        this.$emit('handleDialog',this.title, status , tempData)     
+                        this.$emit('handleDialog',this.title, status , this.temp)     
                     } else {
                         this.$message.error('請輸入完整資訊')
                         return false

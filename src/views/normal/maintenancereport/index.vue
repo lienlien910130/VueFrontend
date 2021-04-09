@@ -66,217 +66,158 @@
           </el-row>
           <el-row :gutter="32">
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <div class="wrapper">
-                  <div class="block-wrapper">
-                      <Block 
-                      :list-query-params.sync="listQueryParams"
-                      :selectSetting.sync="selectSetting"
-                      v-bind="blockAttrs" 
-                      v-on="blockEvent"></Block>
-                  </div>
+                <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                    <Block 
+                    :list-query-params.sync="listQueryParams"
+                    :selectSetting.sync="selectSetting"
+                    v-bind="blockAttrs" 
+                    v-on="blockEvent"></Block>
                 </div>
               </el-col>
           </el-row>
           <Dialog 
             v-if="innerVisible === true"
             v-bind="dialogAttrs" 
+            :specialId="lackFileId"
+            :files="files"
+            :formtableData="formtableData"
+            :formtableconfig="formtableconfig"
+            :listQueryParams="lacklistQueryParams"
             v-on:handleDialog="handleDialog"></Dialog>
         </div>
 </template>
 <script>
 import { mapGetters } from 'vuex'
 import { setSelectSetting } from '@/utils/index'
+import Files  from '@/object/files'
+import Inspection  from '@/object/inspection'
+import InspectionLacks from '@/object/inspectionLacks'
+import blockmixin from '@/mixin/blockmixin'
+import dialogmixin from '@/mixin/dialogmixin'
+import sharemixin  from '@/mixin/sharemixin'
 
 export default {
-    name:'',
-    components:{ 
-      Block: () => import('@/components/Block/index.vue'),
-      Dialog:() => import('@/components/Dialog/index.vue')
-    },
+    mixins:[sharemixin,blockmixin,dialogmixin],
     data(){
         return{
-            tableConfig: [
-              {
-                label: '申報年度',
-                prop: 'declareYear',
-                format:'YYYY',
-                mandatory:true, message:'請選擇年度',isSelect:true,options:[],
-                selectType:'dateOfYear',select:'',isSort:true,isHidden:false
-              },
-              {
-                label: '申報期限',
-                prop: 'declareDeadline',
-                format:'YYYY-MM-DD',
-                mandatory:true, message:'請選擇期限',isSelect:true,options:[],
-                selectType:'dateOfDate',select:'',isSort:true,isHidden:false
-              },
-              {
-                label: '申報日期',
-                prop: 'declareDate',
-                format:'YYYY-MM-DD',
-                mandatory:true, message:'請選擇日期',isSelect:true,options:[],
-                selectType:'dateOfDate',select:'',isSort:true,isHidden:false
-              },
-              {
-                label: '檢測日期',
-                prop: 'rangeDate',
-                format:'range',isSelect:false,isSort:false,isHidden:true,
-                // mandatory:true, message:'請選擇日期'
-              },
-              {
-                label: '專技人員',
-                prop: 'professName',isSelect:true,options:[],
-                        selectType:'',select:'',isSort:true,isHidden:true,maxlength:'10'
-              },
-              {
-                label: '證號',
-                prop: 'certificateNumber',isSelect:false,isSort:true,isHidden:true,maxlength:'20'
-              },
-              {
-                label: '改善期限',
-                prop: 'declarationImproveDate',
-                format:'YYYY-MM-DD',mandatory:true, message:'請選擇日期',isSelect:true,options:[],
-                  selectType:'dateOfDate',select:'',isSort:true,isHidden:true
-              },
-              {
-                label: '改善狀況',
-                prop: 'isImproved',
-                format:'tag',
-                type:'boolean',
-                mandatory:false, isPattern:false,trigger:'change',isSelect:true,options:[],
-                selectType:'reportBool',select:'',isSort:true,isHidden:false
-              },
-              {
-                label: '備註',
-                prop: 'note',
-                format:'textarea',
-                mandatory:false, isPattern:false,isSelect:false,isSort:false,isHidden:true
-              },
-              {
-                label: '檢附文件',
-                prop: 'file',
-                format:'openfiles',isSelect:false,isSort:false,isHidden:false
-              },
-              {
-                label: '缺失內容',
-                prop: 'missingContent',
-                format:'openlacks',isSelect:false,isSort:false,isHidden:false
-              }
-            ],
-            blockData: [],
-            files:[],
+            // blockData: [],
+            // tableConfig: [
+            //   {
+            //     label: '申報年度',
+            //     prop: 'declareYear',
+            //     format:'YYYY',
+            //     mandatory:true, message:'請選擇年度',isSelect:true,options:[],
+            //     selectType:'dateOfYear',select:'',isSort:true,isHidden:false
+            //   },
+            //   {
+            //     label: '申報期限',
+            //     prop: 'declareDeadline',
+            //     format:'YYYY-MM-DD',
+            //     mandatory:true, message:'請選擇期限',isSelect:true,options:[],
+            //     selectType:'dateOfDate',select:'',isSort:true,isHidden:false
+            //   },
+            //   {
+            //     label: '申報日期',
+            //     prop: 'declareDate',
+            //     format:'YYYY-MM-DD',
+            //     mandatory:true, message:'請選擇日期',isSelect:true,options:[],
+            //     selectType:'dateOfDate',select:'',isSort:true,isHidden:false
+            //   },
+            //   {
+            //     label: '檢測日期',
+            //     prop: 'rangeDate',
+            //     format:'range',isSelect:false,isSort:false,isHidden:true,
+            //     // mandatory:true, message:'請選擇日期'
+            //   },
+            //   {
+            //     label: '專技人員',
+            //     prop: 'professName',isSelect:true,options:[],
+            //             selectType:'',select:'',isSort:true,isHidden:true,maxlength:'10'
+            //   },
+            //   {
+            //     label: '證號',
+            //     prop: 'certificateNumber',isSelect:false,isSort:true,isHidden:true,maxlength:'20'
+            //   },
+            //   {
+            //     label: '改善期限',
+            //     prop: 'declarationImproveDate',
+            //     format:'YYYY-MM-DD',mandatory:true, message:'請選擇日期',isSelect:true,options:[],
+            //       selectType:'dateOfDate',select:'',isSort:true,isHidden:true
+            //   },
+            //   {
+            //     label: '改善狀況',
+            //     prop: 'isImproved',
+            //     format:'tag',
+            //     type:'boolean',
+            //     mandatory:false, isPattern:false,trigger:'change',isSelect:true,options:[],
+            //     selectType:'reportBool',select:'',isSort:true,isHidden:false
+            //   },
+            //   {
+            //     label: '備註',
+            //     prop: 'note',
+            //     format:'textarea',
+            //     mandatory:false, isPattern:false,isSelect:false,isSort:false,isHidden:true
+            //   },
+            //   {
+            //     label: '檢附文件',
+            //     prop: 'file',
+            //     format:'openfiles',isSelect:false,isSort:false,isHidden:false
+            //   },
+            //   {
+            //     label: '缺失內容',
+            //     prop: 'missingContent',
+            //     format:'openlacks',isSelect:false,isSort:false,isHidden:false
+            //   }
+            // ],
+            // sortArray:[],
+            // listQueryParams:{
+            //     page: 1,
+            //     limit: 10,
+            //     total: 0
+            // },
+
+            // dialogTitle:'',
+            // innerVisible:false,
+            // dialogData:[],
+            // dialogStatus:'',
+            // dialogButtonsName:[],
+            // dialogConfig:[],
+
+            // origin:[],
+            // selectSetting:[],
             inspectionId:'', //檢修申報id
-            lackFileId:'', //缺失檔案id
-            dialogButtonsName:[],
-            dialogConfig:[],
-            dialogTitle:'',
-            dialogData:[],
-            dialogStatus:'',
-            innerVisible:false,
+            inspection:'',
             options:[],
-            listQueryParams:{
-                page: 1,
-                limit: 10,
-                total: 0
-            },
-            selectSetting:[],
-            sortArray:[],
+            lackorigin:[],
+            //dialog額外的參數
+            lackFileId:'', //缺失檔案id
+            files:[],
             formtableData:[],
-            formtableconfig:[
-              {
-                label: '缺失項目',
-                prop: 'lackItem',
-                mandatory:true, message:'請輸入缺失項目',format:'input',maxlength:'200'
-              },
-              {
-                label: '缺失內容',
-                prop: 'lackContent',
-                mandatory:true, message:'請輸入缺失內容',format:'textarea',maxlength:'999'
-              },
-              {
-                label: '改善狀況',
-                prop: 'improveContent',
-                mandatory:false, format:'textarea',maxlength:'999'
-              },
-              {
-                label: '處理進度',
-                prop: 'status',
-                mandatory:false, format:'LackStatusOptions'
-              }
-            ],
+            formtableconfig:InspectionLacks.getConfig(),
             lacklistQueryParams:{
                 page: 1,
                 limit: 10,
                 total: 0
-            },
-            origin:[],
-            lackorigin:[],
+            }
         }
-    },
-    watch: {
-      buildingid:{
-        handler:async function(){
-          if(this.buildingid !== undefined){
-            await this.init()
-          }
-        },
-        immediate:true
-      },
     },
     computed: {
-      ...mapGetters([
-        'id',
-        'buildingid',
-        'buildinginfo'
-      ]),
-      inline() {
-            if (this.$store.state.app.device === 'mobile') {
-                return false
-            } else {
-                return true
-            }
-      },
-      chartwrapper(){
-        if (this.$store.state.app.device === 'mobile') {
-            return 'chart-mwrapper'
-        } else {
-            return 'chart-wrapper'
-        }
-      },
-      blockAttrs() {
-          return {
-            blockData: this.blockData,
-            config: this.tableConfig,
-            title:'reportInspectio',
-            sortArray:this.sortArray
-          }
-      },
       blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getBuildingMaintenanceReport
+                clickPagination:this.getBuildingMaintenanceReport,
+                changeTable:this.changeTable
             }
-      },
-      dialogAttrs(){
-        return{
-            title:this.dialogTitle,
-            visible: this.innerVisible,
-            dialogData: this.dialogData,
-            dialogStatus: this.dialogStatus,
-            buttonsName: this.dialogButtonsName,
-            config: this.dialogConfig,
-            files:this.files,
-            specialId:this.lackFileId,
-             //表格
-            formtableData: this.formtableData,
-            formtableconfig:this.formtableconfig,
-            listQueryParams:this.lacklistQueryParams
-        }
       }
   },
   methods: {
     async init(){
       this.lacklistQueryParams = {page: 1,limit: 10,total: 0}
+      this.tableConfig = Inspection.getConfig()
+      this.title = 'reportInspectio'
+      await this.reloadInspectio()
+    },
+    async reloadInspectio(){
       await this.saveBuildingMaintenanceReport()
       await this.getBuildingMaintenanceReport() 
       await this.setSelectSetting()
@@ -287,12 +228,12 @@ export default {
       await this.getInspectionLack() 
     },
     async saveBuildingMaintenanceReport(){
-      var data = await this.$obj.Report.getBuildingInspection()
-      this.origin = this.$deepClone(data)
+      var data = await Inspection.get()
+      this.origin = data.map(item=>{ return item.clone(item) })
     },
     async getBuildingMaintenanceReport(sort = null) { //取得檢修申報
       this.blockData = []
-      var data = this.$deepClone(this.origin)
+      var data = this.origin.map(item=>{ return item.clone(item) })
       this.listQueryParams.total = data.length
       this.selectSetting.forEach(element=>{
         if(element.select !== ''){
@@ -307,9 +248,6 @@ export default {
           })
         }
       })
-      data = data.filter((item, index) => 
-        index < this.listQueryParams.limit * this.listQueryParams.page && 
-        index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
       if(sort !== '' && sort !== null){
           if(sort == 'declareDeadline' || sort == 'declareDate' || sort == 'declarationImproveDate'){
             data = data.sort(function(x,y){
@@ -342,18 +280,22 @@ export default {
                 return x.isImproved - y.isImproved
             })
         }
-      this.blockData = data
+        data = data.filter((item, index) => 
+          index < this.listQueryParams.limit * this.listQueryParams.page && 
+          index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
+        this.blockData = data
     },  
     async setSelectSetting(){
       this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
       this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
     },
     async saveInspectionLack(){
-      var data =  await this.$obj.Report.getInspectionLack(this.inspectionId)
-      this.lackorigin = this.$deepClone(data)
+      var data =  await InspectionLacks.get(this.inspection.getID())
+      console.log(JSON.stringify(data))
+      this.lackorigin = data.map(item=>{ return item.clone(item) })
     },
     async getInspectionLack(){ //取得缺失內容
-      var data =  this.$deepClone(this.lackorigin)
+      var data = this.lackorigin.map(item=>{ return item.clone(item) })
       this.lacklistQueryParams.total = data.length
       this.formtableData = data.filter((item, index) => 
           index < this.lacklistQueryParams.limit * this.lacklistQueryParams.page && 
@@ -362,10 +304,9 @@ export default {
     async handleBlock(title,index, content) { //檢修申報的操作
       console.log(index,JSON.stringify(content))
       this.dialogData = []
-      this.dialogTitle = 'reportInspectio'
+      this.dialogTitle = this.title
       if(index === 'open'){
-        var temp = this.$deepClone(content)
-        this.dialogData.push(temp)
+        this.dialogData.push(content)
         this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'update'},
           { name:'取消',type:'info',status:'cancel'}]
@@ -373,7 +314,7 @@ export default {
         this.innerVisible = true
         this.dialogStatus = 'update'
       }else if(index === 'delete'){
-        var isDelete = await this.$obj.Report.deleteInspection(content)
+        var isDelete = await content.delete()
         if(isDelete){
           this.$message('刪除成功')
           this.listQueryParams = {
@@ -381,9 +322,10 @@ export default {
                 limit: 10,
                 total: 0
           }
-          await this.init()
+          await this.reloadInspectio()
         }
       }else if(index === 'empty'){
+          this.dialogData.push( Inspection.empty() )
           this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'create'},
           { name:'取消',type:'info',status:'cancel'}]
@@ -391,15 +333,15 @@ export default {
           this.innerVisible = true
           this.dialogStatus = 'create'
       }else if(index === 'openfiles'){
-        this.inspectionId = content
-        this.files = await this.$obj.Files.getBuildingInspectionFiles(this.inspectionId)
-        this.lackFileId = await this.$obj.Report.getInspection(this.inspectionId)
+        this.inspection = content
+        this.files = await content.files()
+        this.lackFileId = await content.getlackfileID()
         this.dialogButtonsName = []
         this.innerVisible = true
         this.dialogStatus = 'upload'
       }else if(index === 'openlacks'){
         this.dialogTitle = 'lack'
-        this.inspectionId = content
+        this.inspection = content
         this.dialogButtonsName = []
         await this.inspectioninit()
         this.dialogStatus = 'lack'
@@ -411,43 +353,42 @@ export default {
         var isOk = false
         if(title === 'reportInspectio'){
           if(index === 'update' || index === 'create'){
-            isOk = index === 'update' ? 
-              await this.$obj.Report.updateInspection(JSON.stringify(content)) :
-              await this.$obj.Report.postInspection(JSON.stringify(content))
+            var isOk = index === 'update' ? await content.update() : await content.create()
             if(isOk){
               index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-              await this.init()
+              await this.reloadInspectio()
             }
             this.innerVisible = false
           }else if(index === 'createfile'){
-              const formData = new FormData();
+              const formData = new FormData()
                 content.forEach(item => {
                   formData.append('file', item.raw)
               })
-              isOk = await this.$obj.Files.postBuildingInspectionFiles(this.inspectionId,formData)
+              isOk = await this.inspection.createfiles(formData) 
               if(isOk){
                 this.$message('上傳成功')
-                this.files = await this.$obj.Files.getBuildingInspectionFiles(this.inspectionId)
+                this.files = await this.inspection.files()
               }
           }else if(index === 'deletefile'){
-            var array = []
-            content.forEach(async(item)=>{
-              array.push(item)
-            })
-            var temp = {
-              id:array.toString()
-            }
-            isOk = await this.$obj.Files.deleteFiles(temp)
+            var data = { id:content.toString() }
+            isOk = await Files.delete(data)
             if(isOk){
               this.$message('刪除成功')
-              this.files = await this.$obj.Files.getBuildingInspectionFiles(this.inspectionId)
+              this.files = await this.inspection.files()
             }
           }else if(index !== 'cancel'){ //更換缺失內容檔案
-            isOk = await this.$obj.Report.postInspectionFiles(this.inspectionId,parseInt(content),
+            const loading = this.$loading({
+                lock: true,
+                text: '更換缺失內容中，請稍後 ...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            })
+            isOk = await this.inspection.settinglackfile(parseInt(content),
             index === 'changeAgain' ? true : false)
             if(isOk){
               this.$message('更新成功')
               this.lackFileId = content
+              loading.close()
             }
           }else{
             this.innerVisible = false
@@ -459,8 +400,8 @@ export default {
     async handleLackDialog(title ,index, content){ //LackDialog相關操作
         this.dialogData = []
         this.dialogTitle = 'lack'
-        this.dialogConfig = []
         if(index === 'empty'){
+          this.dialogData.push( InspectionLacks.empty() )
           this.dialogConfig = this.formtableconfig
           this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'createlack'},
@@ -476,18 +417,16 @@ export default {
           this.innerVisible = true
           this.dialogStatus = 'update'
         }else if(index === 'delete'){
-          var isDelete = await this.$obj.Report.deleteInspectionLack(content)
+          var isDelete = await content.delete()
           if(isDelete){
               this.$message('刪除成功')
               await this.inspectioninit()
           }
         }else if(index === 'createlack' || index === 'updatelack'){
-          var isOk = index === 'createlack' ? 
-          await this.$obj.Report.postInspectionLack(this.inspectionId,JSON.stringify(content)) : 
-          await this.$obj.Report.updateInspectionLack(JSON.stringify(content))
+          var isOk = index === 'createlack' ? await content.create(this.inspection.getID()) : await content.update()
           if(isOk){
               index === 'updatelack' ? this.$message('更新成功') : this.$message('新增成功')
-              await this.handleBlock('lack','openlacks',this.inspectionId)
+              await this.handleBlock('lack','openlacks',this.inspection)
           }
         }else if(index === 'cancel'){
           this.innerVisible = false
@@ -502,11 +441,14 @@ export default {
             limit: 10,
             total: 0
           }
-          await this.handleBlock('lack','openlacks',this.inspectionId)
+          await this.handleBlock('lack','openlacks',this.inspection)
         }else if(index === 'clickPagination'){
           this.lacklistQueryParams = content
           await this.getInspectionLack()
         }
+    },
+    async changeTable(value){
+      this.isTable = value
     }
   }
 }
@@ -570,22 +512,23 @@ export default {
             color: red;
         }
     }
-    .wrapper{
-      background: #fff;
-      padding: 10px;
-      height: 720px;
+    .block-wrapper {
+        background: #fff;
+        padding: 30px 15px;
+        height: 720px;
+    }
+    // .wrapper{
+    //   background: #fff;
+    //   padding: 10px;
+    //   height: 720px;
       
-      .block-wrapper {
-        margin-bottom: 32px;
-        height: 700px;
-        width: 100%;
-        overflow-x: hidden;
-        overflow-y: auto;
-      }
-    }
+    //   .block-wrapper {
+    //     margin-bottom: 32px;
+    //     height: 700px;
+    //     width: 100%;
+    //     overflow-x: hidden;
+    //     overflow-y: auto;
+    //   }
+    // }
     
-    .top{
-        width: 100%;
-    }
-
 </style>

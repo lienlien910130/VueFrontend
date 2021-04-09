@@ -25,29 +25,28 @@
                 >
                 <template slot-scope="scope">
                         <div v-if="scope.column.property == 'lackContent'"
-                              v-html="stringToBr(scope.row[scope.column.property])"></div>
+                            v-html="stringToBr(scope.row[scope.column.property])">
+                        </div>
                         <span v-else-if="scope.column.property == 'status'">
-                        {{  changeLabel(scope.row[item.prop]) }}
+                            {{  changeOptionName(scope.row[item.prop]) }}
                         </span>
-
                         <span v-else-if="scope.column.property == 'dateOfFailure' || 
                           scope.column.property == 'dateOfCallRepair' || 
                           scope.column.property == 'completedTime' " style="width:150px"> 
-                            {{ scope.row[scope.column.property] | dataStr }}</span>
-                          <span v-else-if="scope.column.property == 'processStatus'"> 
-                            {{  changeLabel(scope.row[scope.column.property]) }}
-                          </span>
-                          <span v-else-if="scope.column.property == 'linkDevices'"> 
+                            {{ dataStr(scope.row[scope.column.property],'YYYY-MM-DD') }}
+                        </span>
+                        <span v-else-if="scope.column.property == 'processStatus' || scope.column.property == 'processContent'"> 
+                            {{  changeOptionName(scope.row[scope.column.property]) }}
+                        </span>
+                        <span v-else-if="scope.column.property == 'linkDevices'"> 
                             {{ changeDevice(scope.row[scope.column.property]) }}
-                          </span>
-                          <span v-else-if="scope.column.property == 'linkContactUnits'"> 
+                        </span>
+                        <span v-else-if="scope.column.property == 'linkContactUnits'"> 
                             {{ changeContainUnit(scope.row[scope.column.property]) }}
-                          </span>
-                          <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
-                            <i v-if="scope.row[scope.column.property].length == 0" class="el-icon-close"></i>
-                            <i v-else class="el-icon-check"></i>
-                          </span>
-
+                        </span>
+                        <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
+                            {{ changeInspectionLack(scope.row[scope.column.property]) }}
+                        </span>
                         <span v-else>{{  scope.row[item.prop] }}</span>
                 </template>
             </el-table-column>
@@ -87,11 +86,11 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import moment from 'moment'
+import computedmixin  from '@/mixin/computedmixin'
 
 export default {
   name: 'Table',
+  mixins:[computedmixin],
   props:{
     itemkey: {
       type: Number,
@@ -122,106 +121,7 @@ export default {
       temp:[]
     }
   },
-  filters:{
-    dataStr: function(value){
-        return value !== null ? moment(value).format('YYYY-MM-DD') : ''
-    }
-  },
   computed:{
-    ...mapGetters([
-      'buildingoptions',
-      'buildingusers',
-      'buildingdevices',
-      'buildingcontactunit'
-    ]),
-    changeLabel(){
-            return function (value) {
-                if(value !== null){
-                    let _array = this.buildingoptions.filter((item, index) => 
-                        item.id == value 
-                    )
-                    return _array[0].textName
-                }
-                return ""
-            }
-    },
-    optionfilter(){
-      return function (a) {
-        if(a !== null ){
-          let _array = this.buildingoptions.filter((item, index) => 
-            item.classType == a 
-            )
-          return _array
-        }else{
-          return ""
-        }
-      }   
-    },
-    changeDevice(){
-      return function (val) {
-        var array = []
-        if(val !== null){
-          val.forEach(item=>{
-            var data = this.buildingdevices.filter(element=>{
-              return item.id == element.id
-            })
-            array.push(data[0].name)
-          })
-          return array.toString()
-        }
-        return ''
-      }
-    },
-    changeContainUnit(){
-      return function (val) {
-        var array = []
-        if(val !== null){
-          val.forEach(item=>{
-            var data = this.buildingcontactunit.filter(element=>{
-              return item.id == element.id
-            })
-            array.push(data[0].name)
-          })
-          return array.toString()
-        }
-        return ''
-      } 
-    },
-    changeUserName(){
-      return function (val) {
-        var array = []
-        if(val !== null){
-          val.forEach(item=>{
-            var data = this.buildingusers.filter(element=>{
-              return item.id == element.id
-            })
-            array.push(data[0].name)
-          })
-          return array.toString()
-        }
-        return ''
-      } 
-    },
-    changeLinkRoles(){
-      return function (val) {
-        var array = []
-        if(val !== null){
-          val.forEach(element => {
-          var data = this.$obj.Authority.buildingRole.filter(item=>{
-              return item.id == element
-            })
-            array.push(data[0].name)
-          })
-          return array.toString()
-        }
-        return ''
-      } 
-    },
-    stringToBr(){
-        return function (a) {
-            return a.replace(/{ln}/g, "<br/>")
-        }
-    },
     page: function() {
       return this.listQueryParams.page || 1
     },
@@ -242,7 +142,7 @@ export default {
         type: 'warning',
         center: true
         }).then(() => {
-        this.$emit('handleTableClick',title, index , row.id)
+        this.$emit('handleTableClick',title, index , row)
         }).catch(() => {})
       }else{
         this.$emit('handleTableClick',title, index , row)
@@ -260,7 +160,7 @@ export default {
       this.listQueryParams.page = val
       this.$emit('update:listQueryParams', this.listQueryParams)
       this.$emit('clickPagination', this.listQueryParams)
-    },
+    }
   }
 }
 </script>

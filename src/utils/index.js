@@ -2,6 +2,8 @@
 
 import api from '@/api'
 import store from '@/store'
+
+
 /**
  * Parse the time to string
  * @param {(Object|string|number)} time
@@ -431,13 +433,22 @@ export async function setSelectSetting(config,list,selectdata = null){
               return arr.indexOf(element) === index
           })
     for(let obj of _temp) {
-      var label = await changeLabel(item.selectType,obj,selectdata)
-      var value = typeof obj == 'object' ? obj.id : obj
-      item.options.push({
-            id:obj.id,
-            value:value,
-            label:label
-      })
+      if(obj == null || obj.length == 0){
+        // item.options.push({
+        //       id:obj.id,
+        //       value:value,
+        //       label:label
+        // })
+      }else{
+        var label = await changeLabel(item.selectType,obj,selectdata)
+        var value = typeof obj == 'object' ? obj.id : obj
+        item.options.push({
+              id:obj.id,
+              value:value,
+              label:label
+        })
+      }
+      
     }
   }
   return data
@@ -491,14 +502,14 @@ export function changeLink(title,content,action){
     content.linkDeviceTypes = array
   }else if(title === 'maintain'){
     var array = []
-    action === 'open' ? 
-      content.linkDevices.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-      content.linkDevices.length !== 0 ?
-        content.linkDevices.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
-        // array.push({ id:content.linkDevices.id == undefined ? 
-        //   content.linkDevices : content.linkDevices.id })
-    content.linkDevices = array
-    array = []
+    // action === 'open' ? 
+    //   content.linkDevices.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+    //   content.linkDevices.length !== 0 ?
+    //     content.linkDevices.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
+    //     // array.push({ id:content.linkDevices.id == undefined ? 
+    //     //   content.linkDevices : content.linkDevices.id })
+    // content.linkDevices = array
+    // array = []
     action === 'open' ? 
       content.linkInspectionLacks.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
       content.linkInspectionLacks.length !== 0 ?
@@ -506,13 +517,13 @@ export function changeLink(title,content,action){
         // array.push({ id:content.linkInspectionLacks.id == undefined ? content.linkInspectionLacks : content.linkInspectionLacks.id })
 
     content.linkInspectionLacks = array
-    array = []
-    action === 'open' ? 
-      content.linkContactUnits.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
-      content.linkContactUnits.length !== 0 ?
-        content.linkContactUnits.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
-        // array.push({ id:content.linkContactUnits.id == undefined ? content.linkContactUnits : content.linkContactUnits.id })
-      content.linkContactUnits = array
+    // array = []
+    // action === 'open' ? 
+    //   content.linkContactUnits.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
+    //   content.linkContactUnits.length !== 0 ?
+    //     content.linkContactUnits.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
+    //     // array.push({ id:content.linkContactUnits.id == undefined ? content.linkContactUnits : content.linkContactUnits.id })
+    //   content.linkContactUnits = array
   }else if(title === 'auth'){
     var array = []
     action === 'open' ? 

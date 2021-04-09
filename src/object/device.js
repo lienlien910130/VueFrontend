@@ -1,181 +1,91 @@
-import api from '@/api'
+import Parent from './parent'
+import DeviceType from './deviceType'
 
-let Device = {
+class Device extends Parent {
+ 
+    constructor (data) {
+        super(data)
+        const { name,dateOfPurchase, dateOfWarranty, location, systemNumber, circuitNumber, address,
+            systemUsed,linkKeeperUnits,linkMaintainVendors, linkFloors, linkDeviceTypes  } = data
+        var deviceType = linkDeviceTypes.map(item=>{ return new DeviceType(item) })    
+        this.name = name
+        this.dateOfPurchase = dateOfPurchase
+        this.dateOfWarranty = dateOfWarranty
+        this.location = location
+        this.systemNumber = systemNumber
+        this.circuitNumber = circuitNumber
+        this.address = address
+        this.systemUsed = systemUsed
+        this.linkKeeperUnits = linkKeeperUnits
+        this.linkMaintainVendors = linkMaintainVendors
+        this.linkFloors = linkFloors
+        this.linkDeviceTypes = deviceType
+        return this
+    }
+    clone(data){
+        return new Device(data)
+    }
     
-    getBuildingDevicesManage: async function(){
+    async update(){
+        var data = await api.device.apiPatchDevicesManagement(this).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
+    async create(){
+        var data = await api.device.apiPostDevicesManagement(this).then(response => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
+    async delete(){
+        var data = await api.device.apiDeleteDevicesManagement(this.id).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
+    getName(){
+        var name = this.linkDeviceTypes.length !== 0 ? 
+        '【'+this.linkDeviceTypes[0].getTypeName()+'】'+this.name :  '【】'+this.name
+        return name
+    }
+    static empty(){
+        return new Device({
+            id:'',
+            name:'',
+            dateOfPurchase : null,
+            dateOfWarranty : null,
+            location :'',
+            systemNumber :'',
+            circuitNumber :'',
+            address :'',
+            systemUsed :false,
+            linkKeeperUnits : [],
+            linkMaintainVendors :[],
+            linkFloors :[],
+            linkDeviceTypes: []
+        })
+    }
+    static getConfig(){
+       
+    }
+    
+    static async get (){
         var data = await api.device.apiGetBuildingDevicesManagement().then(response => {
-            return response.result.sort((x,y) => x.id - y.id)
+            var array = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Device(item) })
+            return array
         }).catch(error=>{
             return []
         })
         return data
-    },
-    postBuildingDevicesManage: async function(data){
-        var data = await api.device.apiPostDevicesManagement(data).then(response => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    updateBuildingDevicesManage: async function(data){
-        var data = await api.device.apiPatchDevicesManagement(data).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    updateBuildingGraphicDevices: async function(data){ //多筆更新
-        var data = await api.device.apiPatchGraphicDevices(data).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    deleteBuildingDevicesManage: async function(deviceId){
-        var data = await api.device.apiDeleteDevicesManagement(deviceId).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    getBuildingMaintainList: async function(){
-        var data = await api.device.apiGetBuildingMaintainsList().then(response => {
-            return response.result.sort((x,y) => x.id - y.id)
-        }).catch(error=>{
-            return []
-        })
-        return data
-    },
-    getMaintainList: async function(maintainListId){
-        var data = await api.device.apiGetMaintainsList(maintainListId).then(response => {
-            return response.result[0]
-        }).catch(error=>{
-            return []
-        })
-        return data
-    },
-    postMaintainList: async function(data){
-        var data = await api.device.apiPostMaintainsList(data).then(response => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    updateMaintainList: async function(data){
-        var data = await api.device.apiPatchMaintainsList(data).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    deleteMaintainList: async function(maintainListId){
-        var data = await api.device.apiDeleteMaintainsList(maintainListId).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    getBuildingMaintainListOfMaintain: async function(maintainListId){
-        var data = await api.device.apiGetListMaintains(maintainListId).then(response => {
-            return response.result.sort((x,y) => x.id - y.id)
-        }).catch(error=>{
-            return []
-        })
-        return data
-    },
-    postMaintain: async function(maintainListId,data){
-        var data = await api.device.apiPostMaintains(maintainListId,data).then(response => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    updateMaintain: async function(data){
-        var data = await api.device.apiPatchMaintains(data).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    deleteMaintain: async function(maintainId){
-        var data = await api.device.apiDeleteMaintains(maintainId).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    updateDevicesAddress: async function(data){ //多筆更新
-        var data = await api.device.apiPatchDevicesAddress(data).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    getDefaultFullType: async function(){
-        var data = await api.device.apiGetDefaultFullType().then(response => {
-            return response
-        }).catch(error=>{
-            return []
-        })
-        return data
-    },
-    getDeviceType: async function(type){
-        var data
-        if(type == 'devicesManagement'){
-            data = await api.device.apiGetDevicesTypeByDevicesManagement().then(response => {
-                return response.result.sort((x,y) => x.id - y.id)
-            }).catch(error=>{
-                return []
-            })
-        }else if(type == 'deviceTypesManagement'){
-            data = await api.device.apiGetDevicesType().then(response => {
-                return response.result.sort((x,y) => x.id - y.id)
-            }).catch(error=>{
-                return []
-            })
-        }else{
-            data = await api.device.apiGetDevicesTypeByDevicesAddress().then(response => {
-                return response.result.sort((x,y) => x.id - y.id)
-            }).catch(error=>{
-                return []
-            })
-        }
-        return data
-    },
-    postDeviceType: async function(data){
-        var data = await api.device.apiPostDevicesType(data).then(response => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    updateDeviceType: async function(data){
-        var data = await api.device.apiPatchDevicesType(data).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
-    deleteDeviceType: async function(deviceTypeId){
-        var data = await api.device.apiDeleteDevicesType(deviceTypeId).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    },
+    }
+    
 }
+
 export default Device

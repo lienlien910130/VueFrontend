@@ -5,7 +5,8 @@ const state = {
     opened: Cookies.get('sidebarStatus') ? !!+Cookies.get('sidebarStatus') : false,
     withoutAnimation: false
   },
-  device: 'desktop'
+  device: 'desktop',
+  fullscreen: false
 }
 
 const mutations = {
@@ -31,6 +32,9 @@ const mutations = {
     state.sidebar.opened = true
     state.sidebar.withoutAnimation = false
   },
+  TOGGLE_SCREEN: (state, fullscreen) => {
+    state.fullscreen = fullscreen
+  },
 }
 
 const actions = {
@@ -42,6 +46,9 @@ const actions = {
   },
   toggleDevice({ commit }, device) {
     commit('TOGGLE_DEVICE', device)
+  },
+  toggleScreen({ commit }, fullscreen) {
+    commit('TOGGLE_SCREEN', fullscreen)
   },
   openSideBar({ commit }){
     commit('OPEN_SIDEBAR')

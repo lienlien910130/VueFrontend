@@ -52,38 +52,16 @@
             
             <div class="files">
                 <div 
-                    v-for="(item,index) in filescopy" :key="item.id" class="filesdiv">
-                    <!-- <el-radio 
-                    v-if="title === 'floor' || title === 'reportInspectio' "
-                    v-model="choose" :label="item.id">{{ title === 'floor' ? '平面圖' : '缺失內容'}}
-                    </el-radio> -->
-                    <el-checkbox v-model="deleteItem" :label="item.id">【{{ index+1 }}】</el-checkbox>
-
+                    v-for="(item,index) in filescopy" :key="item.getID()" class="filesdiv">
+                    <el-checkbox v-model="deleteItem" :label="item.getID()">【{{ index+1 }}】</el-checkbox>
                     <el-link 
                         class="link" 
-                        :href="downloadfile(item.id)"  :style="check(item.id)">
-                        {{ item.fileOriginalName }}.{{item.extName}}
+                        :href="downloadfile(item.getID())"  :style="check(item.getID())">
+                        {{ item.getFileName() }}.{{item.getExtName()}}
                     </el-link>
-                    <!-- <el-button 
-                        class="link" 
-                        @click="downloadfile(item.id)" >
-                        【{{ index+1 }}】{{ item.fileOriginalName }}.{{item.extName}}
-                    </el-button> -->
-                    <!-- <span>
-                        <i class="el-icon-delete del" 
-                        style="float:right;font-size: 25px;margin-top:5px" 
-                        @click="deletefile(item.id)" />
-                    </span> -->
                 </div>
             </div>
         </el-form-item>
-        <!-- <el-form-item v-if="title === 'reportInspectio' || title === 'floor' " label="">
-            <el-button type="primary" @click="onChange">
-                {{ title === 'floor' ? '設定為平面圖' : '設定為缺失內容'}}</el-button>
-        </el-form-item> -->
-        <!-- <el-form-item v-if="title === 'floor'" label="">
-            <el-button type="primary" @click="onChangeFloorImage">設定為平面圖</el-button>
-        </el-form-item> -->
         </el-form>
     </div>
     
@@ -138,7 +116,7 @@
         },
         files:{
             handler:async function(){
-                this.filescopy = this.$deepClone(this.files)
+                this.filescopy = this.files.map(item=>{ return item.clone(item) })
             },
             immediate:true
         }

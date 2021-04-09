@@ -1,11 +1,9 @@
 class Parent {
     constructor (data) {
-        const { id, isDelete,createTime  } = data
-        this.isDelete = isDelete
+        const { id  } = data
         this.id = id
-        this.createTime = createTime
     }
-    
+
     getID(){
         return this.id
     }

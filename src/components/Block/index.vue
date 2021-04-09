@@ -1,45 +1,46 @@
 <template>
 <div>
-    <el-row  :gutter="32">
-        <div class="infinite-list-wrapper">
-            <div>
+    <el-row  :gutter="gutter">
+        <div class="infinite-list-wrapper" :style="{ height: infiniteheight }">
+            <div style="margin-bottom:50px">
                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                    <span>排序</span>
-                    <el-select 
-                    placeholder="請選擇" 
-                    style="width:8%;margin-left:5px;margin-right:5px;"
-                    @change="blockSelect"
-                    v-model="sort"
-                    clearable >
-                        <el-option
-                            v-for="element in sortArray"
-                            :key="element.prop"
-                            :label="element.label"
-                            :value="element.prop">
-                        </el-option>
-                    </el-select>
-
-                    <span v-for="item in selectSetting"
-                    :key="item.prop"
-                    >
-                        <span>{{ item.label }}</span>
+                    <span v-if="isTable == false">
+                        <span>排序</span>
                         <el-select 
                         placeholder="請選擇" 
                         style="width:8%;margin-left:5px;margin-right:5px;"
                         @change="blockSelect"
-                        v-model="item.select"
-                        clearable 
-                        >
+                        v-model="sort"
+                        clearable >
                             <el-option
-                            v-for="element in item.options"
-                            :key="element.id"
-                            :label="element.label"
-                            :value="element.value">
+                                v-for="element in sortArray"
+                                :key="element.prop"
+                                :label="element.label"
+                                :value="element.prop">
                             </el-option>
                         </el-select>
                     </span>
-
+                    <span v-for="item in selectSetting"
+                        :key="item.prop"
+                        >
+                            <span>{{ item.label }}</span>
+                            <el-select 
+                            placeholder="請選擇" 
+                            style="width:8%;margin-left:5px;margin-right:5px;"
+                            @change="blockSelect"
+                            v-model="item.select"
+                            clearable 
+                            >
+                                <el-option
+                                v-for="element in item.options"
+                                :key="element.id"
+                                :label="element.label"
+                                :value="element.value">
+                                </el-option>
+                            </el-select>
+                    </span>
                     <el-button
+                        v-if="isTable == false"
                         class="filter-item" 
                         type="primary" 
                         @click="handleClickOption('empty','')">
@@ -50,14 +51,12 @@
                         class="filter-item" 
                         type="primary" 
                         @click="change">
-                            檢視細項
-                    </el-button>
-                    <el-button
-                        v-if="title == 'equipment'"
-                        class="filter-item" 
-                        type="primary" 
-                        @click="change('table')">
-                            點位
+                            <span v-if="isTable == false">
+                                檢視細項
+                            </span>   
+                            <span v-else>
+                                檢視大項
+                            </span>                  
                     </el-button>
                 </el-col>
             </div>
@@ -77,10 +76,12 @@
                         :key="index"
                         width="100%"
                         >
-                            <div :style="{display:'inline-block','vertical-align':'top','padding-top':'5px',width:labelstyle}">
+                            <div :style="{display:'inline-block','vertical-align':'top','padding-top':'5px',
+                            width:labelstyle}">
                                 <span>{{ option.label }} :</span>
                             </div>
-                            <div :style="{display:'inline-block','word-break':'break-all','padding-top':'5px',width:itemstyle,}">
+                            <div :style="{display:'inline-block','word-break':'break-all','padding-top':'5px',
+                            width:itemstyle,}">
                                 <span 
                                 v-if="option.format == 'YYYY' | option.format === 'YYYY-MM-DD'">
                                 {{ dataStr(item[option.prop],option.format) }}
@@ -102,25 +103,25 @@
 
                                 <span 
                                 v-else-if="option.format == 'select' ">
-                                {{ selectStr(item[option.prop]) }}
+                                <!-- {{ selectStr(item[option.prop]) }} -->
                                 </span>
 
                                 <span 
                                 v-else-if="option.format == 'fullType' ">
-                                {{ changefullType(item[option.prop]) }}
+                                {{ item.getTypeName() }}
                                 </span>
 
-                                <span 
+                                <!-- <span 
                                 v-else-if="option.format == 'deviceName' ">
                                 {{ changedeviceType(item[option.prop]) }}
-                                </span>
+                                </span> -->
 
-                                <span 
+                                <!-- <span 
                                 v-else-if="option.format == 'userInfo' " 
                                 @click="handleClickOption('opendialog',item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ multipleStr('user',item[option.prop]) }}
-                                </span>
+                                </span> -->
 
                                 <span v-else-if="option.format == 'openmaintain' ">
                                     {{ changeMaintain(item[option.prop]) }}
@@ -128,7 +129,7 @@
 
                                 <el-button
                                 v-else-if="option.format == 'openfiles' "
-                                type="text" @click="handleClickOption('openfiles',item['id'])" 
+                                type="text" @click="handleClickOption('openfiles',item)" 
                                 style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
                                 <span 
@@ -137,7 +138,7 @@
                                 option.format == 'BrandOptions' || option.format == 'ContactUnitOptions' ||
                                 option.format == 'DeviceStatusOptions' "
                                 >
-                                {{ optionfilter(item[option.prop]) }}
+                                {{ changeOptionName(item[option.prop]) }}
                                 </span>
                                 
                                 <span 
@@ -152,7 +153,7 @@
                                 type="text"
                                 style="padding:0px"
                                 >
-                                    {{ deviceStr(item[option.prop]) }}
+                                    {{ changeDevice(item[option.prop]) }}
                                 </el-button>
 
                                 <span 
@@ -166,12 +167,13 @@
                                 v-else-if="option.format == 'contactunitSelect' " 
                                 @click="toAnotherPage('sys-Basic',item[option.prop],'co')"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ multipleStr('contactunit',item[option.prop]) }}
+                                    <!-- {{ multipleStr('contactunit',item[option.prop]) }} -->
+                                    {{ changeContainUnit(item[option.prop]) }}
                                 </span>
 
                                 <el-button 
                                 v-else-if="option.format == 'openlacks' "
-                                type="text" @click="handleClickOption('openlacks',item['id'])" 
+                                type="text" @click="handleClickOption('openlacks',item)" 
                                 style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
                                 <span v-else>{{ item[option.prop] }}</span>
@@ -184,8 +186,6 @@
                             v-for="(button, index) in buttonsName"
                             :key="index"
                             >
-                            <!-- <i v-if="index == 0" class="el-icon-view icon" @click="handleClickOption(button.status,item)"></i>
-                            <i v-else class="el-icon-delete icon" @click="handleClickOption(button.status,item)"></i> -->
                             <el-button
                             :type="index == 0 ? 'primary' : 'info'"
                             @click="handleClickOption(button.status,item)"
@@ -201,24 +201,22 @@
               </div>
             </div>
             <div v-else>
-
                 <el-table
                     class="table"
                     :key="itemkey"
                     :data="blockData"
                     border
                     highlight-current-row
-                    style="width: 100%;"
+                    style="width: 100%;margin-top:10px"
                     empty-text="暫無資料"
                     >
-
                             <el-table-column
                             fixed
                             type="index">
                             </el-table-column>
 
                             <el-table-column 
-                                v-for="(item,index) in tablelabel"
+                                v-for="(item,index) in rowlabel"
                                 align="left" 
                                 :label="item.label" 
                                 :key="index" 
@@ -228,22 +226,28 @@
                                 >
                                 <template slot-scope="scope">
 
-                                        <span v-if="scope.column.property == 'dateOfFailure' || 
+                                        <!-- <span v-if="scope.column.property == 'dateOfFailure' || 
                                         scope.column.property == 'dateOfCallRepair' || 
                                         scope.column.property == 'completedTime' " style="width:150px"> 
-                                            {{ scope.row[scope.column.property] | dataStr }}</span>
-                                        <span v-else-if="scope.column.property == 'processStatus'"> 
-                                            {{  optionfilter(scope.row[scope.column.property]) }}
+                                            {{ dataStr(scope.row[scope.column.property],'YYYY-MM-DD')  }}</span> -->
+
+                                        <span v-if="item.format== 'YYYY-MM-DD' || item.format== 'YYYY'" style="width:150px"> 
+                                            {{ dataStr(scope.row[scope.column.property],item.format)  }}</span>
+
+                                        <span v-else-if="scope.column.property == 'processStatus' || scope.column.property == 'processContent'"> 
+                                            {{  changeOptionName(scope.row[scope.column.property]) }}
                                         </span>
                                         <span v-else-if="scope.column.property == 'linkDevices'"> 
-                                            <!-- {{ deviceStr(scope.row[scope.column.property]) }} -->
+                                            {{ changeDevice(scope.row[scope.column.property]) }}
                                         </span>
                                         <span v-else-if="scope.column.property == 'linkContactUnits'"> 
-                                            {{ multipleStr('contactunit',scope.row[scope.column.property]) }}
+                                            {{ changeContainUnit(scope.row[scope.column.property]) }}
                                         </span>
                                         <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
-                                            <i v-if="scope.row[scope.column.property].length == 0" class="el-icon-close"></i>
-                                            <i v-else class="el-icon-check"></i>
+                                            {{ changeInspectionLack(scope.row[scope.column.property]) }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'fullType'"> 
+                                            {{ scope.row.getTypeName() }}
                                         </span>
 
                                         <span v-else>{{  scope.row[item.prop] }}</span>
@@ -253,13 +257,14 @@
                             <el-table-column
                             fixed="right"
                             label="操作">
-                            <template slot="header" >
+                            <template slot="header"  v-if="title !== 'maintain'">
                                 <i class="el-icon-circle-plus-outline" 
                                 @click="handleTableClick('empty','')" 
                                 style="cursor: pointer;font-size:25px;float:right"></i>
                             </template>
                             <template slot-scope="scope">
-                                <el-button v-if="title !== 'lack'" @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
+                                <el-button v-if="title == 'maintain'" 
+                                @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
                                 <i class="el-icon-folder-opened"  
                                 style="cursor: pointer;float:right"></i>
                                 </el-button>
@@ -267,7 +272,7 @@
                                 <el-button type="info" size="small" @click="handleTableClick('delete',scope.row)">刪除</el-button> 
                             </template>
                             </el-table-column>
-                    </el-table>
+                </el-table>
             </div>
         </div>
     </el-row>
@@ -290,19 +295,11 @@
 </template>
 
 <script>
-import moment from 'moment'
-import { mapGetters } from 'vuex'
+import computedmixin  from '@/mixin/computedmixin'
 
 export default {
+    mixins:[computedmixin],
     name:'Block',
-    components:{
-        Table: () => import('@/components/Table/Table.vue')
-    },
-    filters:{
-        dataStr: function(value){
-            return value !== null ? moment(value).format('YYYY-MM-DD') : ''
-        }
-    },
     props:{
         blockData: {
             type: Array,
@@ -323,9 +320,6 @@ export default {
         config: {
             type: Array,
             required: true
-        },
-        tablelabel: {
-            type: Array
         },
         title: {
             type: String,
@@ -361,27 +355,6 @@ export default {
         }
     },
     computed: {
-        ...mapGetters([
-            'buildingoptions',
-            'buildingusers',
-            'buildingdevices',
-            'buildingcontactunit',
-            'deviceType'
-        ]),
-        label() {
-            if (this.$store.state.app.device === 'mobile') {
-                return 'top'
-            } else {
-                return 'left'
-            }
-        },
-        dialogWidth(){
-            if (this.$store.state.app.device === 'mobile') {
-                return "90%"
-            } else {
-                return "30%"
-            }
-        },
         labelstyle(){
             if (this.$store.state.app.device === 'mobile') {
                 return '40%'
@@ -427,21 +400,6 @@ export default {
                 return { height : '210px'}
             }
         },
-        noMore () {
-         return this.count >= this.blockData.length
-        },
-        disabled () {
-         return this.loading || this.noMore
-        },
-        dataStr(){
-            return function (a,b) {
-                if(a != null){
-                    return moment(a).format(b)
-                }else{
-                    return ''
-                }
-            }
-        },
         tagChange(){
             return function (a) {
                 if(this.title == 'reportInspectio' | this.title == 'reportPublicSafe'){
@@ -465,81 +423,82 @@ export default {
                 }
             }
         },
-        changefullType(){
-            return function (val) {
-                if(val !== null && val !== undefined){
-                    var label = ''
-                    this.deviceType.filter(function(item, index){
-                        var array = item.options.filter((obj,index)=>{
-                           return obj.value == val
-                        })
-                        if(array.length){
-                           label = array[0].label 
-                        }
-                    })
-                    return label
-                }else{
-                    return ""
-                }
-            } 
-        },
-        selectStr(){ //單選
-            return function (a) {
-                if(a !== null && a !== undefined){
-                    let _array = this.selectData.filter((item, index) => 
-                        item.id == a 
-                    )
-                    return _array[0].label
-                }else{
-                    return ""
-                }
-            }   
-        },
-        multipleStr(){ //多個
-            return function (type,value) {
-                var array = []
-                var temp = []
-                type === 'user' ?  temp = this.buildingusers : 
-                type === 'contactunit' ?  temp = this.buildingcontactunit : temp = this.selectData 
-                if(value !== null && value !== undefined ){
-                    value.forEach(item=>{
-                        var data = temp.filter(element=>{
-                            return item.id == element.id
-                        })
-                        if(data.length>0){
-                            type === 'floorOfHouse' ? array.push(data[0].houseNumber) : array.push(data[0].name)
-                        }
-                    })
-                    return array.toString()
-                }else{
-                    return ""
-                }
-            }   
-        },
-        optionfilter(){
-            return function (a) {
-                if(a !== null && a !== undefined && this.buildingoptions.length>0){
-                    let _array = this.buildingoptions.filter((item, index) => 
-                        item.id == a 
-                    )
-                    return _array.length !== 0 ? _array[0].textName : ''
-                }else{
-                    return ""
-                }
-            }   
-        },
-        deviceStr(){
-            return function (a) {
-                if(a !== null ){
-                    let _array = this.deviceList.filter((item, index) => 
-                        item.id == a 
-                    )
-                    return _array[0].label
-                }else{
-                    return ""
-                }
-            } 
-        },
+        // changefullType(){
+        //     return function (val) {
+        //         if(val !== null && val !== undefined){
+        //             var label = ''
+        //             this.deviceType.filter(function(item, index){
+        //                 var array = item.options.filter((obj,index)=>{
+        //                    return obj.value == val
+        //                 })
+        //                 if(array.length){
+        //                    label = array[0].label 
+        //                 }
+        //             })
+        //             return label
+        //         }else{
+        //             return ""
+        //         }
+        //     } 
+        // },
+        // selectStr(){ //單選
+        //     return function (a) {
+        //         if(a !== null && a !== undefined){
+        //             let _array = this.selectData.filter((item, index) => 
+        //                 item.id == a 
+        //             )
+        //             return _array[0].label
+        //         }else{
+        //             return ""
+        //         }
+        //     }   
+        // },
+        // multipleStr(){ //多個
+        //     return function (type,value) {
+        //         var array = []
+        //         var temp = []
+        //         type === 'user' ?  temp = this.buildingusers : 
+        //         type === 'contactunit' ?  temp = this.buildingcontactunit : 
+        //         type === 'floorOfHouse' ? temp = this.selectData : this.deviceList
+        //         if(value !== null && value !== undefined ){
+        //             value.forEach(item=>{
+        //                 var data = temp.filter(element=>{
+        //                     return item.id == element.id
+        //                 })
+        //                 if(data.length>0){
+        //                     type === 'floorOfHouse' ? array.push(data[0].houseNumber) : array.push(data[0].name)
+        //                 }
+        //             })
+        //             return array.toString()
+        //         }else{
+        //             return ""
+        //         }
+        //     }   
+        // },
+        // optionfilter(){
+        //     return function (a) {
+        //         if(a !== null && a !== undefined && this.buildingoptions.length>0){
+        //             let _array = this.buildingoptions.filter((item, index) => 
+        //                 item.id == a 
+        //             )
+        //             return _array.length !== 0 ? _array[0].textName : ''
+        //         }else{
+        //             return ""
+        //         }
+        //     }   
+        // },
+        // deviceStr(){
+        //     return function (a) {
+        //         if(a !== null ){
+        //             let _array = this.deviceList.filter((item, index) => 
+        //                 item.id == a 
+        //             )
+        //             return _array[0].label
+        //         }else{
+        //             return ""
+        //         }
+        //     } 
+        // },
         changedeviceType(){
             return function (a) {
                 if(a !== null && a.length){
@@ -555,7 +514,14 @@ export default {
         },
         changeMaintain(){
             return function (a) {
-                return a.length
+                if(a !== null && a.length){
+                    var done = a.filter(item=>{
+                        return item.getProcess() === "79"
+                    })
+                    return done.length.toString()+'/'+(a.length - done.length).toString()+'/'+a.length.toString()
+                }else{
+                    return "0/0/0"
+                }
             } 
         },
         page: function() {
@@ -566,13 +532,18 @@ export default {
         },
         total: function() {
             return this.listQueryParams.total || 0
-        },
-        
+        }
     },
     watch:{
         config:{
             handler:async function(){
                 this.rowlabel = this.config.filter((item,index)=> item.isHidden == false)
+            },
+            immediate:true
+        },
+        isTable:{
+            handler:async function(){
+               this.isTable == true ? this.gutter = 0 :this.gutter =  32
             },
             immediate:true
         }
@@ -583,12 +554,11 @@ export default {
                 update: '編輯',
                 create: '新增'
             },
-            dialogStatus: '',
             temp: {},
-            rangevalue: [],
             sort:'',
             rowlabel:[],
-            itemkey: Math.random()
+            itemkey: Math.random(),
+            gutter:0
         }
     },
     methods: {
@@ -600,18 +570,41 @@ export default {
                 type: 'warning',
                 center: true
                 }).then(() => {
-                this.$emit('handleBlock',this.title,status, row.id)
+                this.$emit('handleBlock',this.title,status, row)
                 }).catch(() => {
                 })
             } else {
                 this.$emit('handleBlock',this.title,status, row)
             } 
         },
+        handleTableClick(index,row){
+            if (index === 'delete') {
+                this.$confirm('是否確定刪除該筆資料?', '提示', {
+                confirmButtonText: '確定',
+                cancelButtonText: '取消',
+                type: 'warning',
+                center: true
+                }).then(() => {
+                    if(this.title == 'maintain'){
+                        this.$emit('handleDialog', this.title , index , row)
+                    }else{
+                        this.$emit('handleBlock', this.title , index , row)
+                    }
+                }).catch(() => {
+                })
+            } else {
+                if(this.title == 'maintain'){
+                    this.$emit('handleDialog', this.title , index , row)
+                }else{
+                    this.$emit('handleBlock', this.title , index , row)
+                }
+            } 
+        },
         toAnotherPage(page,data,block){
             console.log(page,data,block)
             this.$router.push({ name: page, params: { block:block, target: data }})
         },
-            // 改變翻頁組件中每頁數據總數
+        // 改變翻頁組件中每頁數據總數
         handleSizeChange(val) {
             this.listQueryParams.limit = val
             this.listQueryParams.page = 1 // 改變翻頁數目，將頁面=1
@@ -629,17 +622,19 @@ export default {
             this.$emit('clickPagination',this.sort)
         },
         change(){
-            this.$emit('changeTable',true)
-        },
-        clickPagination(){
+            this.$emit('changeTable',!this.isTable)
             
-        },
-        async handleTabClick(tab, event) {
-            
-        },
+        }
     }
 }
 </script>
+
+<style scoped>
+.el-row {
+    margin-left: 0px;
+    margin-right: 0px;
+}
+</style>
 
 <style lang="scss" scoped>
 .infinite-list-wrapper {

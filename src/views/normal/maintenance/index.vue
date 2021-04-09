@@ -67,27 +67,29 @@
             </el-row>
             <el-row :gutter="32">
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <div class="wrapper">
-                  <div class="block-wrapper">
-                      <Block 
-                      :list-query-params.sync="listQueryParams"
-                      :selectSetting.sync="selectSetting"
-                      v-bind="blockAttrs" 
-                      v-on="blockEvent"></Block>
-                  </div>
+                <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                    <Block 
+                    :list-query-params.sync="listQueryParams"
+                    :selectSetting.sync="selectSetting"
+                    v-bind="blockAttrs" 
+                    v-on="blockEvent"></Block>
                 </div>
               </el-col>
           </el-row>
             <Dialog 
             v-if="innerVisible === true"
             v-bind="dialogAttrs"
+            :files="maintainFiles"
+            :formtableData="formtableData"
+            :formtableconfig="formtableconfig"
+            :listQueryParams="maintainlistQueryParams"
             v-on:handleDialog="handleDialog"></Dialog>
         </div>
 </template>
 <script>
-
-import { setSelectSetting,changeLink } from '@/utils/index'
+import { setSelectSetting } from '@/utils/index'
 import { MaintainManagementList, MaintainManagement }  from '@/object/maintainManagement'
+import Files  from '@/object/files'
 import blockmixin from '@/mixin/blockmixin'
 import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
@@ -96,81 +98,42 @@ export default {
     mixins:[sharemixin,blockmixin,dialogmixin],
     data(){
         return{
-            // dialogTitle:'',
-            // innerVisible:false,
-            // dialogData:[],
-            // dialogStatus:'',
-            // dialogButtonsName:[],
-            // dialogConfig:[],
-            // dialogSelect:[],
-
-
-            maintainListId:'',
-            maintainId:'',
-
+            maintainList:'',
+            maintain:'',
+            maintainArray:[], //存放linkmaintain
+            //dialog額外的參數
             maintainFiles:[],
             formtableData:[],
-            formtableconfig:[],
+            formtableconfig:MaintainManagement.getConfig(),
             maintainlistQueryParams:{
                 page: 1,
                 limit: 5,
                 total: 0
-            },
-            
-            options:[],
-            
-            maintainArray:[], //存放linkmaintain
-            origin:[], //存放maintainlist
-            selectSetting:[],
+            }
         }
     },
     computed: {
-        
         blockEvent(){
             return{
                 handleBlock:this.handleBlock,
                 clickPagination:this.getBuildingMaintain,
-                changeTable:this.changeTable
-            }
-        },
-        appendAttrs(){
-            return{
-                files:this.maintainFiles,
-                //表格
-                formtableData: this.formtableData,
-                formtableconfig:this.formtableconfig,
-                listQueryParams:this.maintainlistQueryParams
+                changeTable:this.changeTable,
+                handleDialog:this.handleDialog
             }
         }
-        // dialogAttrs(){
-        //     return{
-        //         title:this.dialogTitle,
-        //         visible: this.innerVisible,
-        //         dialogData: this.dialogData,
-        //         dialogStatus: this.dialogStatus,
-        //         buttonsName: this.dialogButtonsName,
-        //         config: this.dialogConfig,
-        //         selectData: this.dialogSelect,
-        //         files:this.maintainFiles,
-        //         //表格
-        //         formtableData: this.formtableData,
-        //         formtableconfig:this.formtableconfig,
-        //         listQueryParams:this.maintainlistQueryParams
-        //     }
-        // }
     },
     watch: {
-      buildingdevices:{
-        handler:async function(){
-            this.deviceList = this.buildingdevices.map(v => {
-                this.$set(v, 'value', v.id) 
-                this.$set(v, 'label', v.name) 
-                this.$set(v, 'id', v.id) 
-                return v
-            })
-        },
-        immediate:true
-      }
+    //   buildingdevices:{
+    //     handler:async function(){
+    //         this.deviceList = this.buildingdevices.map(v => {
+    //             this.$set(v, 'value', v.id) 
+    //             this.$set(v, 'label', v.name) 
+    //             this.$set(v, 'id', v.id) 
+    //             return v
+    //         })
+    //     },
+    //     immediate:true
+    //   }
     },
     methods:{
         async init(){   
@@ -189,21 +152,28 @@ export default {
             await this.setSelectSetting()
         },
         async saveBuildingMaintain(){
-            var data = await MaintainManagementList.getBuildingMaintainList()
-            this.origin = this.$deepClone(data)
+            var data = await MaintainManagementList.get()
+            this.origin = data.map(item=>{ return item.clone(item) })
         },
         async getBuildingMaintain(sort = null){ //取得大樓維護保養
             this.blockData = []
-            var data = this.$deepClone(this.origin)
+            var data = this.origin.map(item=>{ return item.clone(item) })
             this.listQueryParams.total = data.length
             this.selectSetting.forEach(element=>{
                 if(element.select != ''){
-                    data = data.filter((item,index)=> item[element.prop] == element.select)
+                    data = data.filter(function(item,index){
+                        if(typeof item[element.prop] !== 'object'){
+                            return item[element.prop] == element.select
+                        }else{ //物件形式
+                            for(let obj of item[element.prop]){
+                                if(obj.id == element.select){
+                                    return item
+                                }
+                            }
+                        }
+                    })
                 }
             })
-            data = data.filter((item, index) => 
-                index < this.listQueryParams.limit * this.listQueryParams.page && 
-                index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
             if(sort !== '' && sort !== null){
                 if(sort == 'createdDate'){
                     data = data.sort(function(x,y){
@@ -223,8 +193,10 @@ export default {
                     return y.id - x.id
                 })
             }
+            data = data.filter((item, index) => 
+                index < this.listQueryParams.limit * this.listQueryParams.page && 
+                index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
             this.blockData = data
-            console.log(JSON.stringify(this.blockData))
         },
         async setSelectSetting(){
             this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
@@ -233,10 +205,9 @@ export default {
         async handleBlock(title,index, content) { //維護保養的操作
             console.log(title,index,JSON.stringify(content))
             this.dialogData = []
-            this.dialogConfig = this.tableConfig
             if(index === 'open'){
                 this.dialogTitle = 'maintainList' //為了控制dialog大小
-                this.maintainListId = content.id
+                this.maintainList = content
                 this.dialogData.push(content)
                 this.dialogConfig = this.tableConfig
                 this.dialogButtonsName = [
@@ -244,25 +215,14 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
-                this.maintainArray = this.$deepClone(content.linkMaintains)
-                var data =  this.$deepClone(this.maintainArray)
+                this.maintainArray = content.linkMaintains.map(item=>{ return item.clone(item) })
+                var data = this.maintainArray.map(item=>{ return item.clone(item) })
                 this.maintainlistQueryParams.total = this.maintainArray.length
                 this.formtableData = data.filter((item, index) => 
                     index < this.maintainlistQueryParams.limit * this.maintainlistQueryParams.page && 
                     index >= this.maintainlistQueryParams.limit * (this.maintainlistQueryParams.page - 1))
-                this.formtableconfig = [
-                    { label:'系統' , prop:'processContent',format:'MaintainContentOptions', mandatory:true, message:'請選擇系統'},
-                    { label:'故障日期' , prop:'dateOfFailure',format:'YYYY-MM-DD', mandatory:false, message:'請選擇故障日期'},
-                    { label:'叫修日期' , prop:'dateOfCallRepair',format:'YYYY-MM-DD',  mandatory:false,message:'請選擇叫修日期'},
-                    { label:'完成時間' , prop:'completedTime',format:'YYYY-MM-DD', mandatory:false, message:'請選擇完成時間'},
-                    { label:'處理進度' , prop:'processStatus',format:'MaintainProcessOptions', mandatory:false, message:'請選擇處理進度'},
-                    { label:'改善廠商' , prop:'linkContactUnits',format:'contactunitSelect', mandatory:false,message:'請選擇廠商',type:'array',typemessage:''},
-                    { label:'檢修申報' , prop:'linkInspectionLacks',format:'inspectionSelect', mandatory:false,message:'請選擇申報',type:'array',typemessage:''},
-                    { label:'設備' , prop:'linkDevices',format:'deviceSelect', mandatory:true,message:'請選擇設備',type:'array',typemessage:''},
-                    { label:'備註' , prop:'note',format:'textarea', mandatory:false,message:'請輸入備註',maxlength:'200'},
-                ]
             }else if(index === 'delete'){
-                var isDelete = await this.$obj.Device.deleteMaintainList(content)
+                var isDelete = await content.delete()
                 if(isDelete){
                     this.$message('刪除成功')
                     this.listQueryParams = {
@@ -274,18 +234,8 @@ export default {
                 }
             }else if(index === 'empty'){
                 this.dialogTitle = 'createmaintainlist'
-                this.dialogConfig = [{
-                                label: '名稱',
-                                prop: 'name',
-                                mandatory:true, message:'請輸入名稱',isSelect:false,isSort:true,maxlength:'20'
-                            },
-                            {
-                                label: '建立時間',
-                                prop: 'createdDate',
-                                format:'YYYY-MM-DD',
-                                mandatory:true, message:'請選擇建立時間',isSelect:true,options:[],
-                                        selectType:'dateOfDate',select:'',isSort:true
-                            }]
+                this.dialogConfig = MaintainManagementList.getCreateConfig()
+                this.dialogData.push( MaintainManagementList.empty() )
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'create'},
                 { name:'取消',type:'info',status:'cancel'}]
@@ -293,8 +243,8 @@ export default {
                 this.dialogStatus = 'create'
             }else if(index === 'openfiles'){
                 this.dialogTitle = 'uploadFiles'
-                this.maintainListId = content
-                this.maintainFiles = await this.$obj.Files.getBuildingMaintainListFiles(this.maintainListId)
+                this.maintainList = content
+                this.maintainFiles = await content.files()
                 this.dialogButtonsName = []
                 this.innerVisible = true
                 this.dialogStatus = 'upload'
@@ -303,13 +253,11 @@ export default {
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,JSON.stringify(content))
             if(title === 'maintain'){
-                await this.handleMaintain(title,index,content)
+                await this.handleMaintain(index,content)
             }else{
                 if(index === 'create' || index === 'update'){
                     this.$delete(content,'linkMaintains')
-                    var isOk = index === 'update' ? 
-                    await this.$obj.Device.updateMaintainList(JSON.stringify(content)) : 
-                    await this.$obj.Device.postMaintainList(JSON.stringify(content))
+                    var isOk = index === 'update' ? await content.update() : await content.create()
                     if(isOk){
                         this.innerVisible = false
                         index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
@@ -320,23 +268,17 @@ export default {
                     content.forEach(item => {
                         formData.append('file', item.raw)
                     })
-                    isOk = await this.$obj.Files.postBuildingMaintainListFiles(this.maintainListId,formData)
+                    isOk = await this.maintainList.createfiles(formData) 
                     if(isOk){
                         this.$message('上傳成功')
-                        this.maintainFiles = await this.$obj.Files.getBuildingMaintainListFiles(this.maintainListId)
+                        this.maintainFiles = await this.maintainList.files()
                     }
                 }else if(index === 'deletefile'){
-                    var array = []
-                    content.forEach(async(item)=>{
-                        array.push(item)
-                    })
-                    var data = {
-                        id:array.toString()
-                    }
-                    isOk = await this.$obj.Files.deleteFiles(data)
+                    var data = { id:content.toString() }
+                    isOk = await Files.delete(data)
                     if(isOk){
                         this.$message('刪除成功')
-                        this.maintainFiles = await this.$obj.Files.getBuildingMaintainListFiles(this.maintainListId)
+                        this.maintainFiles = await this.maintainList.files()
                     }
                 }else if(index === 'cancel'){
                     this.innerVisible = false
@@ -348,10 +290,15 @@ export default {
                 }
             }
         },
+        
         async changeTable(value){
             this.isTable = value
-            if(value){
-                //console.log(JSON.stringify(this.origin))
+            this.listQueryParams = {
+                page: 1,
+                limit: 12,
+                total: 0
+            }
+            if(value == true){
                 var array = []
                 for(let element of this.origin){
                     array.push(element['linkMaintains'])
@@ -361,107 +308,102 @@ export default {
                         return a.concat(b)
                     },[]
                 )
+                this.origin = concatarray.map(item=>{ return item.clone(item) })
+                this.tableConfig = MaintainManagement.getConfig()
+                this.listQueryParams.total = this.origin.length
+                concatarray = concatarray.filter((item, index) => 
+                    index < this.listQueryParams.limit * this.listQueryParams.page && 
+                    index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
                 this.blockData = concatarray
-                this.tablelabel = [
-                    { label:'系統' , prop:'processContent',format:'MaintainContentOptions', mandatory:true, message:'請選擇系統'},
-                    { label:'故障日期' , prop:'dateOfFailure',format:'YYYY-MM-DD', mandatory:false, message:'請選擇故障日期'},
-                    { label:'叫修日期' , prop:'dateOfCallRepair',format:'YYYY-MM-DD',  mandatory:false,message:'請選擇叫修日期'},
-                    { label:'完成時間' , prop:'completedTime',format:'YYYY-MM-DD', mandatory:false, message:'請選擇完成時間'},
-                    { label:'處理進度' , prop:'processStatus',format:'MaintainProcessOptions', mandatory:false, message:'請選擇處理進度'},
-                    { label:'改善廠商' , prop:'linkContactUnits',format:'contactunitSelect', mandatory:false,message:'請選擇廠商',type:'array',typemessage:''},
-                    { label:'檢修申報' , prop:'linkInspectionLacks',format:'inspectionSelect', mandatory:false,message:'請選擇申報',type:'array',typemessage:''},
-                    { label:'設備' , prop:'linkDevices',format:'deviceSelect', mandatory:true,message:'請選擇設備',type:'array',typemessage:''},
-                    { label:'備註' , prop:'note',format:'textarea', mandatory:false,message:'請輸入備註',maxlength:'200'},
-                ]
+                this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
+            }else{
+                await this.init()
             }
         },
-        async handleMaintain(title ,index, content){
+        async handleMaintain(index, content){
             this.dialogData = []
             this.dialogTitle = 'maintain'
-            //this.dialogConfig = []
             if(index === 'empty'){
                 this.dialogConfig = this.formtableconfig
-                this.dialogSelect= [] //檢修申報下拉選單
+                this.dialogSelect = await MaintainManagementList.getAllLack()
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'createmaintain'},
                 { name:'返回',type:'info',status:'cancel'}]
+                this.dialogData.push( MaintainManagement.empty() )
                 this.innerVisible = true
                 this.dialogStatus = 'create'
             }else if(index === 'open'){
-                this.dialogConfig = this.formtableconfig    
-                var temp = this.$deepClone(content)
-                temp = changeLink('maintain',temp,'open')
-                this.dialogData.push(temp)
+                this.dialogSelect = await MaintainManagementList.getAllLack()
+                this.dialogConfig = this.formtableconfig  
+                this.dialogData.push(content)
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'updatemaintain'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
             }else if(index === 'delete'){
-                var isDelete = await this.$obj.Device.deleteMaintain(content)
-                if(isDelete){
-                    this.$message('刪除成功')
-                    await this.saveBuildingMaintain()
-                    await this.getBuildingMaintain()
-                    var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
-                    await this.handleBlock('maintainList','open',data)
-                }else{
-                    var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
-                    await this.handleBlock('maintainList','open',data)
-                }
+                    var isDelete = await content.delete()
+                    if(isDelete){
+                        this.$message('刪除成功')
+                    }
+                    if(this.isTable == false){
+                        await this.reload()
+                        var data = this.blockData.filter((item,index)=> item.id == this.maintainList.getID())[0]
+                        await this.handleBlock('maintainList','open',data)
+                    }else{
+                        await this.saveBuildingMaintain()
+                        await this.changeTable(this.isTable)
+                    }
             }else if(index === 'createmaintain' || index === 'updatemaintain'){
-                content = changeLink('maintain',content,'')
                 var isOk = index === 'createmaintain' ? 
-                await this.$obj.Device.postMaintain(this.maintainListId,JSON.stringify(content)) : 
-                await this.$obj.Device.updateMaintain(JSON.stringify(content))
+                await content.create(this.maintainList.getID()) : await content.update()
                 if(isOk){
                     index === 'updatemaintain' ? this.$message('更新成功') : this.$message('新增成功')
-                    await this.saveBuildingMaintain()
-                    await this.getBuildingMaintain()
-                    var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
+                }
+                if(this.isTable == false){
+                    await this.reload()
+                    var data = this.blockData.filter((item,index)=> item.id == this.maintainList.getID())[0]
                     await this.handleBlock('maintainList','open',data)
                 }else{
-                    var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
-                    await this.handleBlock('maintainList','open',data)
+                    await this.saveBuildingMaintain()
+                    await this.changeTable(this.isTable)
+                    this.innerVisible = false
                 }
             }else if(index === 'cancel'){
-                this.maintainlistQueryParams = {
-                    page: 1,
-                    limit: 5,
-                    total: 0
-                }
-                var data = this.blockData.filter((item,index)=> item.id == this.maintainListId)[0]
-                await this.handleBlock('maintainList','open',data)
+                    if(this.isTable == false){
+                        this.maintainlistQueryParams = {
+                            page: 1,
+                            limit: 5,
+                            total: 0
+                        }
+                        var data = this.blockData.filter((item,index)=> item.id == this.maintainList.getID())[0]
+                        await this.handleBlock('maintainList','open',data)
+                    }else{
+                        this.innerVisible = false
+                    }
             }else if(index === 'openfiles'){
-                this.dialogTitle = 'maintain'
-                this.maintainId = content.id
-                this.maintainFiles = await this.$obj.Files.getBuildingMaintainFiles(this.maintainId)
-                this.dialogButtonsName = []
-                this.innerVisible = true
-                this.dialogStatus = 'upload'
+                    this.dialogTitle = 'maintain'
+                    this.maintain = content
+                    this.maintainFiles = await content.files()
+                    this.dialogButtonsName = []
+                    this.innerVisible = true
+                    this.dialogStatus = 'upload'
             }else if(index === 'createfile'){
-                const formData = new FormData();
-                    content.forEach(item => {
+                const formData = new FormData()
+                content.forEach(item => {
                     formData.append('file', item.raw)
                 })
-                isOk = await this.$obj.Files.postBuildingMaintainFiles(this.maintainListId,this.maintainId,formData)
+                isOk = await this.maintain.createfiles(formData)
                 if(isOk){
                     this.$message('上傳成功')
-                    this.maintainFiles = await this.$obj.Files.getBuildingMaintainFiles(this.maintainId)
-                    console.log(JSON.stringify(this.maintainFiles))
+                    this.maintainFiles = await this.maintain.files()
                 }
             }else if(index === 'deletefile'){
-                var array = []
-                content.forEach(async(item)=>{
-                    array.push(item)
-                })
-                var data = {
-                    id:array.toString()
-                }
-                isOk = await this.$obj.Files.deleteFiles(data)
+                var data = { id:content.toString() }
+                isOk = await Files.delete(data)
                 if(isOk){
                     this.$message('刪除成功')
-                    this.maintainFiles = await this.$obj.Files.getBuildingMaintainFiles(this.maintainId)
+                    this.maintainFiles = await this.maintain.files()
                 }
             }
         }
@@ -516,26 +458,12 @@ export default {
             color: red;
         }
     }
-    .wrapper{
-      background: #fff;
-      padding: 10px;
-      height: 720px;
-      
-      .block-wrapper {
-        margin-bottom: 32px;
-        height: 700px;
-        width: 100%;
-        overflow-x: hidden;
-        overflow-y: auto;
-      }
+    .block-wrapper {
+        background: #fff;
+        padding: 30px 15px;
+        height: 720px;
     }
-    .top{
-        width: 100%;
-    }
-    .report{
-        font-size: 70px;
-        color: red;
-    }
+    
 
 @media (max-width:1024px) {
   .chart-wrapper {
