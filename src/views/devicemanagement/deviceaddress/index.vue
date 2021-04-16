@@ -1,100 +1,72 @@
 <template>
         <div class="editor-container">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <div class="chart-wrapper">
-                    <Table
-                        :list-query-params.sync="listQueryParams"
-                        v-bind="tableAttrs"
-                        v-on="tableEvent">
-                    </Table>
+                <div class="chart-wrapper" :style="{ height: blockwrapperheight }">
+                    <Block 
+                    :list-query-params.sync="listQueryParams"
+                    :selectSetting.sync="selectSetting"
+                    v-bind="blockAttrs" 
+                    v-on="blockEvent"></Block>
                 </div>
             </el-col>
         </div>
 </template>
 <script>
-import { mapGetters } from 'vuex'
+import Device from '@/object/device'
+import sharemixin  from '@/mixin/sharemixin'
+import blockmixin  from '@/mixin/blockmixin'
 
 export default {
-    components:{ 
-        Table: () => import('@/components/Table/index.vue'),
-    },
-    data(){
-        return{
-            originalDevice:[],
-            tableData:[],
-            config:[
-                { label:'名稱' , prop:'deviceName', mandatory:true, message:'請輸入名稱',maxlength:'20'},
-                { label:'類型' , prop:'linkDeviceTypes', mandatory:false,message:'請輸入描述',maxlength:'200'},
-                { label:'設備狀況',prop: 'status',format:'DeviceStatusOptions',mandatory:true, message:'請選擇設備狀況'},
-                { label:'系統' , prop:'systemNumber', mandatory:true, message:'請輸入系統編號',
-                isPattern:false,errorMsg:'',maxlength:'2'},
-                { label:'迴路' , prop:'circuitNumber', mandatory:true, message:'請輸入迴路編號',
-                isPattern:false,errorMsg:'',maxlength:'3'},
-                { label:'點位' , prop:'address', mandatory:true, message:'請輸入點位',
-                isPattern:false,errorMsg:'',maxlength:'5'},
-            ],
-            listQueryParams:{
-                page: 1,
-                limit: 10,
-                total: 0
-            },
-            deviceType:[]
-        }
-    },
+    mixins:[sharemixin,blockmixin],
     computed: {
-        ...mapGetters([
-            'buildingid',
-        ]),
-        tableAttrs(){
-            return {
-                title:'address',
-                tableData: this.tableData,
-                config:this.config,
-                hasColumn:false,
-                pageSizeList:[50,100],
-                filterData:this.deviceType
-            }
-        },
-        tableEvent(){
-            return {
+        blockEvent(){
+            return{
                 clickPagination:this.getAllDevice,
-                handleTableRow:this.handleTableRow
+                handleBlock:this.handleBlock
             }
-        },
-    },
-    watch:{
-        buildingid:{
-            handler:async function(){
-                if(this.buildingid !== undefined){
-                    this.deviceType = await this.$obj.Device.getDeviceType('devicesAddress')
-                    await this.init()
-                }
-            },
-            immediate:true
         }
     },
     methods:{
         async init(){
+            this.title = 'address'
+            this.tableConfig = Device.getAddressConfig()
+            this.isHasButtons = false
+            await this.reload()
+        },
+        async reload(){
             await this.setAllDevice()
             await this.getAllDevice()
         },
         async setAllDevice(){
-            this.originalDevice = this.$deepClone(await this.$obj.Device.getBuildingDevicesManage())
+            var data = await Device.get()
+            this.origin = data.sort(function(x,y){
+                    var a = x.status
+                    var b = y.status
+                    if(a == b){
+                        return y.id - x.id
+                    }
+                    return y.status - x.status
+            }).map(item=>{ return item.clone(item)})
         },
         async getAllDevice(){
-            var data = this.$deepClone(this.originalDevice)
+            this.blockData = []
+            var data = this.origin.map(item=>{ return item.clone(item)})
             this.listQueryParams.total = data.length
-            this.tableData = data.filter((item, index) => 
+            this.blockData = data.filter((item, index) => 
                 index < this.listQueryParams.limit * this.listQueryParams.page && 
                 index >= this.listQueryParams.limit * (this.listQueryParams.page - 1)).sort((x,y) => y.status - x.status)
         },
-        async handleTableRow(data){
-            var isOk = await this.$obj.Device.updateDevicesAddress(JSON.stringify(data))
+        async handleBlock(title,index, content){
+            console.log(title,index,JSON.stringify(content))
+            var isOk = await Device.updateAddress(content)
             if(isOk){
                 this.$message('更新成功')
-                await this.init()
+                await this.reload()
             }
         },
+        async changeTable(value){
+            this.isTable = value
+        }
     }
 }
 </script>

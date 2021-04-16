@@ -1,107 +1,48 @@
 <template>
         <div class="editor-container">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <div class="chart-wrapper">
-                    <Table
+                <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                    <Block 
                         :list-query-params.sync="listQueryParams"
-                        v-bind="tableAttrs"
-                        v-on="tableEvent">
-                    </Table>
+                        :selectSetting.sync="selectSetting"
+                        v-bind="blockAttrs" 
+                        v-on="blockEvent"></Block>
                 </div>
             </el-col>
             <Dialog 
                 v-bind="dialogAttrs" 
+                :accessAuthoritiesData="treeData"
+                :accessAuthorities="roleAccessAuthority"
                 v-on:handleDialog="handleDialog"></Dialog>
         </div>
 </template>
 <script>
-import { mapGetters } from 'vuex'
+import blockmixin from '@/mixin/blockmixin'
+import dialogmixin from '@/mixin/dialogmixin'
+import sharemixin  from '@/mixin/sharemixin'
+import Role from '@/object/role'
+import Menu from '@/object/menu'
 
 export default {
-    components:{ 
-        Table: () => import('@/components/Table/index.vue'),
-        Dialog:() => import('@/components/Dialog/index.vue'),
-    },
+    mixins:[sharemixin,blockmixin,dialogmixin],
     data(){
         return{
-            originalRole:[],
             roleAccessAuthority:[],
             originalRoleAccessAuthority:[],
             selectRoleId:'',
-            routes:[],
-            tempTree:[],
             accessAuthority:[],
-            treeData:[],
-            tableData:[],
-            config:[
-                { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20'},
-                { label:'描述' , prop:'description',format:'textarea', mandatory:false,message:'請輸入描述',maxlength:'200'},
-                { label:'排序' , prop:'sort',format:'number', mandatory:true, message:'請輸入排序',
-                isPattern:false,errorMsg:'',type:'number',typemessage:''},
-                { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
-                isPattern:false,errorMsg:'',type:'boolean',typemessage:''},
-                { label:'刪除' , prop:'removable',format:'removableSelect', mandatory:true, message:'請選擇',
-                isPattern:false,errorMsg:'',type:'boolean',typemessage:''}
-            ],
-            listQueryParams:{
-                page: 1,
-                limit: 10,
-                total: 0
-            },
-            buttonsName: [
-                { name:'編輯',type:'primary',status:'open'},
-                { name:'刪除',type:'info',status:'delete'},
-                { name:'分配權限',type:'danger',status:'distribution' }],
-            //Dialog
-            dialogButtonsName:[],
-            dialogTitle:'',
-            dialogConfig:[],
-            dialogData:[],
-            dialogStatus:'',
-            innerVisible:false,
+            treeData:[]
         }
     },
     computed: {
-        ...mapGetters([
-            'buildingid',
-            'menu'
-        ]),
-        tableAttrs(){
-            return {
-                tableData: this.tableData,
-                config:this.config,
-                buttonsName:this.buttonsName,
-            }
-        },
-        tableEvent(){
-            return {
-                clickPagination:this.getAllRole,
-                handleTableRow:this.handleTableRow
-            }
-        },
-        dialogAttrs(){
+        blockEvent(){
             return{
-                title:'roles',
-                visible: this.innerVisible,
-                dialogData: this.dialogData,
-                dialogStatus: this.dialogStatus,
-                buttonsName: this.dialogButtonsName,
-                config: this.dialogConfig,
-                treeData:this.treeData,
-                selectData:this.accessAuthority,
-                accessAuthorities:this.roleAccessAuthority
+                handleBlock:this.handleBlock,
+                clickPagination:this.getAllRole
             }
-        },
+        }
     },
     watch:{
-        buildingid:{
-            handler:async function(){
-                if(this.buildingid !== undefined){
-                    await this.init()
-                }
-            },
-            immediate:true
-        },
         menu:{
             handler:async function(){
                 await this.setMenuRoleAccess()
@@ -111,63 +52,76 @@ export default {
     },
     methods:{
         async init(){
+            this.tableConfig = Role.getConfig()
+            this.title = 'roles'
+            this.buttonsName = [
+                { name:'編輯',type:'primary',status:'open'},
+                { name:'刪除',type:'info',status:'delete'},
+                { name:'分配權限',type:'danger',status:'distribution' }]
+            await this.reload()
+        },
+        async reload(){
             await this.setAllRole()
             await this.getAllRole()
         },
         async setAllRole(){
-            this.originalRole = this.$deepClone(await this.$obj.Authority.getAllRole())
+            var data = await Role.get()
+            this.origin = data.map(item=>{ return item.clone(item) })
         },
         async getAllRole(){
-            var data = this.$deepClone(this.originalRole)
+            this.blockData = []
+            var data = this.origin.map(item=>{ return item.clone(item) })
             this.listQueryParams.total = data.length
-            this.tableData = data.filter((item, index) => 
+            this.blockData = data.filter((item, index) => 
                 index < this.listQueryParams.limit * this.listQueryParams.page && 
                 index >= this.listQueryParams.limit * (this.listQueryParams.page - 1)).sort((x,y) => x.sort - y.sort)
         },
         async setMenuRoleAccess(){
             this.accessAuthority = []
             for (let item of this.menu) {
-                for (let obj of item.linkAccessAuthorities) {
+                for (let obj of item.getAccessAuthorities()) {
                     this.accessAuthority.push(obj)
                 }
-                for (let children of item.children){
-                    for (let obj of children.linkAccessAuthorities){
+                for (let children of item.getLink()){
+                    for (let obj of children.getAccessAuthorities()){
                         this.accessAuthority.push(obj)
                     }
                 }
             }
         },
-        async handleTableRow(row, option){
-            console.log(row, option)
+        async handleBlock(title,index, content){
+            console.log(title,index,JSON.stringify(content))
             this.dialogData = []
-            this.dialogConfig = this.config
-            if(option === 'open'){
-                this.dialogData.push(row)
+            this.dialogConfig = this.tableConfig
+            this.dialogTitle = this.title
+            this.dialogSelect = this.accessAuthority
+            if(index === 'open'){
+                this.dialogData.push(content)
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
-            }else if(option === 'delete'){
-                var isOk = await this.$obj.Authority.deleteRole(row.id)
+            }else if(index === 'delete'){
+                var isOk = await content.delete()
                 if(isOk){
                     this.$message('刪除成功')
-                    this.$store.dispatch('building/setroles',await this.$obj.Authority.getAllRole())
-                    await this.init()
+                    this.$store.dispatch('permission/setmenu',await  Menu.get())
+                    this.$store.dispatch('building/setroles',await Role.get())
+                    await this.reload()
                 }
-            }
-            else if(option === 'create'){
+            }else if(index === 'empty'){
+                this.dialogData.push( Role.empty() )
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'create'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'create'
-            }
-            else if(option === 'distribution'){
-                this.selectRoleId = row.id
-                this.roleAccessAuthority = await this.$obj.Authority.getRoleAccessAuthority(this.selectRoleId)
+            }else if(index === 'distribution'){
+                this.selectRoleId = content.getID()
+                this.roleAccessAuthority = await content.getAccess()
                 this.originalRoleAccessAuthority = this.$deepClone(this.roleAccessAuthority)
-                this.treeData = this.$deepClone(this.menu)
+                this.treeData = this.menu.map(item=>{ return new Menu(item)})
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'authoritycreate'},
                 { name:'取消',type:'info',status:'cancel'}]
@@ -178,14 +132,12 @@ export default {
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title , index, JSON.stringify(content))
             if(index === 'update' || index === 'create'){
-                content.sort = content.sort.toString()
-                var isOk = index === 'update' ? 
-                    await this.$obj.Authority.updateRole(JSON.stringify(content)) :
-                    await this.$obj.Authority.postRole(JSON.stringify(content))
+                var isOk = index === 'update' ? await content.update() : await content.create()
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                    this.$store.dispatch('building/setroles',await this.$obj.Authority.getAllRole())
-                    await this.init()
+                    this.$store.dispatch('permission/setmenu',await  Menu.get())
+                    this.$store.dispatch('building/setroles',await Role.get())
+                    await this.reload()
                 }
             }else if(index === 'authoritycreate'){
                 const loading = this.$loading({
@@ -250,27 +202,28 @@ export default {
                     data.linkRoles = array
                     updateArray.push(data)
                 }
-                isOk = await this.$obj.Authority.updateRoleAccessAuthority(JSON.stringify(updateArray))
+                isOk = await Role.updateAccessAuthority(updateArray)
                 if(isOk){
                     loading.close()
                     this.$message('更新成功')
-                    this.$store.dispatch('permission/setmenu',await this.$obj.Authority.getBuildingMenu())
+                    this.$store.dispatch('permission/setmenu',await Menu.get())
+                    await this.reload()
                 }
             }
             this.innerVisible = false
-            
         },
-
+        async changeTable(value){
+            this.isTable = value
+            value == true ?  this.tableConfig = Role.getTableConfig() : 
+            this.tableConfig = Role.getConfig()
+        }
     }
 }
 </script>
 <style lang="scss" scoped>
-.chart-wrapper {
+.block-wrapper {
     background: #fff;
-    padding: 5px 16px 0;
-    height: 730px;
-    overflow-x:hidden;
-    overflow-y:auto;
-    width: 100%;
+    padding: 15px 15px;
+    height: 720px;
 }
 </style>

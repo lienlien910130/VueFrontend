@@ -1,121 +1,166 @@
 <template>
 <div>
-  <el-button 
-    v-if="title !== 'building' && title !== 'graphic'" type="primary" 
-    @click="title == 'address' ? OpenUpdate() : OpenCreate()" style="float:right">{{ title == 'address' ? '儲存' : '新增'}}</el-button>
-  <el-table
-    :data="tableData.filter(data => !search ||  data.name.toLowerCase().includes(search.toLowerCase()))"
-    :key="itemkey"
-    border
-    highlight-current-row
-    style="width: 100%;"
-    empty-text="暫無資料"
-    height="600">
-    <el-table-column
-      fixed
-      type="index">
-    </el-table-column>
-
-    <template v-for="(item,index) in config">
-        <el-table-column 
-          align="left" 
-          :label="item.label" 
-          :key="index" 
-          :prop="item.prop" 
-          sortable
-          header-align="center"
-          :width="item.width"
-        >
-          <template slot-scope="scope">
-              <span v-if="scope.column.property == 'status' && title !== 'address'"> 
-                {{ scope.row[scope.column.property] | changeStatus }}</span>
-              <span v-else-if="scope.column.property == 'status' && title == 'address'"> 
-                {{ optionfilter(scope.row[scope.column.property])  }}</span>
-              <span v-else-if="scope.column.property == 'removable'"> 
-                {{ scope.row[scope.column.property] | changeRemoveable }}</span>
-              <span v-else-if="scope.column.property == 'linkOwners' || 
-              scope.column.property == 'linkFireManagers'"> 
-                {{ changeUserName(scope.row[scope.column.property]) }}
-              </span>
-              <span v-else-if="scope.column.property == 'linkRoles'"> 
-                {{  changeLinkRoles(scope.row[scope.column.property]) }}</span>
-              <span v-else-if="scope.column.property == 'deviceName'"> 
-                {{  changeLinkDeviceName(scope.row['linkDeviceTypes']) }}</span>
-              <span v-else-if="scope.column.property == 'linkDeviceTypes'"> 
-                {{  changeLinkDeviceType(scope.row[scope.column.property]) }}</span>
-              <span v-else-if="scope.column.property == 'linkBuildings'"> 
-                {{  changeLinkBuilding(scope.row[scope.column.property]) }}</span>
-              <el-input v-else-if="scope.column.property == 'systemNumber' || 
-              scope.column.property == 'circuitNumber' ||
-              scope.column.property == 'address' "
-              v-model="scope.row[scope.column.property]"
-              :maxlength="item.maxlength"
-              show-word-limit
-              @change="checkupdate(scope.row)"
-              @input="scope.row[scope.column.property] = scope.row[scope.column.property].replace(/[^\d]/g,'').replace(/\s*/g,'')">
-              </el-input>
-              <span v-else >{{  scope.row[scope.column.property] }}</span>
-          </template>
-        </el-table-column>
-    </template>
-    <el-table-column
-    v-if="hasColumn"
-      width="250px"
-      align="right"
-      >
-      <template slot="header" >
-          <el-input
-          v-model="search"
-          size="mini"
-          placeholder="請輸入關鍵字搜尋"/>
-      </template>
-      <template slot-scope="scope">
-         <span
-            v-for="(option, index) in buttonsName"
-            :key="index"
-            class="button-margin-left"
+  <el-row>
+    <div class="infinite-list-wrapper" :style="{ height: infiniteheight }">
+      <div style="margin-bottom:50px">
+          <el-col :xs="24" :sm="24" :md="24" :lg="24">
+              <el-button 
+                    v-if="title !== 'building' && title !== 'graphic'" type="primary" 
+                    @click="title == 'address' ? OpenUpdate() : OpenCreate()" style="float:right">
+                    {{ title == 'address' ? '儲存' : '新增'}}
+              </el-button>
+          </el-col>
+      </div>
+      <div style="">
+        <el-table
+          :data="tableData.filter(data => !search ||  data.name.toLowerCase().includes(search.toLowerCase()))"
+          :key="itemkey"
+          border
+          highlight-current-row
+          style="width:100%;margin-top:10px"
+          empty-text="暫無資料"
           >
-            <el-button
-              v-if="option.status !== 'delete'"
-              :type="option.type"
-              size="small"
-              @click="handleClickOption( scope.row, option.status)"
-            >
-              <span>{{ option.name }}</span>
-            </el-button>
-            <el-button
-              v-else-if="scope.row.removable !== false"
-              :type="option.type"
-              size="small"
-              @click="handleClickOption( scope.row, option.status)"
-            >
-              <span>{{ option.name }}</span>
-            </el-button>
-        </span>
-      </template>
-    </el-table-column>
-  </el-table>
+          <el-table-column
+            fixed
+            type="index">
+          </el-table-column>
 
-  <div v-if="total > 0 && hasPagin" class="pagination-container">
-      <el-pagination
-        background
-        layout="total, sizes, prev, pager, next, jumper"
-        :current-page="page"
-        :page-sizes="pageSizeList"
-        :page-size="limit"
-        :total="total"
-        @current-change="handleCurrentChange"
-        @size-change="handleSizeChange"
-      ></el-pagination>
-  </div>
+          <template v-for="(item,index) in config">
+              <el-table-column 
+                align="left" 
+                :label="item.label" 
+                :key="index" 
+                :prop="item.prop" 
+                sortable
+                header-align="center"
+                :width="item.width"
+              >
+                <template slot-scope="scope">
+                  <!-- 權限設定(啟用/禁用) -->
+                    <span v-if="scope.column.property == 'status' && title !== 'address'"> 
+                      {{ scope.row[scope.column.property] | changeStatus }}</span>
+                      <!-- 點位設定 -->
+                    <span v-else-if="item.format == 'DeviceStatusOptions'"> 
+                      {{ changeOptionName(scope.row[scope.column.property])  }}</span>
+                    <!-- <span v-else-if="scope.column.property == 'removable'"> 
+                      {{ scope.row[scope.column.property] | changeRemoveable }}</span> -->
+                    <!-- 建築物總覽 -->
+                    <span v-else-if="scope.column.property == 'linkOwners' || 
+                    scope.column.property == 'linkFireManagers'"> 
+                      {{ changeUserName(scope.row[scope.column.property]) }}
+                    </span>
+                    <!-- <span v-else-if="scope.column.property == 'linkRoles'"> 
+                      {{  changeLinkRoles(scope.row[scope.column.property]) }}</span>
+                    <span v-else-if="scope.column.property == 'deviceName'"> 
+                      {{  changeLinkDeviceName(scope.row['linkDeviceTypes']) }}</span>
+                    <span v-else-if="scope.column.property == 'linkBuildings'"> 
+                      {{  changeLinkBuilding(scope.row[scope.column.property]) }}</span> -->
+
+                    <!-- 點位設定-類型 -->
+                    <span v-else-if="item.format == 'deviceTypeSelect' ">
+                      <el-popover
+                        v-if="scope.row[item.prop].length !== 0"
+                        placement="right"
+                        width="400"
+                        trigger="click">
+                        <div>
+                          <div 
+                          v-for="(item,index) in changeText(scope.row[item.prop][0])"
+                          :key="index">
+                              <p>{{ item.label + ':' + item.value }} </p> 
+                          </div> 
+                        </div>
+                        <el-button slot="reference">{{ scope.row.getOnlyType()  }}</el-button>
+                      </el-popover>
+                    </span>
+                    
+
+                    <!-- <span 
+                    v-else-if="item.format == 'deviceTypeSelect' "
+                    @click="toAnotherPage('deviceTypesManagement',
+                    scope.row[item.prop][0],'')"
+                    style="color:#66b1ff;cursor:pointer"
+                    > 
+                      {{ scope.row.getOnlyType()  }}</span> -->
+
+                    <!-- 點位設定-->
+                    <el-input v-else-if="item.format == 'address' "
+                    v-model="scope.row[scope.column.property]"
+                    :maxlength="item.maxlength"
+                    show-word-limit
+                    @change="checkupdate(scope.row)"
+                    @input="scope.row[scope.column.property] = scope.row[scope.column.property].replace(/[^\d]/g,'').replace(/\s*/g,'')">
+                    </el-input>
+                    
+                    <span v-else >{{  scope.row[scope.column.property] }}</span>
+                </template>
+              </el-table-column>
+          </template>
+          <el-table-column
+          v-if="hasColumn"
+            width="250px"
+            align="right"
+            >
+            <template slot="header" >
+                <el-input
+                v-model="search"
+                size="mini"
+                placeholder="請輸入關鍵字搜尋"/>
+            </template>
+            <template slot-scope="scope">
+              <span
+                  v-for="(option, index) in buttonsName"
+                  :key="index"
+                  class="button-margin-left"
+                >
+                  <el-button
+                    v-if="option.status !== 'delete'"
+                    :type="option.type"
+                    size="small"
+                    @click="handleClickOption( scope.row, option.status)"
+                  >
+                    <span>{{ option.name }}</span>
+                  </el-button>
+                  <el-button
+                    v-else-if="scope.row.removable !== false"
+                    :type="option.type"
+                    size="small"
+                    @click="handleClickOption( scope.row, option.status)"
+                  >
+                    <span>{{ option.name }}</span>
+                  </el-button>
+              </span>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </div>
+  </el-row>
+  
+  <el-row>
+    <div v-if="total > 0 && hasPagin" class="pagination-container">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next, jumper"
+          :current-page="page"
+          :page-sizes="pageSizeList"
+          :page-size="limit"
+          :total="total"
+          @current-change="handleCurrentChange"
+          @size-change="handleSizeChange"
+        ></el-pagination>
+    </div>
+  </el-row>
+  
 </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import moment from 'moment'
+import computedmixin  from '@/mixin/computedmixin'
+import DeviceType from '@/object/deviceType'
 
 export default {
+  mixins:[computedmixin],
   name: 'TableIndex',
   props:{
     title: {
@@ -177,63 +222,9 @@ export default {
       }else{
         return '禁止'
       }
-    },
-    dataStr: function(value){
-        return moment(value).format('YYYY-MM-DD')
-    },
+    }
   },
   computed:{
-    ...mapGetters([
-      'buildingoptions',
-      'buildingusers',
-      'buildingdevices',
-      'buildingcontactunit',
-      'buildingroles',
-      'buildingarray',
-      'deviceType'
-    ]),
-    optionfilter(){
-      return function (a) {
-        if(a !== null && a !== undefined && this.buildingoptions.length>0){
-          let _array = this.buildingoptions.filter((item, index) => 
-              item.id == a 
-          )
-          return _array[0].textName
-        }else{
-          return ""
-        }
-      }   
-    },
-    changeDevice(){
-      return function (val) {
-        var array = []
-        if(val !== null){
-          val.forEach(item=>{
-            var data = this.buildingdevices.filter(element=>{
-              return item.id == element.id
-            })
-            array.push(data[0].name)
-          })
-          return array.toString()
-        }
-        return ''
-      }
-    },
-    changeContainUnit(){
-      return function (val) {
-        var array = []
-        if(val !== null){
-          val.forEach(item=>{
-            var data = this.buildingcontactunit.filter(element=>{
-              return item.id == element.id
-            })
-            array.push(data[0].name)
-          })
-          return array.toString()
-        }
-        return ''
-      } 
-    },
     changeUserName(){
       return function (val) {
         var array = []
@@ -280,37 +271,6 @@ export default {
         return ''
       } 
     },
-    changeLinkDeviceName(){
-      return function (val) {
-         var array = []
-          if(val !== null){
-            val.forEach(item => {
-              array.push(item.name) 
-             })
-            return array.toString()
-          }
-          return ''
-      }
-    },
-    changeLinkDeviceType(){
-      return function (val) {
-         var array = []
-          if(val !== null){
-            val.forEach(item => {
-              this.deviceType.filter(function(element, index){
-                var data = element.options.filter((obj,index)=>{
-                  return obj.value == item.fullType
-                })
-                if(data.length){
-                  array.push(data[0].label) 
-                }
-              })
-             })
-            return array.toString()
-          }
-          return ''
-      } 
-    },
     page: function() {
       return this.listQueryParams.page || 1
     },
@@ -345,12 +305,29 @@ export default {
       }
       console.log(JSON.stringify(this.updateArray))
     },
+    changeText(val){
+      if(val !== undefined){
+        var array = []
+        var data = val.getInfo()
+        var config = DeviceType.getConfig()
+        var keys = Object.keys(data)
+        keys.forEach(item=>{
+            var i = config.filter((obj)=>{ return obj.prop == item })
+            if(i.length !== 0){
+              var value = item == 'fullType' ? val.getName() : data[item]
+                array.push({
+                    label:i[0].label,
+                    value:value
+                })
+            }
+        })
+        return array
+      }
+    },
     OpenCreate(){
-      console.log('OpenUpdate')
       this.$emit('handleTableRow', '', 'create')
     },
     OpenUpdate(){
-      console.log('OpenUpdate')
       this.$emit('handleTableRow', this.updateArray)
     },
     handleClickOption(row, option) {
@@ -386,6 +363,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.infinite-list-wrapper {
+    width: 100%;
+    height: 600px;
+    overflow-x:hidden;
+    overflow-y:auto;
+}
 .pagination-container{
   margin-top: 20px;
   margin-bottom: 10px;

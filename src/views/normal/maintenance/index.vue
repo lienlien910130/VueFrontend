@@ -117,23 +117,9 @@ export default {
             return{
                 handleBlock:this.handleBlock,
                 clickPagination:this.getBuildingMaintain,
-                changeTable:this.changeTable,
                 handleDialog:this.handleDialog
             }
         }
-    },
-    watch: {
-    //   buildingdevices:{
-    //     handler:async function(){
-    //         this.deviceList = this.buildingdevices.map(v => {
-    //             this.$set(v, 'value', v.id) 
-    //             this.$set(v, 'label', v.name) 
-    //             this.$set(v, 'id', v.id) 
-    //             return v
-    //         })
-    //     },
-    //     immediate:true
-    //   }
     },
     methods:{
         async init(){   
@@ -199,7 +185,7 @@ export default {
             this.blockData = data
         },
         async setSelectSetting(){
-            this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
+            this.selectSetting = await setSelectSetting(this.tableConfig,this.origin)
             this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
         },
         async handleBlock(title,index, content) { //維護保養的操作
@@ -290,7 +276,6 @@ export default {
                 }
             }
         },
-        
         async changeTable(value){
             this.isTable = value
             this.listQueryParams = {
@@ -315,7 +300,7 @@ export default {
                     index < this.listQueryParams.limit * this.listQueryParams.page && 
                     index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
                 this.blockData = concatarray
-                this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
+                this.selectSetting = await setSelectSetting(this.tableConfig,this.origin)
             }else{
                 await this.init()
             }

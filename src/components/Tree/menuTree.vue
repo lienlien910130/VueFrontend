@@ -6,7 +6,7 @@
         <div>
             <el-tree
             ref="tree"
-            :data="data"
+            :data="treeData"
             empty-text=""
             highlight-current
             node-key="id"
@@ -15,7 +15,7 @@
             >
               <span class="custom-tree-node" slot-scope="{ node,data }" @click="select(node, data)">
                   <span >
-                    {{ data.name }}
+                    {{ data.getName() }}
                   </span>
               </span>
             </el-tree>    
@@ -25,12 +25,22 @@
 
 <script>
 export default {
-  name: 'menuTree',
-    props:['data','selectId'],
+  name: 'MenuTree',
+    props:{
+      treeData: {
+            type: Array,
+            required: true
+      },
+      selectId: {
+            type: String
+      }
+    },
     watch:{
-      data:{
+      treeData:{
         handler:function(){
-          if(this.selectId !== ''){
+          console.log('treeData')
+          console.log(JSON.stringify(this.treeData))
+          if(this.selectId !== null){
             this.$nextTick(()=>{
               this.$refs.tree.setCurrentKey(this.selectId)
             })
@@ -40,7 +50,7 @@ export default {
       },
       selectId:{
         handler:function(){
-          if(this.selectId !== ''){
+          if(this.selectId !== null){
             this.$nextTick(()=>{
               this.$refs.tree.setCurrentKey(this.selectId)
             })
@@ -52,7 +62,7 @@ export default {
     methods:{
         select(node, data){
           this.$emit('handleTreeNode',node,data)
-        },
+        }
     }
 }
 </script>

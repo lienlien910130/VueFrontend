@@ -40,28 +40,29 @@
                             </el-select>
                     </span>
                     <el-button
-                        v-if="isTable == false"
+                        v-if="isTable == false && title !== 'address'"
                         class="filter-item" 
                         type="primary" 
                         @click="handleClickOption('empty','')">
-                            新增
+                        新增
+                    </el-button>
+                    <el-button
+                        v-if="title == 'address'"
+                        class="filter-item" 
+                        type="primary" 
+                        @click="handleClickOption('update',updateArray)">
+                        儲存
                     </el-button>
                     <el-button
                         v-if="title == 'maintain'"
                         class="filter-item" 
                         type="primary" 
                         @click="change">
-                            <span v-if="isTable == false">
-                                檢視細項
-                            </span>   
-                            <span v-else>
-                                檢視大項
-                            </span>                  
+                            <span> {{ isTable == false ? '檢視細項' : '檢視大項'}} </span>                  
                     </el-button>
                 </el-col>
             </div>
-            <div 
-            v-if="isTable == false"
+            <div v-if="isTable == false"
             class="list"  
             >
               <div 
@@ -82,32 +83,28 @@
                             </div>
                             <div :style="{display:'inline-block','word-break':'break-all','padding-top':'5px',
                             width:itemstyle,}">
-                                <span 
-                                v-if="option.format == 'YYYY' | option.format === 'YYYY-MM-DD'">
+                                <span v-if="option.format == 'YYYY' | option.format === 'YYYY-MM-DD'">
                                 {{ dataStr(item[option.prop],option.format) }}
                                 </span>
                                 
-                                <span 
-                                v-else-if="option.format == 'range' ">
+                                <span v-else-if="option.format == 'range' ">
                                     {{ dataStr(item['checkStartDate'],'YYYY-MM-DD') }} 
                                     <span v-if="item['checkStartDate'] !== null">~</span> 
                                     {{ dataStr(item['checkEndDate'],'YYYY-MM-DD') }}
                                 </span>
 
-                                <el-tag 
-                                v-else-if="option.format == 'tag' "
+                                <el-tag v-else-if="option.format == 'tag' "
                                 :class="item[option.prop] === false ? 'tag-co' : 'tag-noco' "
                                 > 
                                     {{ tagChange(item[option.prop]) }}
                                 </el-tag>
 
-                                <span 
+                                <!-- <span 
                                 v-else-if="option.format == 'select' ">
-                                <!-- {{ selectStr(item[option.prop]) }} -->
-                                </span>
+                                {{ selectStr(item[option.prop]) }}
+                                </span> -->
 
-                                <span 
-                                v-else-if="option.format == 'fullType' ">
+                                <span v-else-if="option.format == 'fullType' ">
                                 {{ item.getTypeName() }}
                                 </span>
 
@@ -123,17 +120,11 @@
                                     {{ multipleStr('user',item[option.prop]) }}
                                 </span> -->
 
-                                <span v-else-if="option.format == 'openmaintain' ">
-                                    {{ changeMaintain(item[option.prop]) }}
+                                <span v-else-if="option.format == 'accountStatusSelect' ">
+                                    {{ item[option.prop] | changeStatus }}
                                 </span>
 
-                                <el-button
-                                v-else-if="option.format == 'openfiles' "
-                                type="text" @click="handleClickOption('openfiles',item)" 
-                                style="padding-top:0px;padding-bottom:0px">查看</el-button>
-
-                                <span 
-                                v-else-if="option.format == 'MaintainContentOptions' || 
+                                <span v-else-if="option.format == 'MaintainContentOptions' || 
                                 option.format == 'MaintainProcessOptions' || 
                                 option.format == 'BrandOptions' || option.format == 'ContactUnitOptions' ||
                                 option.format == 'DeviceStatusOptions' "
@@ -141,13 +132,12 @@
                                 {{ changeOptionName(item[option.prop]) }}
                                 </span>
                                 
-                                <span 
-                                v-else-if="option.format == 'floorOfHouseSelect' " 
+                                <span v-else-if="option.format == 'floorOfHouseSelect' " 
                                 @click="handleClickOption('openfloorofhouse',item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ multipleStr('floorOfHouse',item[option.prop]) }}
                                 </span>
-
+                            
                                 <el-button v-else-if="option.format == 'deviceSelect' " 
                                 @click="toAnotherPage('devicesManagement',item[option.prop],'')"
                                 type="text"
@@ -156,25 +146,52 @@
                                     {{ changeDevice(item[option.prop]) }}
                                 </el-button>
 
-                                <span 
-                                v-else-if="option.format == 'deviceTypeSelect' " 
-                                @click="toAnotherPage('deviceTypesManagement',item[option.prop],'')"
+                                <span v-else-if="option.format == 'deviceTypeSelect' " 
+                                @click="toAnotherPage('deviceTypesManagement',item[option.prop][0],'')"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ changefullType(item[option.prop][0]['fullType']) }}
+                                    {{ item.getOnlyType() }}
                                 </span>
 
-                                <span 
-                                v-else-if="option.format == 'contactunitSelect' " 
+                                <span v-else-if="option.format == 'contactunitSelect' " 
                                 @click="toAnotherPage('sys-Basic',item[option.prop],'co')"
                                 style="color:#66b1ff;cursor:pointer">
-                                    <!-- {{ multipleStr('contactunit',item[option.prop]) }} -->
                                     {{ changeContainUnit(item[option.prop]) }}
                                 </span>
 
-                                <el-button 
-                                v-else-if="option.format == 'openlacks' "
-                                type="text" @click="handleClickOption('openlacks',item)" 
+                                <span v-else-if="option.format == 'buildingSelect' " 
+                                @click="toAnotherPage('sys-Basic',item[option.prop],'co')"
+                                style="color:#66b1ff;cursor:pointer">
+                                    {{ changeBuilding(item[option.prop]) }}
+                                </span>
+
+                                <span v-else-if="option.format == 'roleSelect' " 
+                                @click="toAnotherPage('sys-Basic',item[option.prop],'co')"
+                                style="color:#66b1ff;cursor:pointer">
+                                    {{ changeRoles(item[option.prop]) }}
+                                </span>
+
+                                <el-input v-else-if="option.format == 'address' "
+                                v-model="item[option.prop]"
+                                :maxlength="option.maxlength"
+                                show-word-limit
+                                @change="checkUpdate(item)"
+                                @input="item[option.prop] = 
+                                item[option.prop].replace(/[^\d]/g,'').replace(/\s*/g,'')">
+                                </el-input>
+                                
+                                <span v-else-if="option.format == 'openmaintain' ">
+                                    {{ changeMaintain(item[option.prop]) }}
+                                </span>
+                                
+                                <el-button v-else-if="option.format == 'openfiles' "
+                                type="text" @click="handleClickOption('openfiles',item)" 
                                 style="padding-top:0px;padding-bottom:0px">查看</el-button>
+
+                                <el-button v-else-if="option.format == 'openlacks' "
+                                type="text" @click="handleClickOption('openlacks',item)" 
+                                style="padding-top:0px;padding-bottom:0px">
+                                   查看
+                                </el-button>
 
                                 <span v-else>{{ item[option.prop] }}</span>
                             </div>
@@ -187,9 +204,10 @@
                             :key="index"
                             >
                             <el-button
-                            :type="index == 0 ? 'primary' : 'info'"
+                            :type="index == 0 ? 'primary' : index == 1 ? 'info' : 'danger'"
                             @click="handleClickOption(button.status,item)"
                             size="mini"
+                            :disabled="index == 1 && item.removable !== undefined && item.removable == false"
                             >
                             <span >{{ button.name }}</span>
                             </el-button>
@@ -231,23 +249,93 @@
                                         scope.column.property == 'completedTime' " style="width:150px"> 
                                             {{ dataStr(scope.row[scope.column.property],'YYYY-MM-DD')  }}</span> -->
 
-                                        <span v-if="item.format== 'YYYY-MM-DD' || item.format== 'YYYY'" style="width:150px"> 
+                                        <span v-if="item.format== 'YYYY-MM-DD' || 
+                                        item.format== 'YYYY'" style="width:150px"> 
                                             {{ dataStr(scope.row[scope.column.property],item.format)  }}</span>
 
-                                        <span v-else-if="scope.column.property == 'processStatus' || scope.column.property == 'processContent'"> 
-                                            {{  changeOptionName(scope.row[scope.column.property]) }}
+                                        <span v-else-if="item.format == 'range' ">
+                                            {{ dataStr(scope.row['checkStartDate'],'YYYY-MM-DD') }} 
+                                            <span v-if="scope.row['checkStartDate'] !== null"><br></span> 
+                                            {{ dataStr(scope.row['checkEndDate'],'YYYY-MM-DD') }}
                                         </span>
-                                        <span v-else-if="scope.column.property == 'linkDevices'"> 
-                                            {{ changeDevice(scope.row[scope.column.property]) }}
+
+                                        <span v-else-if="item.format == 'MaintainContentOptions' || 
+                                        item.format == 'MaintainProcessOptions' || 
+                                        item.format == 'BrandOptions' || item.format == 'ContactUnitOptions' ||
+                                        item.format == 'DeviceStatusOptions' "
+                                        >
+                                        {{ changeOptionName(scope.row[item.prop]) }}
                                         </span>
-                                        <span v-else-if="scope.column.property == 'linkContactUnits'"> 
-                                            {{ changeContainUnit(scope.row[scope.column.property]) }}
+
+                                        <span v-else-if="item.format == 'accountStatusSelect' ">
+                                            {{ scope.row[item.prop] | changeStatus }}
                                         </span>
+
+                                        <span v-else-if="item.format == 'removableSelect' ">
+                                            {{ scope.row[item.prop] | changeRemoveable }}
+                                        </span>
+
+                                        <span v-else-if="item.format == 'deviceTypeSelect' ">
+                                            <el-popover
+                                                v-if="scope.row[item.prop].length !== 0"
+                                                placement="right"
+                                                width="400"
+                                                trigger="click">
+                                                <div>
+                                                <div 
+                                                v-for="(item,index) in changeText(scope.row[item.prop][0])"
+                                                :key="index">
+                                                    <p>{{ item.label + ':' + item.value }} </p> 
+                                                </div> 
+                                                </div>
+                                                <el-button slot="reference">{{ scope.row.getOnlyType()  }}</el-button>
+                                            </el-popover>
+                                        </span>
+
+                                        <el-input v-else-if="item.format == 'address' "
+                                            v-model="scope.row[scope.column.property]"
+                                            :maxlength="item.maxlength"
+                                            show-word-limit
+                                            @change="checkUpdate(scope.row)"
+                                            @input="scope.row[scope.column.property] = 
+                                            scope.row[scope.column.property].replace(/[^\d]/g,'').replace(/\s*/g,'')">
+                                        </el-input>
+
+                                        <span v-else-if="item.format == 'deviceSelect' "
+                                        @click="toAnotherPage('devicesManagement',scope.row[item.prop],'')"
+                                        style="color:#66b1ff;cursor:pointer" 
+                                        > 
+                                            {{ changeDevice(scope.row[item.prop]) }}
+                                        </span>
+
+                                        <span v-else-if="item.format == 'contactunitSelect' " 
+                                        @click="toAnotherPage('sys-Basic',scope.row[item.prop],'co')"
+                                        style="color:#66b1ff;cursor:pointer">
+                                            {{ changeContainUnit(scope.row[item.prop]) }}
+                                        </span>
+
+                                        <span v-else-if="item.format == 'buildingSelect' " 
+                                        @click="toAnotherPage('sys-Basic',scope.row[item.prop],'co')"
+                                        style="color:#66b1ff;cursor:pointer">
+                                            {{ changeBuilding(scope.row[item.prop]) }}
+                                        </span>
+
+                                        <span v-else-if="item.format == 'roleSelect' " 
+                                        @click="toAnotherPage('sys-Basic',scope.row[item.prop],'co')"
+                                        style="color:#66b1ff;cursor:pointer">
+                                            {{ changeRoles(scope.row[item.prop]) }}
+                                        </span>
+
                                         <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
                                             {{ changeInspectionLack(scope.row[scope.column.property]) }}
                                         </span>
+
                                         <span v-else-if="scope.column.property == 'fullType'"> 
                                             {{ scope.row.getTypeName() }}
+                                        </span>
+
+                                        <span v-else-if="item.format == 'tag' "> 
+                                            {{ tagChange(scope.row[scope.column.property]) }}
                                         </span>
 
                                         <span v-else>{{  scope.row[item.prop] }}</span>
@@ -256,20 +344,43 @@
                             
                             <el-table-column
                             fixed="right"
-                            label="操作">
+                            label="操作"
+                            v-if="title !== 'address'"
+                            >
                             <template slot="header"  v-if="title !== 'maintain'">
                                 <i class="el-icon-circle-plus-outline" 
                                 @click="handleTableClick('empty','')" 
                                 style="cursor: pointer;font-size:25px;float:right"></i>
                             </template>
                             <template slot-scope="scope">
-                                <el-button v-if="title == 'maintain'" 
-                                @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
-                                <i class="el-icon-folder-opened"  
-                                style="cursor: pointer;float:right"></i>
-                                </el-button>
-                                <el-button @click="handleTableClick('open',scope.row)" type="primary" size="small">編輯</el-button>
-                                <el-button type="info" size="small" @click="handleTableClick('delete',scope.row)">刪除</el-button> 
+                                <div style="float:right">
+                                    <el-button v-if="title == 'maintain' || 
+                                    title == 'reportInspectio' || title == 'reportPublicSafe'   " 
+                                    @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
+                                    <i class="el-icon-folder-opened"  
+                                    style="cursor: pointer;float:right"></i>
+                                    </el-button>
+                                    <el-button v-if="title == 'reportInspectio' || title == 'reportPublicSafe' " 
+                                    @click="handleTableClick('openlacks',scope.row)" type="danger" size="small">
+                                    缺失
+                                    </el-button>
+                                    <el-button v-if="title == 'roles'" 
+                                    @click="handleTableClick('distribution',scope.row)" type="danger" size="small">
+                                    分配權限
+                                    </el-button>
+                                    <el-button 
+                                        @click="handleTableClick('open',scope.row)" 
+                                        type="primary" 
+                                        size="small">
+                                        編輯
+                                    </el-button>
+                                    <el-button 
+                                        type="info" size="small" 
+                                        @click="handleTableClick('delete',scope.row)"
+                                        :disabled="scope.row.removable !== undefined && scope.row.removable == false">
+                                        刪除
+                                    </el-button> 
+                                </div>
                             </template>
                             </el-table-column>
                 </el-table>
@@ -296,6 +407,7 @@
 
 <script>
 import computedmixin  from '@/mixin/computedmixin'
+import DeviceType from '@/object/deviceType'
 
 export default {
     mixins:[computedmixin],
@@ -331,9 +443,9 @@ export default {
                 return []
             }
         },
-        deviceList: {
-            type: Array
-        },
+        // deviceList: {
+        //     type: Array
+        // },
         selectSetting: {
             type: Array
         },
@@ -354,6 +466,14 @@ export default {
             default: false
         }
     },
+    filters:{
+        changeStatus: function(val) {
+            return val == true ?  '啟用' : '禁用'
+        },
+        changeRemoveable: function(val) {
+            return val == true ?  '允許' : '禁止'
+        }
+    },
     computed: {
         labelstyle(){
             if (this.$store.state.app.device === 'mobile') {
@@ -370,7 +490,6 @@ export default {
             }
         },
         heightChange(){
-            console.log(this.title)
             if(this.title == 'committee' || this.title == 'contactUnit'){
                 return { height : '100px'}
             }else if(this.title == 'floorOfHouse'){
@@ -378,10 +497,18 @@ export default {
             }else if(this.title == 'maintain'){
                 return { height : '130px'}
             }else if(this.title == 'equipment'){
-                return { height : '150px'}
+                return { height : '270px'}
             }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
-                return { height : '190px'}
+                return { height : '220px'}
             }else if(this.title == 'devicetype'){
+                return { height : '150px'}
+            }else if(this.title == 'mainMenu'){
+                return { height : '120px'}
+            }else if(this.title == 'accessAuthority'){
+                return { height : '120px'}
+            }else if(this.title == 'roles'){
+                return { height : '60px'}
+            }else if(this.title == 'account'){
                 return { height : '150px'}
             }
         },
@@ -393,10 +520,18 @@ export default {
             }else if(this.title == 'maintain'){
                 return { height : '190px'}
             }else if(this.title == 'equipment'){
-                return { height : '210px'}
+                return { height : '330px'}
             }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
-                return { height : '250px'}
+                return { height : '280px'}
             }else if(this.title == 'devicetype'){
+                return { height : '210px'}
+            }else if(this.title == 'mainMenu'){
+                return { height : '180px'}
+            }else if(this.title == 'accessAuthority'){
+                return { height : '180px'}
+            }else if(this.title == 'roles'){
+                return { height : '120px'}
+            }else if(this.title == 'account'){
                 return { height : '210px'}
             }
         },
@@ -499,19 +634,19 @@ export default {
         //         }
         //     } 
         // },
-        changedeviceType(){
-            return function (a) {
-                if(a !== null && a.length){
-                    let _array = this.selectData.filter((item, index) => 
-                        item.id == a[0].id
-                    )
-                    var str = _array[0].label.split('--')
-                    return str[1]
-                }else{
-                    return ""
-                }
-            }
-        },
+        // changedeviceType(){
+        //     return function (a) {
+        //         if(a !== null && a.length){
+        //             let _array = this.selectData.filter((item, index) => 
+        //                 item.id == a[0].id
+        //             )
+        //             var str = _array[0].label.split('--')
+        //             return str[1]
+        //         }else{
+        //             return ""
+        //         }
+        //     }
+        // },
         changeMaintain(){
             return function (a) {
                 if(a !== null && a.length){
@@ -524,6 +659,16 @@ export default {
                 }
             } 
         },
+        // changeLackCount(){
+        //     return function (a) {
+        //         if(a !== null){
+        //             console.log(a.getCount())
+        //             return a.getCount()
+        //         }else{
+        //             return "0/0"
+        //         }
+        //     } 
+        // },
         page: function() {
             return this.listQueryParams.page || 1
         },
@@ -558,10 +703,46 @@ export default {
             sort:'',
             rowlabel:[],
             itemkey: Math.random(),
-            gutter:0
+            gutter:0,
+            updateArray:[]
         }
     },
     methods: {
+        changeText(val){
+            if(val !== undefined){
+                var array = []
+                var data = val.getInfo()
+                var config = DeviceType.getConfig()
+                var keys = Object.keys(data)
+                keys.forEach(item=>{
+                    var i = config.filter((obj)=>{ return obj.prop == item })
+                    if(i.length !== 0){
+                    var value = item == 'fullType' ? val.getName() : data[item]
+                        array.push({
+                            label:i[0].label,
+                            value:value
+                        })
+                    }
+                })
+                return array
+            }
+        },
+        checkUpdate(row){
+            var index = this.updateArray.findIndex(d => d.id === row.id)
+            if(index !== -1){
+                this.updateArray[index].systemNumber = row.systemNumber
+                this.updateArray[index].circuitNumber = row.circuitNumber
+                this.updateArray[index].address = row.address
+            }else{
+                var data = {
+                    id:row.id,
+                    systemNumber:row.systemNumber,
+                    circuitNumber:row.circuitNumber,
+                    address:row.address
+                }
+                this.updateArray.push(data)
+            }
+        },
         handleClickOption(status,row) {
             if (status === 'delete') {
                 this.$confirm('是否確定刪除該筆資料?', '提示', {
@@ -574,6 +755,7 @@ export default {
                 }).catch(() => {
                 })
             } else {
+                console.log(this.title,status, row)
                 this.$emit('handleBlock',this.title,status, row)
             } 
         },
@@ -600,10 +782,10 @@ export default {
                 }
             } 
         },
-        toAnotherPage(page,data,block){
-            console.log(page,data,block)
-            this.$router.push({ name: page, params: { block:block, target: data }})
-        },
+        // toAnotherPage(page,data,block){
+        //     console.log(page,data,block)
+        //     this.$router.push({ name: page, params: { block:block, target: data }})
+        // },
         // 改變翻頁組件中每頁數據總數
         handleSizeChange(val) {
             this.listQueryParams.limit = val

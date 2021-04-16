@@ -6,6 +6,7 @@ let Authority = {
     getBuildingMenu: async function(){
         var data = await api.authority.apiGetBuildingMainMenuAuthority().then(response => {
             var result = response.result.sort((x,y) => x.sort - y.sort)
+            console.log(JSON.stringify(result))
             var array = []
             result.forEach(element => {
                 var node = {
@@ -129,6 +130,7 @@ let Authority = {
     getMenuAccessAuthority: async function(mainMenuId){
         var data = await api.authority.apiGetMainMenuAccessAuthority(mainMenuId).then(response => {
             var result = response.result.sort((x,y) => x.sort - y.sort)
+            console.log(JSON.stringify(result))
             return result
         }).catch(error=>{
             return []
@@ -229,6 +231,7 @@ let Authority = {
     },
     getAllAccount: async function(){
         var data = await api.authority.apiGetAllAccountAuthority().then(response => {
+            console.log(JSON.stringify(response))
             return response.result.sort((x,y) => x.id - y.id) 
         }).catch(error=>{
             return []

@@ -87,7 +87,6 @@
         </div>
 </template>
 <script>
-import { mapGetters } from 'vuex'
 import { setSelectSetting } from '@/utils/index'
 import Files  from '@/object/files'
 import Inspection  from '@/object/inspection'
@@ -100,94 +99,7 @@ export default {
     mixins:[sharemixin,blockmixin,dialogmixin],
     data(){
         return{
-            // blockData: [],
-            // tableConfig: [
-            //   {
-            //     label: '申報年度',
-            //     prop: 'declareYear',
-            //     format:'YYYY',
-            //     mandatory:true, message:'請選擇年度',isSelect:true,options:[],
-            //     selectType:'dateOfYear',select:'',isSort:true,isHidden:false
-            //   },
-            //   {
-            //     label: '申報期限',
-            //     prop: 'declareDeadline',
-            //     format:'YYYY-MM-DD',
-            //     mandatory:true, message:'請選擇期限',isSelect:true,options:[],
-            //     selectType:'dateOfDate',select:'',isSort:true,isHidden:false
-            //   },
-            //   {
-            //     label: '申報日期',
-            //     prop: 'declareDate',
-            //     format:'YYYY-MM-DD',
-            //     mandatory:true, message:'請選擇日期',isSelect:true,options:[],
-            //     selectType:'dateOfDate',select:'',isSort:true,isHidden:false
-            //   },
-            //   {
-            //     label: '檢測日期',
-            //     prop: 'rangeDate',
-            //     format:'range',isSelect:false,isSort:false,isHidden:true,
-            //     // mandatory:true, message:'請選擇日期'
-            //   },
-            //   {
-            //     label: '專技人員',
-            //     prop: 'professName',isSelect:true,options:[],
-            //             selectType:'',select:'',isSort:true,isHidden:true,maxlength:'10'
-            //   },
-            //   {
-            //     label: '證號',
-            //     prop: 'certificateNumber',isSelect:false,isSort:true,isHidden:true,maxlength:'20'
-            //   },
-            //   {
-            //     label: '改善期限',
-            //     prop: 'declarationImproveDate',
-            //     format:'YYYY-MM-DD',mandatory:true, message:'請選擇日期',isSelect:true,options:[],
-            //       selectType:'dateOfDate',select:'',isSort:true,isHidden:true
-            //   },
-            //   {
-            //     label: '改善狀況',
-            //     prop: 'isImproved',
-            //     format:'tag',
-            //     type:'boolean',
-            //     mandatory:false, isPattern:false,trigger:'change',isSelect:true,options:[],
-            //     selectType:'reportBool',select:'',isSort:true,isHidden:false
-            //   },
-            //   {
-            //     label: '備註',
-            //     prop: 'note',
-            //     format:'textarea',
-            //     mandatory:false, isPattern:false,isSelect:false,isSort:false,isHidden:true
-            //   },
-            //   {
-            //     label: '檢附文件',
-            //     prop: 'file',
-            //     format:'openfiles',isSelect:false,isSort:false,isHidden:false
-            //   },
-            //   {
-            //     label: '缺失內容',
-            //     prop: 'missingContent',
-            //     format:'openlacks',isSelect:false,isSort:false,isHidden:false
-            //   }
-            // ],
-            // sortArray:[],
-            // listQueryParams:{
-            //     page: 1,
-            //     limit: 10,
-            //     total: 0
-            // },
-
-            // dialogTitle:'',
-            // innerVisible:false,
-            // dialogData:[],
-            // dialogStatus:'',
-            // dialogButtonsName:[],
-            // dialogConfig:[],
-
-            // origin:[],
-            // selectSetting:[],
-            inspectionId:'', //檢修申報id
             inspection:'',
-            options:[],
             lackorigin:[],
             //dialog額外的參數
             lackFileId:'', //缺失檔案id
@@ -205,8 +117,7 @@ export default {
       blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getBuildingMaintenanceReport,
-                changeTable:this.changeTable
+                clickPagination:this.getBuildingMaintenanceReport
             }
       }
   },
@@ -222,7 +133,7 @@ export default {
       await this.getBuildingMaintenanceReport() 
       await this.setSelectSetting()
     },
-    async inspectioninit(){
+    async lackinit(){
       this.lacklistQueryParams = {page: 1,limit: 10,total: 0}
       await this.saveInspectionLack()
       await this.getInspectionLack() 
@@ -286,12 +197,11 @@ export default {
         this.blockData = data
     },  
     async setSelectSetting(){
-      this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
+      this.selectSetting = await setSelectSetting(this.tableConfig,this.origin)
       this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
     },
     async saveInspectionLack(){
       var data =  await InspectionLacks.get(this.inspection.getID())
-      console.log(JSON.stringify(data))
       this.lackorigin = data.map(item=>{ return item.clone(item) })
     },
     async getInspectionLack(){ //取得缺失內容
@@ -343,7 +253,7 @@ export default {
         this.dialogTitle = 'lack'
         this.inspection = content
         this.dialogButtonsName = []
-        await this.inspectioninit()
+        await this.lackinit()
         this.dialogStatus = 'lack'
         this.innerVisible = true
       }
@@ -420,7 +330,7 @@ export default {
           var isDelete = await content.delete()
           if(isDelete){
               this.$message('刪除成功')
-              await this.inspectioninit()
+              await this.lackinit()
           }
         }else if(index === 'createlack' || index === 'updatelack'){
           var isOk = index === 'createlack' ? await content.create(this.inspection.getID()) : await content.update()
@@ -449,6 +359,7 @@ export default {
     },
     async changeTable(value){
       this.isTable = value
+      value == true ?  this.tableConfig = Inspection.getTableConfig() : this.tableConfig = Inspection.getConfig()
     }
   }
 }

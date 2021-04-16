@@ -40,6 +40,9 @@ class InspectionLacks extends Parent {
     getName(){
         return '【'+this.lackItem+'】'+this.lackContent
     }
+    getStatus(){
+        return this.status
+    }
     static empty(){
         return new InspectionLacks({
             id:'',
@@ -63,7 +66,7 @@ class InspectionLacks extends Parent {
             {
                 label: '處理進度',
                 prop: 'status',
-                mandatory:false, format:'LackStatusOptions'
+                mandatory:false, format:'Options'
             }
         ]
     }

@@ -91,6 +91,7 @@ import { removeDuplicates } from '@/utils/index';
     methods: {
       async init(){
         for(let obj of this.treeData) { //設備狀況
+        
           var node = {
             id:obj.value,
             name:obj.name,
@@ -99,10 +100,11 @@ import { removeDuplicates } from '@/utils/index';
           }
           var typeArray = removeDuplicates(obj.data,'type') //去除掉重複的設備種類
           for(let item of typeArray){ //針對設備種類篩選對應的
-            var str 
+            var str =''
             this.deviceType.filter(function(element, index){
               var array = element.options.filter((obj,index)=>{
-                return obj.value == item.linkDeviceTypes[0].fullType
+                var d = item.linkDeviceTypes.length !== 0 ? item.linkDeviceTypes[0].fullType : ''
+                return obj.value == d
               })
               if(array.length){
                 str = array[0].label 
@@ -113,7 +115,7 @@ import { removeDuplicates } from '@/utils/index';
               return element.type == item.type
             })
             const _temp = { 
-                id: item.linkDeviceTypes[0].id,
+                id: item.linkDeviceTypes.length !== 0 ? item.linkDeviceTypes[0].id : '',
                 name: str,
                 count:typedata.length,
                 leaf: false,

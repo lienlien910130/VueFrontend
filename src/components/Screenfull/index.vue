@@ -16,11 +16,18 @@ export default {
   },
   mounted() {
     this.init()
+    window.addEventListener("keydown", this.KeyDown, true)
   },
   beforeDestroy() {
     this.destroy()
   },
   methods: {
+    KeyDown (event) {
+      if (event.keyCode === 122) {
+        event.returnValue = false
+        this.click()
+      }
+    },
     click() {
       if (!screenfull.enabled) {
         this.$message({
@@ -30,11 +37,11 @@ export default {
         return false
       }
       screenfull.toggle()
-      console.log(!this.isFullscreen)
-      this.$store.dispatch('app/toggleScreen',!this.isFullscreen)
     },
     change() {
+      
       this.isFullscreen = screenfull.isFullscreen
+      this.$store.dispatch('app/toggleScreen',this.isFullscreen)
     },
     init() {
       if (screenfull.enabled) {

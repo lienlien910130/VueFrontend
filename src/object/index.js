@@ -1,4 +1,4 @@
-import Building from '@/object/building'
+import Building from '@/object/buildingold'
 import User from '@/object/user'
 import Device from '@/object/deviceold'
 import Setting from '@/object/setting'

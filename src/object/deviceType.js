@@ -5,8 +5,8 @@ import api from '@/api'
 class DeviceType extends Parent {
     constructor (data) {
         super(data)
-        const { name, fullType, brand, productId, certificationNumber  } = data
-        this.name = name
+        const { fullType, brand, productId, certificationNumber  } = data
+        //this.name = name
         this.fullType = fullType
         this.brand = brand
         this.productId = productId
@@ -52,7 +52,7 @@ class DeviceType extends Parent {
         return label
     }
     getName(){
-        return '【'+this.getTypeName()+'】'+this.name
+        return '【'+this.getTypeName()+'】'
     }
     static empty(){
         return new DeviceType({
@@ -70,15 +70,15 @@ class DeviceType extends Parent {
                 label: '設備類型',
                 prop: 'fullType',
                 format:'fullType',
-                mandatory:true, message:'請輸入設備類型',isSelect:true,options:[],selectType:'fullType',select:'',
+                mandatory:true, message:'請選擇設備類型',isSelect:true,options:[],selectType:'fullType',select:'',
                 isSort:true,isHidden:false,maxlength:'20'
             },
-            {
-                label: '設備名稱',
-                prop: 'name',
-                mandatory:true, message:'請輸入設備名稱',isSelect:false,
-                isSort:true,isHidden:false,maxlength:'20'
-            },
+            // {
+            //     label: '設備名稱',
+            //     prop: 'name',
+            //     mandatory:true, message:'請輸入設備名稱',isSelect:false,
+            //     isSort:true,isHidden:false,maxlength:'20'
+            // },
             {
                 label: '廠牌名稱',
                 prop: 'brand',
@@ -122,7 +122,6 @@ class DeviceType extends Parent {
         }
         return data
     }
-    
 }
 
 export default DeviceType

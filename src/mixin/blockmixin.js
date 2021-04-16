@@ -6,9 +6,10 @@ export default {
               blockData: this.blockData,
               config: this.tableConfig,
               title:this.title,
-              // deviceList:this.deviceList,
               sortArray:this.sortArray,
-              isTable:this.isTable
+              isTable:this.isTable,
+              isHasButtons:this.isHasButtons,
+              buttonsName:this.buttonsName
           }
       }
     },
@@ -23,8 +24,12 @@ export default {
             page: 1,
             limit: 10,
             total: 0
-        }
+        },
+        isHasButtons:true,
+        buttonsName:[
+          { name:'編輯',type:'primary',status:'open'},
+          { name:'刪除',type:'info',status:'delete'}]
       }
-    },
+    }
     
 }

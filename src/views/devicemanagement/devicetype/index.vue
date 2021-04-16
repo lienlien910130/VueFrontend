@@ -9,7 +9,6 @@
                     v-bind="blockAttrs" 
                     v-on="blockEvent"></Block>
                 </div>
-                
             </el-col>
         </el-row>
         <Dialog 
@@ -41,11 +40,9 @@ export default {
             handler:async function(){
                 if(this.buildingid !== undefined){
                     if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0){
-                        console.log(this.$route.params.target)
-                        let _array = this.origin.filter((item, index) => 
-                            item.id == this.$route.params.target[0].id
-                        )
-                        await this.handleBlock('devicetype','open',_array[0])
+                        if(typeof this.$route.params.target == 'object'){
+                            await this.handleBlock('devicetype','open',this.$route.params.target)
+                        }
                     } 
                 }
             },
@@ -101,13 +98,14 @@ export default {
             this.blockData = data
         },
         async setSelectSetting(){
-            this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData)
+            this.selectSetting = await setSelectSetting(this.tableConfig,this.origin)
             this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
         },
         async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
             this.dialogData = []
             this.dialogConfig = this.tableConfig
+            this.dialogTitle = this.title
             if(index === 'open'){
                 this.dialogStatus = 'update'
                 this.dialogData.push(content)
@@ -157,7 +155,7 @@ export default {
 <style lang="scss" scoped>
 .block-wrapper {
     background: #fff;
-    padding: 30px 15px;
+    padding: 15px 15px;
     height: 720px;
 }
 </style>

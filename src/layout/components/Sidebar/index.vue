@@ -31,17 +31,16 @@ import variables from '@/styles/variables.scss'
 
 export default {
   components: { 
-    SidebarItem:() => import('./SidebarItem'),
-    
+    SidebarItem:() => import('./SidebarItem')
   },
   computed: {
     ...mapGetters([
       'permission_routes',
       'sidebar'
     ]),
-    routes() {
-      return this.$router.options.routes
-    },
+    // routes() {
+    //   return this.$router.options.routes
+    // },
     activeMenu() {
       const route = this.$route
       const { meta, path } = route

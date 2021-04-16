@@ -83,7 +83,7 @@ service.interceptors.response.use(
 
 // export default service
 export default function(method,url,data = null,isHeader = false) {
-    console.log('method:'+method+' || url:'+url+' || data:'+data+' || isHeader:'+isHeader)
+    console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data)+' || isHeader:'+isHeader)
     method = method.toLowerCase()
     if(method == 'post'){   
         if(isHeader !== false){ //檔案上傳

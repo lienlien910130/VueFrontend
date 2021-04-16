@@ -2,14 +2,13 @@
     <div class="editor-container">
         <el-row  :gutter="32">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <div class="block-wrapper">
+                <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                     <Block 
                     :list-query-params.sync="listQueryParams"
                     :selectSetting.sync="selectSetting"
                     v-bind="blockAttrs" 
                     v-on="blockEvent"></Block>
                 </div>
-                
             </el-col>
         </el-row>
         <Dialog 
@@ -19,154 +18,34 @@
     </div>
 </template>
 <script>
-import { mapGetters } from 'vuex'
-import { setSelectSetting,changeLink } from '@/utils/index'
+import { setSelectSetting } from '@/utils/index'
+import blockmixin from '@/mixin/blockmixin'
+import dialogmixin from '@/mixin/dialogmixin'
+import sharemixin  from '@/mixin/sharemixin'
+import Device  from '@/object/device'
+import DeviceType  from '@/object/deviceType'
 
 export default {
     name:'Device',
-    components:{
-        Block: () => import('@/components/Block/index.vue'),
-        Dialog:() => import('@/components/Dialog/index.vue')
-    },
+    mixins:[sharemixin,blockmixin,dialogmixin],
     computed:{
-        ...mapGetters([
-            'buildingid',
-            'deviceType'
-        ]),
-        blockAttrs() {
-            return {
-                blockData: this.blockData,
-                config: this.tableConfig,
-                title:'equipment',
-                sortArray:this.sortArray,
-                selectData:this.devicetype
-            }
-        },
         blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getBuildingDevicesManage
+                clickPagination:this.getBuildingDevicesManage,
+                
             }
-        },
-        dialogAttrs(){
-            return{
-                title:'equipment',
-                visible: this.innerVisible,
-                dialogData: this.dialogData,
-                dialogStatus: this.dialogStatus,
-                buttonsName: this.dialogButtonsName,
-                config: this.tableConfig,
-                selectData:this.devicetype
-            }
-        }
-    },
-    data() {
-        return {
-            tableConfig:[
-                    {
-                        label: '設備名稱',
-                        prop: 'linkDeviceTypes',
-                        format:'deviceName',
-                        isHidden:false
-                    },
-                    {
-                        label: '設備種類',
-                        prop: 'linkDeviceTypes',
-                        format:'deviceTypeSelect',
-                        mandatory:true, message:'請選擇設備種類',isSelect:true,options:[],
-                        selectType:'deviceType',select:'',isSort:true,isHidden:false,type:'string',typemessage:''
-                    },
-                    {
-                        label: '購買日期',
-                        prop: 'dateOfPurchase',
-                        format:'YYYY-MM-DD',
-                        mandatory:true, message:'請選擇購買日期',isSelect:false,options:[],selectType:'',
-                        isSort:true,isHidden:true
-                    },
-                    {
-                        label: '保固日期',
-                        prop: 'dateOfWarranty',
-                        format:'YYYY-MM-DD',
-                        mandatory:true, message:'請輸入保固日期',isSelect:false,options:[],selectType:'',
-                        isSort:true,isHidden:false
-                    },
-                    {
-                        label: '位置設置',
-                        prop: 'location',
-                        mandatory:true, message:'請輸入位置設置',isSelect:false,options:[],selectType:'',
-                        isSort:true,isHidden:true,maxlength:'20'
-                    },
-                    {
-                        label: '分類群組',
-                        prop: 'groupID',
-                        mandatory:true, message:'請輸入分類群組',isSelect:true,options:[],
-                        selectType:'group',select:'',isSort:true,isHidden:true,maxlength:'10'
-                    },
-                    {
-                        label: '保管單位',
-                        prop: 'linkKeeperUnits',
-                        format:'contactunitSelect',
-                        mandatory:true,trigger: 'change', message:'請選擇保管單位',isSelect:true,options:[],
-                        selectType:'contactunit',select:'',isSort:true,type:'array',typemessage:'',isHidden:false
-                    },
-                    {
-                        label: '維護廠商',
-                        prop: 'linkMaintainVendors',
-                        format:'contactunitSelect',
-                        mandatory:true,trigger: 'change', message:'請選擇維護廠商',isSelect:true,options:[],
-                        selectType:'contactunit',select:'',isSort:true,type:'array',typemessage:'',isHidden:true 
-                    },
-                    {
-                        label: '設備狀況',
-                        prop: 'status',
-                        format:'DeviceStatusOptions',
-                        mandatory:true, message:'請選擇設備狀況',isSelect:true,options:[],
-                        selectType:'options',select:'',isSort:true,isHidden:false
-                    }
-                ],
-            blockData:[],
-            deviceList:[],
-            innerVisible:false,
-            dialogStatus:'',
-            dialogData:[],
-            dialogButtonsName:[],
-            origin:[],
-            listQueryParams:{
-                page: 1,
-                limit: 12,
-                total: 0
-            },
-            selectSetting:[],
-            sortArray:[],
-            devicetype:[]
         }
     },
     watch:{
         buildingid:{
             handler:async function(){
                 if(this.buildingid !== undefined){
-                    var data = await this.$obj.Device.getDeviceType('devicesManagement')
-                    this.devicetype = data.map(v => {
-                        var label = ''
-                        this.deviceType.filter(function(item, index){
-                            var array = item.options.filter((obj,index)=>{
-                                return obj.value == v.fullType
-                            })
-                            if(array.length){
-                                label = array[0].label 
-                            }
-                        })
-                        this.$set(v, 'value', v.id) 
-                        this.$set(v, 'label', '【'+label+'】-- '+v.name) 
-                        this.$set(v, 'id', v.id) 
-                        return v
-                    })
-                    await this.init()
+                    this.dialogSelect = await DeviceType.get('devicesManagement')
                     if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
-                        let _array = this.origin.filter((item, index) => 
-                            item.id == this.$route.params.target
-                        )
-                        await this.handleBlock('equipment','open',_array[0])
+                        if(typeof this.$route.params.target == 'object'){
+                            await this.handleBlock('equipment','open',this.$route.params.target)
+                        }
                     } 
                 }
             },
@@ -175,17 +54,22 @@ export default {
     },
     methods: {
         async init(){
+            this.tableConfig = Device.getConfig()
+            this.title = 'equipment'
+            await this.reload()
+        },
+        async reload(){
             await this.saveBuildingDevicesManageArray()
-            await this.getBuildingDevicesManage() //大樓的所有設備
+            await this.getBuildingDevicesManage() 
             await this.setSelectSetting()
         },
         async saveBuildingDevicesManageArray(){
-            var data = await this.$obj.Device.getBuildingDevicesManage()
-            this.origin = this.$deepClone(data)
+            var data = await Device.get()
+            this.origin = data.map(item=>{ return item.clone(item) })
         },
         async getBuildingDevicesManage(sort = null){
             this.blockData = []
-            var data = this.$deepClone(this.origin)
+            var data = this.origin.map(item=>{ return item.clone(item) })
             this.listQueryParams.total = data.length
             this.selectSetting.forEach(element=>{
                 if(element.select != ''){
@@ -232,34 +116,41 @@ export default {
             this.blockData = data
         },
         async setSelectSetting(){
-            this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData,this.devicetype)
+            this.selectSetting = await setSelectSetting(this.tableConfig,this.origin,this.dialogSelect)
             this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
         },
         async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
             this.dialogData = []
+            this.dialogConfig = this.tableConfig
+            this.dialogTitle = this.title
             if(index === 'open'){
                 this.dialogStatus = 'update'
-                var temp = this.$deepClone(content)
-                temp = changeLink('equipment',temp,'open')
-                this.dialogData.push(temp)
+                if(content.length>1){
+                    content.forEach(item=>{
+                        this.dialogData.push(item)
+                    })
+                }else{
+                    this.dialogData.push(content)
+                }
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
             }else if(index === 'delete'){
-                var isDelete = await this.$obj.Device.deleteBuildingDevicesManage(content)
+                var isDelete = await content.delete()
                 if(isDelete){
                     this.$message('刪除成功')
-                    this.$store.dispatch('building/setbuildingdevices',await this.$obj.Device.getBuildingDevicesManage())
+                    this.$store.dispatch('building/setbuildingdevices',await Device.get())
                     this.listQueryParams = {
                         page: 1,
                         limit: 10,
                         total: 0
                     }
-                    await this.init()
+                    await this.reload()
                 }
             }else if(index === 'empty'){
+                this.dialogData.push( Device.empty() )
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'create'},
                 { name:'取消',type:'info',status:'cancel'}]
@@ -268,19 +159,20 @@ export default {
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
-            console.log(title ,index,content)
+            console.log(title ,index,JSON.stringify(content))
             if(index !== 'cancel'){
-                content = changeLink('equipment',content,'')
-                var isOk = index === 'update' ? 
-                await this.$obj.Device.updateBuildingDevicesManage(JSON.stringify(content)) : 
-                await this.$obj.Device.postBuildingDevicesManage(JSON.stringify(content))
+                var isOk = index === 'update' ? await content.update() : await content.create()
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                    this.$store.dispatch('building/setbuildingdevices',await this.$obj.Device.getBuildingDevicesManage())
-                    await this.init()
+                    this.$store.dispatch('building/setbuildingdevices',await Device.get())
+                    await this.reload()
                 }
             }
             this.innerVisible = false
+        },
+         async changeTable(value){
+            this.isTable = value
+            value == true ?  this.tableConfig = Device.getTableConfig() : this.tableConfig = Device.getConfig()
         }
     }
 }

@@ -385,7 +385,7 @@ export async function changeLabel(selectType,value,selectdata){
         let devicetype = selectdata.filter((item, index) => 
               item.id == value.id
         )
-        label = devicetype[0].name
+        label = devicetype[0].getTypeName()
         break;
       case 'collaborateBool': 
           label = value == true ? '配合中' : '未配合'
@@ -480,26 +480,28 @@ export function changeLink(title,content,action){
           content.linkUsageOfFloors : content.linkUsageOfFloors.id })
     content.linkUsageOfFloors = array
   }else if(title === 'equipment'){
-    var array = []
-    action === 'open' ? 
-      content.linkKeeperUnits.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-      content.linkKeeperUnits.length !== 0 ?
-        content.linkKeeperUnits.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-        array.push({ id:content.linkKeeperUnits.id == undefined ? 
-          content.linkKeeperUnits : content.linkKeeperUnits.id })
-    content.linkKeeperUnits = array
-    array = []
-    action === 'open' ? 
-      content.linkMaintainVendors.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
-      content.linkMaintainVendors.length !== 0 ?
-        content.linkMaintainVendors.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-        array.push({ id:content.linkMaintainVendors.id == undefined ? content.linkMaintainVendors : content.linkMaintainVendors.id })
-    content.linkMaintainVendors = array
-    array = []
-    action === 'open' ? 
-      content.linkDeviceTypes.forEach(item=>{ array = item.id == undefined ? item : item.id  }) :
-      array.push({ id:content.linkDeviceTypes.id == undefined ? content.linkDeviceTypes : content.linkDeviceTypes.id })
-    content.linkDeviceTypes = array
+    //var array = []
+    // action === 'open' ? 
+    //   content.linkKeeperUnits.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+    //   content.linkKeeperUnits.length !== 0 ?
+    //     content.linkKeeperUnits.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+    //     array.push({ id:content.linkKeeperUnits.id == undefined ? 
+    //       content.linkKeeperUnits : content.linkKeeperUnits.id })
+    // content.linkKeeperUnits = array
+    // array = []
+    // action === 'open' ? 
+    //   content.linkMaintainVendors.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
+    //   content.linkMaintainVendors.length !== 0 ?
+    //     content.linkMaintainVendors.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+    //     array.push({ id:content.linkMaintainVendors.id == undefined ? content.linkMaintainVendors : content.linkMaintainVendors.id })
+    // content.linkMaintainVendors = array
+    // array = []
+    // action === 'open' ? 
+    //   content.linkDeviceTypes.forEach(item=>{ array = item.id == undefined ? item : item.id  }) :
+    //   content.linkDeviceTypes.length !== 0 ?
+    //   array.push({ id:content.linkDeviceTypes.id == undefined ? content.linkDeviceTypes : 
+    //     content.linkDeviceTypes.id }) : []
+    // content.linkDeviceTypes = array
   }else if(title === 'maintain'){
     var array = []
     // action === 'open' ? 
@@ -513,9 +515,9 @@ export function changeLink(title,content,action){
     action === 'open' ? 
       content.linkInspectionLacks.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
       content.linkInspectionLacks.length !== 0 ?
-        content.linkInspectionLacks.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
+        content.linkInspectionLacks.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) 
+        : []
         // array.push({ id:content.linkInspectionLacks.id == undefined ? content.linkInspectionLacks : content.linkInspectionLacks.id })
-
     content.linkInspectionLacks = array
     // array = []
     // action === 'open' ? 
@@ -525,31 +527,31 @@ export function changeLink(title,content,action){
     //     // array.push({ id:content.linkContactUnits.id == undefined ? content.linkContactUnits : content.linkContactUnits.id })
     //   content.linkContactUnits = array
   }else if(title === 'auth'){
-    var array = []
-    action === 'open' ? 
-      content.linkRoles.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-      content.linkRoles.length !== 0 ?
-      content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-        array.push({ id:content.linkRoles.id == undefined ? 
-          content.linkRoles : content.linkRoles.id })
-    content.linkRoles = array
+    // var array = []
+    // action === 'open' ? 
+    //   content.linkRoles.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+    //   content.linkRoles.length !== 0 ?
+    //   content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+    //     array.push({ id:content.linkRoles.id == undefined ? 
+    //       content.linkRoles : content.linkRoles.id })
+    // content.linkRoles = array
   }else if(title === 'user'){
-    var array = []
-    action === 'open' ? 
-      content.linkRoles.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-      content.linkRoles.length !== 0 ?
-      content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
-        // array.push({ id:content.linkRoles.id == undefined ? 
-        //   content.linkRoles : content.linkRoles.id })
-    content.linkRoles = array
-    array = []
-    action === 'open' ? 
-      content.linkBuildings.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-      content.linkBuildings.length !== 0 ?
-      content.linkBuildings.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-        array.push({ id:content.linkBuildings.id == undefined ? 
-          content.linkBuildings : content.linkBuildings.id })
-    content.linkBuildings = array
+    // var array = []
+    // action === 'open' ? 
+    //   content.linkRoles.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+    //   content.linkRoles.length !== 0 ?
+    //   content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
+    //     // array.push({ id:content.linkRoles.id == undefined ? 
+    //     //   content.linkRoles : content.linkRoles.id })
+    // content.linkRoles = array
+    // array = []
+    // action === 'open' ? 
+    //   content.linkBuildings.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+    //   content.linkBuildings.length !== 0 ?
+    //   content.linkBuildings.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+    //     array.push({ id:content.linkBuildings.id == undefined ? 
+    //       content.linkBuildings : content.linkBuildings.id })
+    // content.linkBuildings = array
   }
   return content
 }

@@ -21,6 +21,17 @@
         </el-tabs>
 
         <el-tabs 
+        v-if="title === 'equipment' && dialogData.length > 1" 
+        v-model="activeName" 
+        @tab-click="handleTabClick">
+            <el-tab-pane
+            v-for="(item) in dialogData"
+            :key="item.id"
+            :label="item.name"
+            :name="item.id"></el-tab-pane>
+        </el-tabs>
+
+        <el-tabs 
         v-else-if="title === 'floorOfHouse' && dialogData.length > 1" 
         v-model="activeName" 
         @tab-click="handleTabClick">
@@ -46,7 +57,7 @@
             :key="index"
             :prop="item.prop"
             :label="item.label"
-            v-show="item.format !== 'hide' &&  item.format !== 'LackStatusOptions' &&  item.format !== 'openfiles' 
+            v-show="item.format !== 'hide' &&  item.format !== 'Options' &&  item.format !== 'openfiles' 
             &&  item.format !== 'openlacks' && item.format !== 'deviceName' "
             :rules="[
             { required: item.mandatory, message: item.message},
@@ -99,23 +110,27 @@
                         >
                         </el-option>  
                 </el-select> -->
-
-                <!-- <el-select
+                
+                <!-- 設備種類下拉選單(多-1) -->
+                <el-select
                     v-else-if="item.format =='deviceTypeSelect'"
                     v-model="temp[item.prop]"
                     filterable
+                    multiple
+                    :multiple-limit="1"
+                    value-key="id"
                     placeholder="請選擇"
                     style="width:100%"
                     >
                         <el-option
-                        v-for="(item,index) in selectData"
+                        v-for="(item,index) in selectfilter(item.format)"
                         :key="index"
-                        :label="item.label"
-                        :value="item.id"
+                        :label="item.getTypeName()"
+                        :value="item"
                         >
                         </el-option>  
-                </el-select> -->
-
+                </el-select>
+                <!-- 設備 / 廠商 / 角色 / 建築物 下拉選單(多) -->
                 <el-select
                     v-else-if="item.format == 'deviceSelect' || item.format =='contactunitSelect' || 
                     item.format =='roleSelect' ||  item.format =='buildingSelect'"
@@ -134,7 +149,7 @@
                         >
                         </el-option>  
                 </el-select>
-                <!-- 檢修申報下拉選單 -->
+                <!-- 檢修申報下拉選單(多)-->
                 <el-select
                     v-else-if="item.format == 'inspectionSelect' "
                     v-model="temp[item.prop]"
@@ -148,15 +163,15 @@
                         v-for="group in selectfilter('inspectionSelect')"
                         :key="group.label"
                         :label="group.label">
-                        <el-option
-                            v-for="item in group.options"
-                            :key="item.id"
-                            :label="item.label"
-                            :value="item">
-                        </el-option>
+                            <el-option
+                                v-for="item in group.options"
+                                :key="item.id"
+                                :label="item.label"
+                                :value="item">
+                            </el-option>
                         </el-option-group>
                 </el-select>
-                <!-- 設備種類下拉選單 -->
+                <!-- 設備種類(後端)下拉選單(單) -->
                 <el-select
                     v-else-if="item.format == 'fullType' "
                     v-model="temp[item.prop]"
@@ -176,17 +191,21 @@
                         </el-option>
                         </el-option-group>
                 </el-select>
-                <!-- 設定的下拉選單(單選) -->
+                <!-- 設定的下拉選單(單) -->
                 <el-select
                     v-else-if="item.format =='BrandOptions' || 
                     item.format =='MaintainContentOptions' 
                     || item.format =='MaintainProcessOptions' || item.format == 'DeviceStatusOptions' 
                     || item.format == 'ContactUnitOptions' || item.format == 'LackStatusOptions'
                     "
+                    ref="settingOption"
                     v-model="temp[item.prop]"
                     filterable
                     placeholder="請選擇"
                     style="width:100%"
+                    allow-create
+                    default-first-option
+                    @change="changeValue($event,item.format,item.prop)"
                     >
                         <el-option
                         v-for="(item,index) in optionfilter(item.format)"
@@ -227,7 +246,7 @@
                     <el-option label="刪除" key="3" value="delete"></el-option>
                     <el-option label="修改" key="4" value="update"></el-option>
                 </el-select>
-
+                <!-- 啟用禁用 -->
                 <el-select
                     v-else-if="item.format =='accountStatusSelect'"
                     v-model="temp[item.prop]"
@@ -238,7 +257,7 @@
                     :key="index"
                     :value="val" :label="val == true ? '啟用':'禁用'"></el-option>
                 </el-select>
-
+                <!-- 允許禁止刪除 -->
                 <el-select
                     v-else-if="item.format =='removableSelect'"
                     v-model="temp[item.prop]"
@@ -257,14 +276,22 @@
                 {{ checkboxChange(temp[item.prop]) }}
                 </el-checkbox>
 
-                <el-input-number 
+                <!-- <el-input-number 
                 v-else-if="item.format =='number'"
                 v-model="temp[item.prop]"  
                 controls-position="right" 
                 :min="0"
                 :precision="0"
                 style="width:100%"
-                ></el-input-number>
+                ></el-input-number> -->
+
+                <el-input 
+                v-else-if="item.format =='number' "
+                v-model="temp[item.prop]"
+                :maxlength="item.maxlength"
+                show-word-limit
+                @input="temp[item.prop] = temp[item.prop].replace(/[^\d]/g,'').replace(/\s*/g,'')">
+                </el-input>
 
                 <el-input v-else-if="item.format =='textarea'"
                 v-model="temp[item.prop]" 
@@ -282,6 +309,14 @@
                     </Table>  
                 </div>
                 
+                <el-input v-else-if="item.format == 'disableEdit' && dialogStatus == 'update'"
+                v-model="temp[item.prop]" 
+                :maxlength="item.maxlength"
+                show-word-limit
+                :disabled="true"
+                >
+                </el-input>
+
                 <el-input v-else
                 v-model="temp[item.prop]" 
                 :maxlength="item.maxlength"
@@ -302,16 +337,16 @@
         :list-query-params.sync="listQueryParams"
         v-bind="tableAttrs" 
         v-on="tableEvent"></Table>  
-        
+        <!-- 分配權限 -->
         <el-table
             v-if="dialogStatus === 'authority'"
-            :data="treeData"
+            :data="accessAuthoritiesData"
             style="width: 100%;margin-bottom: 20px;"
             row-key="id"
             border
             default-expand-all
             ref="authorityTable"
-            :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+            :tree-props="{children: 'linkMainMenus', hasChildren: 'hasChildren'}"
             @select="handleSelectionChange"
             @select-all="handleSelectionAll"
             v-loading = "pictLoading">
@@ -320,7 +355,7 @@
             width="55">
             </el-table-column>
             <el-table-column
-            prop="label"
+            prop="name"
             label="菜單"
             min-width="20%">
             </el-table-column>
@@ -331,10 +366,10 @@
             <template slot-scope="scope">
                 <el-checkbox-group v-model="accessArray" @change="handleCheckedChange(scope.row)">
                     <el-checkbox 
-                    v-for="item in scope.row.linkAccessAuthorities"
-                    :key="item.id"
-                    :label="item.id">
-                    {{ item.name  }}
+                    v-for="item in scope.row.getAccessAuthorities()"
+                    :key="item.getID()"
+                    :label="item.getID()">
+                    {{ item.getName()  }}
                     </el-checkbox>
                 </el-checkbox-group>
             </template>
@@ -360,7 +395,7 @@
 </template>
 
 <script>
-import { changeLink,formatTime } from '@/utils'
+import { changeLink } from '@/utils'
 import computedmixin  from '@/mixin/computedmixin'
 
 export default {
@@ -398,7 +433,7 @@ export default {
             type: Array
         },
         //auth
-        treeData: {
+        accessAuthoritiesData: {
             type: Array
         },
         accessAuthorities: {
@@ -439,26 +474,14 @@ export default {
             },
             immediate:true
         },
-        treeData:{ 
+        accessAuthoritiesData:{ 
             handler:function(){
                 this.$nextTick(()=>{
                     this.$refs.authorityTable.clearSelection()
                     this.accessArray = this.$deepClone(this.accessAuthorities)
                     this.treeSelection()
                 })
-            },
-        },
-        dialogStatus:{
-            handler:function(){
-                if(this.dialogStatus == 'create'){
-                    console.log(this.temp,this.title,this.dialogStatus)
-                    var date = formatTime(new Date(), '{y}-{m}-{d}')
-                    if(this.title == 'createmaintainlist'){
-                        this.$set(this.temp, "createdDate", date)
-                    }
-                }
-            },
-            immediate:true
+            }
         }
     },
     computed:{
@@ -508,18 +531,7 @@ export default {
                 handleTableClick:this.handleTableClick
             }
         },
-        optionfilter(){
-            return function (a) {
-                if(a !== null ){
-                    let _array = this.buildingoptions.filter((item, index) => 
-                        item.classType == a 
-                    )
-                    return _array
-                }else{
-                    return ""
-                }
-            }   
-        },
+        
         selectfilter(){
             return function (value) {
                 if(value !== null ){
@@ -559,6 +571,9 @@ export default {
                                 this.$set(v, 'id', v.id) 
                                 return v
                             })
+                        case 'deviceTypeSelect':
+                            return this.selectData
+                            break;
                         case 'buildingSelect' :
                             return this.buildingarray.map(v => {
                                 this.$set(v, 'value', v.id) 
@@ -597,7 +612,9 @@ export default {
             rangevalue: [],
             pictLoading:false,
             isSelectAll:false,
-            accessArray:[]
+            accessArray:[],
+            createOption:[],
+            prop:[]
         }
     },
     methods: {
@@ -619,41 +636,57 @@ export default {
                     }
                 })
             }
-            // else{
-            //     this.temp = {}
-            //     if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
-            //         this.$nextTick(() => {
-            //             if(this.$refs.dataForm !== undefined){
-            //                 this.$refs.dataForm.clearValidate()
-            //             }
-            //         })
-            //     }
-            // }
         },
         treeSelection(){
             this.pictLoading = true
-            var _temp = this.treeData
+            var _temp = this.accessAuthoritiesData
             for(var i =0;i<_temp.length;i++){
-                _temp[i].linkAccessAuthorities.forEach(item=>{
-                    var index = this.accessArray.indexOf(item.id)
+                _temp[i].getAccessAuthorities().forEach(item=>{
+                    var index = this.accessArray.indexOf(item.getID())
                     if(index !== -1){
                         this.$refs.authorityTable.toggleRowSelection(_temp[i],true)
                     }
                 })
-                var _below = _temp[i].children
+                var _below = _temp[i].getLink()
                 for(var x=0;x<_below.length;x++){
-                    _below[x].linkAccessAuthorities.forEach(item=>{
-                        var index = this.accessArray.indexOf(item.id)
+                    _below[x].getAccessAuthorities().forEach(item=>{
+                        var index = this.accessArray.indexOf(item.getID())
                         if(index !== -1){
                             this.$refs.authorityTable.toggleRowSelection(_below[x],true)
+                            this.$refs.authorityTable.toggleRowSelection(_temp[i],true)
                         }
                     })
                 }
             }
             this.pictLoading = false
         },
+        optionfilter(format){
+            if(format !== null ){
+                let _array = this.buildingoptions.filter((item, index) => 
+                    item.classType == format 
+                )
+                return _array
+            }else{
+                return ""
+            }
+        },
+        changeValue(event,format,prop){
+            var array = this.optionfilter(format)
+            var data = array.filter(item=> item.id == event)
+            if(data.length == 0){
+                var item = {
+                    classType:format,
+                    textName:event
+                }
+                this.prop.push(prop)
+                this.createOption.push(item)
+            }
+        },
+        async getOptions(){ //取得大樓的所有分類
+            this.options = await this.$obj.Setting.getAllOption()
+            this.$store.dispatch('building/setbuildingoptions',this.options)
+        },
         handleClickOption(status){
-            console.log(this.title , status , this.dialogStatus)
             if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                 this.temp['checkStartDate'] = this.rangevalue[0]
                 this.temp['checkEndDate'] = this.rangevalue[1]
@@ -661,9 +694,27 @@ export default {
             if(status !== 'cancel' && status !== 'cancellack' && status !== 'empty' && 
             this.dialogStatus !== 'upload' && 
             this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
-                this.$refs.dataForm.validate((valid) => {
+                this.$refs.dataForm.validate(async(valid) => {
                     if (valid) {
-                        this.$emit('handleDialog',this.title, status , this.temp)     
+                        const loading = this.$loading({
+                            lock: true,
+                            text: '更新資料中，請稍後...',
+                            spinner: 'el-icon-loading',
+                            background: 'rgba(0, 0, 0, 0.7)'
+                        })
+                        if(this.createOption.length !== 0){ //有動態新增選項
+                            for(var i =0;i<this.createOption.length;i++){
+                                var isOk = await this.$obj.Setting.postOption(this.createOption[i])
+                                if(isOk !== null){
+                                    this.temp[this.prop[i]] = isOk.id
+                                }
+                            }
+                            this.createOption = []
+                            this.prop = []
+                            await this.getOptions()
+                        }
+                        this.$emit('handleDialog',this.title, status , this.temp)   
+                        loading.close()  
                     } else {
                         this.$message.error('請輸入完整資訊')
                         return false
@@ -675,10 +726,6 @@ export default {
                 var data = status == 'authoritycreate' ? this.accessArray : ''
                 this.$emit('handleDialog',this.title, status , data)
             }
-            
-            // const tempData = Object.assign({}, this.temp)
-            // var data = status == 'authoritycreate' ? this.treeData : tempData
-            // this.$emit('handleDialog',this.title, status , data)
         },
         handleTableClick(title,index,row){
             this.$emit('handleDialog', title , index , row)
@@ -689,6 +736,8 @@ export default {
         async handleTabClick(tab, event) {
             if(this.title === 'user'){
                 this.temp = this.buildingusers.filter((element,index) => element.id == tab.name)[0]
+            }else if(this.title === 'equipment'){
+                this.temp = this.dialogData.filter((element,index) => element.id == tab.name)[0]
             }else{
                 var data = this.$deepClone(await this.$obj.Building.getBuildingOfHouseById(tab.name))
                 this.temp = changeLink('floorOfHouse',data,'open')
@@ -722,27 +771,27 @@ export default {
             }
         },
         async handleSelectionChange(selection, row){ //先檢查該列是否原先有被選取的選項 有的話先刪除 無的話則加入全部
-            var isSelect = selection.filter((item,index) => item.id == row.id)
-            var isLevelOne = row.children.length > 0 // 是否為第一層
+            var isSelect = selection.filter((item,index) => item.id == row.getID())
+            var isLevelOne = row.getLink().length > 0 // 是否為第一層
             if(!isLevelOne){
-                row.linkAccessAuthorities.forEach(item=>{
+                row.getAccessAuthorities().forEach(item=>{
                     if(isSelect.length == 0){
                         var index = this.accessArray.indexOf(item.id)
                         if(index !== -1){
                             this.accessArray.splice(index, 1)
                         }
                     }else{
-                        this.accessArray.push(item.id)
+                        this.accessArray.push(item.getID())
                     }
                 })
             }else{
-                row.children.forEach(children=>{
-                    children.linkAccessAuthorities.forEach(item=>{
-                        var index = this.accessArray.indexOf(item.id)
+                row.getLink().forEach(children=>{
+                    children.getAccessAuthorities().forEach(item=>{
+                        var index = this.accessArray.indexOf(item.getID())
                         if(isSelect.length > 0){
                             this.$refs.authorityTable.toggleRowSelection(children,true)
                             if(index === -1){
-                                this.accessArray.push(item.id)
+                                this.accessArray.push(item.getID())
                             }
                         }else{
                             this.$refs.authorityTable.toggleRowSelection(children,false)
@@ -751,7 +800,6 @@ export default {
                     })
                 })
             }
-            console.log(JSON.stringify(this.accessArray))
         },
         async handleCheckedChange(row){ //選取checkbox時table該列要勾選
             var isHas = false

@@ -66,13 +66,13 @@ export default {
                     return ""
                 }
             },
-            changeFullType(){ //設備種類名稱
+            changeRoles(){ //角色名稱
                 return function (val) {
-                    if(val !== null && val !== undefined){
-                        return val.getTypeName()
-                    }else{
-                        return ""
-                    }
+                  if(val !== null){
+                    return val.map(item=>{ 
+                        return item.getName() }).toString()
+                  }
+                  return ''
                 } 
             },
             changeInspectionLack(){ //檢修申報缺失內容
@@ -99,6 +99,14 @@ export default {
                   return ''
                 } 
             },
+            changeBuilding(){ //建築物名稱
+                return function (val) {
+                    if(val !== null){
+                      return val.map(item=>{ return item.getName() }).toString()
+                    }
+                    return ''
+                } 
+            },
             stringToBr(){
                 return function (a) {
                     return a.replace(/{ln}/g, "<br/>")
@@ -117,5 +125,11 @@ export default {
             return {
                 infiniteheight:''
             }
-        }
+        },
+        methods: {
+            toAnotherPage(page,data,block){
+                console.log(page,data,block)
+                this.$router.push({ name: page, params: { block:block, target: data }})
+            }
+        },
 }

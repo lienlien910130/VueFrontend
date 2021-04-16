@@ -5,6 +5,7 @@ import store from '@/store'
 import obj from '@/object'
 import router from '@/router'
 import { resetRouter } from '@/router'
+import  Menu  from '@/object/menu'
 /**
  * Use meta.role to determine if the current user has permission
  * @param roles
@@ -91,16 +92,17 @@ const actions = {
     return new Promise((resolve, reject) => {
       commit('SET_MENU', menu)
       var array = []
-      menu.forEach(element=>{
-        array.push(element)
-        if(element.children.length >0){
-          element.children.forEach(obj=>{
-            array.push(obj)
-          })
-        }
-      })
+      for(let element of menu){
+          array.push(element)
+          array.push(element.linkMainMenus)
+      }
+      var concatarray = array.reduce(
+          function(a, b) {
+              return a.concat(b)
+          },[]
+      )
       idb.deleteData('menu')
-      idb.saveValue('menu',array)
+      idb.saveValue('menu',concatarray)
       resolve()
     })
   },
@@ -114,7 +116,7 @@ const actions = {
   },
   async setRoutes({ commit }) {
     resetRouter()
-    var data = await  obj.Authority.getBuildingMenu()
+    var data = await  Menu.get()
     store.dispatch('permission/setmenu',data)
     let accessedRoutes = []
     var newArray = []
@@ -132,7 +134,7 @@ const actions = {
     }
     commit('SET_ROUTES', newArray)
     router.addRoutes(newArray)
-  },
+  }
 }
 
 export default {

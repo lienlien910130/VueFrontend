@@ -1,9 +1,11 @@
 import api from '@/api'
+import moment from 'moment'
+import Parent from './parent'
 
-class Files {
+class Files extends Parent {
     constructor (data) {
-        const { id, fileOriginalName, uploadTime, extName  } = data
-        this.id = id
+        super(data)
+        const {  fileOriginalName, uploadTime, extName  } = data
         this.fileOriginalName = fileOriginalName
         this.uploadTime = uploadTime
         this.extName = extName
@@ -13,9 +15,8 @@ class Files {
     getID(){ return this.id }
     getFileName(){ return this.fileOriginalName }
     getExtName(){ return this.extName }
-
-    getInfo(){
-        return this
+    getUploadTime(){ 
+        return moment(this.uploadTime ).format('YYYY-MM-DD HH:mm')
     }
 
     clone(data){

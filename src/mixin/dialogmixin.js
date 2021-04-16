@@ -9,11 +9,11 @@ export default {
         dialogStatus:'',
         dialogButtonsName:[],
         dialogConfig:[],
-        dialogSelect:[],
+        dialogSelect:[]
+
     }
   },
   computed: {
-    
     dialogAttrs(){
         return{
             title:this.dialogTitle,

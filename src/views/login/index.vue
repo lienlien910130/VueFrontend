@@ -18,6 +18,7 @@
             type="text"
             tabindex="1"
             auto-complete="off"
+            maxlength="10"
           />
         </el-form-item>
         
@@ -32,6 +33,7 @@
             tabindex="1"
             auto-complete="off"
             @keyup.enter.native="handleLogin"
+            maxlength="15"
           />
           <span class="show-pwd" @click="showPwd" style="padding-right:10px">
             <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" style="font-size: 25px;"/>
@@ -69,7 +71,7 @@
 </template>
 
 <script>
-import SIdentify from "./components/identify";
+import SIdentify from "./components/identify"
 
 export default {
   name: 'Login',
@@ -88,6 +90,8 @@ export default {
     const validateUsername = (rule, value, callback) => {
       if(value === "") {
         callback(new Error('請輸入帳號'))
+      } else if(value.length >10){
+        callback(new Error('帳號長度限制十位數內'))
       } else {
         callback()
       }
@@ -95,6 +99,8 @@ export default {
     const validatePassword = (rule, value, callback) => {
       if(value === "") {
         callback(new Error('請輸入密碼'))
+      } else if(value.length >15){
+        callback(new Error('密碼長度限制十五位數內'))
       } else {
         callback()
       }
@@ -186,9 +192,6 @@ export default {
 </script>
 
 <style lang="scss">
-/* 修复input 背景不协调 和光标变色 */
-/* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
-
 $bg:#283443;
 $light_gray:rgba(255, 255, 255, 0.1);
 $cursor: #fff;

@@ -52,13 +52,26 @@
             
             <div class="files">
                 <div 
-                    v-for="(item,index) in filescopy" :key="item.getID()" class="filesdiv">
+                v-for="(item,index) in filescopy" :key="item.getID()" class="filesdiv">
                     <el-checkbox v-model="deleteItem" :label="item.getID()">【{{ index+1 }}】</el-checkbox>
-                    <el-link 
-                        class="link" 
+                    <!-- <el-link 
                         :href="downloadfile(item.getID())"  :style="check(item.getID())">
-                        {{ item.getFileName() }}.{{item.getExtName()}}
-                    </el-link>
+                        <span>
+                            {{ item.getFileName() }}.{{item.getExtName()}}
+                        </span>
+                        <span style="float:right">
+                            {{ item.getUploadTime() }}
+                        </span>
+                    </el-link> -->
+                    <span 
+                    @click="downloadfile(item)"  :style="check(item.getID())">
+                        <span>
+                            {{ item.getFileName() }}.{{item.getExtName()}}
+                        </span>
+                        <span style="float:right">
+                            {{ '上傳時間：'+item.getUploadTime() }}
+                        </span>
+                    </span>
                 </div>
             </div>
         </el-form-item>
@@ -100,8 +113,6 @@
             isDisabled:true,
             importFiles:[],
             choose:'',
-            isLt10M:true,
-            isType:true,
             disable:[],
             deleteItem:[],
             filescopy:[]
@@ -124,9 +135,9 @@
     methods: {
         check(val){
             if(val == this.choose){
-                return {color:'red'}
+                return {color:'red',cursor:'pointer'}
             }else{
-                return {color:'#606266'}
+                return {color:'#606266',cursor:'pointer'}
             }
         },
         handleChange(file, fileList) {
@@ -189,14 +200,11 @@
                 this.$message.error('上傳檔案格式或檔案大小錯誤,請移除錯誤的檔案後重新上傳')
             }
         },
-        downloadfile(fileid) {
-            // const bufferUrl = btoa(new Uint8Array(await this.$obj.Files.downloadFiles(fileid)).reduce((data, byte) => data + String.fromCharCode(byte), ''))
-            // let link = document.createElement('a')
-            // link.href = 'data:image/png;base64,' + bufferUrl
-            // link.download = 'qrCode.png'
-            // link.click()
-            //this.imageSrc = 'data:image/png;base64,' + bufferUrl
-            return "http://192.168.88.65:59119/Public/fileDownload/" + fileid
+        downloadfile(item) {
+            let link = document.createElement('a')
+            link.href = "http://192.168.88.65:59119/Public/fileDownload/" + item.getID()
+            link.download = item.getFileName() + '.'+item.getExtName()
+            link.click()
         },
         async deletefile() {
             if(this.deleteItem.length == 0){

@@ -35,7 +35,8 @@
                           scope.column.property == 'completedTime' " style="width:150px"> 
                             {{ dataStr(scope.row[scope.column.property],'YYYY-MM-DD') }}
                         </span>
-                        <span v-else-if="scope.column.property == 'processStatus' || scope.column.property == 'processContent'"> 
+                        <span v-else-if="scope.column.property == 'processStatus' 
+                        || scope.column.property == 'processContent'"> 
                             {{  changeOptionName(scope.row[scope.column.property]) }}
                         </span>
                         <span v-else-if="scope.column.property == 'linkDevices'"> 

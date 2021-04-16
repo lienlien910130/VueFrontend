@@ -2,20 +2,20 @@
         <div class="editor-container">
            <el-row :gutter="32">
                <el-col :xs="24" :sm="24" :md="24" :lg="7">
-                    <div class="chart-wrapper">
-                        <menu-tree 
+                    <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                        <MenuTree
                             v-bind="treeAttrs"
                             v-on:handleTreeNode="handleTreeNode">
-                        </menu-tree>
+                        </MenuTree>
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
-                    <div class="chart-wrapper">
-                       <Table
-                       :list-query-params.sync="listQueryParams"
-                       v-bind="tableAttrs"
-                       v-on="tableEvent">
-                       </Table>
+                    <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                        <Block 
+                        :list-query-params.sync="listQueryParams"
+                        :selectSetting.sync="selectSetting"
+                        v-bind="blockAttrs" 
+                        v-on="blockEvent"></Block>
                     </div>
                 </el-col>
            </el-row>
@@ -25,92 +25,70 @@
         </div>
 </template>
 <script>
-import { mapGetters } from 'vuex'
-import { changeLink } from '@/utils/index'
+import blockmixin from '@/mixin/blockmixin'
+import dialogmixin from '@/mixin/dialogmixin'
+import sharemixin  from '@/mixin/sharemixin'
+import AccessAuthority from '@/object/accessAuthority'
+import Menu from '@/object/menu'
 
 export default {
-    components:{ 
-        Table: () => import('@/components/Table/index.vue'),
-        menuTree: () => import('@/components/Tree/menuTree.vue'),
-        Dialog:() => import('@/components/Dialog/index.vue'),
-    },
+    mixins:[sharemixin,blockmixin,dialogmixin],
     data(){
         return{
-            data:[],
-            original:[],
-            tableData:[],
-            selectId:'',
-            config:[
-                { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20'},
-                { label:'權限' , prop:'action', mandatory:true,format:'actionSelect',message:'請選擇權限'},
-                { label:'描述' , prop:'description',format:'textarea', mandatory:false, message:'請輸入描述',maxlength:'200'},
-                { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
-                isPattern:false,errorMsg:'',type:'boolean',typemessage:''},
-                { label:'排序' , prop:'sort',format:'number', 
-                mandatory:true,message:'請輸入排序',isPattern:false,errorMsg:'',type:'number',typemessage:'' },
-                { label:'角色' , prop:'linkRoles',format:'roleSelect', mandatory:true, message:'請選擇角色'
-                ,isPattern:false,errorMsg:'',type:'array',typemessage:'' },
-                 { label:'刪除' , prop:'removable',format:'removableSelect', mandatory:true, message:'請選擇',
-                isPattern:false,errorMsg:'',type:'boolean',typemessage:''},
-            ],
-            listQueryParams:{
-                page: 1,
-                limit: 10,
-                total: 0
-            },
-            //Dialog
-            dialogButtonsName:[],
-            dialogTitle:'',
-            dialogConfig:[],
-            dialogSelect:[],
-            dialogData:[],
-            dialogStatus:'',
-            innerVisible:false,
+            //tree
+            treeData:[],
+            selectId:null
         }
     },
     computed: {
-        ...mapGetters([
-            'buildingid',
-            'menu'
-        ]),
+        blockEvent(){
+            return{
+                handleBlock:this.handleBlock,
+                clickPagination:this.changePage
+            }
+        },
         treeAttrs(){
             return{
-                data:this.data,
+                treeData:this.treeData,
                 selectId:this.selectId
             }
-        },
-        tableAttrs(){
-            return {
-                title:'accessAuthority',
-                tableData: this.tableData,
-                config:this.config,
-                selectId:this.selectId
-            }
-        },
-        tableEvent(){
-            return {
-                clickPagination:this.getAccessAuthority,
-                handleTableRow:this.handleTableRow
-            }
-        },
-        dialogAttrs(){
-            return{
-                title:'accessAuthority',
-                visible: this.innerVisible,
-                dialogData: this.dialogData,
-                dialogStatus: this.dialogStatus,
-                buttonsName: this.dialogButtonsName,
-                config: this.dialogConfig,
-            }
-        },
+        }
     },
     watch:{
         menu:{
             handler:async function(){
-                this.data = this.$deepClone(this.menu)
-                if(this.selectId !== ''){
-                   var d = this.data.filter((item, index) => item.id == this.selectId )
-                    this.tableData = d[0].children     
+                this.blockData = []
+                this.listQueryParams = {
+                    page: 1,
+                    limit: 10,
+                    total: 0
+                }
+                var data = this.menu.map(item=>{ return item.clone(item)})
+                this.treeData = data.map(element => {
+                    this.$set(element,'children',element.getLink())
+                    element.getLink().map(children =>{
+                        this.$set(children,'children',children.getLink())
+                        return children
+                    })
+                    return element
+                })
+                if(this.selectId !== null){
+                    var select = this.selectId
+                    var array = []
+                    for(let element of this.treeData){
+                        array.push(element)
+                        array.push(element.linkMainMenus)
+                    }
+                    var concatarray = array.reduce(
+                        function(a, b) {
+                            return a.concat(b)
+                        },[]
+                    )
+                    var data = concatarray.filter(function (el) {
+                        return el.id == select
+                    })[0]
+                    this.origin = data.getAccessAuthorities()
+                    await this.changePage()
                 }
             },
             immediate:true
@@ -118,115 +96,97 @@ export default {
     },
     methods:{
         async init(){
+            this.title = 'accessAuthority'
+            this.tableConfig = AccessAuthority.getConfig()
+        },
+        async reload(){
             await this.setAccessAuthority()
             await this.getAccessAuthority()
         },
-        async setAccessAuthority(){
-            this.original = this.$deepClone(await this.$obj.Authority.getMenuAccessAuthority(this.selectId))
-        },
-        async getAccessAuthority(){
-            var data = this.$deepClone(this.original)
-            this.tableData = data.filter(
+        async changePage(){
+            this.blockData = this.origin.filter(
                 (item, index) => 
                 index < this.listQueryParams.limit * this.listQueryParams.page && 
                 index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
             .sort((x,y) => x.sort - y.sort)
-            this.listQueryParams.total = data.length
+            this.listQueryParams.total = this.origin.length
         },
         async handleTreeNode(node,data){
-            this.selectId = data.id
+            this.origin = data.getAccessAuthorities()
+            console.log(JSON.stringify(this.origin))
+            this.selectId = data.getID()
             this.listQueryParams = {
                 page: 1,
                 limit: 10,
                 total: 0
             }
-            await this.init()
+            await this.changePage()
         },
-        async handleTableRow(row, option){
-            console.log(row, option)
+        async handleBlock(title,index, content){
+            console.log(title ,index,JSON.stringify(content))
             this.dialogData = []
-            this.dialogConfig = this.config
-            if(option === 'open'){
-                var temp = this.$deepClone(row)
-                temp = changeLink('auth',temp,'open')
-                this.dialogData.push(temp)
+            this.dialogConfig = this.tableConfig
+            this.dialogTitle = this.title
+            if(index === 'open'){
+                this.dialogData.push(content)
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
-            }else if(option === 'delete'){
-                var isOk = await this.$obj.Authority.deleteMenuAccessAuthority(row.id)
+            }else if(index === 'delete'){
+                var temp = this.selectId
+                var isOk = await content.delete()
                 if(isOk){
+                    this.selectId = ''
                     this.$message('刪除成功')
-                    await this.init()
-                    this.$store.dispatch('permission/setmenu',await this.$obj.Authority.getBuildingMenu())
+                    this.selectId = temp
+                    this.$store.dispatch('permission/setmenu',await  Menu.get())
                 }
-            }else if(option === 'create'){
-                this.dialogButtonsName = [
-                { name:'儲存',type:'primary',status:'create'},
-                { name:'取消',type:'info',status:'cancel'}]
-                this.innerVisible = true
-                this.dialogStatus = 'create'
+            }else if(index === 'empty'){
+                if(this.selectId == null){
+                    this.$message({
+                        message: '請選擇目錄',
+                        type: 'warning'
+                    })
+                }else{
+                    this.dialogData.push( AccessAuthority.empty() )    
+                    this.dialogButtonsName = [
+                        { name:'儲存',type:'primary',status:'create'},
+                        { name:'取消',type:'info',status:'cancel'}]
+                    this.innerVisible = true
+                    this.dialogStatus = 'create'
+                }
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
-            console.log(title ,index,content)
+            console.log(title ,index,JSON.stringify(content))
             if(index !== 'cancel'){
-                content.sort = content.sort.toString()
-                content = changeLink('auth',content,'')
                 if(index === 'create'){
-                    content.linkMainMenus = [{
-                        id : this.selectId
-                    }]
+                    content.setlinkMainMenus([{id : this.selectId}])
                 }
-                var isOk = index === 'update' ? 
-                    await this.$obj.Authority.updateMenuAccessAuthority(JSON.stringify(content)) :
-                    await this.$obj.Authority.postMenuAccessAuthority(JSON.stringify(content))
+                var isOk = index === 'update' ? await content.update() : await content.create()
                 if(isOk){
-                    index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                    this.$store.dispatch('permission/setmenu',await this.$obj.Authority.getBuildingMenu())
-                    await this.init()
+                    index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
+                    this.$store.dispatch('permission/setmenu',await  Menu.get())
                 }
             }
             this.innerVisible = false
         },
+        async changeTable(value){
+            this.isTable = value
+            value == true ?  this.tableConfig = AccessAuthority.getTableConfig() : 
+            this.tableConfig = AccessAuthority.getConfig()
+        }
     }
 }
 </script>
 <style lang="scss" scoped>
-
-.chart-wrapper {
+.block-wrapper {
     background: #fff;
-    padding: 5px 16px 0;
-    height: 730px;
-    overflow-x:hidden;
-    overflow-y:auto;
-    width: 100%;
-    .menu-list{
-        width: 100%;
-        height: 80%;
-    }
-    .dashboard-wrapper{
-        padding: 16px 16px;
-        margin-top: 10px;
-        margin-bottom: 10px;
-        overflow-x:hidden;
-        overflow-y:auto;
-        line-height: 25px;
-    }
-    .dashboard-wrapper-add{
-        background-color: rgb(202, 191 , 220);
-        padding: 16px 16px;
-        margin-top: 10px;
-        margin-bottom: 10px;
-        overflow-x:hidden;
-        overflow-y:auto;
-        line-height: 25px;
-        cursor: pointer;
-    }
+    padding: 15px 15px;
+    height: 720px;
 }
-
 </style>
 
 <style lang="scss">

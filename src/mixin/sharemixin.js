@@ -13,7 +13,8 @@ export default {
             'buildingarray',
             'deviceType',
             'fullscreen',
-            'device'
+            'device',
+            'menu'
         ])
     },
     watch: {
@@ -36,14 +37,14 @@ export default {
             handler:async function(){
                 this.device == 'desktop' ? this.changeTable(true) : this.changeTable(false)
             }
-        },
+        }
     },
     data() {
         return {
             blockwrapperheight:'',
             origin:[],
             selectSetting:[],
-            isTable:false
+            isTable:true
         }
-    },
+    }
 }

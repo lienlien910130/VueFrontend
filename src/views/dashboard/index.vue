@@ -74,6 +74,7 @@
 import { mapGetters } from 'vuex'
 import constant from '../../../src/constant';
 import { removeDuplicates } from '@/utils/index'
+import Device from '@/object/device'
 
 export default {
   name: 'Dashboard',
@@ -131,7 +132,7 @@ export default {
     },
     async getBuildingDevicesManage() { //取得設備
       var _temp = []
-      this.deviceData = await this.$obj.Device.getBuildingDevicesManage()
+      this.deviceData = await Device.get()
       var statusArray = removeDuplicates(this.deviceData,'status')
       for(let obj of statusArray) {
         var statusObj = this.buildingoptions.filter((item,index)=>item.id == obj.status)[0]
@@ -139,8 +140,8 @@ export default {
           value: obj.status,
           name: statusObj.textName,
           data: this.deviceData.filter((item, index) => item.status == obj.status).map(v => {
-                  this.$set(v, 'name', v.linkDeviceTypes[0].name) 
-                  this.$set(v, 'type', v.linkDeviceTypes[0].fullType)
+                  this.$set(v, 'name', v.getOnlyName()) 
+                  this.$set(v, 'type', v.linkDeviceTypes.length !== 0 ? v.linkDeviceTypes[0].getID() : '')
                   return v
               })
         })

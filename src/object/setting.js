@@ -21,9 +21,9 @@ let Setting = {
     },
     postOption: async function(data){
         var data = await api.setting.apiPostOption(data).then(response => {
-            return true
+            return response.result
         }).catch(error=>{
-            return false
+            return null
         })
         return data
     },
