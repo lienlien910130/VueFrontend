@@ -22,7 +22,7 @@ export default {
         // deviceList:[],
         listQueryParams:{
             page: 1,
-            limit: 10,
+            limit: 12,
             total: 0
         },
         isHasButtons:true,

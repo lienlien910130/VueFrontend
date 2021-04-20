@@ -122,6 +122,14 @@ class DeviceType extends Parent {
         }
         return data
     }
+    static async getDefault (){
+        var data = await api.device.apiGetDefaultFullType().then(response => {
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
 }
 
 export default DeviceType

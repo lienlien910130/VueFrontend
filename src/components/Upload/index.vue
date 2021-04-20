@@ -13,6 +13,8 @@
                 :on-change="handleChange"
                 :before-remove="beforeRemove"
                 :auto-upload="false"
+                :on-preview="handlePreview"
+                list-type="picture"
                 multiple
                 :file-list="fileList">
                 <el-button slot="trigger"  type="primary" icon="el-icon-folder-opened" ></el-button>
@@ -54,6 +56,7 @@
                 <div 
                 v-for="(item,index) in filescopy" :key="item.getID()" class="filesdiv">
                     <el-checkbox v-model="deleteItem" :label="item.getID()">【{{ index+1 }}】</el-checkbox>
+                    <i class="el-icon-view" style="font-size:18px" @click="onPreview(item)"/>
                     <!-- <el-link 
                         :href="downloadfile(item.getID())"  :style="check(item.getID())">
                         <span>
@@ -66,16 +69,40 @@
                     <span 
                     @click="downloadfile(item)"  :style="check(item.getID())">
                         <span>
-                            {{ item.getFileName() }}.{{item.getExtName()}}
+                            {{ item.getFileName() }}.{{ item.getExtName() }} 
                         </span>
                         <span style="float:right">
-                            {{ '上傳時間：'+item.getUploadTime() }}
+                            {{ item.getExtName() }}  
+                            {{ ' / 上傳時間：'+item.getUploadTime() }}
                         </span>
                     </span>
                 </div>
             </div>
         </el-form-item>
         </el-form>
+
+        <el-dialog
+            :title="dialogTitle"
+            :visible.sync="previewVisible"
+            width="50%"
+            >
+
+            <img v-if="isImage==true" :src="previewPath" class="previewImg"/>
+            <div v-else>
+                <pdf
+                :src="previewPath"
+                :page="currentPage"
+                @num-pages="pageCount=$event"
+                @page-loaded="currentPage=$event"
+                @loaded="loadPdfHandler">
+                </pdf>
+                <div style="text-align:center">
+                    <el-button type="primary" @click="changePdfPage(0)" icon="el-icon-back">上一頁</el-button>
+                    <span type="primary">{{currentPage}} / {{pageCount}}</span>
+                    <el-button type="primary" @click="changePdfPage(1)" icon="el-icon-right">下一頁</el-button>
+                </div>
+            </div>
+        </el-dialog>
     </div>
     
 
@@ -83,8 +110,11 @@
 </template>
 
 <script>
+import pdf from 'vue-pdf';
+
   export default {
     name:'Upload',
+    components: { pdf },
     props:{
         limit:{ 
             type: Number,
@@ -115,7 +145,16 @@
             choose:'',
             disable:[],
             deleteItem:[],
-            filescopy:[]
+            filescopy:[],
+
+            isImage:true,
+            dialogTitle:'',
+	        previewVisible:false,
+	        previewPath:'',
+            currentPage: 0, // pdf文件页码
+	        pageCount: 0, // pdf文件总页数
+	        fileType: 'pdf', // 文件类型
+	        pdfUrl: '', // pdf文件地址
       }
     },
     watch:{
@@ -179,7 +218,27 @@
                     }
                 })
             }else{
-                this.filescopy = this.$deepClone(this.files)
+                this.filescopy = this.files.map(item=>{ return item.clone(item) })
+            }
+        },
+        handlePreview(file){
+            this.previewVisible = true
+            this.previewPath = file.url
+            this.dialogTitle = '【圖片預覽】'+file.name
+            if(file.raw.type == 'application/pdf'){
+                this.isImage = false
+            }else{
+                this.isImage = true
+            }
+        },
+        onPreview(file){
+            this.previewVisible = true
+            this.previewPath = "http://192.168.88.65:59119/Public/fileDownload/" + file.getID()
+            this.dialogTitle = '【圖片預覽】'+file.fileOriginalName
+            if(file.extName == 'pdf'){
+                this.isImage = false
+            }else{
+                this.isImage = true
             }
         },
         // handleExceed(files, fileList) {
@@ -294,8 +353,18 @@
                     }
                 } 
             }
-            
-        }
+        },
+        changePdfPage (val) {
+	        if (val === 0 && this.currentPage > 1) {
+	          this.currentPage--
+	        }
+	        if (val === 1 && this.currentPage < this.pageCount) {
+	          this.currentPage++
+	        }
+	    },
+	    loadPdfHandler (e) {
+	      this.currentPage = 1 // 加载的时候先加载第一页
+	    }
     }
   }
 </script>
@@ -305,7 +374,10 @@
 }
 </style>
 <style lang="scss" scoped>
-
+.previewImg{
+    width: 100%;
+    height: auto;
+}
 .el-form--inline .el-form-item{
     margin-right: 0px;
 }

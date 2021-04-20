@@ -1,4 +1,5 @@
 import obj from '@/object'
+import Files from '@/object/files'
 const DB_NAME = 'mercuryfire'
 const DB_VERSION = 1
 let DB
@@ -193,7 +194,7 @@ export default {
     },
 
     async loadImage(imageId) {
-        var data = await obj.Files.getBuildingFloorImage(imageId)
+        var data = await Files.get(imageId)
         return data
     },
     saveOrUpdate(db, tableName, data) {

@@ -170,7 +170,7 @@ export default {
             }
             this.innerVisible = false
         },
-         async changeTable(value){
+        async changeTable(value){
             this.isTable = value
             value == true ?  this.tableConfig = Device.getTableConfig() : this.tableConfig = Device.getConfig()
         }

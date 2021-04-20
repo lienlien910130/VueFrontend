@@ -1,5 +1,5 @@
 import Building from '@/object/buildingold'
-import User from '@/object/user'
+import User from '@/object/userold'
 import Device from '@/object/deviceold'
 import Setting from '@/object/setting'
 import Authority from '@/object/authority'

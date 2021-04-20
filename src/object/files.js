@@ -31,6 +31,14 @@ class Files extends Parent {
         })
         return data
     }
+    static async get(fileId){
+        var data = await api.files.apiGetFloorImage(fileId).then(response => {
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data        
+    }
 }
 
 // let Files = {
@@ -60,15 +68,15 @@ class Files extends Parent {
 //         })
 //         return data
 //     },
-//     getBuildingFloorFiles: async function(floorId){
-//         var data = await api.files.apiGetFloorFiles(floorId).then(response => {
-//             var result = response.result.sort((x,y) => x.id - y.id)
-//             return result
-//         }).catch(error=>{
-//             return []
-//         })
-//         return data
-//     },
+    // getBuildingFloorFiles: async function(floorId){
+    //     var data = await api.files.apiGetFloorFiles(floorId).then(response => {
+    //         var result = response.result.sort((x,y) => x.id - y.id)
+    //         return result
+    //     }).catch(error=>{
+    //         return []
+    //     })
+    //     return data
+    // },
 //     postBuildingFloorFiles: async function(floorId,formData){
 //         var data = await api.files.apiPostFloorFiles(floorId,formData).then(response => {
 //             return true

@@ -17,31 +17,29 @@
       v-for="item in divFloor" 
       :key="item.id" 
       @click="onSelectFloor(item)"
-      @mouseover="addClass(item.id)"
-      @mouseleave="removeClass(item.id)"
-      :class="[{ active:classenable && item.id == current },{ select:item.id == selectFloor }]"
+      @mouseover="addClass(item.getID())"
+      @mouseleave="removeClass(item.getID())"
+      :class="[{ active:classenable && item.getID() == current },{ select:item.getID() == selectFloor }]"
     >
-      <span>{{ item.label }} </span>
+      <span>{{ item.getName() }} </span>
       <!-- <span v-if="item.floors > 0 ">{{ item.floors }} F</span>
       <span v-else>B{{ -(item.floors) }} F</span> -->
     </div>
   </div>
   <div v-else>
-    <FloorSelect 
+    <Select 
       style="margin-bottom: 20px;width:100%"
       :selectData="buildingfloors" 
       v-on:handleFloorSelect="handleFloorSelect">
-    </FloorSelect>
+    </Select>
   </div>
 </div>
 </template>
 <script>
 import { mapGetters } from 'vuex'
+import Floors from '@/object/floors'
 
 export default {
-  components:{
-    FloorSelect: () => import('@/components/Select/index.vue'),
-  },
   data() {
     return {
       rangeOptions : [],
@@ -69,13 +67,14 @@ export default {
   watch:{
     buildingfloors:{
       handler:async function(newValue,oldValue){
+        var array = this.buildingfloors.map(item=>{ return new Floors(item)})
         if(this.buildingfloors.length>0 && oldValue == undefined ){ //第一次建立
-          this.upFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == false)
-          this.downFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == true)
+          this.upFloors = array.filter((item,index) => item.getName().includes("地下") == false)
+          this.downFloors = array.filter((item,index) => item.getName().includes("地下") == true)
           this.setRange()
         }else{ //修改平面圖
-          this.upFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == false)
-          this.downFloors = this.buildingfloors.filter((item,index) => item.label.includes("地下") == true)
+          this.upFloors = array.filter((item,index) => item.getName().includes("地下") == false)
+          this.downFloors = array.filter((item,index) => item.getName().includes("地下") == true)
           this.onSelectRange(this.selectRange)
         }
       },
@@ -115,7 +114,7 @@ export default {
       }
     },
     onSelectFloor(val) {
-      this.selectFloor = val.id
+      this.selectFloor = val.getID()
       this.$emit('handleBuildingFloorSelect',val)
     },
     addClass(index){

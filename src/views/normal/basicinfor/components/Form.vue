@@ -4,44 +4,46 @@
     ref="form" :model="form" 
     :rules="formRules" 
     :label-position="label" 
-    label-width="auto">
+    label-width="auto"> 
       <el-form-item label="名稱" prop="buildingName">
-        <el-input ref="buildingName" name="buildingName" v-model="form.buildingName" :disabled="type === 'view' ? true : false" />
+        <el-input ref="buildingName" name="buildingName" v-model="form.buildingName" show-word-limit maxlength="20"
+        :disabled="type === 'view' ? true : false"/>
       </el-form-item>
       <el-form-item label="地址" prop="address">
-        <el-input ref="address" name="address" v-model="form.address" :disabled="type === 'view' ? true : false" />
+        <el-input ref="address" name="address" v-model="form.address"  show-word-limit maxlength="150"
+        :disabled="type === 'view' ? true : false"/>
       </el-form-item>
       <el-form-item label="面積" prop="area">
-        <el-input ref="area" name="area" v-model.number="form.area" :disabled="type === 'view' ? true : false" type="number">
-          <template slot="append">
+        <el-input ref="area" name="area" 
+          v-model.number="form.area" 
+          type="number" min="0" :disabled="type === 'view' ? true : false">
+        <template slot="append">
             m<sup>2</sup>
-          </template>
+        </template>
         </el-input>
       </el-form-item>
-      <el-form-item label="高度" prop="height">
-        <el-input ref="height" name="height" v-model.number="form.height" :disabled="type === 'view' ? true : false" type="number" />
-      </el-form-item>
-      <el-form-item label="層數" prop="floorsOfAboveGround">
-        <el-input ref="floorsOfAboveGround" name="floorsOfAboveGround" v-model.number="form.floorsOfAboveGround" 
-        :disabled="true" type="number">
-          <template slot="prepend">地上</template>
-          <template slot="append">樓</template>
-        </el-input>
-        <!-- <el-input  v-model="form.floor[2]" :disabled="type === 'view' ? true : false">
-          <template slot="prepend">沒有的樓層</template>
-          <template slot="append">樓</template>
-        </el-input> -->
-      </el-form-item>
-      <el-form-item prop="floorsOfUnderground">
-        <el-input ref="floorsOfUnderground" name="floorsOfUnderground" v-model.number="form.floorsOfUnderground" 
-        :disabled="true" type="number">
-          <template slot="prepend">地下</template>
-          <template slot="append">樓</template>
-        </el-input>
-      </el-form-item>
-      <el-form-item label="使用執照字號" prop="licenseNumber">
-        <el-input ref="licenseNumber" name="licenseNumber" v-model="form.licenseNumber" :disabled="type === 'view' ? true : false" />
-      </el-form-item>
+                  <el-form-item label="高度" prop="height">
+                      <el-input ref="height" name="height" v-model.number="form.height"  type="number" min="0"
+                      :disabled="type === 'view' ? true : false"/>
+                  </el-form-item>
+                  <el-form-item label="層數" prop="floorsOfAboveGround">
+                      <el-input ref="floorsOfAboveGround" name="floorsOfAboveGround" 
+                      v-model.number="form.floorsOfAboveGround" type="number" min="0" :disabled="true">
+                      <template slot="prepend">地上</template>
+                      <template slot="append">樓</template>
+                      </el-input>
+                  </el-form-item>
+                  <el-form-item prop="floorsOfUnderground">
+                      <el-input ref="floorsOfUnderground" name="floorsOfUnderground" 
+                      v-model.number="form.floorsOfUnderground" type="number" min="0" :disabled="true">
+                      <template slot="prepend">地下</template>
+                      <template slot="append">樓</template>
+                      </el-input>
+                  </el-form-item>
+                  <el-form-item label="使用執照字號" prop="licenseNumber">
+                      <el-input ref="licenseNumber" name="licenseNumber" v-model="form.licenseNumber" show-word-limit maxlength="30"
+                      :disabled="type === 'view' ? true : false"/>
+                  </el-form-item>
 
       <el-form-item label="所有權人" prop="linkOwners">
         <el-select 
@@ -59,7 +61,7 @@
         <el-button v-else-if="this.buildingUsers.length == 0" type="text" @click="openDialog">新增用戶</el-button>
         
         <el-input v-else-if="form.linkOwners.length" ref="linkOwners" name="linkOwners" 
-        :placeholder="change(form.linkOwners)" disabled>
+        :placeholder="changeUserName(form.linkOwners)" disabled>
           <template slot="append">
             <el-link :underline="false" @click="openUser(form.linkOwners)">查看</el-link>
           </template>
@@ -83,7 +85,7 @@
         <el-button v-else-if="this.buildingUsers.length == 0" type="text" @click="openDialog">新增用戶</el-button>
         
         <el-input v-else-if="form.linkFireManagers.length" ref="linkFireManagers" name="linkFireManagers" 
-        :placeholder="change(form.linkFireManagers)" disabled>
+        :placeholder="changeUserName(form.linkFireManagers)" disabled>
           <template slot="append">
             <el-link :underline="false" @click="openUser(form.linkFireManagers)">查看</el-link>
           </template>
@@ -100,6 +102,7 @@
   </div>
 </template>
 <script>
+import Building from '@/object/building'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -117,35 +120,27 @@ export default {
         return 'left'
       }
     },
-    change() {
-      return function(value) {
-        var array = []
-        if(value !== null && value !== undefined && this.buildingUsers.length>0){
-          value.forEach(item=>{
-            var data = this.buildingUsers.filter(element=>{
-              return item.id == element.id
-            })
-            array.push(data[0].name)
-          })
-          return array.toString()
-        }else{
-          return ""
+    changeUserName(){ //住戶名稱
+      return function (val) {
+        if(val !== null){
+          return val.map(item=>{ return item.getName() }).toString()
         }
-      }
-    },
+        return ''
+      } 
+    }
   },
   data() {
     const vaildateInt = (rule, value, callback) => {
       if (!value) {
-        return callback(new Error('請輸入數字'));
+        return callback(new Error('請輸入層數'))
       }
       if (!Number(value)) {
-        callback(new Error('請輸入正確格式'));
+        callback(new Error('請輸入正確格式'))
       } else {
-        const re = /^[0-9]*[1-9][0-9]*$/;
-        const rsCheck = re.test(value);
+        const re = /^[0-9]*[1-9][0-9]*$/
+        const rsCheck = re.test(value)
         if (!rsCheck) {
-          callback(new Error('請輸入正確格式'));
+          callback(new Error('請輸入正確格式'))
         } else {
           callback();
         }
@@ -156,14 +151,15 @@ export default {
       if (!numberReg.test(value)) {
         callback(new Error('請輸入正確格式'))
       } else if (value == '') {
-        callback(new Error('請輸入內容'))
+        rule.name == 'area' ? callback(new Error('請輸入面積')) : callback(new Error('請輸入高度'))
       } else {
         callback()
       }
     }
     const validateText = (rule, value, callback) => {
-      if (value == '') {
-        callback(new Error('請輸入內容'))
+      if (value == '' || value == undefined) {
+        rule.name == 'buildingName' ? callback(new Error('請輸入名稱')) : 
+        rule.name == 'address' ? callback(new Error('請輸入地址')) : callback(new Error('請輸入執照字號'))
       } else {
         callback()
       }
@@ -177,15 +173,15 @@ export default {
       },
       type: 'view',
       formRules: {
-        buildingName: [{ required: true, trigger: 'blur', validator: validateText }],
-        address: [{ required: true, trigger: 'blur', validator: validateText }],
-        area: [{ required: true, trigger: 'blur', validator: validateNumber }],
-        height: [{ required: true, trigger: 'blur', validator: validateNumber }],
-        floorsOfAboveGround: [{ required: true, trigger: 'blur', validator: vaildateInt }],
-        floorsOfUnderground: [{ required: true, trigger: 'blur', validator: vaildateInt }],
-        licenseNumber: [{ required: true, trigger: 'blur', validator: validateText }],
-        linkOwners: [{ required: true, trigger: 'blur', message: '請選擇所有權人' }],
-        linkFireManagers: [{ required: true, trigger: 'blur', message: '請選擇防火管理人' }]
+            buildingName: [{ required: true, trigger: 'blur', validator: validateText, name:'buildingName' }],
+            address: [{ required: true, trigger: 'blur', validator: validateText, name:'address' }],
+            area: [{ required: true, trigger: 'blur', validator: validateNumber, name:'area' }],
+            height: [{ required: true, trigger: 'blur', validator: validateNumber, name:'height' }],
+            floorsOfAboveGround: [{ required: true, trigger: 'blur', validator: vaildateInt, name:'floorsOfAboveGround' }],
+            floorsOfUnderground: [{ required: true, trigger: 'blur', validator: vaildateInt, name:'floorsOfUnderground' }],
+            licenseNumber: [{ required: true, trigger: 'blur', validator: validateText, name:'licenseNumber' }],
+            linkOwners: [{ required: false, trigger: 'change', message: '請選擇所有權人' }],
+            linkFireManagers: [{ required: false, trigger: 'change', message: '請選擇防火管理人' }]
       },
       linkOwners:'',
       linkFireManagers:'',
@@ -196,7 +192,7 @@ export default {
     buildinginfo:{
       handler:async function(){
         if(this.buildinginfo.length){
-          this.form = this.$deepClone(this.buildinginfo[0])
+          this.form = new Building(this.buildinginfo[0])
         }
       },
       immediate:true

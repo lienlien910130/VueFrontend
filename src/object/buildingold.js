@@ -66,6 +66,7 @@ let Building = {
     },
     getBuildingFloors: async function(){
         var data = await api.building.apiGetBuildingFloors().then(response => {
+            
             var floors = []
             //.sort((x,y) => x.floor - y.floor)
             response.result.forEach(element => {

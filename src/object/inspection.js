@@ -2,7 +2,6 @@ import Parent from './parent'
 import api from '@/api'
 import { formatTime } from '@/utils'
 import Files  from './files'
-import InspectionLacks from './inspectionLacks';
 
 class Inspection extends Parent {
     constructor (data) {

@@ -1,11 +1,14 @@
 import router from './router'
 import store from './store'
-import obj from './object'
 import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken,getBuildingid } from '@/utils/auth' // get token from cookie
 import idb from '@/utils/indexedDB'
+import User from './object/user'
+import Role from './object/role'
+import Building from './object/building'
+import DeviceType from './object/deviceType'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
@@ -40,12 +43,12 @@ router.beforeEach(async(to, from, next) => {
           try {
             // get user info
             await store.dispatch('user/getInfo')
-            await store.dispatch('building/setroles',await obj.Authority.getAllRole()) //跟大樓無關連
-            await store.dispatch('building/setbuildingusers',await obj.Building.getBuildingUser()) ////跟大樓無關連
-            await store.dispatch('building/setdeviceType',await obj.Device.getDefaultFullType()) ////跟大樓無關連
+            await store.dispatch('building/setroles',await Role.get()) //跟大樓無關連
+            await store.dispatch('building/setbuildingusers',await User.get()) ////跟大樓無關連
+            await store.dispatch('building/setdeviceType',await DeviceType.getDefault()) ////跟大樓無關連
             const isSystem = store.getters.id == '1'
             if(isSystem){ //系統管理員=>取得所有大樓清單
-              store.dispatch('building/setbuildingarray',await obj.Building.getAllBuilding())
+              store.dispatch('building/setbuildingarray',await Building.get())
             }
             if(buildingID){ //已經有選過大樓
               console.log('已選擇過建築物大樓')

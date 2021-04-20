@@ -9,7 +9,6 @@ class Device extends Parent {
         super(data)
         const { name,dateOfPurchase, dateOfWarranty, location,groupID, systemNumber, circuitNumber, address,
             systemUsed,linkKeeperUnits,linkMaintainVendors, linkFloors, linkDeviceTypes, status  } = data
-        
         var deviceType = linkDeviceTypes.map(item=>{ return new DeviceType(item) })
         var keeperUnits = linkKeeperUnits.map(item=>{ return new Contactunit(item) }) 
         var maintainVendors = linkMaintainVendors.map(item=>{ return new Contactunit(item) }) 

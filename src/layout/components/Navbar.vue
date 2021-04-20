@@ -137,6 +137,10 @@
 
 import { mapGetters } from 'vuex'
 import { formatTime } from '@/utils/index.js'
+import Contactunit from '@/object/contactunit'
+import Device from '@/object/device'
+import Building from '@/object/building'
+import Floors from '@/object/floors'
 
 export default {
   components: {
@@ -229,11 +233,11 @@ export default {
           })
           this.$store.dispatch('building/setbuildingid',content.id)
           this.$store.dispatch('permission/setRoutes')
-          this.$store.dispatch('building/setbuildinginfo',await this.$obj.Building.getBuildingInfo())
+          this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
           this.$store.dispatch('building/setbuildingoptions',await this.$obj.Setting.getAllOption())
-          this.$store.dispatch('building/setbuildingcontactunit',await this.$obj.Building.getBuildingContactunit())
-          this.$store.dispatch('building/setbuildingdevices',await this.$obj.Device.getBuildingDevicesManage())
-          this.$store.dispatch('building/setbuildingfloors',await this.$obj.Building.getBuildingFloors())
+          this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
+          this.$store.dispatch('building/setbuildingdevices',await Device.get())
+          this.$store.dispatch('building/setbuildingfloors',await Floors.get())
           this.$router.push('/')
           console.log('Navbardone')
           loading.close()

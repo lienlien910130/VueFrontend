@@ -43,21 +43,21 @@
                       <el-input ref="licenseNumber" name="licenseNumber" v-model="form.licenseNumber" show-word-limit maxlength="30"/>
                   </el-form-item>
 
-                  </el-form>
-                  <div style="float:right">
+              </el-form>
+              <div style="float:right">
                   <el-button v-if="type=='create'" type="primary" @click="onPost">新增</el-button>
                   <el-button v-else type="primary" @click="onEdit">更新</el-button>
                   <el-button type="info" @click="onCancel">清空</el-button>
-                  </div>
+              </div>
           </div>
       </el-col>
       <el-col :xs="24" :sm="24" :md="24" :lg="17">
           <div class="block-wrapper" :style="{ height: blockwrapperheight }">
-            <TableIndex
+            <Block 
               :list-query-params.sync="listQueryParams"
-              v-bind="tableAttrs"
-              v-on="tableEvent">
-            </TableIndex>
+              :selectSetting.sync="selectSetting"
+              v-bind="blockAttrs" 
+              v-on="blockEvent"></Block>
           </div>
       </el-col>
     </el-row>
@@ -65,14 +65,12 @@
   </div>
 </template>
 <script>
-import { mapGetters } from 'vuex'
+import blockmixin from '@/mixin/blockmixin'
+import sharemixin  from '@/mixin/sharemixin'
 import Building from '@/object/building'
 export default {
+  mixins:[sharemixin,blockmixin],
   computed: {
-    ...mapGetters([
-        'fullscreen',
-        'device'
-    ]),
     label() {
       if (this.$store.state.app.device === 'mobile') {
         return 'top'
@@ -80,35 +78,12 @@ export default {
         return 'left'
       }
     },
-    tableAttrs(){
-      return {
-        tableData: this.tableData,
-        itemkey:this.itemkey,
-        config:this.tableconfig,
-        title:'building'
+    blockEvent(){
+      return{
+        handleBlock:this.handleBlock,
+        clickPagination:this.getAllBuilding,
       }
-    },
-    tableEvent(){
-      return {
-          clickPagination:this.getAllBuilding,
-          handleTableRow:this.handleTableRow
-      }
-    },
-  },
-  watch:{
-    fullscreen:{
-        handler:async function(){
-          this.fullscreen == false ? this.blockwrapperheight = '720px' : this.blockwrapperheight = '890px'
-        },
-        immediate:true
-    },
-    device:{
-        handler:async function(){
-          this.device == 'desktop' ? this.blockwrapperheight = '720px' : this.blockwrapperheight = '890px'
-
-        },
-        immediate:true
-    },  
+    }
   },
   data() {
     const vaildateInt = (rule, value, callback) => {
@@ -146,9 +121,7 @@ export default {
       }
     }
     return {
-      blockwrapperheight:'',
       type:'create',
-      origin: {},
       form: {},
       formRules: {
             buildingName: [{ required: true, trigger: 'blur', validator: validateText, name:'buildingName' }],
@@ -160,38 +133,23 @@ export default {
             licenseNumber: [{ required: true, trigger: 'blur', validator: validateText, name:'licenseNumber' }],
             linkOwners: [{ required: false, trigger: 'change', message: '請選擇所有權人' }],
             linkFireManagers: [{ required: false, trigger: 'change', message: '請選擇防火管理人' }]
-        },
-      floorsArray:[],
-      listQueryParams:{
-        page: 1,
-        limit: 10,
-        total: 0
       },
-      tableData:[],
-      tableconfig:[
-        { label:'名稱' , prop:'buildingName'},
-        { label:'地址' , prop:'address'},
-        { label:'面積' , prop:'area'},
-        { label:'高度' , prop:'height'},
-        { label:'地上樓層' , prop:'floorsOfAboveGround'},
-        { label:'地下樓層' , prop:'floorsOfUnderground'},
-        { label:'使用執照字號' , prop:'licenseNumber'},
-        { label:'管理權人' , prop:'linkOwners'},
-        { label:'防火管理人' , prop:'linkFireManagers'}
-      ],
+      floorsArray:[],
       disable:false
     }
   },
-  async mounted() {
-    await this.getAllBuilding()
-  },
   methods: {
+    async init(){
+      this.tableConfig = Building.getConfig()
+      this.title = 'building'
+      await this.getAllBuilding()
+    },
     async getAllBuilding(){
-      this.tableData = []
+      this.blockData = []
       var data = await Building.get()
       this.$store.dispatch('building/setbuildingarray',data)
       this.listQueryParams.total = data.length
-      this.tableData = data.filter((item, index) => 
+      this.blockData = data.filter((item, index) => 
         index < this.listQueryParams.limit * this.listQueryParams.page && 
         index >= this.listQueryParams.limit * (this.listQueryParams.page - 1)).sort(function(x,y){
           return y.id - x.id
@@ -257,19 +215,22 @@ export default {
     async postFloor(buildingId){
       await this.$obj.Building.postBuildingFloor(buildingId,JSON.stringify(this.floorsArray))
     },
-    async handleTableRow(row, option){
-        console.log(row,JSON.stringify(option))
-        if(option === 'open'){
+    async handleBlock(title,index, content){
+        console.log(title,index,JSON.stringify(content))
+        if(index === 'open'){
           this.type = 'edit'
-          this.form = row
+          this.form = content
           this.disable = true
-        }else if(option === 'delete'){
+        }else if(index === 'delete'){
           var isOk = await row.delete()
           if(isOk){
             this.$message('刪除成功')
             await this.getAllBuilding()
           }
         }
+    },
+    async changeTable(value){
+      this.isTable = value
     }
   }
 }

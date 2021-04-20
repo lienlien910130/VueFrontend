@@ -113,12 +113,11 @@
                                 {{ changedeviceType(item[option.prop]) }}
                                 </span> -->
 
-                                <!-- <span 
-                                v-else-if="option.format == 'userInfo' " 
+                                <span v-else-if="option.format == 'userInfo' " 
                                 @click="handleClickOption('opendialog',item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ multipleStr('user',item[option.prop]) }}
-                                </span> -->
+                                    {{ changeUserName(item[option.prop]) }}
+                                </span>
 
                                 <span v-else-if="option.format == 'accountStatusSelect' ">
                                     {{ item[option.prop] | changeStatus }}
@@ -135,7 +134,13 @@
                                 <span v-else-if="option.format == 'floorOfHouseSelect' " 
                                 @click="handleClickOption('openfloorofhouse',item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ multipleStr('floorOfHouse',item[option.prop]) }}
+                                    {{ changeUsageOfFloor(item[option.prop]) }}
+                                </span>
+
+                                <span v-else-if="option.format == 'floorOfHouseUsersName' " 
+                                @click="handleClickOption('openfloorofhouse',item['linkUsageOfFloors'])"
+                                style="color:#66b1ff;cursor:pointer">
+                                    {{ changeUsageOfFloorUsersName(item['linkUsageOfFloors']) }}
                                 </span>
                             
                                 <el-button v-else-if="option.format == 'deviceSelect' " 
@@ -271,6 +276,12 @@
                                             {{ scope.row[item.prop] | changeStatus }}
                                         </span>
 
+                                         <span v-else-if="item.format == 'userInfo' " 
+                                        @click="handleClickOption('opendialog',scope.row[item.prop])"
+                                        style="color:#66b1ff;cursor:pointer">
+                                            {{ changeUserName(scope.row[item.prop]) }}
+                                        </span>
+
                                         <span v-else-if="item.format == 'removableSelect' ">
                                             {{ scope.row[item.prop] | changeRemoveable }}
                                         </span>
@@ -314,6 +325,18 @@
                                             {{ changeContainUnit(scope.row[item.prop]) }}
                                         </span>
 
+                                        <span v-else-if="item.format == 'floorOfHouseSelect' " 
+                                        @click="handleClickOption('openfloorofhouse',scope.row[item.prop])"
+                                        style="color:#66b1ff;cursor:pointer">
+                                            {{ changeUsageOfFloor(scope.row[item.prop]) }}
+                                        </span>
+
+                                        <span v-else-if="item.format == 'floorOfHouseUsersName' " 
+                                        @click="handleClickOption('openfloorofhouse',scope.row['linkUsageOfFloors'])"
+                                        style="color:#66b1ff;cursor:pointer">
+                                            {{ changeUsageOfFloorUsersName(scope.row['linkUsageOfFloors']) }}
+                                        </span>
+
                                         <span v-else-if="item.format == 'buildingSelect' " 
                                         @click="toAnotherPage('sys-Basic',scope.row[item.prop],'co')"
                                         style="color:#66b1ff;cursor:pointer">
@@ -355,7 +378,8 @@
                             <template slot-scope="scope">
                                 <div style="float:right">
                                     <el-button v-if="title == 'maintain' || 
-                                    title == 'reportInspectio' || title == 'reportPublicSafe'   " 
+                                    title == 'reportInspectio' || title == 'reportPublicSafe' 
+                                    || title == 'floorOfHouse'   " 
                                     @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
                                     <i class="el-icon-folder-opened"  
                                     style="cursor: pointer;float:right"></i>
@@ -490,8 +514,10 @@ export default {
             }
         },
         heightChange(){
-            if(this.title == 'committee' || this.title == 'contactUnit'){
-                return { height : '100px'}
+            if(this.title == 'committee'){
+                return { height : '120px'}
+            }else if(this.title == 'contactUnit'){
+                return { height : '130px'}
             }else if(this.title == 'floorOfHouse'){
                 return { height : '185px'}
             }else if(this.title == 'maintain'){
@@ -510,11 +536,15 @@ export default {
                 return { height : '60px'}
             }else if(this.title == 'account'){
                 return { height : '150px'}
+            }else if(this.title == 'building'){
+                return { height : '345px'}
             }
         },
         FirstheightChange(){
-            if(this.title == 'committee' || this.title == 'contactUnit'){
-                return { height : '160px'}
+            if(this.title == 'committee'){
+                return { height : '180px'}
+            }else if(this.title == 'contactUnit'){
+                return { height : '190px'}
             }else if(this.title == 'floorOfHouse'){
                 return { height : '245px'}
             }else if(this.title == 'maintain'){
@@ -533,6 +563,8 @@ export default {
                 return { height : '120px'}
             }else if(this.title == 'account'){
                 return { height : '210px'}
+            }else if(this.title == 'building'){
+                return { height : '405px'}
             }
         },
         tagChange(){
@@ -744,6 +776,7 @@ export default {
             }
         },
         handleClickOption(status,row) {
+            console.log('status',status,'row',row)
             if (status === 'delete') {
                 this.$confirm('是否確定刪除該筆資料?', '提示', {
                 confirmButtonText: '確定',
@@ -755,7 +788,6 @@ export default {
                 }).catch(() => {
                 })
             } else {
-                console.log(this.title,status, row)
                 this.$emit('handleBlock',this.title,status, row)
             } 
         },
@@ -805,7 +837,6 @@ export default {
         },
         change(){
             this.$emit('changeTable',!this.isTable)
-            
         }
     }
 }

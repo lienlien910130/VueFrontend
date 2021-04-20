@@ -93,24 +93,6 @@
                         value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </span>
-
-                <!-- <el-select
-                    v-else-if="item.format =='select' || item.format =='userInfo' ||
-                    item.format == 'floorOfHouseSelect' "
-                    v-model="temp[item.prop]"
-                    filterable
-                    placeholder="請選擇"
-                    style="width:100%"
-                    >
-                        <el-option
-                        v-for="(item,index) in selectData"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.id"
-                        >
-                        </el-option>  
-                </el-select> -->
-                
                 <!-- 設備種類下拉選單(多-1) -->
                 <el-select
                     v-else-if="item.format =='deviceTypeSelect'"
@@ -133,7 +115,8 @@
                 <!-- 設備 / 廠商 / 角色 / 建築物 下拉選單(多) -->
                 <el-select
                     v-else-if="item.format == 'deviceSelect' || item.format =='contactunitSelect' || 
-                    item.format =='roleSelect' ||  item.format =='buildingSelect'"
+                    item.format =='roleSelect' ||  item.format =='buildingSelect' || item.format == 'floorOfHouseSelect'
+                    || item.format =='userInfo'  "
                     v-model="temp[item.prop]"
                     value-key="id"
                     filterable
@@ -276,14 +259,14 @@
                 {{ checkboxChange(temp[item.prop]) }}
                 </el-checkbox>
 
-                <!-- <el-input-number 
-                v-else-if="item.format =='number'"
+                <el-input-number 
+                v-else-if="item.format =='inputnumber'"
                 v-model="temp[item.prop]"  
                 controls-position="right" 
                 :min="0"
                 :precision="0"
                 style="width:100%"
-                ></el-input-number> -->
+                ></el-input-number>
 
                 <el-input 
                 v-else-if="item.format =='number' "
@@ -531,7 +514,6 @@ export default {
                 handleTableClick:this.handleTableClick
             }
         },
-        
         selectfilter(){
             return function (value) {
                 if(value !== null ){
@@ -563,6 +545,10 @@ export default {
                                 return v
                             })
                         case 'inspectionSelect':
+                            return this.selectData
+                        case 'floorOfHouseSelect':
+                            return this.selectData
+                        case 'userInfo':
                             return this.selectData
                         case 'roleSelect' :
                             return this.buildingroles.map(v => {
