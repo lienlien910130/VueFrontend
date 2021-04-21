@@ -35,8 +35,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { removeDuplicates } from '@/utils/index';
+import { removeDuplicates } from '@/utils/index'
 
   export default {
     props:{
@@ -62,11 +61,6 @@ import { removeDuplicates } from '@/utils/index';
         deviceOptions:[]
       }
     },
-    computed:{
-      ...mapGetters([
-        'deviceType'
-      ]),
-    },
     watch: {
       treeData:{
         handler:async function(){
@@ -90,8 +84,8 @@ import { removeDuplicates } from '@/utils/index';
     },
     methods: {
       async init(){
+        this.savaData = []
         for(let obj of this.treeData) { //設備狀況
-        
           var node = {
             id:obj.value,
             name:obj.name,
@@ -100,23 +94,12 @@ import { removeDuplicates } from '@/utils/index';
           }
           var typeArray = removeDuplicates(obj.data,'type') //去除掉重複的設備種類
           for(let item of typeArray){ //針對設備種類篩選對應的
-            var str =''
-            this.deviceType.filter(function(element, index){
-              var array = element.options.filter((obj,index)=>{
-                var d = item.linkDeviceTypes.length !== 0 ? item.linkDeviceTypes[0].fullType : ''
-                return obj.value == d
-              })
-              if(array.length){
-                str = array[0].label 
-              }
-            })
-            //var typeObj = await this.$obj.Setting.getOption(item.type)
             var typedata = obj.data.filter((element,index)=>{
               return element.type == item.type
             })
             const _temp = { 
                 id: item.linkDeviceTypes.length !== 0 ? item.linkDeviceTypes[0].id : '',
-                name: str,
+                name: item.getOnlyType(),
                 count:typedata.length,
                 leaf: false,
                 children: typedata
@@ -128,9 +111,84 @@ import { removeDuplicates } from '@/utils/index';
         this.resData = this.savaData
       },
       handleNodeClick(node,data) {
-        // let routeData = this.$router.resolve({ name: 'Equipment', params: { target: data.id }})
-        // window.open(routeData.href, '_blank')
-        this.$router.push({ name: 'devicesManagement', params: { target: data.id }})
+        const h = this.$createElement
+        this.$msgbox({
+          title: data.getName(),
+          message: h('div', null, [
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'種類 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getLinkType().getType()+'-'+data.getLinkType().getTypeName())
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'廠牌 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getLinkType().getBrand())
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'廠牌 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getLinkType().getProductId())
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'國家認證編號 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getLinkType().getCertificationNumber())
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'名稱 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getOnlyName())
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'狀態 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },node.parent.parent.data.name)
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'購買日期 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getDateOfPurchase())
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'保固日期 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getDateOfWarranty())
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'保管單位 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getKeeperUnits())
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'維護廠商 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getMaintainVendors())
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'分類群組 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.groupID)
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'圖控設置樓層 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getSystemUsed())
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'設置位置 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.location)
+            ]),
+            h('p',{ style: 'width:100%' },[
+              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'系統-迴路-點位 ：'),
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getSystem())
+            ])
+          ]
+          ),
+          showCancelButton: true,
+          distinguishCancelAndClose: true,
+          confirmButtonText: '編輯',
+          cancelButtonText: '取消',
+          beforeClose: (action, instance, done) => {
+            if (action === 'confirm') {
+              done()
+              this.$router.push({ name: 'devicesManagement', params: { target: data }})
+            } else {
+              done()
+            }
+          }
+        }).then(action => {
+          done()
+        }).catch(()=>{
+        })
       },
       filterNode(value, data) {
         if(value.length === 0) {
@@ -140,13 +198,13 @@ import { removeDuplicates } from '@/utils/index';
         return data.name.indexOf(value) !== -1;
       },
       setAllExpand(state){
-        this.changeTreeNodeStatus(this.$refs.tree.store.root);
+        this.changeTreeNodeStatus(this.$refs.tree.store.root)
       },
       changeTreeNodeStatus(node) {
         for(let i = 0; i < node.childNodes.length; i++ ) {
           node.childNodes[i].expanded = false;
           if(node.childNodes[i].childNodes.length > 0) {
-            this.changeTreeNodeStatus(node.childNodes[i]);
+            this.changeTreeNodeStatus(node.childNodes[i])
           }
         }
       }

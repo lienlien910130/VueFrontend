@@ -1,0 +1,16 @@
+{
+    "name": "阿發",
+    "short_name": "阿發",
+    "theme_color": "#2196f3",
+    "background_color": "#2196f3",
+    "display": "standalone",
+    "Scope": "/",
+    "start_url": "/ChatWeb/chat",
+    "icons": [
+      {
+        "src": "public/favicon.ico",
+        "sizes": "144x144",
+        "type": "image/png"
+      }
+    ]
+  }

@@ -19,7 +19,7 @@ const service = axios.create({
 const errorHandle = (status,msg) =>{
     switch (status) {
         case 400:
-            tip(msg)
+            //tip('帳號密碼輸入錯誤，請重新輸入')
             break;
         case 401:
             tip('登入過期，請重新登入')
@@ -68,7 +68,8 @@ service.interceptors.response.use(
   error => {
       if(error) {
           //成功發出請求且收到resp，但有error
-          alert(error)
+          //alert(error)
+          console.log(error.response.status,error.response.data.error)
           errorHandle(error.response.status,error.response.data.error)
           return Promise.reject(error)
       } else {

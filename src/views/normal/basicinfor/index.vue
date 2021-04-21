@@ -81,7 +81,7 @@
 </template>
 
 <script>
-import { setSelectSetting , changeLink } from '@/utils/index'
+import { setSelectSetting  } from '@/utils/index'
 import blockmixin from '@/mixin/blockmixin'
 import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'

@@ -43,6 +43,7 @@ export default {
                 if(this.buildingid !== undefined){
                     this.dialogSelect = await DeviceType.get('devicesManagement')
                     if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+                        console.log(this.$route.params.target)
                         if(typeof this.$route.params.target == 'object'){
                             await this.handleBlock('equipment','open',this.$route.params.target)
                         }

@@ -9,33 +9,7 @@ export default {
   name: 'App',
   async created(){
     this.initsocket()
-  
-    // if (localStorage.getItem("store") ) {
-    //   this.$store.replaceState(Object.assign({}, this.$store.state,JSON.parse(sessionStorage.getItem("store"))))
-    // }
-
-    // window.addEventListener('pagehide', () => {
-    //   // sessionStorage.setItem('store', JSON.stringify(this.$store.state))
-    // })
-    let isiOS = !!navigator.userAgent.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
-    if (isiOS) {
-      //在页面刷新时将vuex里的信息保存到缓存里
-      // window.addEventListener("pagehide", () => {
-      //   localStorage.setItem("messageStore", JSON.stringify(this.$store.state))
-      // })
-      //在页面加载时读取localStorage里的状态信息
-      //localStorage.getItem("messageStore") && this.$store.replaceState(Object.assign(this.$store.state,JSON.parse(localStorage.getItem("messageStore"))));
-    } else {
-      //在页面刷新时将vuex里的信息保存到缓存里
-      // window.addEventListener("pagehide", () => {
-      //   this.$store.dispatch('building/setreload',this.$store.state)
-      // })
-      
-      this.$store.dispatch('building/getbuildingarray')
-      //localStorage.getItem("messageStore") && this.$store.replaceState(Object.assign(this.$store.state,JSON.parse(localStorage.getItem("messageStore"))));
-    }
-    //this.$store.dispatch('building/getbuildingarray')
-    
+    this.register()
   },
   methods: {
     initsocket(){
@@ -45,7 +19,30 @@ export default {
       }else{
         console.log("您的瀏覽器不支援 WebSocket!")
       }
-    }
+    },
+    register(){
+      if('serviceWorker' in navigator){
+          navigator.serviceWorker
+                .register('service-worker.js')
+                .then(function(){
+                    console.log('Service Worker 註冊成功')
+                }).catch(function(error) {
+                    console.log('Service worker 註冊失敗:', error)
+                });
+        } else {
+          avalon.log('瀏覽器不支援 serviceWorker')
+        }
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.userChoice.then(function(choiceResult) {
+                if(choiceResult.outcome == 'dismissed') {
+                    console.log('user取消安裝至桌面')
+                }
+                else {
+                    console.log('user接受安裝至桌面')
+                }
+            })
+        })
+      }
   }
     
 }

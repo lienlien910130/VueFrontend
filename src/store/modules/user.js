@@ -7,7 +7,7 @@ import idb from '../../utils/indexedDB'
 import { resetRouter } from '../../router'
 import user from '../../api/user.js'
 import store from '../index.js'
-import obj from '@/object'
+import { Message } from 'element-ui'
 
 // 個人資料
 const getDefaultState = () => {
@@ -61,6 +61,7 @@ const actions = {
         resolve()
       }).catch(error => {
         console.log("error.response.status=>" + error)
+        Message.error('帳號密碼錯誤，請重新輸入')
         reject(error)
       })
     })

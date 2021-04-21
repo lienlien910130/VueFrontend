@@ -50,6 +50,7 @@
             tabindex="1"
             auto-complete="off"
             style="width:65%"
+            @keyup.enter.native="handleLogin"
           />
           <span class="get-code" style="position:absolute;right:55px;top:5px"> 
             <s-identify :identifyCode="identifyCode"></s-identify>
@@ -80,18 +81,11 @@ export default {
     this.identifyCode = ""
     this.makeCode(this.identifyCodes, 4)
     this.getVersion()
-    document.onkeydown = e => {
-      if (e.keyCode == 13) {
-        this.handleLogin()
-      }
-    }
   },
   data() {
     const validateUsername = (rule, value, callback) => {
       if(value === "") {
         callback(new Error('請輸入帳號'))
-      } else if(value.length >10){
-        callback(new Error('帳號長度限制十位數內'))
       } else {
         callback()
       }
@@ -99,8 +93,6 @@ export default {
     const validatePassword = (rule, value, callback) => {
       if(value === "") {
         callback(new Error('請輸入密碼'))
-      } else if(value.length >15){
-        callback(new Error('密碼長度限制十五位數內'))
       } else {
         callback()
       }
@@ -163,7 +155,6 @@ export default {
             this.loading = false
           })
         } else {
-          console.log('error submit!!')
           return false
         }
       })

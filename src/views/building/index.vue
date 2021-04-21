@@ -104,16 +104,18 @@ export default {
     }
     const validateNumber = (rule, value, callback) => {
       let numberReg = /^\d+$|^\d+[.]?\d+$/
-      if (!numberReg.test(value)) {
-        callback(new Error('請輸入正確格式'))
-      } else if (value == '') {
+      if (!value) {
         rule.name == 'area' ? callback(new Error('請輸入面積')) : callback(new Error('請輸入高度'))
-      } else {
-        callback()
+      }else{
+        if (!numberReg.test(value)) {
+          callback(new Error('請輸入正確格式'))
+        } else {
+          callback()
+        }
       }
     }
     const validateText = (rule, value, callback) => {
-      if (value == '' || value == undefined) {
+      if (!value) {
         rule.name == 'buildingName' ? callback(new Error('請輸入名稱')) : 
         rule.name == 'address' ? callback(new Error('請輸入地址')) : callback(new Error('請輸入執照字號'))
       } else {
@@ -218,6 +220,11 @@ export default {
     async handleBlock(title,index, content){
         console.log(title,index,JSON.stringify(content))
         if(index === 'open'){
+          this.$nextTick(() => {
+            if(this.$refs.form !== undefined){
+              this.$refs.form.clearValidate()
+            }
+          })
           this.type = 'edit'
           this.form = content
           this.disable = true

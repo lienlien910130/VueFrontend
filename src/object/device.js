@@ -2,6 +2,9 @@ import Parent from './parent'
 import DeviceType from './deviceType'
 import api from '@/api'
 import Contactunit from './contactunit'
+import Floors from './floors'
+import moment from 'moment'
+
 
 class Device extends Parent {
  
@@ -12,6 +15,7 @@ class Device extends Parent {
         var deviceType = linkDeviceTypes.map(item=>{ return new DeviceType(item) })
         var keeperUnits = linkKeeperUnits.map(item=>{ return new Contactunit(item) }) 
         var maintainVendors = linkMaintainVendors.map(item=>{ return new Contactunit(item) }) 
+        var floors = linkFloors.map(item=>{ return new Floors(item) }) 
         this.name = name
         this.dateOfPurchase = dateOfPurchase
         this.dateOfWarranty = dateOfWarranty
@@ -24,7 +28,7 @@ class Device extends Parent {
         this.systemUsed = systemUsed
         this.linkKeeperUnits = keeperUnits
         this.linkMaintainVendors = maintainVendors
-        this.linkFloors = linkFloors
+        this.linkFloors = floors
         this.linkDeviceTypes = deviceType
         return this
     }
@@ -55,13 +59,40 @@ class Device extends Parent {
         })
         return data
     }
-    getOnlyName(){
+    getOnlyName(){ //設備名稱
         return this.name
     }
-    getOnlyType(){
-        return this.linkDeviceTypes.length !== 0 ? this.linkDeviceTypes[0].getTypeName() : ''
+    getOnlyType(){ //設備種類名稱
+        return this.linkDeviceTypes.length !== 0 ? this.linkDeviceTypes[0].getTypeName() : '尚未設定種類'
     }
-    getName(){
+    getType(){ //設備種類
+        return this.linkDeviceTypes.length !== 0 ? this.linkDeviceTypes[0].getType() : ''
+    }
+    getDateOfPurchase(){
+        return moment(this.dateOfPurchase).format('YYYY-MM-DD')
+    }
+    getDateOfWarranty(){
+        return moment(this.dateOfWarranty).format('YYYY-MM-DD')
+    }
+    getSystemUsed(){
+        return this.systemUsed == true ? '已設置' : '尚未設置'
+    }
+    getSystem(){
+        var one = this.systemNumber == null ? '尚未設定' :  this.systemNumber
+        var two = this.circuitNumber == null ? '尚未設定' :  this.circuitNumber
+        var three = this.address == null ? '尚未設定' :  this.address
+        return one+'-'+two+'-'+three
+    }
+    getKeeperUnits(){
+        return this.linkKeeperUnits.map(item=>{return item.getName()}).toString()
+    }
+    getMaintainVendors(){
+        return this.linkMaintainVendors.map(item=>{return item.getName()}).toString()
+    }
+    getLinkType(){
+        return this.linkDeviceTypes.length !== 0 ? this.linkDeviceTypes[0] : DeviceType.empty()
+    }
+    getName(){ //組合過的名稱：設備種類名稱+設備名稱
         var name = this.linkDeviceTypes.length !== 0 ? 
         '【'+this.linkDeviceTypes[0].getTypeName()+'】'+this.name :  '【】'+this.name
         return name

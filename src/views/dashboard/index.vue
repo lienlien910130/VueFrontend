@@ -136,7 +136,8 @@ export default {
       var statusArray = removeDuplicates(this.deviceData,'status')
       for(let obj of statusArray) {
         var statusObj = this.buildingoptions.filter((item,index)=>item.id == obj.status)[0]
-        _temp.push({
+        if(statusObj !== undefined){
+          _temp.push({
           value: obj.status,
           name: statusObj.textName,
           data: this.deviceData.filter((item, index) => item.status == obj.status).map(v => {
@@ -144,7 +145,8 @@ export default {
                   this.$set(v, 'type', v.linkDeviceTypes.length !== 0 ? v.linkDeviceTypes[0].getID() : '')
                   return v
               })
-        })
+          })
+        }
       }
       this.deviceGroup = _temp
     },

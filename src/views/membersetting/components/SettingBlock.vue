@@ -5,8 +5,11 @@
                     <span>{{ titleToch }}</span>
                     <div style="margin-top:10px">
                         <el-row >
-                            <el-input :style="{float: 'left', margin: '5px',width:inputstyle}" v-model="input" placeholder="請輸入名稱"></el-input>
-                            <el-button style="float: right;" type="primary" 
+                            <el-input :style="{float: 'left', margin: '5px',width:inputstyle}" v-model="input" 
+                            placeholder="請輸入名稱" @keyup.enter.native="onSubmit"
+                            maxlength="30"
+                            show-word-limit></el-input>
+                            <el-button style="float: right;" type="primary"
                             @click="onSubmit">新增</el-button>
                         </el-row>
                     </div>
@@ -14,12 +17,15 @@
                 <div class="settingbody">
                     <div v-for="(item,index) in option" :key="index" class="text" :style="itemtext">
                         <div v-if="type == 'edit' && current == item.id" >
-                            <span >
+                            <!-- <span >
                                 名稱：
-                            </span>
-                            <el-input v-model="item.textName" style="width:60%"></el-input>
-                           <i class="el-icon-circle-close" style="float: right;font-size: 30px;margin-top:5px" @click="onCancel()"></i>
-                            <i class="el-icon-circle-check" style="float: right;font-size: 30px;margin-top:5px" @click="onEdit(item)"></i>
+                            </span> -->
+                            <el-input v-model="item.textName" style="width:60%" maxlength="30"
+                            show-word-limit @keyup.enter.native="onEdit(item)"></el-input>
+                           <i class="el-icon-circle-close" style="float: right;font-size: 30px;margin-top:5px" 
+                           @click="onCancel()"></i>
+                            <i class="el-icon-circle-check" style="float: right;font-size: 30px;margin-top:5px" 
+                            @click="onEdit(item)"></i>
                         </div>
                         <div v-else >
                             <div :style="{display:'inline-block',width:labelstyle}">
@@ -56,7 +62,8 @@ export default {
     },
     data(){
         return{
-            input:''
+            input:'',
+            origin:''
         }
     },
     computed:{
@@ -122,9 +129,18 @@ export default {
             this.$emit('handleButton', this.title, 'cancelEdit' , '')
         },
         onEdit(item){
-            this.$emit('handleButton', this.title, 'update' , item)
+            console.log(item)
+            console.log(this.origin)
+            console.log(item.textName == this.origin)
+            if(item.textName !== this.origin){
+               this.$emit('handleButton', this.title, 'update' , item) 
+            }else{
+                this.onCancel()
+            }
+            
         },
         changeEdit(item){
+            this.origin = item.textName
             this.$emit('handleButton', this.title, 'changeEdit' , item)
         },
         checkDelete(id){

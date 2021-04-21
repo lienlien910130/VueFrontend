@@ -51,6 +51,26 @@ class DeviceType extends Parent {
         })
         return label
     }
+    getType(){
+        var label = ''
+        var fullType = this.fullType
+        store.getters.deviceType.forEach(item=>{
+            var array = item.options.filter((obj,index)=>{
+                return obj.value == fullType
+            })
+            array.length !== 0 ? label = item.label  : ''
+        })
+        return label
+    }
+    getBrand(){
+        return this.brand
+    }
+    getProductId(){
+        return this.productId
+    }
+    getCertificationNumber(){
+        return this.certificationNumber
+    }
     getName(){
         return '【'+this.getTypeName()+'】'
     }
