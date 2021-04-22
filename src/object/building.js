@@ -43,7 +43,6 @@ class Building extends Parent {
         })
         return data
     }
-    
     getName(){
         return this.buildingName
     }

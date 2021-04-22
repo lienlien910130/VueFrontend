@@ -50,7 +50,8 @@
                         v-if="title == 'address'"
                         class="filter-item" 
                         type="primary" 
-                        @click="handleClickOption('update',updateArray)">
+                        @click="handleClickOption('update',updateArray)"
+                        >
                         儲存
                     </el-button>
                     <el-button
@@ -276,8 +277,8 @@
                                             {{ scope.row[item.prop] | changeStatus }}
                                         </span>
 
-                                         <span v-else-if="item.format == 'userInfo' " 
-                                        @click="handleClickOption('opendialog',scope.row[item.prop])"
+                                        <span v-else-if="item.format == 'userInfo' "
+                                        @click="clickMessageBox('住戶資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ changeUserName(scope.row[item.prop]) }}
                                         </span>
@@ -286,22 +287,47 @@
                                             {{ scope.row[item.prop] | changeRemoveable }}
                                         </span>
 
-                                        <span v-else-if="item.format == 'deviceTypeSelect' ">
+                                        <span v-else-if="item.format == 'deviceTypeSelect' "
+                                        @click="clickMessageBox('設備種類',item.format,scope.row[item.prop])"
+                                        style="color:#66b1ff;cursor:pointer">
+                                            {{ scope.row.getLinkType().getSelectName()  }}
+                                        </span>
+
+                                        <!-- <span v-else-if="item.format == 'deviceTypeSelect' ">
                                             <el-popover
                                                 v-if="scope.row[item.prop].length !== 0"
                                                 placement="right"
                                                 width="400"
                                                 trigger="click">
                                                 <div>
-                                                <div 
-                                                v-for="(item,index) in changeText(scope.row[item.prop][0])"
-                                                :key="index">
-                                                    <p>{{ item.label + ':' + item.value }} </p> 
-                                                </div> 
+                                                    <div 
+                                                    v-for="(item,index) in changeText(scope.row[item.prop][0])"
+                                                    :key="index"
+                                                    style="width:100%">
+                                                        <p>
+                                                            <span style='width:40%;display:inline-block;vertical-align:top'>
+                                                                {{ item.label + '：'  }} 
+                                                            </span>
+                                                            <span style='width:60%;display:inline-block;vertical-align:top'>
+                                                                {{ item.value }} 
+                                                            </span>
+                                                        </p> 
+                                                    </div> 
+                                                    <div>
+                                                        <el-button
+                                                        size="mini"
+                                                        type="primary"
+                                                        @click="handleClickOption(button.status)"
+                                                        style="float:right"
+                                                        >
+                                                        <span>編輯</span>
+                                                        </el-button>
+                                                    </div>
                                                 </div>
-                                                <el-button slot="reference">{{ scope.row.getOnlyType()  }}</el-button>
+                                                <span slot="reference" style="color:#66b1ff;cursor:pointer">
+                                                    {{ scope.row.getOnlyType()  }}</span>
                                             </el-popover>
-                                        </span>
+                                        </span> -->
 
                                         <el-input v-else-if="item.format == 'address' "
                                             v-model="scope.row[scope.column.property]"
@@ -312,30 +338,48 @@
                                             scope.row[scope.column.property].replace(/[^\d]/g,'').replace(/\s*/g,'')">
                                         </el-input>
 
-                                        <span v-else-if="item.format == 'deviceSelect' "
+                                        <!-- <span v-else-if="item.format == 'deviceSelect' "
                                         @click="toAnotherPage('devicesManagement',scope.row[item.prop],'')"
                                         style="color:#66b1ff;cursor:pointer" 
                                         > 
                                             {{ changeDevice(scope.row[item.prop]) }}
+                                        </span> -->
+
+                                        <span v-else-if="item.format == 'deviceSelect' " 
+                                        @click="clickMessageBox('設備資料',item.format,scope.row[item.prop])"
+                                        style="color:#66b1ff;cursor:pointer">
+                                             {{ changeDevice(scope.row[item.prop]) }}
                                         </span>
 
                                         <span v-else-if="item.format == 'contactunitSelect' " 
-                                        @click="toAnotherPage('sys-Basic',scope.row[item.prop],'co')"
+                                        @click="clickMessageBox('廠商資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ changeContainUnit(scope.row[item.prop]) }}
                                         </span>
 
                                         <span v-else-if="item.format == 'floorOfHouseSelect' " 
-                                        @click="handleClickOption('openfloorofhouse',scope.row[item.prop])"
+                                        @click="clickMessageBox('門牌資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ changeUsageOfFloor(scope.row[item.prop]) }}
                                         </span>
 
+                                        <!-- <span v-else-if="item.format == 'floorOfHouseSelect' " 
+                                        @click="handleClickOption('openfloorofhouse',scope.row[item.prop])"
+                                        style="color:#66b1ff;cursor:pointer">
+                                            {{ changeUsageOfFloor(scope.row[item.prop]) }}
+                                        </span> -->
+
                                         <span v-else-if="item.format == 'floorOfHouseUsersName' " 
+                                        @click="clickMessageBox('住戶資料','floorOfHouseUsersName',scope.row.getlinkUsageOfFloorsUser())"
+                                        style="color:#66b1ff;cursor:pointer">
+                                            {{ changeUsageOfFloorUsersName(scope.row.getlinkUsageOfFloorsUser()) }}
+                                        </span>
+
+                                        <!-- <span v-else-if="item.format == 'floorOfHouseUsersName' " 
                                         @click="handleClickOption('openfloorofhouse',scope.row['linkUsageOfFloors'])"
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ changeUsageOfFloorUsersName(scope.row['linkUsageOfFloors']) }}
-                                        </span>
+                                        </span> -->
 
                                         <span v-else-if="item.format == 'buildingSelect' " 
                                         @click="toAnotherPage('sys-Basic',scope.row[item.prop],'co')"
@@ -354,7 +398,7 @@
                                         </span>
 
                                         <span v-else-if="scope.column.property == 'fullType'"> 
-                                            {{ scope.row.getTypeName() }}
+                                            {{ scope.row.getType() }}
                                         </span>
 
                                         <span v-else-if="item.format == 'tag' "> 
@@ -432,6 +476,10 @@
 <script>
 import computedmixin  from '@/mixin/computedmixin'
 import DeviceType from '@/object/deviceType'
+import Device from '@/object/device'
+import User from '@/object/user'
+import Contactunit from '@/object/contactunit'
+import UsageOfFloor from '@/object/usageOfFloor'
 
 export default {
     mixins:[computedmixin],
@@ -467,9 +515,6 @@ export default {
                 return []
             }
         },
-        // deviceList: {
-        //     type: Array
-        // },
         selectSetting: {
             type: Array
         },
@@ -590,95 +635,6 @@ export default {
                 }
             }
         },
-        // changefullType(){
-        //     return function (val) {
-        //         if(val !== null && val !== undefined){
-        //             var label = ''
-        //             this.deviceType.filter(function(item, index){
-        //                 var array = item.options.filter((obj,index)=>{
-        //                    return obj.value == val
-        //                 })
-        //                 if(array.length){
-        //                    label = array[0].label 
-        //                 }
-        //             })
-        //             return label
-        //         }else{
-        //             return ""
-        //         }
-        //     } 
-        // },
-        // selectStr(){ //單選
-        //     return function (a) {
-        //         if(a !== null && a !== undefined){
-        //             let _array = this.selectData.filter((item, index) => 
-        //                 item.id == a 
-        //             )
-        //             return _array[0].label
-        //         }else{
-        //             return ""
-        //         }
-        //     }   
-        // },
-        // multipleStr(){ //多個
-        //     return function (type,value) {
-        //         var array = []
-        //         var temp = []
-        //         type === 'user' ?  temp = this.buildingusers : 
-        //         type === 'contactunit' ?  temp = this.buildingcontactunit : 
-        //         type === 'floorOfHouse' ? temp = this.selectData : this.deviceList
-        //         if(value !== null && value !== undefined ){
-        //             value.forEach(item=>{
-        //                 var data = temp.filter(element=>{
-        //                     return item.id == element.id
-        //                 })
-        //                 if(data.length>0){
-        //                     type === 'floorOfHouse' ? array.push(data[0].houseNumber) : array.push(data[0].name)
-        //                 }
-        //             })
-        //             return array.toString()
-        //         }else{
-        //             return ""
-        //         }
-        //     }   
-        // },
-        // optionfilter(){
-        //     return function (a) {
-        //         if(a !== null && a !== undefined && this.buildingoptions.length>0){
-        //             let _array = this.buildingoptions.filter((item, index) => 
-        //                 item.id == a 
-        //             )
-        //             return _array.length !== 0 ? _array[0].textName : ''
-        //         }else{
-        //             return ""
-        //         }
-        //     }   
-        // },
-        // deviceStr(){
-        //     return function (a) {
-        //         if(a !== null ){
-        //             let _array = this.deviceList.filter((item, index) => 
-        //                 item.id == a 
-        //             )
-        //             return _array[0].label
-        //         }else{
-        //             return ""
-        //         }
-        //     } 
-        // },
-        // changedeviceType(){
-        //     return function (a) {
-        //         if(a !== null && a.length){
-        //             let _array = this.selectData.filter((item, index) => 
-        //                 item.id == a[0].id
-        //             )
-        //             var str = _array[0].label.split('--')
-        //             return str[1]
-        //         }else{
-        //             return ""
-        //         }
-        //     }
-        // },
         changeMaintain(){
             return function (a) {
                 if(a !== null && a.length){
@@ -691,16 +647,6 @@ export default {
                 }
             } 
         },
-        // changeLackCount(){
-        //     return function (a) {
-        //         if(a !== null){
-        //             console.log(a.getCount())
-        //             return a.getCount()
-        //         }else{
-        //             return "0/0"
-        //         }
-        //     } 
-        // },
         page: function() {
             return this.listQueryParams.page || 1
         },
@@ -741,15 +687,50 @@ export default {
     },
     methods: {
         changeText(val){
+            var config = null
+            switch(val.constructor){
+                case User:
+                    config = User.getConfig()
+                    break;
+                case DeviceType:
+                    config = DeviceType.getConfig()
+                    break;
+                case Device:
+                    config = Device.getConfig()
+                    break;
+                case Contactunit:
+                    config = Contactunit.getConfig()
+                    break;
+                case UsageOfFloor:
+                    config = UsageOfFloor.getConfig()
+                    break;
+            }
             if(val !== undefined){
                 var array = []
                 var data = val.getInfo()
-                var config = DeviceType.getConfig()
+                var config = config
                 var keys = Object.keys(data)
                 keys.forEach(item=>{
                     var i = config.filter((obj)=>{ return obj.prop == item })
                     if(i.length !== 0){
-                    var value = item == 'fullType' ? val.getName() : data[item]
+                        var value = ''
+                        if(item == 'fullType'){
+                            value = val.getType()
+                        }else if(item == 'collaborate'){
+                            value = data[item] == true ? '合作中' : '未配合'
+                        }else if(item == 'linkOwners'){
+                            value = val.getOwners()
+                        }else if(item == 'linkUsers'){
+                            value = val.getUsers()
+                        }else if(item == 'linkKeeperUnits'){
+                            value = val.getKeeperUnits()
+                        }else if(item == 'linkMaintainVendors'){
+                            value = val.getMaintainVendors()
+                        }else if(item == 'linkDeviceTypes'){
+                            value = val.getLinkType().getSelectName()
+                        }else{
+                            value = data[item]
+                        }
                         array.push({
                             label:i[0].label,
                             value:value
@@ -757,6 +738,80 @@ export default {
                     }
                 })
                 return array
+            }
+        },
+        clickMessageBox(title,format,data){
+            console.log(this.title)
+            console.log(title,format,data,data.length)
+            console.log(JSON.stringify(data))
+            if(data.length == 0){
+                this.$message({
+                    message: '無資料',
+                    type: 'warning'
+                })
+            }else{
+                const h = this.$createElement
+                const bigData = []
+                data.forEach(item=>{
+                    const newDatas = []
+                    var changetext = this.changeText(item)
+                    changetext.forEach(obj=>{
+                        newDatas.push(
+                            h('p',{ style: 'width:100%' },[
+                                h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },obj.label),
+                                h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },obj.value)
+                            ])
+                        )
+                    })
+                    bigData.push( h('div', {style:'border:1px solid;padding:10px;margin-bottom:5px'},newDatas))
+                })
+                this.$msgbox({
+                title: title,
+                message:  h('div', {style:'max-height:700px;overflow-x:hidden;overflow-y:auto;'}, bigData) ,
+                showCancelButton: true,
+                distinguishCancelAndClose: true,
+                confirmButtonText: '編輯',
+                cancelButtonText: '取消',
+                beforeClose: (action, instance, done) => {
+                    if (action === 'confirm') {
+                        done()
+                        switch(format){
+                            case 'userInfo': //住戶資料>平時管理-基本資料
+                                if(this.buildinginfo.length == 0){
+                                    this.$message({
+                                        message: '請先選擇該棟建築物，才可對住戶進行編輯',
+                                        type: 'warning'
+                                    })
+                                }else if(this.title == 'floorOfHouse'){ //門牌資料>打開當前視窗
+                                    this.handleClickOption('opendialog',data)
+                                }else{
+                                this.$router.push({ name: 'basic', params: { target: data,type:'user' }})
+                                }
+                                break;
+                            case 'deviceTypeSelect': //設備種類>設備管理-設備種類
+                                this.$router.push({ name: 'deviceTypesManagement', params: { target: data }})
+                                break;
+                            case 'deviceSelect': //設備>設備管理-設備清單
+                                this.$router.push({ name: 'devicesManagement', params: { target: data }})
+                                break;
+                            case 'contactunitSelect': //廠商資料>平時管理-基本資料
+                                this.$router.push({ name: 'basic', params: { target: data,type:'contactunit' }})
+                                break;
+                            case 'floorOfHouseSelect': //門牌資料>打開當前視窗
+                                this.handleClickOption('openfloorofhouse',data)
+                                break;
+                            case 'floorOfHouseUsersName': //門牌資料>打開當前視窗
+                                this.handleClickOption('opendialog',data)
+                                break;
+                        }
+                    } else {
+                    done()
+                    }
+                }
+                }).then(action => {
+                    done()
+                }).catch(()=>{
+                })
             }
         },
         checkUpdate(row){
@@ -836,7 +891,9 @@ export default {
             this.$emit('clickPagination',this.sort)
         },
         change(){
+            console.log('change',!this.isTable)
             this.$emit('changeTable',!this.isTable)
+
         }
     }
 }
@@ -847,6 +904,8 @@ export default {
     margin-left: 0px;
     margin-right: 0px;
 }
+
+
 </style>
 
 <style lang="scss" scoped>
@@ -914,4 +973,5 @@ export default {
     padding:0px 8px;
     cursor: pointer;
 }
+
 </style>

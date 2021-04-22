@@ -281,7 +281,7 @@ class Device extends Parent {
     static getAddressConfig(){
         return [
             { label:'名稱',prop: 'name',mandatory:true, message:'請輸入名稱',isHidden:false,maxlength:'20'},
-            { label:'類型' , prop:'linkDeviceTypes',format:'deviceTypeSelect', mandatory:false,
+            { label:'種類' , prop:'linkDeviceTypes',format:'deviceTypeSelect', mandatory:false,
             message:'請輸入描述',maxlength:'200',isHidden:false},
             { label:'設備狀況',prop: 'status',format:'DeviceStatusOptions',mandatory:true, 
             message:'請選擇設備狀況',isHidden:false},

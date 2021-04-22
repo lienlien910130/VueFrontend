@@ -119,7 +119,7 @@ export default {
             if(this.input == ''){
                 this.$message({
                     message: '請輸入名稱',
-                    type: 'warning'
+                    type: 'error'
                 })
             }else{
                 this.$emit('handleButton', this.title, 'create' , this.input)
@@ -129,9 +129,6 @@ export default {
             this.$emit('handleButton', this.title, 'cancelEdit' , '')
         },
         onEdit(item){
-            console.log(item)
-            console.log(this.origin)
-            console.log(item.textName == this.origin)
             if(item.textName !== this.origin){
                this.$emit('handleButton', this.title, 'update' , item) 
             }else{

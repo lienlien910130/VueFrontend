@@ -1,7 +1,7 @@
 import Parent from './parent'
 import api from '@/api'
-import UsageOfFloor from './usageOfFloor';
-
+import UsageOfFloor from './usageOfFloor'
+import { removeDuplicates } from '@/utils/index'
 
 class Committee extends Parent {
  
@@ -43,6 +43,19 @@ class Committee extends Parent {
     }
     getName(){
         return this.name
+    }
+    getlinkUsageOfFloorsUser(){
+        var array = []
+        for(let element of this.linkUsageOfFloors){
+            array.push(element.getlinkUsers())
+        }
+        var concatarray = array.reduce(
+            function(a, b) {
+              return a.concat(b)
+            },[]
+        )
+        var temp = removeDuplicates(concatarray,'id') 
+        return temp
     }
     static empty(){
         return new Committee({

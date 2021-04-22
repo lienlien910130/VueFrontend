@@ -2,7 +2,7 @@
         <div class="editor-container">
             <el-row :gutter="32">
                 <el-col :xs="24" :sm="24" :md="24" :lg="7">
-                    <div class="block-wrapper">
+                    <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                         <h3>基本資料</h3>
                         <Form 
                         :buildingUsers="buildingUsers"
@@ -11,7 +11,7 @@
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
-                    <div class="block-wrapper">
+                    <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                         <el-tabs v-model="activeName" type="border-card" 
                         >
                           <el-tab-pane label="管委會" name="MC" >
@@ -41,13 +41,13 @@
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="7">
-                    <div :class="floorwrapper">
+                    <div :class="floorwrapper" :style="{ height: blockwrapperheight }">
                         <h3>大樓樓層</h3>
                         <Range v-on:handleBuildingFloorSelect="handleBuildingFloorSelect"></Range>
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
-                    <div class="block-wrapper">
+                    <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                         <el-tabs v-model="activeFloor" type="border-card">
                             <el-tab-pane label="基本資料" name="IN" :disabled="!isChoose">
                               <Block 
@@ -231,35 +231,62 @@ export default {
       }
     }
   },
-  async mounted() {
-    console.log(this.$route.params)
-    if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
-      this.activeName = 'Vender'
-      this.usageOfFloorSelectList = []
-      this.tableConfig = [
-          { label:'公司名稱' , prop:'name', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true,isHidden:false,maxlength:'20'},
-          { label:'類別' , prop:'type', format:'ContactUnitOptions', mandatory:true, message:'請選擇類別',
-          isSelect:true,options:[],selectType:'options',select:'',isSort:true,isHidden:false },
-          { label:'電話' , prop:'contactNumber',mandatory:true, message:'請輸入內容',
-          pattern:/^[0][9]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,isSelect:false,isSort:false,isHidden:true,maxlength:'10'},
-          { label:'地址' , prop:'address', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false,isHidden:true,maxlength:'200'},
-          { label:'備註' , prop:'note',format:'textarea', mandatory:false,isSelect:false,isSort:false,isHidden:true,maxlength:'200'},
-          { label:'狀態' , prop:'collaborate', format:'tag', mandatory:false, message:'請輸入內容',
-          isSelect:true,options:[],selectType:'collaborateBool',select:'',isSort:true,type:'boolean',typemessage:'',isHidden:false }
-      ]
-      await this.contactunitListinit()
-      let _array = this.blockData.filter((item, index) => 
-        item.id == this.$route.params.target
-      )
-      await this.handleBlock('contactunit','open',_array[0])
-    } 
-  },
+  // async mounted() {
+  //   if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+  //     console.log(this.$route.params.target,this.$route.params.type)
+  //     if(typeof this.$route.params.target == 'object' && this.$route.params.type == 'user'){
+  //       await this.handleBuildingInfo('open',this.$route.params.target)
+  //     }else if(typeof this.$route.params.target == 'object' && this.$route.params.type == 'contactunit'){
+  //       this.activeName = 'Vender'
+  //       // this.blockData = []
+  //       // this.usageOfFloorSelectList = []
+  //       // this.selectSetting = []
+  //       this.title = 'contactUnit'
+  //       this.changeTable(this.isTable)
+  //       await this.contactunitListinit()
+  //       this.$nextTick(async()=>{
+  //         await this.handleBlock('contactUnit','open',this.$route.params.target)
+  //       })
+  //     }
+  //     // this.activeName = 'Vender'
+  //     // this.usageOfFloorSelectList = []
+  //     // this.tableConfig = [
+  //     //     { label:'公司名稱' , prop:'name', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true,isHidden:false,maxlength:'20'},
+  //     //     { label:'類別' , prop:'type', format:'ContactUnitOptions', mandatory:true, message:'請選擇類別',
+  //     //     isSelect:true,options:[],selectType:'options',select:'',isSort:true,isHidden:false },
+  //     //     { label:'電話' , prop:'contactNumber',mandatory:true, message:'請輸入內容',
+  //     //     pattern:/^[0][9]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,isSelect:false,isSort:false,isHidden:true,maxlength:'10'},
+  //     //     { label:'地址' , prop:'address', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false,isHidden:true,maxlength:'200'},
+  //     //     { label:'備註' , prop:'note',format:'textarea', mandatory:false,isSelect:false,isSort:false,isHidden:true,maxlength:'200'},
+  //     //     { label:'狀態' , prop:'collaborate', format:'tag', mandatory:false, message:'請輸入內容',
+  //     //     isSelect:true,options:[],selectType:'collaborateBool',select:'',isSort:true,type:'boolean',typemessage:'',isHidden:false }
+  //     // ]
+  //     // await this.contactunitListinit()
+  //     // let _array = this.blockData.filter((item, index) => 
+  //     //   item.id == this.$route.params.target
+  //     // )
+  //     // await this.handleBlock('contactunit','open',_array[0])
+  //   } 
+  // },
   methods: { 
     async init(){
       this.title = 'committee'
       this.tableConfig = Committee.getConfig()
       await this.getFloorOfHouse()
       await this.managementListinit()
+      if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+        if(typeof this.$route.params.target == 'object' && this.$route.params.type == 'user'){
+          await this.handleBuildingInfo('open',this.$route.params.target)
+        }else if(typeof this.$route.params.target == 'object' && this.$route.params.type == 'contactunit'){
+          this.activeName = 'Vender'
+          this.title = 'contactUnit'
+          this.changeTable(this.isTable)
+          await this.contactunitListinit()
+          this.$nextTick(async()=>{
+            await this.handleBlock('contactUnit','open',this.$route.params.target)
+          })
+        }
+      }
     },
     async managementListinit(){
       await this.saveManagementList()
@@ -505,10 +532,16 @@ export default {
       this.dialogConfig = title === 'floorOfHouse' ? this.floorConfig : this.activeName === 'MC' ? Committee.getDialogConfig() : this.tableConfig
       if (index === 'open') {
         this.dialogStatus = 'update'
+        if(content.length !== undefined){ //代表不是外傳近來的
+          content.forEach(item=>{
+              this.dialogData.push(item)
+          })
+        }else{
+          this.dialogData.push(content)
+        }
         this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
-        this.dialogData.push(content)
         this.innerVisible = true
       }else if(index === 'delete'){
         var isDelete = await content.delete()
@@ -568,6 +601,10 @@ export default {
         if(isOk){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           this.$store.dispatch('building/setbuildingusers',await User.get())
+          await this.managementListinit()
+          if(this.activeFloor == 'IN' && this.selectFloor !== null){
+            await this.floorOfHouseinit()
+          }
           this.innerVisible = false
         }
       }
@@ -640,12 +677,18 @@ export default {
 </style>
 
 <style lang="scss" scoped>
+// .block-wrapper {
+//     background: #fff;
+//     padding: 10px;
+//     margin-bottom: 32px;
+//     height: 750px;
+//   }
 .block-wrapper {
     background: #fff;
-    padding: 10px;
-    margin-bottom: 32px;
-    height: 750px;
-  }
+    padding: 30px 15px;
+    margin-bottom: 20px;
+    height: 720px;
+}
 
   .floornotMobile {
     background: #fff;

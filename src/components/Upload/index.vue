@@ -52,7 +52,7 @@
                 </div>
             </div>
             
-            <div class="files">
+            <div class="files" :style="{ height: filesheight }">
                 <div 
                 v-for="(item,index) in filescopy" :key="item.getID()" class="filesdiv">
                     <el-checkbox v-model="deleteItem" :label="item.getID()">【{{ index+1 }}】</el-checkbox>
@@ -110,11 +110,17 @@
 </template>
 
 <script>
-import pdf from 'vue-pdf';
+import { mapGetters } from 'vuex'
+import pdf from 'vue-pdf'
 
   export default {
     name:'Upload',
     components: { pdf },
+    computed:{
+            ...mapGetters([
+                'fullscreen'
+            ]),
+    },
     props:{
         limit:{ 
             type: Number,
@@ -155,6 +161,7 @@ import pdf from 'vue-pdf';
 	        pageCount: 0, // pdf文件总页数
 	        fileType: 'pdf', // 文件类型
 	        pdfUrl: '', // pdf文件地址
+            filesheight:''
       }
     },
     watch:{
@@ -169,6 +176,13 @@ import pdf from 'vue-pdf';
                 this.filescopy = this.files.map(item=>{ return item.clone(item) })
             },
             immediate:true
+        },
+        fullscreen:{
+                handler:async function(){
+                    console.log(this.fullscreen)
+                    this.fullscreen == true ? this.filesheight = '690px' : this.filesheight = '530px'
+                },
+                immediate:true
         }
     },
     methods: {
@@ -294,7 +308,7 @@ import pdf from 'vue-pdf';
         onChange(){
             if(this.deleteItem.length > 1){
                 this.$message({
-                    message: '只能選一個',
+                    message: '平面圖只能設置一個圖檔',
                     type: 'warning'
                 })
             }else if(this.deleteItem.length == 0){
@@ -384,7 +398,7 @@ import pdf from 'vue-pdf';
 
 .files {
     width: 100%;
-    height: 570px;
+    height: 530px;
     overflow-x:hidden;
     overflow-y:auto;
 }

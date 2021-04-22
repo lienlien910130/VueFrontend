@@ -35,9 +35,6 @@ class User extends Parent {
         })
         return data
     }
-    async delete(){
-        
-    }
     getName(){
         return this.name
     }

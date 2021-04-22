@@ -32,32 +32,21 @@ export default {
         blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getBuildingDevicesManage,
-                
+                clickPagination:this.getBuildingDevicesManage
             }
         }
     },
-    watch:{
-        buildingid:{
-            handler:async function(){
-                if(this.buildingid !== undefined){
-                    this.dialogSelect = await DeviceType.get('devicesManagement')
-                    if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
-                        console.log(this.$route.params.target)
-                        if(typeof this.$route.params.target == 'object'){
-                            await this.handleBlock('equipment','open',this.$route.params.target)
-                        }
-                    } 
-                }
-            },
-            immediate:true
-        },
-    },
     methods: {
         async init(){
+            this.dialogSelect = await DeviceType.get('devicesManagement')
             this.tableConfig = Device.getConfig()
             this.title = 'equipment'
             await this.reload()
+            if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+                if(typeof this.$route.params.target == 'object'){
+                    await this.handleBlock('equipment','open',this.$route.params.target)
+                }
+            } 
         },
         async reload(){
             await this.saveBuildingDevicesManageArray()
@@ -127,7 +116,7 @@ export default {
             this.dialogTitle = this.title
             if(index === 'open'){
                 this.dialogStatus = 'update'
-                if(content.length>1){
+                if(content.length !== undefined){ //代表不是外傳近來的
                     content.forEach(item=>{
                         this.dialogData.push(item)
                     })

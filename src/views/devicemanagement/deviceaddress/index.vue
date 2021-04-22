@@ -58,10 +58,13 @@ export default {
         },
         async handleBlock(title,index, content){
             console.log(title,index,JSON.stringify(content))
-            var isOk = await Device.updateAddress(content)
-            if(isOk){
-                this.$message('更新成功')
-                await this.reload()
+            if(content.length !== 0){
+                var isOk = await Device.updateAddress(content)
+                if(isOk){
+                    this.$message('更新成功')
+                    this.$store.dispatch('building/setbuildingdevices',await Device.get())
+                    await this.reload()
+                }
             }
         },
         async changeTable(value){

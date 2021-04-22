@@ -235,9 +235,10 @@ export default {
       this.form.linkFireManagers = array
       this.$refs.form.validate(async(valid) => {
         if (valid) {
-          await this.$obj.Building.updateBuildingInfo(JSON.stringify(this.form))
-          this.$store.dispatch('building/setbuildinginfo',await this.$obj.Building.getBuildingInfo())
-          this.form = this.$deepClone(this.buildinginfo[0])
+          await this.form.update()
+          var data = await Building.get()
+          this.$store.dispatch('building/setbuildingarray',data)
+          this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
           this.$message('更新成功')
           this.type = 'view'
         }
@@ -245,11 +246,11 @@ export default {
     },
     onCancel() {
       this.type = 'view'
-      this.form = JSON.parse(this.origin)
+      this.form = new Building(JSON.parse(this.origin))
       this.$nextTick(() => {
         this.$refs.form.clearValidate()
       })
-    },
+    }
   }
 }
 

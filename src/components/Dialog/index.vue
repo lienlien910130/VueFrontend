@@ -8,8 +8,30 @@
         append-to-body
         @close="handleClickOption('cancel')"
         center>
+        <div v-if="dialogData.length > 1" >
+            <el-tabs 
+            v-if="title === 'user' || title === 'contactUnit' || title === 'equipment'" 
+            v-model="activeName" 
+            @tab-click="handleTabClick">
+                <el-tab-pane
+                v-for="(item) in dialogData"
+                :key="item.id"
+                :label="item.name"
+                :name="item.id"></el-tab-pane>
+            </el-tabs>
+           <el-tabs 
+            v-else-if="title === 'floorOfHouse' " 
+            v-model="activeName" 
+            @tab-click="handleTabClick">
+                <el-tab-pane
+                v-for="(item) in dialogData"
+                :key="item.id"
+                :label="item.houseNumber"
+                :name="item.id"></el-tab-pane>
+            </el-tabs>
+        </div>
 
-        <el-tabs 
+        <!-- <el-tabs 
         v-if="title === 'user' && dialogData.length > 1" 
         v-model="activeName" 
         @tab-click="handleTabClick">
@@ -18,9 +40,9 @@
             :key="item.id"
             :label="item.name"
             :name="item.id"></el-tab-pane>
-        </el-tabs>
+        </el-tabs> -->
 
-        <el-tabs 
+        <!-- <el-tabs 
         v-if="title === 'equipment' && dialogData.length > 1" 
         v-model="activeName" 
         @tab-click="handleTabClick">
@@ -29,9 +51,9 @@
             :key="item.id"
             :label="item.name"
             :name="item.id"></el-tab-pane>
-        </el-tabs>
+        </el-tabs> -->
 
-        <el-tabs 
+        <!-- <el-tabs 
         v-else-if="title === 'floorOfHouse' && dialogData.length > 1" 
         v-model="activeName" 
         @tab-click="handleTabClick">
@@ -40,7 +62,7 @@
             :key="item.id"
             :label="item.houseNumber"
             :name="item.id"></el-tab-pane>
-        </el-tabs>
+        </el-tabs> -->
 
         <!-- dialogStatus : 一般表單/upload/lack/authority -->
         <keep-alive>
@@ -107,7 +129,7 @@
                         <el-option
                         v-for="(item,index) in selectfilter(item.format)"
                         :key="index"
-                        :label="item.getTypeName()"
+                        :label="item.getSelectName()"
                         :value="item"
                         >
                         </el-option>  
@@ -378,7 +400,6 @@
 </template>
 
 <script>
-import { changeLink } from '@/utils'
 import computedmixin  from '@/mixin/computedmixin'
 
 export default {
@@ -559,7 +580,6 @@ export default {
                             })
                         case 'deviceTypeSelect':
                             return this.selectData
-                            break;
                         case 'buildingSelect' :
                             return this.buildingarray.map(v => {
                                 this.$set(v, 'value', v.id) 
@@ -605,6 +625,7 @@ export default {
     },
     methods: {
         init(){
+            console.log('this.dialogData.length',this.dialogData.length)
             if(this.dialogData.length){
                 this.activeName = this.dialogData[0].getID()
                 this.temp = this.dialogData[0].clone(this.dialogData[0])
@@ -722,12 +743,13 @@ export default {
         async handleTabClick(tab, event) {
             if(this.title === 'user'){
                 this.temp = this.buildingusers.filter((element,index) => element.id == tab.name)[0]
-            }else if(this.title === 'equipment'){
-                this.temp = this.dialogData.filter((element,index) => element.id == tab.name)[0]
             }else{
-                var data = this.$deepClone(await this.$obj.Building.getBuildingOfHouseById(tab.name))
-                this.temp = changeLink('floorOfHouse',data,'open')
+                this.temp = this.dialogData.filter((element,index) => element.id == tab.name)[0]
             }
+            // else{
+            //     var data = this.$deepClone(await this.$obj.Building.getBuildingOfHouseById(tab.name))
+            //     this.temp = changeLink('floorOfHouse',data,'open')
+            // }
         },
         async handleFilesUpload(index,title,data) { 
             this.$emit('handleDialog',this.title, index , data)

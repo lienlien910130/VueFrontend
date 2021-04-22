@@ -23,6 +23,7 @@ import blockmixin from '@/mixin/blockmixin'
 import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
 import DeviceType  from '@/object/deviceType'
+import Device from '@/object/device'
 
 export default {
     name:'Device',
@@ -35,25 +36,16 @@ export default {
             }
         }
     },
-    watch:{
-        buildingid:{
-            handler:async function(){
-                if(this.buildingid !== undefined){
-                    if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0){
-                        if(typeof this.$route.params.target == 'object'){
-                            await this.handleBlock('devicetype','open',this.$route.params.target)
-                        }
-                    } 
-                }
-            },
-            immediate:true
-        },
-    },
     methods: {
         async init(){
             this.tableConfig = DeviceType.getConfig()
             this.title = 'devicetype'
             await this.reload()
+            if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0){
+                if(typeof this.$route.params.target == 'object'){
+                    await this.handleBlock('devicetype','open',this.$route.params.target[0])
+                }
+            } 
         },
         async reload(){
             await this.saveBuildingDevicesTypeArray()
@@ -117,7 +109,7 @@ export default {
                 var isDelete = await content.delete()
                 if(isDelete){
                     this.$message('刪除成功')
-                    //this.$store.dispatch('building/setbuildingdevices',await this.$obj.Device.getBuildingDevicesManage())
+                    this.$store.dispatch('building/setbuildingdevices',await Device.get())
                     this.listQueryParams = {
                         page: 1,
                         limit: 10,
@@ -137,10 +129,11 @@ export default {
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,content)
             if(index !== 'cancel'){
+                content.setTypeName(content.getTypeName())
                 var isOk = index === 'update' ? await content.update() : await content.create()
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                    //this.$store.dispatch('building/setbuildingdevices',await this.$obj.Device.getBuildingDevicesManage())
+                    this.$store.dispatch('building/setbuildingdevices',await Device.get())
                     await this.reload()
                 }
             }

@@ -45,7 +45,7 @@
 
               </el-form>
               <div style="float:right">
-                  <el-button v-if="type=='create'" type="primary" @click="onPost">新增</el-button>
+                  <el-button v-if="type=='create'" type="primary" @click="onPost" :loading="loading">新增</el-button>
                   <el-button v-else type="primary" @click="onEdit">更新</el-button>
                   <el-button type="info" @click="onCancel">清空</el-button>
               </div>
@@ -84,6 +84,9 @@ export default {
         clickPagination:this.getAllBuilding,
       }
     }
+  },
+  async mounted(){
+    await this.init()
   },
   data() {
     const vaildateInt = (rule, value, callback) => {
@@ -137,7 +140,8 @@ export default {
             linkFireManagers: [{ required: false, trigger: 'change', message: '請選擇防火管理人' }]
       },
       floorsArray:[],
-      disable:false
+      disable:false,
+      loading:false
     }
   },
   methods: {
@@ -160,7 +164,8 @@ export default {
     async onPost() {
         this.$refs.form.validate(async(valid) => {
           if (valid) {
-              const loading = this.$loading({
+              this.loading = true
+              const mask = this.$loading({
                   lock: true,
                   text: '建立建築物中，請稍後...',
                   spinner: 'el-icon-loading',
@@ -175,8 +180,12 @@ export default {
                 this.onCancel()
                 await this.postFloor(buildingId)
                 await this.getAllBuilding()
-                loading.close()
+                mask.close()
+                this.loading = false
               }
+          }else {
+            this.$message.error('請輸入完整資訊')
+            return false
           }
         })
     },
@@ -186,6 +195,9 @@ export default {
             var isUpadte = await this.form.update()
             if(isUpadte){
               this.$message('更新成功')
+              if(this.buildingid == this.form.getID()){
+                this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+              }
               this.onCancel()
               await this.getAllBuilding()
             }
@@ -226,10 +238,10 @@ export default {
             }
           })
           this.type = 'edit'
-          this.form = content
+          this.form = new Building(content)
           this.disable = true
         }else if(index === 'delete'){
-          var isOk = await row.delete()
+          var isOk = await content.delete()
           if(isOk){
             this.$message('刪除成功')
             await this.getAllBuilding()

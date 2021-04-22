@@ -74,6 +74,7 @@ class MaintainManagementList extends Parent {
               {
                 label: '名稱',
                 prop: 'name',
+                format:'MaintainContentOptions',
                 mandatory:true, message:'請輸入名稱',isSelect:false,isSort:true,isHidden:false,maxlength:'20'
               },
               {
@@ -152,7 +153,6 @@ class MaintainManagement extends Parent {
         this.linkContactUnits = contactUnits
         return this
     }
-
     clone(data){
         return new MaintainManagement(data)
     }
@@ -199,6 +199,15 @@ class MaintainManagement extends Parent {
     getProcess(){
         return this.processStatus
     }
+    // getlinkDevices(){
+    //     return this.linkDevices
+    // }
+    // getInspectionLacks(){
+    //     return this.linkInspectionLacks.map(item=>{return item.getName()}).toString()
+    // }
+    // getContactUnits(){
+    //     return this.linkContactUnits.map(item=>{return item.getName()}).toString()
+    //}
     static empty(){
         return new MaintainManagement({
             id:'',

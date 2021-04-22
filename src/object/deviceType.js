@@ -5,8 +5,8 @@ import api from '@/api'
 class DeviceType extends Parent {
     constructor (data) {
         super(data)
-        const { fullType, brand, productId, certificationNumber  } = data
-        //this.name = name
+        const { name, fullType, brand, productId, certificationNumber  } = data
+        this.name = name
         this.fullType = fullType
         this.brand = brand
         this.productId = productId
@@ -40,7 +40,13 @@ class DeviceType extends Parent {
         })
         return data
     }
-    getTypeName(){
+    getAll(){
+        
+    }
+    setTypeName(typeName){
+        this.name = typeName
+    }
+    getTypeName(){ //設備種類名稱
         var label = ''
         var fullType = this.fullType
         store.getters.deviceType.filter(function(item, index){
@@ -51,7 +57,7 @@ class DeviceType extends Parent {
         })
         return label
     }
-    getType(){
+    getType(){ //設備種類
         var label = ''
         var fullType = this.fullType
         store.getters.deviceType.forEach(item=>{
@@ -72,7 +78,11 @@ class DeviceType extends Parent {
         return this.certificationNumber
     }
     getName(){
-        return '【'+this.getTypeName()+'】'
+        return '【'+this.getType()+'】'+this.getTypeName()
+    }
+    getSelectName(){
+        return this.getType() !== '' ? '【'+this.getType()+'】'+this.getTypeName()+'-'+this.getBrand()+'-'+this.getProductId() : 
+        ''
     }
     static empty(){
         return new DeviceType({
@@ -93,12 +103,11 @@ class DeviceType extends Parent {
                 mandatory:true, message:'請選擇設備類型',isSelect:true,options:[],selectType:'fullType',select:'',
                 isSort:true,isHidden:false,maxlength:'20'
             },
-            // {
-            //     label: '設備名稱',
-            //     prop: 'name',
-            //     mandatory:true, message:'請輸入設備名稱',isSelect:false,
-            //     isSort:true,isHidden:false,maxlength:'20'
-            // },
+            {
+                label: '設備名稱',
+                prop: 'name',format:'hide',
+                mandatory:false, message:'請輸入設備名稱',isSelect:false,isSort:true,isHidden:false,maxlength:'20'
+            },
             {
                 label: '廠牌名稱',
                 prop: 'brand',

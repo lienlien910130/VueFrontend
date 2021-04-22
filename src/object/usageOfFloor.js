@@ -65,8 +65,14 @@ class UsageOfFloor extends Parent {
     getName(){
         return this.houseNumber
     }
-    getUsers(){
+    getlinkUsers(){
         return this.linkUsers
+    }
+    getUsers(){
+        return this.linkUsers.map(item=>{return item.getName()}).toString()
+    }
+    getOwners(){
+        return this.linkOwners.map(item=>{return item.getName()}).toString()
     }
     getInfo(){
         return this

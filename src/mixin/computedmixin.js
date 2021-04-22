@@ -118,13 +118,7 @@ export default {
             changeUsageOfFloorUsersName(){ //門牌底下的使用者名稱
                 return function (val) {
                     if(val !== null){
-                        var array = []
-                        val.forEach(item=>{
-                            item.getUsers().forEach(user=>{
-                                array.push(user.getName())
-                            })
-                        })
-                      return array.toString()
+                        return val.map(item => { return item.getName()}).toString()
                     }
                     return ''
                 } 
@@ -146,7 +140,14 @@ export default {
         watch:{
             fullscreen:{
                 handler:async function(){
-                    this.fullscreen == true ? this.infiniteheight = '800px' : this.infiniteheight = '600px'
+                    //this.fullscreen == true ? this.infiniteheight = '800px' : this.infiniteheight = '600px'
+                    if(this.fullscreen == true){
+                        this.title == 'committee' || this.title == 'contactUnit' || this.title == 'floorOfHouse' ? 
+                        this.infiniteheight = '710px' : this.infiniteheight = '800px'
+                    }else{
+                        this.title == 'committee' || this.title == 'contactUnit' || this.title == 'floorOfHouse'  ? 
+                        this.infiniteheight = '550px' : this.infiniteheight = '600px'
+                    }
                 },
                 immediate:true
             }

@@ -117,7 +117,8 @@ export default {
             return{
                 handleBlock:this.handleBlock,
                 clickPagination:this.getBuildingMaintain,
-                handleDialog:this.handleDialog
+                handleDialog:this.handleDialog,
+                changeTable:this.changeTable
             }
         }
     },
@@ -277,6 +278,7 @@ export default {
             }
         },
         async changeTable(value){
+            console.log('changeTable',value)
             this.isTable = value
             this.listQueryParams = {
                 page: 1,
