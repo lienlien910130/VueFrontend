@@ -382,16 +382,28 @@
                                         </span> -->
 
                                         <span v-else-if="item.format == 'buildingSelect' " 
-                                        @click="toAnotherPage('sys-Basic',scope.row[item.prop],'co')"
+                                        @click="clickMessageBox('建築物資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ changeBuilding(scope.row[item.prop]) }}
                                         </span>
 
-                                        <span v-else-if="item.format == 'roleSelect' " 
+                                        <!-- <span v-else-if="item.format == 'buildingSelect' " 
                                         @click="toAnotherPage('sys-Basic',scope.row[item.prop],'co')"
+                                        style="color:#66b1ff;cursor:pointer">
+                                            {{ changeBuilding(scope.row[item.prop]) }}
+                                        </span> -->
+
+                                        <span v-else-if="item.format == 'roleSelect' " 
+                                        @click="clickMessageBox('角色資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ changeRoles(scope.row[item.prop]) }}
                                         </span>
+
+                                        <!-- <span v-else-if="item.format == 'roleSelect' " 
+                                        @click="toAnotherPage('sys-Basic',scope.row[item.prop],'co')"
+                                        style="color:#66b1ff;cursor:pointer">
+                                            {{ changeRoles(scope.row[item.prop]) }}
+                                        </span> -->
 
                                         <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
                                             {{ changeInspectionLack(scope.row[scope.column.property]) }}
@@ -480,6 +492,8 @@ import Device from '@/object/device'
 import User from '@/object/user'
 import Contactunit from '@/object/contactunit'
 import UsageOfFloor from '@/object/usageOfFloor'
+import Role from '@/object/role'
+import Building from '@/object/building'
 
 export default {
     mixins:[computedmixin],
@@ -704,6 +718,12 @@ export default {
                 case UsageOfFloor:
                     config = UsageOfFloor.getConfig()
                     break;
+                case Role:
+                    config = Role.getConfig()
+                    break;
+                case Building:
+                    config = Building.getConfig()
+                    break;
             }
             if(val !== undefined){
                 var array = []
@@ -720,7 +740,7 @@ export default {
                             value = data[item] == true ? '合作中' : '未配合'
                         }else if(item == 'linkOwners'){
                             value = val.getOwners()
-                        }else if(item == 'linkUsers'){
+                        }else if(item == 'linkUsers' || item == 'linkFireManagers'){
                             value = val.getUsers()
                         }else if(item == 'linkKeeperUnits'){
                             value = val.getKeeperUnits()
@@ -728,6 +748,10 @@ export default {
                             value = val.getMaintainVendors()
                         }else if(item == 'linkDeviceTypes'){
                             value = val.getLinkType().getSelectName()
+                        }else if(item == 'status'){
+                            value = data[item] == true ? '啟用中' : '未啟用'
+                        }else if(item == 'removable'){
+                            value = data[item] == true ? '允許' : '禁止'
                         }else{
                             value = data[item]
                         }
@@ -741,9 +765,6 @@ export default {
             }
         },
         clickMessageBox(title,format,data){
-            console.log(this.title)
-            console.log(title,format,data,data.length)
-            console.log(JSON.stringify(data))
             if(data.length == 0){
                 this.$message({
                     message: '無資料',
@@ -766,48 +787,53 @@ export default {
                     bigData.push( h('div', {style:'border:1px solid;padding:10px;margin-bottom:5px'},newDatas))
                 })
                 this.$msgbox({
-                title: title,
-                message:  h('div', {style:'max-height:700px;overflow-x:hidden;overflow-y:auto;'}, bigData) ,
-                showCancelButton: true,
-                distinguishCancelAndClose: true,
-                confirmButtonText: '編輯',
-                cancelButtonText: '取消',
-                beforeClose: (action, instance, done) => {
-                    if (action === 'confirm') {
-                        done()
-                        switch(format){
-                            case 'userInfo': //住戶資料>平時管理-基本資料
-                                if(this.buildinginfo.length == 0){
-                                    this.$message({
-                                        message: '請先選擇該棟建築物，才可對住戶進行編輯',
-                                        type: 'warning'
-                                    })
-                                }else if(this.title == 'floorOfHouse'){ //門牌資料>打開當前視窗
+                    title: title,
+                    message:  h('div', {style:'max-height:700px;overflow-x:hidden;overflow-y:auto;'}, bigData) ,
+                    showCancelButton: true,
+                    distinguishCancelAndClose: true,
+                    confirmButtonText: '編輯',
+                    cancelButtonText: '取消',
+                    beforeClose: (action, instance, done) => {
+                        if (action === 'confirm') {
+                            done()
+                            switch(format){
+                                case 'userInfo': //住戶資料>平時管理-基本資料
+                                    if(this.buildinginfo.length == 0){
+                                        this.$message({
+                                            message: '請先選擇該棟建築物，才可對住戶進行編輯',
+                                            type: 'warning'
+                                        })
+                                    }else if(this.title == 'floorOfHouse'){ //門牌資料>打開當前視窗
+                                        this.handleClickOption('opendialog',data)
+                                    }else{
+                                        this.$router.push({ name: 'basic', params: { target: data,type:'user' }})
+                                    }
+                                    break;
+                                case 'deviceTypeSelect': //設備種類>設備管理-設備種類
+                                    this.$router.push({ name: 'deviceTypesManagement', params: { target: data }})
+                                    break;
+                                case 'deviceSelect': //設備>設備管理-設備清單
+                                    this.$router.push({ name: 'devicesManagement', params: { target: data }})
+                                    break;
+                                case 'contactunitSelect': //廠商資料>平時管理-基本資料
+                                    this.$router.push({ name: 'basic', params: { target: data,type:'contactunit' }})
+                                    break;
+                                case 'floorOfHouseSelect': //門牌資料>打開當前視窗
+                                    this.handleClickOption('openfloorofhouse',data)
+                                    break;
+                                case 'floorOfHouseUsersName': //門牌資料>打開當前視窗
                                     this.handleClickOption('opendialog',data)
-                                }else{
-                                this.$router.push({ name: 'basic', params: { target: data,type:'user' }})
-                                }
-                                break;
-                            case 'deviceTypeSelect': //設備種類>設備管理-設備種類
-                                this.$router.push({ name: 'deviceTypesManagement', params: { target: data }})
-                                break;
-                            case 'deviceSelect': //設備>設備管理-設備清單
-                                this.$router.push({ name: 'devicesManagement', params: { target: data }})
-                                break;
-                            case 'contactunitSelect': //廠商資料>平時管理-基本資料
-                                this.$router.push({ name: 'basic', params: { target: data,type:'contactunit' }})
-                                break;
-                            case 'floorOfHouseSelect': //門牌資料>打開當前視窗
-                                this.handleClickOption('openfloorofhouse',data)
-                                break;
-                            case 'floorOfHouseUsersName': //門牌資料>打開當前視窗
-                                this.handleClickOption('opendialog',data)
-                                break;
+                                    break;
+                                case 'roleSelect': //角色資料>權限設定-角色管理
+                                    this.$router.push({ name: 'roleSetting', params: { target: data }})
+                                    break;
+                                case 'buildingSelect':
+                                    break;
+                            }
+                        } else {
+                        done()
                         }
-                    } else {
-                    done()
                     }
-                }
                 }).then(action => {
                     done()
                 }).catch(()=>{
@@ -891,9 +917,7 @@ export default {
             this.$emit('clickPagination',this.sort)
         },
         change(){
-            console.log('change',!this.isTable)
             this.$emit('changeTable',!this.isTable)
-
         }
     }
 }

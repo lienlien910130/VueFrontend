@@ -113,14 +113,16 @@ export default {
     buildingUploadAttrs(){
       return{
         files:this.buildingFiles,
-        title:'building'
+        title:'building',
+        isneed:true
       }
     },
     floorUploadAttrs(){
       return{
         specialId:this.floorImageId,
         files:this.floorFiles,
-        title:'floor'
+        title:'floor',
+        isneed:true
       }
     },
     floorAttrs() {

@@ -113,7 +113,6 @@ export default {
         },
         async handleTreeNode(node,data){
             this.origin = data.getAccessAuthorities()
-            console.log(JSON.stringify(this.origin))
             this.selectId = data.getID()
             this.listQueryParams = {
                 page: 1,

@@ -172,7 +172,7 @@ class Device extends Parent {
             {
                 label: '設備狀況',
                 prop: 'status',
-                format:'DeviceStatusOptions',
+                format:'MaintainProcessOptions',
                 mandatory:true, message:'請選擇設備狀況',isSelect:true,options:[],
                 selectType:'options',select:'',isSort:true,isHidden:false
             },

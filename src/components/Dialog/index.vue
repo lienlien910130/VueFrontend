@@ -9,7 +9,7 @@
         @close="handleClickOption('cancel')"
         center>
         <div v-if="dialogData.length > 1" >
-            <el-tabs 
+            <!-- <el-tabs 
             v-if="title === 'user' || title === 'contactUnit' || title === 'equipment'" 
             v-model="activeName" 
             @tab-click="handleTabClick">
@@ -18,15 +18,25 @@
                 :key="item.id"
                 :label="item.name"
                 :name="item.id"></el-tab-pane>
-            </el-tabs>
+            </el-tabs> -->
            <el-tabs 
-            v-else-if="title === 'floorOfHouse' " 
+            v-if="title === 'floorOfHouse' " 
             v-model="activeName" 
             @tab-click="handleTabClick">
                 <el-tab-pane
                 v-for="(item) in dialogData"
                 :key="item.id"
                 :label="item.houseNumber"
+                :name="item.id"></el-tab-pane>
+            </el-tabs>
+            <el-tabs 
+            v-else
+            v-model="activeName" 
+            @tab-click="handleTabClick">
+                <el-tab-pane
+                v-for="(item) in dialogData"
+                :key="item.id"
+                :label="item.name"
                 :name="item.id"></el-tab-pane>
             </el-tabs>
         </div>
@@ -541,28 +551,16 @@ export default {
                     switch(value){
                         case 'deviceSelect':
                             return this.buildingdevices.map(v => {
-                                var label = ''
-                                var name = ''
-                                this.deviceType.filter(function(item, index){
-                                    var array = item.options.filter((obj,index)=>{
-                                        var fulltype = v.linkDeviceTypes.length !== 0 ? v.linkDeviceTypes[0].fullType : ''
-                                        return obj.value == fulltype
-                                    })
-                                    if(array.length){
-                                        label = array[0].label 
-                                        name = v.name
-                                    }
-                                })
-                                this.$set(v, 'value', v.id) 
-                                this.$set(v, 'label', '【'+label+'】-- '+ name) 
-                                this.$set(v, 'id', v.id) 
+                                this.$set(v, 'value', v.getID()) 
+                                this.$set(v, 'label', v.getLinkType().getSelectName()) 
+                                this.$set(v, 'id', v.getID()) 
                                 return v
                             })
                         case 'contactunitSelect':
                             return this.buildingcontactunit.map(v => {
-                                this.$set(v, 'value', v.id) 
-                                this.$set(v, 'label', v.name) 
-                                this.$set(v, 'id', v.id) 
+                                this.$set(v, 'value', v.getID()) 
+                                this.$set(v, 'label', v.getName()) 
+                                this.$set(v, 'id', v.getID()) 
                                 return v
                             })
                         case 'inspectionSelect':
@@ -573,9 +571,9 @@ export default {
                             return this.selectData
                         case 'roleSelect' :
                             return this.buildingroles.map(v => {
-                                this.$set(v, 'value', v.id) 
-                                this.$set(v, 'label', v.name) 
-                                this.$set(v, 'id', v.id) 
+                                this.$set(v, 'value', v.getID()) 
+                                this.$set(v, 'label', v.getName()) 
+                                this.$set(v, 'id', v.getID()) 
                                 return v
                             })
                         case 'deviceTypeSelect':

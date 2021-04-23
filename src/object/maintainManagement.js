@@ -94,7 +94,7 @@ class MaintainManagementList extends Parent {
                 label: '檢附文件',
                 prop: 'file',
                 format:'openfiles',isSelect:false,isSort:false,isHidden:false
-              },
+              }
         ]
     }
     static getCreateConfig(){
@@ -122,6 +122,7 @@ class MaintainManagementList extends Parent {
     }
     static async getAllLack(){
         var data = await api.device.apiGetInspectionListByMaintain().then(response => {
+            console.log(JSON.stringify(response))
             return response.result.sort(function(x,y){
                 var _data1 = new Date(x.label)
                 var _data2 = new Date(y.label)

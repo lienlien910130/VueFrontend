@@ -61,9 +61,7 @@ export default {
                             return a.concat(b)
                         },[]
                     )
-                    var data = concatarray.filter(function (el) {
-                        return el.id == select
-                    })[0]
+                    var data = concatarray.filter(item=>{ return item.id == this.selectId})[0]
                     this.origin = data.getLink()
                     await this.changePage()
                 }

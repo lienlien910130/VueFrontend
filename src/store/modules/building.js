@@ -2,6 +2,13 @@ import  {
   getBuildingid,setBuildingid,removeBuildingid
  }  from '../../utils/auth'
 import idb from '../../utils/indexedDB'
+import Device from '@/object/device';
+import User from '@/object/user';
+import Contactunit from '@/object/contactunit';
+import Floors from '@/object/floors';
+import Building from '@/object/building';
+import Role from '@/object/role';
+
 
 // 個人資料
 const getDefaultState = () => {
@@ -60,7 +67,8 @@ const mutations = {
 const actions = {
   async getroles({ commit }) { //從網頁資料庫取出來儲存在store上
     let roles = await idb.getValue('roles')
-    commit('SET_ROLES', roles)
+    var array = roles.map(item=>{ return new Role(item)})
+    commit('SET_ROLES', array)
   },
   setroles({ commit }, roles) { 
     return new Promise((resolve, reject) => {
@@ -76,7 +84,8 @@ const actions = {
   },
   async getbuildinginfo({ commit }) { //從網頁資料庫取出來儲存在store上
     let buildinginfo = await idb.getValue('buildingInfo')
-    commit('SET_BUILDINGINFO', buildinginfo)
+    var array = buildinginfo.map(item=>{ return new Building(item)})
+    commit('SET_BUILDINGINFO', array)
   },
   setbuildinginfo({ commit }, buildinginfo) { 
     return new Promise((resolve, reject) => {
@@ -112,7 +121,8 @@ const actions = {
   },
   async getbuildingcontactunit({ commit }) { //從網頁資料庫取出來儲存在store上
     let buildingcontactunit = await idb.getValue('buildingContactunit')
-    commit('SET_BUILDINGCONTACTUNIT', buildingcontactunit)
+    var array = buildingcontactunit.map(item=>{ return new Contactunit(item)})
+    commit('SET_BUILDINGCONTACTUNIT', array)
   },
   setbuildingcontactunit({ commit }, buildingcontactunit) {
     return new Promise((resolve, reject) => {
@@ -124,7 +134,8 @@ const actions = {
   },
   async getbuildingusers({ commit }) { //從網頁資料庫取出來儲存在store上
     let buildingusers = await idb.getValue('buildingUsers')
-    commit('SET_BUILDINGUSERS', buildingusers)
+    var array = buildingusers.map(item=>{ return new User(item)})
+    commit('SET_BUILDINGUSERS', array)
   },
   setbuildingusers({ commit }, buildingusers) {
     return new Promise((resolve, reject) => {
@@ -136,7 +147,8 @@ const actions = {
   },
   async getbuildingdevices({ commit }) { //從網頁資料庫取出來儲存在store上
     let buildingdevices = await idb.getValue('buildingDevices')
-    commit('SET_BUILDINGDEVICES', buildingdevices)
+    var array = buildingdevices.map(item=>{ return new Device(item)})
+    commit('SET_BUILDINGDEVICES', array)
   },
   setbuildingdevices({ commit }, buildingdevices) {
     return new Promise((resolve, reject) => {
@@ -148,7 +160,8 @@ const actions = {
   },
   async getbuildingfloors({ commit }) { //從網頁資料庫取出來儲存在store上
     let buildingfloors = await idb.getValue('buildingFloors')
-    commit('SET_BUILDINGFLOORS', buildingfloors)
+    var array = buildingfloors.map(item=>{ return new Floors(item)})
+    commit('SET_BUILDINGFLOORS', array)
   },
   setbuildingfloors({ commit }, buildingfloors) {
     return new Promise((resolve, reject) => {

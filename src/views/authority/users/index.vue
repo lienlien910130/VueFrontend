@@ -92,8 +92,7 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
-            value == true ?  this.tableConfig = Role.getTableConfig() : 
-            this.tableConfig = Role.getConfig()
+            this.tableConfig =  value == true ?  Account.getTableConfig() : Account.getConfig()
         }
     }
 }

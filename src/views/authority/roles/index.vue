@@ -59,6 +59,11 @@ export default {
                 { name:'刪除',type:'info',status:'delete'},
                 { name:'分配權限',type:'danger',status:'distribution' }]
             await this.reload()
+            if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+                if(typeof this.$route.params.target == 'object'){
+                    await this.handleBlock('roles','open',this.$route.params.target)
+                }
+            } 
         },
         async reload(){
             await this.setAllRole()
@@ -96,7 +101,13 @@ export default {
             this.dialogTitle = this.title
             this.dialogSelect = this.accessAuthority
             if(index === 'open'){
-                this.dialogData.push(content)
+                if(content.length !== undefined){ //代表不是外傳近來的
+                    content.forEach(item=>{
+                        this.dialogData.push(item)
+                    })
+                }else{
+                    this.dialogData.push(content)
+                }
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]

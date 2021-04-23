@@ -85,8 +85,8 @@
             :title="dialogTitle"
             :visible.sync="previewVisible"
             width="50%"
+            :modal="isneed"
             >
-
             <img v-if="isImage==true" :src="previewPath" class="previewImg"/>
             <div v-else>
                 <pdf
@@ -140,6 +140,10 @@ import pdf from 'vue-pdf'
         title:{
             type: String,
             required: true
+        },
+        isneed:{
+            type:Boolean,
+            default:false
         }
     },
     data() {
@@ -179,7 +183,6 @@ import pdf from 'vue-pdf'
         },
         fullscreen:{
                 handler:async function(){
-                    console.log(this.fullscreen)
                     this.fullscreen == true ? this.filesheight = '690px' : this.filesheight = '530px'
                 },
                 immediate:true
@@ -308,7 +311,7 @@ import pdf from 'vue-pdf'
         onChange(){
             if(this.deleteItem.length > 1){
                 this.$message({
-                    message: '平面圖只能設置一個圖檔',
+                    message: '只能選擇一個檔案',
                     type: 'warning'
                 })
             }else if(this.deleteItem.length == 0){
@@ -332,7 +335,7 @@ import pdf from 'vue-pdf'
                             this.deleteItem = []
                         }else{
                             this.$message({
-                                message: '缺失內容檔案只能為pdf格式',
+                                message: '缺失內容只能為pdf格式',
                                 type: 'warning'
                             })
                             this.deleteItem = []
@@ -395,7 +398,9 @@ import pdf from 'vue-pdf'
 .el-form--inline .el-form-item{
     margin-right: 0px;
 }
-
+.el-dialog-s{
+  z-index: 11;
+}
 .files {
     width: 100%;
     height: 530px;

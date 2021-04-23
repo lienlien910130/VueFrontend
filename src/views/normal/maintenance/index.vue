@@ -278,7 +278,6 @@ export default {
             }
         },
         async changeTable(value){
-            console.log('changeTable',value)
             this.isTable = value
             this.listQueryParams = {
                 page: 1,

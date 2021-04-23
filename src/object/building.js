@@ -46,6 +46,12 @@ class Building extends Parent {
     getName(){
         return this.buildingName
     }
+    getUsers(){
+        return this.linkFireManagers.map(item=>{return item.getName()}).toString()
+    }
+    getOwners(){
+        return this.linkOwners.map(item=>{return item.getName()}).toString()
+    }
     static getConfig(){
         return [
             { label:'名稱' , prop:'buildingName',isHidden:false},
