@@ -32,12 +32,15 @@
 <script>
 export default {
     props: {
-        list: {
+        objectList: {
             type: Array,
             default() {
                 return []
             }
-        },objectDelete:{},objectSelect:{},redoundo:{},type:{},labelChange:{},blockChange:{}
+        },
+        type:{
+            type: String
+        }
     },
     data(){
         return{
@@ -74,74 +77,28 @@ export default {
                 }
             ],
             collect:[],
-            original:[],
-            parentnode:null
+            original:[]
         }
     },
     watch:{
-        list:{
+        objectList:{
             handler:async function(newValue,oldValue){
                 if(newValue.length == 0){
                     this.collect = []
-                    this.parentnode = null
                 }else{
                     await this.checkNode(newValue)
                 }
             },
             immediate:true
-        },
-        objectDelete(val){
-            if(val !== null){
-                var _temp =[]
-                    val.sort((x,y) => y.id - x.id).forEach(item =>{
-                        const node = this.$refs.tree.getNode(item.id)
-                        if(node.childNodes.length >0){
-                            this.$message({
-                                message: '尚有子物件，請先移除子物件再刪除該物件',
-                                type: 'warning'
-                            })
-                        }else{
-                            this.$refs.tree.remove(node)
-                            const collectid = this.collect.findIndex(d => d.id === item.id)
-                            this.collect.splice(collectid, 1)
-                            _temp.push(item)
-                        }    
-                    })
-                    const imgNode = this.$refs.tree.getNode(-6)
-                    imgNode.data.children.forEach(item=>{
-                        if(item.children.length == 0){
-                            this.$refs.tree.remove(item)
-                        }
-                    })
-                    this.$emit('returnDeleteSuccess',_temp)
-                }
-        },
-        objectSelect(val){
-            if(val !== null && val.length == 1){
-                this.$refs.tree.setCurrentKey(val[0].id)
-            }else{
-                this.$refs.tree.setCurrentKey(null)
-            }
-        },
-        async redoundo(val){
-            if(val !== null ){
-                this.collect = []
-                this.data = JSON.parse(this.original)
-                await this.checkNode(val)
-                this.$emit('returnObjectRedoUndo','')
-            }
-        },
-        labelChange(val){
-            this.$refs.tree.getNode(val[0]).data.label = val[1]
-        },
-        blockChange(val){
-            this.updateNodeLevel(val)
         }
     },
     mounted(){
         this.original = JSON.stringify(this.data)
     },
     methods:{
+        init(){
+            this.data = JSON.parse(this.original)
+        },
         remove(node, data) {
             if(node.childNodes.length >0){
                 this.$message({
@@ -151,7 +108,8 @@ export default {
             }else{
                 this.$refs.tree.remove(node)
                 const collectid = this.collect.findIndex(d => d.id === data.id)
-                this.$emit('sendActionToCanvas','del',this.collect[collectid])
+                const obj = this.collect.filter(item=>{ return item.id === data.id })
+                this.$emit('sendActionToCanvas','del',obj)
                 this.collect.splice(collectid, 1)
             }
         },
@@ -221,6 +179,19 @@ export default {
                 }
             })
         },
+        allowDrop(draggingNode, dropNode, type) {
+            if (draggingNode.level === dropNode.level && type !== 'inner' && draggingNode.parent === dropNode.parent) {
+                return true
+            } else {
+                return false
+            }
+        },
+        //圖控傳過來的動作
+        async redoundo(val){
+            this.collect = []
+            this.data = JSON.parse(this.original)
+            await this.checkNode(val)
+        },
         updateNodeLevel(val){
             this.$refs.tree.remove(val[0])
             var temp = this.data.filter((obj, index) =>
@@ -232,13 +203,42 @@ export default {
                 children: []
             })
         },
-        allowDrop(draggingNode, dropNode, type) {
-            if (draggingNode.level === dropNode.level && type !== 'inner' && draggingNode.parent === dropNode.parent) {
-                return true
-            } else {
-                return false
+        updateNodeLabel(val){
+             this.$refs.tree.getNode(val[0]).data.label = val[1]
+        },
+        objectSelect(val){
+            if(val !== null && val.length == 1){
+                this.$refs.tree.setCurrentKey(val[0].id)
+            }else{
+                this.$refs.tree.setCurrentKey(null)
             }
         },
+        objectDelete(val){
+            if(val !== null){
+                var _temp =[]
+                val.sort((x,y) => y.id - x.id).forEach(item =>{
+                    const node = this.$refs.tree.getNode(item.id)
+                    if(node.childNodes.length >0){
+                        this.$message({
+                            message: '尚有子物件，請先移除子物件再刪除該物件',
+                            type: 'warning'
+                        })
+                    }else{
+                        this.$refs.tree.remove(node)
+                        const collectid = this.collect.findIndex(d => d.id === item.id)
+                        this.collect.splice(collectid, 1)
+                        _temp.push(item)
+                    }    
+                })
+                const imgNode = this.$refs.tree.getNode(-6)
+                imgNode.data.children.forEach(item=>{
+                    if(item.children.length == 0){
+                        this.$refs.tree.remove(item)
+                    }
+                })
+                this.$emit('sendActionToCanvas','del',_temp)
+            }
+        }
     }
 }
 </script>

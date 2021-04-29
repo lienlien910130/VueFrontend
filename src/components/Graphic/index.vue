@@ -4,7 +4,7 @@
       <el-col :xs="24" :sm="24" :md="24" :lg="formvalue"
       >
         <div>
-          <el-form :inline="this.sidebar.opened === true"  class="form-inline">
+          <el-form :inline="this.sidebar.opened === true"  class="form-inline" label-position="left">
                 <el-form-item v-if="type == 'edit'">
                   <div class="draw-btn-group" >
                     <div :class="{active:drawType==''}" @click="drawTypeChange('')">
@@ -39,19 +39,44 @@
                     </div>
                   </div>  
                 </el-form-item>
-                <el-form-item label="關聯設備">
-                   <el-select v-model="deviceId" placeholder="請選擇" @change="sendDeviceChange"
-                   :disabled="isImage !== true">
+                <el-alert
+                  v-if="isSave == true"
+                  title="請先存檔後再離開畫面"
+                  type="warning"
+                  center
+                  :closable="false"
+                  show-icon>
+                </el-alert>
+                <el-form-item label="圖層標題" >
+                  <el-input v-model="objectName"  
+                  placeholder="請輸入標題" 
+                  @input="sendLabelChange"
+                  :disabled="isTextBox == null"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item label="區塊類型" >
+                   <el-select v-model="blockType" placeholder="請選擇" @change="sendBlockChange"
+                   :disabled="isTextBox == null">
                     <el-option
-                      v-for="item in devices"
+                      v-for="item in options"
                       :key="item.value"
                       :label="item.label"
-                      :value="item.value"
-                      :disabled="item.disabled">
+                      :value="item.value">
                     </el-option>
                   </el-select>
                 </el-form-item>
-                <el-form-item label="點位">
+                <el-form-item v-if="isImage == true" label="關聯設備">
+                   <el-select v-model="deviceId" placeholder="請選擇" @change="sendDeviceChange" filterable>
+                    <el-option
+                      v-for="(item,index) in devicearray"
+                      :key="index"
+                      :label="item.getLinkType().getSelectName()+'-'+item.getOnlyName()"
+                      :value="item.getID()"
+                      :disabled="item.SystemUsed()">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <!-- <el-form-item v-if="isImage == true" label="點位">
                    <el-input v-model="devicepoint"  
                     placeholder="請輸入八位數以上" 
                     @input="checkDevicePointChange"
@@ -61,63 +86,44 @@
                     show-word-limit
                     ref="devicepoint"
                     ></el-input>
-                </el-form-item>
-                <el-form-item label="圖層標題" >
-                  <el-input v-model="objectName"  
-                  placeholder="請輸入標題" 
-                  @input="sendLabelChange"
-                  :disabled="isEdit !== true"
-                  ></el-input>
-                </el-form-item>
-                <el-form-item label="區塊類型" >
-                   <el-select v-model="blockType" placeholder="請選擇" @change="sendBlockChange"
-                   :disabled="isEdit !== true">
-                    <el-option
-                      v-for="item in options"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value">
-                    </el-option>
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="字體大小">
+                </el-form-item> -->
+                <el-form-item v-if="isTextBox == true" label="字體大小">
                   <el-input-number v-model="fontsize" controls-position="right" :min="8" :max="72"
-                  :disabled="isEdit !== true" style="width:100%"></el-input-number>
+                  style="width:100%" @change="changeAttributes('fontsize')"></el-input-number>
                 </el-form-item>
-                <el-form-item label="透明度" >
+                <el-form-item v-if="isTextBox == false" label="透明度" >
                   <el-input-number v-model="opacity" controls-position="right" :min="0" :max="100"
-                  :disabled="isEdit !== true" style="width:100%"></el-input-number>
+                  style="width:100%" @change="changeAttributes('opacity')"></el-input-number>
                 </el-form-item>
-                <el-form-item label="邊框線條" >
-                  <el-select v-model="strokeDash"  placeholder="請選擇" :disabled="isEdit !== true">
+                <el-form-item v-if="isTextBox == false" label="邊框線條" >
+                  <el-select v-model="strokeDash"  placeholder="請選擇" @change="changeAttributes('strokeDash')">
                     <el-option label="無邊框" value="-1"></el-option>
                     <el-option label="實心線" value="0"></el-option>
                     <el-option label="虛線" value="1"></el-option>
                   </el-select>
                 </el-form-item>
-                <el-form-item label="邊框線條寬度" >
+                <el-form-item v-if="isTextBox == false" label="邊框線條寬度" >
                   <el-input-number 
                   v-model="strokeWidth" 
                   controls-position="right" :min="0" :max="10"
-                  :disabled="isEdit !== true"
-                  style="width:100%"></el-input-number>
+                  style="width:100%"
+                  @change="changeAttributes('strokeWidth')"></el-input-number>
                 </el-form-item>
-                <el-form-item label="字體顏色" >
+                <el-form-item v-if="isTextBox == true" label="字體顏色" >
                   <el-color-picker v-model="fontcolor" 
                   show-alpha 
-                  :predefine="predefineColors" :disabled="isEdit !== true"></el-color-picker>
+                  :predefine="predefineColors" @change="changeAttributes('fontcolor')"></el-color-picker>
                 </el-form-item>
-                <el-form-item label="填充顏色" >
+                <el-form-item v-if="isTextBox == false" label="填充顏色" >
                   <el-color-picker v-model="fillcolor" 
                   show-alpha 
-                  :predefine="predefineColors" :disabled="isEdit !== true"></el-color-picker>
+                  :predefine="predefineColors" @change="changeAttributes('fillcolor')"></el-color-picker>
                 </el-form-item>
-                <el-form-item label="邊框顏色" >
+                <el-form-item v-if="isTextBox == false" label="邊框顏色" >
                   <el-color-picker v-model="strokecolor" 
                   show-alpha 
-                  :predefine="predefineColors" :disabled="isEdit !== true"></el-color-picker>
+                  :predefine="predefineColors" @change="changeAttributes('strokecolor')"></el-color-picker>
                 </el-form-item>
-                
           </el-form>
         </div>
       </el-col>
@@ -142,35 +148,11 @@ export default {
       type: String,
       default: 'view'
     },
-    imageSrc: {
-      type: String,
-      default: ''
-    },
-    saveimg: {
-      type: Boolean,
-      default: false
-    },
-    reset: {
-      type: Boolean,
-      default: false
-    },
-    deleteSuccess: {
-      type: Array
-    },
-    objects: {
-      type: String
-    },
     checkList: {
       type: Array
     },
-    selectObject: {
+    floor: {
       type: Object
-    },
-    deleteObject: {
-      type: Object
-    },
-    floorId: {
-      type: String
     },
     actionObj:{
       type: Object,
@@ -204,12 +186,11 @@ export default {
       setPointObj:null,
       updateArray:[],
       devicearray:[],
-      devices:[],
       devicepoint:'',
       deviceId:'',
-      isImage:false,
+      isImage:false, //控制是否可以設定設備
+      isTextBox:null,
       isSave:false, //是否儲存--控制是否跳視窗提醒未儲存
-      isEdit:false, //判斷是否可編輯-- 只有在選取一個的情況下才可以編輯物件
       drawType: '', //選取的類別
       fontsize:'14', //字體大小
       fontcolor:'rgba(255, 0, 0, 1)',//字體顏色
@@ -298,13 +279,7 @@ export default {
   watch: {
       buildingdevices:{
           handler:async function(){
-            this.devicearray = this.$deepClone(this.buildingdevices)
-            this.devices = this.devicearray.map(v => {
-                this.$set(v, 'value', v.id) 
-                this.$set(v, 'label', v.linkDeviceTypes[0].name) 
-                this.$set(v,'disabled',v.systemUsed)
-                return v
-            })
+            this.devicearray = this.buildingdevices.map(item=>{ return item.clone(item) })
           },
           immediate:true
       },
@@ -317,79 +292,9 @@ export default {
               this.doDrawing = false
               this.canvas.skipTargetFind = true
               this.canvas.selection = false
-              }
-          },
-          immediate:true
-      },
-      imageSrc:{
-          handler:async function(){
-            if(this.imageSrc !== ''){
-              this.loadBackgroundImage()
             }
           },
           immediate:true
-      },
-      saveimg:{
-          handler:async function(){
-            if(this.saveimg == true){
-              this.save()
-            }
-          }
-      },
-      reset:{
-          handler:async function(){
-            if(this.reset == true){
-              this.resetCanvas()
-            }
-          }
-      },
-      deleteSuccess:{
-          handler:async function(){
-            if(this.deleteSuccess !== null && this.deleteSuccess.length !== 0){
-              this.deleteSuccess.forEach(obj => {
-                this.canvas.remove(obj)
-              })
-              this.saveCanvasState()
-              this.$emit('returnDeleteObjects')
-            }
-          }
-      },
-      objects:{
-          handler:async function(){
-            if(this.objects !== null){ 
-              this.loadObjects(JSON.parse(this.objects))
-            }else{
-              this.canvas.clear()
-              this.sendAllobj()
-            }
-          }
-      },
-      checkList:{
-          handler:async function(){
-            this.searchBlockType(this.checkList)
-          },
-      },
-      selectObject:{
-          handler:async function(){
-            if(this.selectObject !== null){
-              this.canvas.discardActiveObject()
-              if(this.selectObject.visible && this.type == 'edit'){
-                this.canvas.setActiveObject(this.selectObject)
-                this.objectName = this.selectObject.objectName
-                this.canvas.renderAll()
-              }
-            }
-          }
-      },  
-      deleteObject:{
-          handler:async function(){
-            if(this.deleteObject !== null){
-              this.canvas.remove(this.deleteObject)
-              this.saveCanvasState()
-              this.$emit('returnDeleteObjects')
-              this.canvas.renderAll()
-            }
-          }
       },
       actionObj:{
         handler:async function(){
@@ -403,139 +308,7 @@ export default {
           }
         },
         immediate:true
-      },
-    // wsmsg: function () {
-    //   // var data = JSON.parse(this.wsmsg.data)
-    //   // console.log(data)
-    //   // console.log(JSON.parse(data.content))
-    //   //   console.log('getWsMsg=>'+this.wsmsg)
-    //     // var target = JSON.parse(JSON.parse(JSON.parse(data)).content).target
-    //     // var canvasObject = null
-    //     // switch(target.type){
-            
-    //     //     case 'path': //rect
-    //     //         canvasObject = new fabric.Path(target.path, {
-    //     //             left: target.left,
-    //     //             top: target.top,
-    //     //             stroke: target.stroke,
-    //     //             strokeWidth: target.strokeWidth,
-    //     //             fill: target.fill,
-    //     //             opacity: target.opacity
-    //     //         })
-    //     //         break
-    //     //     case 'text':
-    //     //         // canvasObject = new fabric.Textbox("", {
-    //     //         //     left: mouseFrom.x,
-    //     //         //     top: mouseFrom.y - 10,
-    //     //         //     // width: 150,
-    //     //         //     fontSize: 16,
-    //     //         //     borderColor: this.strokecolor,
-    //     //         //     fill: this.fillcolor,
-    //     //         //     opacity:this.opacity
-    //     //         // })
-    //     //         break
-    //     //     case 'polygon':
-    //     //         break
-
-    //     // }
-    //     // this.canvas.add(canvasObject)
-    // },
-    fontsize(){
-      if(this.textbox !== null){
-        var index = this.canvas.getObjects().indexOf(this.textbox)
-        var items = this.canvas.getObjects()
-        items[index].set({ fontSize: this.fontsize })
       }
-      if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
-        if(this.canvas.getActiveObject().get('type') === 'textbox'){
-          this.canvas.getActiveObject().set({ fontSize: this.fontsize })
-          this.isEditChange(true)
-        }
-      }
-      this.canvas.renderAll()
-    },
-    fontcolor(){
-      if(this.textbox !== null){
-        var index = this.canvas.getObjects().indexOf(this.textbox)
-        var items = this.canvas.getObjects()
-        items[index].set({ fill: this.fontcolor })
-      }
-      if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
-        if(this.canvas.getActiveObject().get('type') === 'textbox'){
-          this.canvas.getActiveObject().set({ fill: this.fontcolor })
-          this.isEditChange(true)
-        }
-      }
-      this.canvas.renderAll()
-    },
-    opacity(){
-      if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
-        if(this.canvas.getActiveObject().get('type') !== 'textbox'){
-          this.canvas.getActiveObject().set({ opacity:this.opacity/100 })
-          this.isEditChange(true)
-        }
-      }
-      this.canvas.renderAll()
-    },
-    strokeWidth(val){  
-      if(val == '0'){
-          this.strokeDash = '-1'
-          this.strokedash = null
-      }else{
-          this.strokeDash = this.strokeDash !== '-1' ?  this.strokeDash : '0'
-          this.strokedash =  this.strokedash !== null ?  this.strokedash : [0,0]
-      }
-      if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
-        if(this.canvas.getActiveObject().get('type') !== 'textbox'){
-          this.canvas.getActiveObject().set({ 
-          strokeWidth:this.strokeWidth , strokeDashArray:this.strokedash })
-          this.isEditChange(true)
-        }
-      }
-      this.canvas.renderAll()
-    },
-    strokeDash(val){
-      switch(val){
-        case '-1': //無邊框
-          this.strokedash = null
-          this.strokeWidth = 0
-          break;
-        case '0': //實心線
-          this.strokedash = [0,0]
-          this.strokeWidth = this.strokeWidth !== 0 ? this.strokeWidth : 1
-          break;
-        case '1': //虛線
-          this.strokedash = [5,10]
-          this.strokeWidth = this.strokeWidth !== 0 ? this.strokeWidth : 1
-          break;
-      }
-      if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
-        if(this.canvas.getActiveObject().get('type') !== 'textbox'){
-          this.canvas.getActiveObject().set({ 
-          strokeWidth:this.strokeWidth , strokeDashArray:this.strokedash })
-          this.isEditChange(true)
-        }
-      }
-      this.canvas.renderAll()
-    },
-    fillcolor(){
-      if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
-        if(this.canvas.getActiveObject().get('type') !== 'textbox'){
-          this.canvas.getActiveObject().set({ fill: this.fillcolor })
-          this.isEditChange(true)
-        }
-      }
-      this.canvas.renderAll()
-    },
-    strokecolor(){
-      if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
-        if(this.canvas.getActiveObject().get('type') !== 'textbox'){
-          this.canvas.getActiveObject().set({ stroke: this.strokecolor })
-          this.isEditChange(true)
-        }
-      }
-      this.canvas.renderAll()
-    },
   },
   mounted() {
     this.canvas = new fabric.Canvas("canvas")
@@ -560,7 +333,6 @@ export default {
     this.canvas.on('object:modified', this.saveCanvasState)
     this.canvas.on("object:moving",(e) => {
         this.canvas.skipTargetFind = true
-        //this.objectaction(e,'moving')
     })
     // window.addEventListener('beforeRouteLeave', function (e) { 
     //   console.log('beforeRouteLeave')
@@ -574,7 +346,7 @@ export default {
         await this.deleteObj()
       }
       if (e.keyCode == 45 && e.altKey) {
-        this.save()
+        this.saveImg()
       }
       if(e.keyCode == 67 && e.ctrlKey){
         this.copy()
@@ -588,7 +360,7 @@ export default {
       if(e.keyCode == 89 && e.ctrlKey){ //下一步 y
         this.doRedo()
       }
-      if(e.keyCode == 83){ //存檔 s
+      if(e.keyCode == 83 && e.ctrlKey){ //存檔 s
         await this.saveCanvasFile()
       }
       if(e.keyCode == 71 && e.altKey){ //打開圖例
@@ -613,71 +385,64 @@ export default {
         this.mousewheel(e)
       }
     }
-    
   },
   methods: {
-    loadBackgroundImage(){ //載入背景圖
-      fabric.Image.fromURL(this.imageSrc, (img) => {
-          img.set({
-          scaleX: this.canvas.width / img.width,
-          scaleY: this.canvas.height / img.height,
+    //父元件傳來的事件
+    saveImg() { //儲存圖片
+        var a = []
+        this.canvas.getObjects().map(item=>{
+            if(item.type == 'polygon'){
+              var b = {
+                  'lu':{'x':item.points[0].x,'y':item.points[0].y},
+                  'ru':{'x':item.points[1].x,'y':item.points[1].y},
+                  'r':{'x':item.points[2].x,'y':item.points[2].y},
+                  'lb':{'x':item.points[3].x,'y':item.points[3].y},
+              }
+              a.push(b)  
+            }
+        })
+        var canvas = document.getElementById('canvas')
+        var imgData = canvas.toDataURL('png')
+        imgData = imgData.replace('image/png','image/octet-stream')
+        var filename = 'drawingboard_' + (new Date()).getTime() + '.' + 'png' // 下載後的檔名
+        var save_link = document.createElement('a')
+        save_link.href = imgData
+        save_link.download = filename
+        var event = document.createEvent('MouseEvents')
+        event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
+        save_link.dispatchEvent(event)
+    },
+    resetCanvas(){ //重置
+      this.canvas.setZoom(1)
+      this.canvas.absolutePan(
+          new fabric.Point(0, 0)
+      )
+      this.zoom = 1
+      this.zoomPoint= new fabric.Point(0, 0)
+      this.lastzoomPoint= { x: 0, y: 0 }
+      this.lastmousePoint= { x: 0, y: 0 } 
+      this.lastzoom= 1
+      
+      this.panning = false
+      this.lastMovePos= {x:0, y:0}
+      this.relativeMouseX = 0
+      this.relativeMouseY = 0
+      
+      this.resetOriginAfterZoom()
+    },
+    async loadBackgroundImage(objects,imgsrc){ //載入背景圖
+      this.canvas.clear()
+      this.sendAllobj()
+      fabric.Image.fromURL(imgsrc, (img) => {
+          const background = img.set({
+           scaleX: this.canvas.width / img.width,
+           scaleY: this.canvas.height / img.height,
           })
-          this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas))
+          this.canvas.setBackgroundImage(background, this.canvas.renderAll.bind(this.canvas))
           this.canvas.renderAll()
           this.state = this.canvas.toJSON()
       })
-    },
-    loadObjects(val){ //載入初始物件
-      var self = this
-      fabric.util.enlivenObjects(val,async function(object) {
-			    var origRenderOnAddRemove = self.canvas.renderOnAddRemove
-          self.canvas.renderOnAddRemove = false
-          var original = []
-          val.sort((x,y) => x.id - y.id).forEach(item=>{
-            original.push(item)
-          })
-          self.id = original[original.length-1].id +1
-          for(let i=0;i<object.length;i++){
-            if(object[i].type == 'image'){
-              var item = constant.Equipment.filter((item,index) => 
-                item.id == original[i].srcId
-              )
-              var index = self.devicearray.findIndex(d=>d.id === original[i].deviceId)
-              var pointstr = ''
-              if(index !== -1){
-                pointstr = 
-                  self.devicearray[index].systemNumber.replace(/\s*/g,'')+
-                  self.devicearray[index].circuitNumber.replace(/\s*/g,'')+
-                  self.devicearray[index].address.replace(/\s*/g,'')
-              }
-              await self.addImageProcess(item[0].imgSrc).then((respone) => {
-                const image = new fabric.Image(respone, {
-                  scaleX: object[i].scaleX,
-                  scaleY: object[i].scaleY,
-                  top: object[i].top,
-                  left: object[i].left,
-                  visible: false,
-                  opacity: pointstr !== '' ? 1 : object[i].opacity
-                }) 
-                self.canvas.add(image)
-                self.addCustomize(image,original[i].id,original[i].objectName,original[i].blockType,
-                original[i].srcId,original[i].deviceId,pointstr)
-              }).catch((err)=>{
-                  console.log(err)  
-              })
-            }else{
-              object[i].visible = false
-              self.canvas.add(object[i])
-              self.addCustomize(object[i],original[i].id,original[i].objectName,original[i].blockType,
-              original[i].srcId,original[i].deviceId,original[i].devicepoint)
-            }
-          }
-			    self.canvas.renderOnAddRemove = origRenderOnAddRemove
-          self.canvas.renderAll()
-          self.state = self.canvas.toJSON()
-          self.sendAllobj()
-      })
-      this.updateArray = []
+      //await this.loadObjects(objects)
     },
     addImageProcess(src){ //載入圖片
       var self = this
@@ -688,18 +453,123 @@ export default {
           self.imgEl.src = src
       })
     },
+    async loadObjects(val){ //載入初始物件
+      if(val !== null){ 
+        var self = this
+        var obj = JSON.parse(val)
+        fabric.util.enlivenObjects(obj,async function(object) {
+            var origRenderOnAddRemove = self.canvas.renderOnAddRemove
+            self.canvas.renderOnAddRemove = false
+            var original = []
+            obj.sort((x,y) => x.id - y.id).forEach(item=>{
+              original.push(item)
+            })
+            self.id = original[original.length-1].id +1
+            for(let i=0;i<object.length;i++){
+              if(object[i].type == 'image'){
+                var item = constant.Equipment.filter((item,index) => 
+                  item.id == original[i].srcId
+                )
+                // var index = self.devicearray.findIndex(d=>d.id === original[i].deviceId)
+                // var pointstr = ''
+                // if(index !== -1){
+                //   pointstr = 
+                //     self.devicearray[index].systemNumber.replace(/\s*/g,'')+
+                //     self.devicearray[index].circuitNumber.replace(/\s*/g,'')+
+                //     self.devicearray[index].address.replace(/\s*/g,'')
+                // }
+                await self.addImageProcess(item[0].imgSrc).then((respone) => {
+                  const image = new fabric.Image(respone, {
+                    scaleX: object[i].scaleX,
+                    scaleY: object[i].scaleY,
+                    top: object[i].top,
+                    left: object[i].left,
+                    visible: false,
+                    opacity: object[i].opacity
+                    // opacity: pointstr !== '' ? 1 : object[i].opacity
+                  }) 
+                  self.canvas.add(image)
+                  self.addCustomize(image,original[i].id,original[i].objectName,original[i].blockType,
+                  original[i].srcId,original[i].deviceId,'')
+                }).catch((err)=>{
+                    console.log(err)  
+                })
+              }else{
+                object[i].visible = false
+                self.canvas.add(object[i])
+                self.addCustomize(object[i],original[i].id,original[i].objectName,original[i].blockType,
+                original[i].srcId,original[i].deviceId,'')
+              }
+            }
+            self.canvas.renderOnAddRemove = origRenderOnAddRemove
+            self.canvas.renderAll()
+            self.state = self.canvas.toJSON()
+            self.sendAllobj()
+        })
+        this.updateArray = []  
+      }
+    },
+    searchBlockType(val){ //區塊顯示開關 先關閉全部再開啟對應的類型
+      // this.viewList.forEach(item=>{
+      //   item.visible = false
+      // })
+      // this.canvas.discardActiveObject()
+      // this.canvas.renderAll()
+      // this.viewList = []
+      // val.forEach(item => {
+      //   this.canvas.getObjects().forEach(obj =>{
+      //     if(obj.blockType == item){
+      //       this.viewList.push(obj)
+      //     }
+      //   })
+      // })
+      // this.viewList.forEach(item=>{
+      //   item.visible = true
+      // })
+      // this.canvas.renderAll()
+      this.canvas.discardActiveObject()
+      this.canvas.getObjects().forEach(obj =>{
+        obj.visible = false
+      })
+      val.forEach(item => {
+        this.canvas.getObjects().forEach(obj =>{
+          if(obj.blockType == item){
+            obj.visible = true
+          }
+        })
+      })
+      this.canvas.renderAll()
+    },
+    //圖層傳來的事件
+    objectSelect(val){ //圖層選取物件
+      this.canvas.discardActiveObject()
+      if(val.visible && this.type == 'edit'){
+        this.canvas.setActiveObject(val)
+        this.objectName = val.objectName
+        this.canvas.renderAll()
+      }
+    },
+    objectDelete(val){ //圖層刪除物件
+      val.forEach(obj => {
+        this.canvas.remove(obj)
+      })
+      this.saveCanvasState()
+      this.canvas.renderAll()
+    },
+    //選取 刪除物件
     selectioncreatedandupdated(e){ //畫面顯示選取到的物件的屬性狀況
       var items = this.canvas.getActiveObjects()
       this.isImage = false
-      this.isEdit = false
+      this.isTextBox = null
       if(items.length === 1){
-        this.isEdit = true
         this.objectName = items[0].objectName
         this.blockType = items[0].blockType  
         if(items[0].type === 'textbox'){
+          this.isTextBox = true
           this.fontsize = items[0].fontSize
           this.fontcolor = items[0].fill
         }else if(items[0].type === 'path'){
+          this.isTextBox = false
           this.opacity = items[0].opacity*100
           this.fillcolor = items[0].fill
           this.strokecolor = items[0].stroke
@@ -715,6 +585,7 @@ export default {
             }
           }
         }else{
+          this.isTextBox = false
           this.opacity = items[0].opacity*100
           this.isImage = true
           this.deviceId = items[0].deviceId
@@ -739,35 +610,18 @@ export default {
       this.strokedash = [0,0]
       this.strokeWidth = 1 
       this.isImage = false
-      this.isEdit = false
+      this.isTextBox = null
       this.deviceId = ''
       this.devicepoint = ''
       this.$emit('sendActionToLayer','sel',null)
     },
-    saveCanvasState(){ //儲存畫布狀態
-      if(JSON.stringify(this.canvas.toJSON()) === JSON.stringify(this.state)) return  
-      this.undo.push(this.state)
-      this.state = this.canvas.toJSON()
-      this.redo = []
+    async deleteObj() { //圖控刪除物件
+      var item = this.canvas.getActiveObjects()
+      if(item.length !== 0){
+        await this.$emit('sendActionToLayer','del',item)
+      }
     },
-    async drawTypeChange(e) { //切換繪圖類別
-      if(window.child && window.child.open && !window.child.closed){
-        window.child.close()
-        this.imgSource = []
-      }
-      
-      if(this.drawType == 'text' && this.textbox !== null){
-        this.textbox.exitEditing() //關閉文字框編輯
-        this.textbox = null
-      }
-      if(e == 'polygon'){
-        this.polygonMode = true
-        this.pointArray = new Array()
-        this.lineArray = new Array()
-      }
-      this.drawType = e
-      this.canvas.isDrawingMode = false
-    },
+    //座標相關調整
     getX(o) {
       var x = ""
       if(o.pointer == undefined){
@@ -794,20 +648,6 @@ export default {
           this.canvas.getZoom()
       )
     },
-    mousewheel(e){ //放大縮小
-      
-      window.event.stopPropagation()
-      window.event.preventDefault()
-      this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom();
-      //this.zoom = (e.key.toLowerCase() =="q" ? 0.1 : -0.1) + this.canvas.getZoom()
-      this.zoom = Math.max(0.5, this.zoom)
-      this.zoom = Math.min(3, this.zoom)
-      const center = this.canvas.getCenter()
-      this.zoomPoint = new fabric.Point(center.left, center.top)
-      this.canvas.zoomToPoint(this.zoomPoint, this.zoom)
-      this.resetOriginAfterZoom()
-      this.canvas.renderAll()
-    },
     resetOriginAfterZoom() {  // 縮放後重置原點
         this.lastzoomPoint.x =
           this.lastzoomPoint.x +
@@ -822,6 +662,20 @@ export default {
 
         this.relativeMouseX = 0
         this.relativeMouseY = 0
+    },
+    //滑鼠事件
+    mousewheel(e){ //放大縮小
+      window.event.stopPropagation()
+      window.event.preventDefault()
+      this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom();
+      //this.zoom = (e.key.toLowerCase() =="q" ? 0.1 : -0.1) + this.canvas.getZoom()
+      this.zoom = Math.max(0.5, this.zoom)
+      this.zoom = Math.min(3, this.zoom)
+      const center = this.canvas.getCenter()
+      this.zoomPoint = new fabric.Point(center.left, center.top)
+      this.canvas.zoomToPoint(this.zoomPoint, this.zoom)
+      this.resetOriginAfterZoom()
+      this.canvas.renderAll()
     },
     mousedown(e) { 
       window.event.stopPropagation()
@@ -938,6 +792,7 @@ export default {
       window.event.stopPropagation()
       window.event.preventDefault()
     },
+    //新增物件
     drop(e){ //新增圖例
       window.event.stopPropagation()
       window.event.preventDefault()
@@ -961,25 +816,6 @@ export default {
         this.canvas.renderAll()
         this.isEditChange(true)
       }
-    },
-    resetCanvas(){ //重置
-      this.canvas.setZoom(1)
-      this.canvas.absolutePan(
-          new fabric.Point(0, 0)
-      )
-      this.zoom = 1
-      this.zoomPoint= new fabric.Point(0, 0)
-      this.lastzoomPoint= { x: 0, y: 0 }
-      this.lastmousePoint= { x: 0, y: 0 } 
-      this.lastzoom= 1
-      
-      this.panning = false
-      this.lastMovePos= {x:0, y:0}
-      this.relativeMouseX = 0
-      this.relativeMouseY = 0
-      
-      this.resetOriginAfterZoom()
-      this.$emit('resetCanvas',false)
     },
     drawing() { //新增矩形
       if(this.canvas.getActiveObjects().length === 0){
@@ -1170,36 +1006,60 @@ export default {
       this.doDrawing = false
       this.drawType = null
     },
-    async deleteObj() { //刪除物件
-      var item = this.canvas.getActiveObjects()
-      if(item.length !== 0){
-        await this.$emit('sendActionToLayer','del',item)
-      }
-    },
-    addCustomize(canvasObject,id = null, objectname = null, blocktype = null, srcId = null, 
-    deviceId = null , devicepoint = null){ //新增客製化元素
-        canvasObject.toObject = (function (toObject) {
-            return function () {
-                return fabric.util.object.extend(toObject.call(this), {
-                    id: this.objid,
-                    objectName: this.objectName,
-                    blockType: this.blockType,
-                    srcId:this.srcId,
-                    deviceId:this.deviceId,
-                    devicepoint:this.devicepoint
-                })
+    //屬性修改
+    changeAttributes(type){
+      console.log('change',type)
+      // if(this.textbox !== null){
+      //   var index = this.canvas.getObjects().indexOf(this.textbox)
+      //   var items = this.canvas.getObjects()
+      //   items[index].set({ fontSize: this.fontsize })
+      // }
+      if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
+        switch(type){
+          case 'fontsize':
+            this.canvas.getActiveObject().set({ fontSize: this.fontsize })
+            break;
+          case 'fontcolor':
+            this.canvas.getActiveObject().set({ fill: this.fontcolor })
+            break;
+          case 'opacity':
+            this.canvas.getActiveObject().set({ opacity:this.opacity/100 })
+            break;
+          case 'strokeWidth':
+            if(this.strokeWidth == '0'){
+                this.strokeDash = '-1'
+                this.strokedash = null
+            }else{
+                this.strokeDash = this.strokeDash !== '-1' ?  this.strokeDash : '0'
+                this.strokedash =  this.strokedash !== null ?  this.strokedash : [0,0]
             }
-        })(canvasObject.toObject)
-        canvasObject.set("id",id == null ? this.objid++ : id)
-        canvasObject.set("objectName",objectname !== null ? objectname : this.objectName == '' ?  (new Date()).getTime() : this.objectName) //+'_'+ (new Date()).getTime()
-        canvasObject.set("blockType",blocktype == null ? this.blockType : blocktype)
-        canvasObject.set("srcId",srcId == null ? '' : srcId)
-        canvasObject.set("deviceId",deviceId == null ? '' : deviceId)
-        canvasObject.set("devicepoint",devicepoint == null ? '' : devicepoint)
-    },
-    sendAllobj(){ //傳給父元件
-      this.saveCanvasState()
-      this.$emit('sendObjectListToLayer',this.canvas.getObjects())
+            this.canvas.getActiveObject().set({ 
+              strokeWidth:this.strokeWidth , strokeDashArray:this.strokedash })
+            break;
+          case 'strokeDash':
+            if(this.strokeDash == -1){
+              this.strokedash = null
+              this.strokeWidth = 0
+            }else if(this.strokeDash == 0){
+              this.strokedash = [0,0]
+              this.strokeWidth = this.strokeWidth !== 0 ? this.strokeWidth : 1
+            }else{
+              this.strokedash = [5,10]
+              this.strokeWidth = this.strokeWidth !== 0 ? this.strokeWidth : 1
+            }
+            this.canvas.getActiveObject().set({ 
+                strokeWidth:this.strokeWidth , strokeDashArray:this.strokedash })
+            break;
+          case 'fillcolor':
+            this.canvas.getActiveObject().set({ fill: this.fillcolor })  
+            break;
+          case 'strokecolor':
+            this.canvas.getActiveObject().set({ stroke: this.strokecolor }) 
+            break;  
+        }
+        this.isEditChange(true)
+        this.canvas.renderAll()
+      }
     },
     sendLabelChange(){ //標題修改
       clearTimeout(this.TimeId)
@@ -1234,131 +1094,197 @@ export default {
         var originalDevice = this.canvas.getActiveObject().deviceId
         this.canvas.getActiveObject().set({ deviceId: this.deviceId })
         this.isEditChange(true)
-        if(originalDevice !== ''){
+        if(originalDevice !== ''){ //原先已有設定值了
           var index1 = this.updateArray.findIndex(d => d.id === originalDevice && d.systemUsed == true )
           if(index1 !== -1){
             this.updateArray[index1].systemUsed = false
             this.updateArray[index1].linkFloors = []
-            this.updateArray[index1].systemNumber = ''
-            this.updateArray[index1].circuitNumber = ''
-            this.updateArray[index1].address = ''
+            // this.updateArray[index1].systemNumber = ''
+            // this.updateArray[index1].circuitNumber = ''
+            // this.updateArray[index1].address = ''
           }else{
             var data = { //新
               id:originalDevice,
               systemUsed:false,
               linkFloors:[],
-              systemNumber:'',
-              circuitNumber:'',
-              address:''
+              // systemNumber:'',
+              // circuitNumber:'',
+              // address:''
             }
             this.updateArray.push(data)
           }
           var index3 = this.devicearray.findIndex(d => d.id === originalDevice)
-          this.devicearray[index3].disabled = false
+          //this.devicearray[index3].disabled = false
+          this.devicearray[index3].setSystemUsed(false)
         }
         var index3 = this.devicearray.findIndex(d => d.id === this.deviceId)
-        var device = this.devicearray[index3]
-        device.disabled = true
+        // this.devicearray[index3].disabled = true
+        this.devicearray[index3].setSystemUsed(true)
         var index2 = this.updateArray.findIndex(d => d.id === this.deviceId && d.systemUsed == false )
         if(index2 !== -1){
             this.updateArray[index2].systemUsed = true
-            this.updateArray[index2].linkFloors = [{id:this.floorId}]
-            this.updateArray[index2].systemNumber = device.systemNumber.replace(/\s*/g,'')
-            this.updateArray[index2].circuitNumber = device.circuitNumber.replace(/\s*/g,'')
-            this.updateArray[index2].address = device.address.replace(/\s*/g,'')
+            this.updateArray[index2].linkFloors = [{id:this.floor.getID()}]
+            // this.updateArray[index2].systemNumber = device.systemNumber.replace(/\s*/g,'')
+            // this.updateArray[index2].circuitNumber = device.circuitNumber.replace(/\s*/g,'')
+            // this.updateArray[index2].address = device.address.replace(/\s*/g,'')
         }else{
             var data = { //新
               id:this.deviceId,
               systemUsed:true,
-              linkFloors:[{id:this.floorId}],
-              systemNumber:device.systemNumber.replace(/\s*/g,''),
-              circuitNumber:device.circuitNumber.replace(/\s*/g,''),
-              address:device.address.replace(/\s*/g,'')
+              linkFloors:[{id:this.floor.getID()}],
+              // systemNumber:device.systemNumber.replace(/\s*/g,''),
+              // circuitNumber:device.circuitNumber.replace(/\s*/g,''),
+              // address:device.address.replace(/\s*/g,'')
             }
             this.updateArray.push(data)
         }
-        var pointstr = device.systemNumber.replace(/\s*/g,'')+
-        device.circuitNumber.replace(/\s*/g,'')+device.address.replace(/\s*/g,'')
-        if(pointstr.length >= 8){
-          this.devicepoint = pointstr
-          this.canvas.getActiveObject().set({ devicepoint: this.devicepoint })
-          this.canvas.getActiveObject().set({ opacity: 1 })
-          this.isEditChange(true)
-        } 
+        this.canvas.getActiveObject().set({ opacity: 1 })
+        this.isEditChange(true)
+        // var pointstr = device.systemNumber.replace(/\s*/g,'')+
+        // device.circuitNumber.replace(/\s*/g,'')+device.address.replace(/\s*/g,'')
+        // if(pointstr.length >= 8){
+        //   // this.devicepoint = pointstr
+        //   // this.canvas.getActiveObject().set({ devicepoint: this.devicepoint })
+        //   this.canvas.getActiveObject().set({ opacity: 1 })
+        //   this.isEditChange(true)
+        // } 
         console.log(JSON.stringify(this.updateArray))
       }
     },
-    async checkDevicePointChange(){
-      this.devicepoint = this.devicepoint.replace(/[^\d]/g,'')
-      if(this.devicepoint.length == 10){
-        this.canvas.getActiveObject().set({ devicepoint: this.devicepoint })
-        this.canvas.getActiveObject().set({ opacity: 1 })
-        this.isEditChange(true)
-        this.setPointObj = this.canvas.getActiveObject()
-        await this.sendDevicePointChange(this.deviceId,this.devicepoint)
-      }
-    },
-    async sendDevicePointChange(objId,point){
-      var systemNumber = point.substr(0,2)
-      var circuitNumber = point.substr(3,3)
-      var address = point.slice(5)
-      var index = this.updateArray.findIndex(d => d.id === objId && d.systemUsed == true)
-      if(index !== -1){ 
-        this.updateArray[index].systemNumber = systemNumber
-        this.updateArray[index].circuitNumber = circuitNumber
-        this.updateArray[index].address = address
-      }else{
-        var data = { //新
-          id:objId,
-          systemUsed:true,
-          linkFloors:[{id:this.floorId}],
-          systemNumber:systemNumber,
-          circuitNumber:circuitNumber,
-          address:address
-        }
-        this.updateArray.push(data)
-      }
-    },
-    save() { //儲存圖片
-        var a = []
-        this.canvas.getObjects().map(item=>{
-            if(item.type == 'polygon'){
-              var b = {
-                  'lu':{'x':item.points[0].x,'y':item.points[0].y},
-                  'ru':{'x':item.points[1].x,'y':item.points[1].y},
-                  'r':{'x':item.points[2].x,'y':item.points[2].y},
-                  'lb':{'x':item.points[3].x,'y':item.points[3].y},
-              }
-              a.push(b)  
+    // async checkDevicePointChange(){
+    //   this.devicepoint = this.devicepoint.replace(/[^\d]/g,'')
+    //   if(this.devicepoint.length == 10){
+    //     this.canvas.getActiveObject().set({ devicepoint: this.devicepoint })
+    //     this.canvas.getActiveObject().set({ opacity: 1 })
+    //     this.isEditChange(true)
+    //     this.setPointObj = this.canvas.getActiveObject()
+    //     await this.sendDevicePointChange(this.deviceId,this.devicepoint)
+    //   }
+    // },
+    // async sendDevicePointChange(objId,point){
+    //   var systemNumber = point.substr(0,2)
+    //   var circuitNumber = point.substr(3,3)
+    //   var address = point.slice(5)
+    //   var index = this.updateArray.findIndex(d => d.id === objId && d.systemUsed == true)
+    //   if(index !== -1){ 
+    //     this.updateArray[index].systemNumber = systemNumber
+    //     this.updateArray[index].circuitNumber = circuitNumber
+    //     this.updateArray[index].address = address
+    //   }else{
+    //     var data = { //新
+    //       id:objId,
+    //       systemUsed:true,
+    //       linkFloors:[{id:this.floor.getID()}],
+    //       systemNumber:systemNumber,
+    //       circuitNumber:circuitNumber,
+    //       address:address
+    //     }
+    //     this.updateArray.push(data)
+    //   }
+    // },
+    //儲存相關
+    addCustomize(canvasObject,id = null, objectname = null, blocktype = null, srcId = null,deviceId = null , 
+    devicepoint = null){ //新增客製化元素：貼上/初始化物件/圖例/矩形/文字/多邊
+        canvasObject.toObject = (function (toObject) {
+            return function () {
+                return fabric.util.object.extend(toObject.call(this), {
+                    id: this.objid,
+                    objectName: this.objectName,
+                    blockType: this.blockType,
+                    srcId:this.srcId,
+                    deviceId:this.deviceId,
+                    //devicepoint:this.devicepoint
+                })
             }
-        })
-        var canvas = document.getElementById('canvas')
-        var imgData = canvas.toDataURL('png')
-        imgData = imgData.replace('image/png','image/octet-stream')
-        var filename = 'drawingboard_' + (new Date()).getTime() + '.' + 'png' // 下載後的檔名
-        var save_link = document.createElement('a')
-        save_link.href = imgData
-        save_link.download = filename
-        var event = document.createEvent('MouseEvents')
-        event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
-        save_link.dispatchEvent(event)
-        this.$emit('saveCanvasToImage',false)
+        })(canvasObject.toObject)
+        canvasObject.set("id",id == null ? this.objid++ : id)
+        canvasObject.set("objectName",objectname !== null ? objectname : this.objectName == '' ?  (new Date()).getTime() : this.objectName) //+'_'+ (new Date()).getTime()
+        canvasObject.set("blockType",blocktype == null ? this.blockType : blocktype)
+        canvasObject.set("srcId",srcId == null ? '' : srcId)
+        canvasObject.set("deviceId",deviceId == null ? '' : deviceId)
+        // canvasObject.set("devicepoint",devicepoint == null ? '' : devicepoint)
     },
-    isEditChange(val){
+    sendAllobj(){ //傳給父元件：貼上/初始化物件/圖例/矩形/文字/多邊
+      this.saveCanvasState()
+      this.$emit('sendObjectListToLayer',this.canvas.getObjects())
+    },
+    saveCanvasState(){ //儲存畫布狀態：物件有編輯/物件刪除/傳給父元件(貼上/初始化物件/圖例/矩形/文字/多邊)
+      if(JSON.stringify(this.canvas.toJSON()) === JSON.stringify(this.state)) return  
+      this.undo.push(this.state)
+      this.state = this.canvas.toJSON()
+      this.redo = []
+    },
+    isEditChange(val){ //是否編輯圖控：貼上/上一步/下一步/新增物件(圖例/矩形/文字/多邊)/屬性修改
       this.isSave = val
       this.$emit('sendSaveToSelect',val)
     },
-    async saveCanvasFile(){ //呼叫儲存物件api
+    async saveCanvasFile(){ //呼叫儲存物件api：存檔
+      window.event.stopPropagation()
+      window.event.preventDefault()
       var currState =JSON.parse(JSON.stringify(this.canvas.getObjects()))
       currState.forEach(item=>{
         if(item.type=='image'){
           item.src = ''
         }
       })
-      this.$emit('sendFloorGraphicFile',JSON.stringify(currState))
-      await this.$obj.Device.updateBuildingGraphicDevices(JSON.stringify(this.updateArray))
+      this.$emit('sendFloorGraphicFile',currState,this.updateArray)
       this.isEditChange(false)
-      this.$store.dispatch('building/setbuildingdevices',await this.$obj.Device.getBuildingDevicesManage())
+    },
+    //websocket
+    sendObj(id,type,content){ //廣播
+        const msg = {
+            type: type,
+            content: JSON.stringify(content),
+            id:id
+        }
+        if (this.$socket.$ws && this.$socket.$ws.readyState == 1) {
+            this.$socket.$ws.send(JSON.stringify(msg))
+        }else{
+            this.$socket.$ws
+        }
+    },
+    receiveMessage(event) { //子視窗傳來的
+        //event.origin是指發送的消息源，一定要進行驗證！！！
+        // if (event.origin !== "http://localhost:9528")return
+        // if (event.data.source === 'vue-devtools-backend-injection' 
+        // || event.data.source === 'vue-devtools-proxy' || event.data.source === 'undefined')return
+        // if(event.data !== "" && event.data !== 'null'){
+        //   this.imgSource = event.data.split(',')
+        //   this.canvas.skipTargetFind = true
+        // }else if (event.data == 'null'){
+        //   this.imgSource = []
+        //   this.canvas.skipTargetFind = false
+        // }
+    },
+    //操作
+    async drawTypeChange(e) { //切換繪圖類別
+      if(window.child && window.child.open && !window.child.closed){
+        window.child.close()
+        this.imgSource = []
+      }
+      
+      if(this.drawType == 'text' && this.textbox !== null){
+        this.textbox.exitEditing() //關閉文字框編輯
+        this.textbox = null
+      }
+      if(e == 'polygon'){
+        this.polygonMode = true
+        this.pointArray = new Array()
+        this.lineArray = new Array()
+      }
+      this.drawType = e
+      this.canvas.isDrawingMode = false
+    },
+    openLegendWindows(){ // 打開圖例
+      this.drawType = 'icon'
+      const { href } = this.$router.resolve({
+        name: 'Graphic_equipmentType'
+      })
+      if(window.child && window.child.open && !window.child.closed){
+        window.child.focus()
+      }else{
+        window.child = window.open(href, '_blank', 'toolbar=no, width=400, height=600,location=no')
+      }
     },
     copy(){ //複製圖片
       var object = fabric.util.object.clone(this.canvas.getActiveObject())
@@ -1396,66 +1322,6 @@ export default {
           self.isEditChange(true)
         })
     },
-    objectaction(e,action){ //封裝廣播內容
-        var change = []
-        var id = ''
-        switch(action){
-            case 'added':
-                id = e.target.id
-                change = e
-                break
-            case 'moving':
-                id = e.target.id
-                change = [ 
-                    e.transform.original.left,
-                    e.transform.original.top,
-                    e.transform.target.left,
-                    e.transform.target.top
-                ]
-                break
-            case 'removed':
-                id = e.id
-                change = e
-                break  
-        }
-        this.sendObj(id,action,change)
-    },
-    sendObj(id,type,content){ //廣播
-        const msg = {
-            type: type,
-            content: JSON.stringify(content),
-            id:id
-        }
-        if (this.$socket.$ws && this.$socket.$ws.readyState == 1) {
-            this.$socket.$ws.send(JSON.stringify(msg))
-        }else{
-            this.$socket.$ws
-        }
-    },
-    openLegendWindows(){ // 打開圖例
-      this.drawType = 'icon'
-      const { href } = this.$router.resolve({
-        name: 'Graphic_equipmentType'
-      })
-      if(window.child && window.child.open && !window.child.closed){
-        window.child.focus()
-      }else{
-        window.child = window.open(href, '_blank', 'toolbar=no, width=400, height=600,location=no')
-      }
-    },
-    receiveMessage(event) { //子視窗傳來的
-        //event.origin是指發送的消息源，一定要進行驗證！！！
-        // if (event.origin !== "http://localhost:9528")return
-        if (event.data.source === 'vue-devtools-backend-injection' 
-        || event.data.source === 'vue-devtools-proxy' || event.data.source === 'undefined')return
-        if(event.data !== "" && event.data !== 'null'){
-          this.imgSource = event.data.split(',')
-          this.canvas.skipTargetFind = true
-        }else if (event.data == 'null'){
-          this.imgSource = []
-          this.canvas.skipTargetFind = false
-        }
-    },
     doUndo() { //上一步
       if (this.undo.length === 0) {
         alert('目前沒有動作可復原')
@@ -1482,25 +1348,9 @@ export default {
         this.isEditChange(true)
       })
     },
-    searchBlockType(val){ //區塊顯示開關 先關閉全部再開啟對應的類型
-      this.viewList.forEach(item=>{
-        item.visible = false
-      })
-      this.canvas.discardActiveObject()
-      this.canvas.renderAll()
-      this.viewList = []
-      val.forEach(item => {
-        this.canvas.getObjects().forEach(obj =>{
-          if(obj.blockType == item){
-            this.viewList.push(obj)
-          }
-        })
-      })
-      this.viewList.forEach(item=>{
-        item.visible = true
-      })
-      this.canvas.renderAll()
-    },
+    
+
+    //動畫
     stopAnim(){
       this.hasAnimationStarted = false
     },
@@ -1539,7 +1389,8 @@ export default {
         abort: () => !this.hasAnimationStarted,
         easing: fabric.util.ease.easeInSine
       })
-    }
+    },
+    
   }
 }
 </script>

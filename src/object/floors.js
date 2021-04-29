@@ -27,14 +27,6 @@ class Floors extends Parent {
         })
         return data
     }
-    async update(){
-        var data = await api.building.apiPatchFloors(this).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    }
     async files(){
         var data = await api.files.apiGetFloorFiles(this.id).then(response => {
             var result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Files(item)})
@@ -52,6 +44,22 @@ class Floors extends Parent {
         })
         return data
     }
+    async getGraphicFiles(){
+        var data = await api.files.apiGetFloorIdToGraphicFile(this.id).then(response => {
+            return response.result.codeContent
+        }).catch(error=>{
+            return null
+        })
+        return data        
+    }
+    async postGraphicFiles(formData){
+        var data = await api.files.apiPostGraphicFile(this.id,formData).then(response => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data        
+    }
     getName(){
         return this.floor>0 ? this.floor+'F' : '地下 '+this.floor.substr(1)+'F'
     }
@@ -63,6 +71,7 @@ class Floors extends Parent {
     }
     static async get (){
         var data = await api.building.apiGetBuildingFloors().then(response => {
+            console.log('getFloor',JSON.stringify(response))
             var result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Floors(item)})
             return result
         }).catch(error=>{

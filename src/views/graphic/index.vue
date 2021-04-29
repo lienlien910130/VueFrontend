@@ -3,84 +3,93 @@
       <div class="graphic-editor-container">
         <el-row
         align="middle">
-          <FloorSelect 
-            style="margin-bottom: 20px;"
-            v-bind="floorselectAttrs" 
-            v-on:handleSelect="handleSelect">
-          </FloorSelect>
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
+            <Select 
+              style="margin-bottom: 10px;"
+              v-bind="floorselectAttrs" 
+              v-on:handleSelect="handleSelect">
+            </Select>
 
-          <el-popover
-            placement="left-start"
-            title="快捷鍵"
-            width="270"
-            trigger="click"
-            >
-              <p class="tipck">1.【Alt】+【➚】+【滑鼠左鍵】：平移</p>
-              <p class="tipck">2.【滑鼠滾輪】：放大&縮小</p>
-              <p class="tipck">3.【Alt】+【S】：選取</p>
-              <p class="tipck">4.【Alt】+【T】：文字</p>
-              <p class="tipck">5.【Alt】+【R】：矩形</p>
-              <p class="tipck">6.【Alt】+【A】：多邊形</p>
-              <!-- <p class="tipck">8.【Alt】+【Z】：取消拖曳圖片</p> -->
-              <p class="tipck">7.【Alt】+【G】：打開圖例</p>
-              <p class="tipck">8.【Ctrl】+【C】：複製</p>
-              <p class="tipck">9.【Ctrl】+【V】：貼上</p>
-              <p class="tipck">10.【Ctrl】+【Z】：上一步</p>
-              <p class="tipck">11.【Ctrl】+【Y】：下一步</p>
-              <p class="tipck">12.【Delete】：刪除</p>
-              <p class="tipck">13.【Insert】：下載圖片</p>
-              <el-button slot="reference" type="primary" :disabled="disabled">快捷鍵</el-button>
-          </el-popover>
+            <el-popover
+              placement="left-start"
+              title="快捷鍵"
+              width="270"
+              trigger="click"
+              >
+                <p class="tipck">1.【Alt】+【➚】+【滑鼠左鍵】：平移</p>
+                <p class="tipck">2.【滑鼠滾輪】：放大&縮小</p>
+                <p class="tipck">3.【Alt】+【S】：選取</p>
+                <p class="tipck">4.【Alt】+【T】：文字</p>
+                <p class="tipck">5.【Alt】+【R】：矩形</p>
+                <p class="tipck">6.【Alt】+【A】：多邊形</p>
+                <!-- <p class="tipck">8.【Alt】+【Z】：取消拖曳圖片</p> -->
+                <p class="tipck">7.【Alt】+【G】：打開圖例</p>
+                <p class="tipck">8.【Ctrl】+【C】：複製</p>
+                <p class="tipck">9.【Ctrl】+【V】：貼上</p>
+                <p class="tipck">10.【Ctrl】+【Z】：上一步</p>
+                <p class="tipck">11.【Ctrl】+【Y】：下一步</p>
+                <p class="tipck">12.【Delete】：刪除</p>
+                <p class="tipck">13.【Insert】：下載圖片</p>
+                <el-button slot="reference" type="primary" :disabled="disabled">快捷鍵</el-button>
+            </el-popover>
 
-          <el-button v-if="type =='view'" type="primary" @click="changeType('edit')" :disabled="disabled">編輯圖控</el-button>
-          <el-button v-else type="primary" @click="changeType('view')">關閉編輯</el-button>
-          <el-button type="primary" @click="resetCanvas(true)" :disabled="disabled">復原位置</el-button>
-          <el-button type="primary" @click="saveCanvasToImage(true)" :disabled="disabled">匯出圖片</el-button>
-          <el-button type="primary" :disabled="disabled">歷史紀錄</el-button>
-          <el-button type="primary" :disabled="disabled">點位設定</el-button>
-          <el-checkbox-group 
-          v-model="checkList" 
-          style="display:inline;margin-left:20px;">
-            <el-checkbox label="未分類" border></el-checkbox>
-            <el-checkbox label="警戒區" border></el-checkbox>
-            <el-checkbox label="防護區" border></el-checkbox>
-            <el-checkbox label="放射區" border></el-checkbox>
-            <el-checkbox label="撒水區" border></el-checkbox>
-          </el-checkbox-group>
-          <el-alert
-            v-if="isSelect"
-            title="尚未存檔，請先存檔後再離開畫面"
-            type="warning"
-            center
-            :closable="false"
-            show-icon>
-          </el-alert>
+            <el-button v-if="type =='view'" type="primary" @click="changeType('edit')" :disabled="disabled">編輯圖控</el-button>
+            <el-button v-else type="primary" @click="changeType('view')">關閉編輯</el-button>
+            <el-button type="primary" @click="resetCanvas()" :disabled="disabled">復原位置</el-button>
+            <el-button type="primary" @click="saveCanvasToImage()" :disabled="disabled">匯出圖片</el-button>
+            <el-button type="primary" :disabled="disabled">歷史紀錄</el-button>
+            <el-button type="primary" :disabled="disabled">點位設定</el-button>
+            <el-checkbox-group 
+            v-model="checkList" 
+            style="display:inline;margin-left:20px;" @change="changeViewBlock">
+              <el-checkbox label="未分類" border></el-checkbox>
+              <el-checkbox label="警戒區" border></el-checkbox>
+              <el-checkbox label="防護區" border></el-checkbox>
+              <el-checkbox label="放射區" border></el-checkbox>
+              <el-checkbox label="撒水區" border></el-checkbox>
+            </el-checkbox-group>
+            <!-- <el-alert
+              v-if="isSelect"
+              title="尚未存檔，請先存檔後再離開畫面"
+              type="warning"
+              center
+              :closable="false"
+              show-icon>
+            </el-alert> -->
+          </el-col>
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
+            <div class="collapse-wrapper" >
+                  
+            </div>
+          </el-col>
         </el-row>
          <div class="block-wrapper">
           <el-row>
              <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <Graphic
+                  ref="graphic"
                   v-bind="graphicAttrs"
                   v-on="graphicEvent">
                 </Graphic>
             </el-col>
           </el-row>
           <el-row>
-            <el-col :xs="24" :sm="24" :md="24" :lg="16">
+            <!-- <el-col :xs="24" :sm="24" :md="24" :lg="16">
               <div class="collapse-wrapper" >
-                <Table
+                <TableIndex
                   :list-query-params.sync="listQueryParams"
                   v-bind="tableAttrs"
                   v-on="tableEvent">
-                </Table>
+                </TableIndex>
               </div>
-            </el-col>
+            </el-col> -->
             <el-col :xs="24" :sm="24" :md="24" :lg="8">
-              <div class="collapse-wrapper">
+              <div class="wrapper">
                 <ObjectList
+                  ref="objectList"
                   v-show="type == 'edit'"
                   v-bind="objectListAttrs"
-                  v-on="objectListEvent">
+                  v-on:sendActionToCanvas="sendActionToCanvas">
                 </ObjectList>
               </div>
             </el-col>
@@ -91,25 +100,17 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import idb from '@/utils/indexedDB'
 import { formatTime } from '@/utils/index.js'
+import sharemixin  from '@/mixin/sharemixin'
+import Device from '@/object/device'
 
 export default {
+    mixins:[sharemixin],
     components:{
-      Table: () => import('@/components/Table/index.vue'),
-      FloorSelect: () => import('@/components/Select/index.vue'),
-      ObjectList: () => import('./components/ObjectList'),
-      Graphic: () => import('@/components/Graphic/index.vue')
+      ObjectList: () => import('./components/ObjectList')
     },
     computed:{
-      ...mapGetters([
-          'id',
-          'buildingid',
-          'buildingfloors',
-          'wsmsg',
-          'buildingdevices'
-      ]),
       floorselectAttrs() {
         return {
           selectData: this.selectData,
@@ -119,16 +120,9 @@ export default {
       },
       graphicAttrs(){
         return{
-              deleteObject:this.deleteObject,
-              selectObject:this.selectObject,
-              deleteSuccess:this.deleteSuccess,
-              reset:this.reset,
-              saveimg:this.save,
               type:this.type,
-              imageSrc:this.imageSrc,
-              objects:this.objects,
               checkList:this.checkList,
-              floorId:this.floorId,
+              floor:this.floor,
               actionObj:this.actionObj
             }
       },
@@ -138,9 +132,6 @@ export default {
             sendObjectListToLayer: this.sendObjectListToLayer,
             sendObjectRedoUndoToLayer:this.sendObjectRedoUndoToLayer,
             sendFloorGraphicFile: this.sendFloorGraphicFile,
-            resetCanvas: this.resetCanvas,
-            saveCanvasToImage: this.saveCanvasToImage,
-            returnDeleteObjects: this.returnDeleteObjects,
             sendLabelChange:this.sendLabelChange,
             sendBlcokChange:this.sendBlcokChange,
             sendSaveToSelect:this.sendSaveToSelect
@@ -148,20 +139,8 @@ export default {
       },
       objectListAttrs(){
         return {
-            list: this.objectList,
-            objectDelete:this.objectDelete,
-            objectSelect:this.objectSelect,
-            redoundo:this.redoundo,
-            type:this.type,
-            labelChange:this.labelChange,
-            blockChange:this.blockChange
-        }
-      },
-      objectListEvent(){
-        return {
-            sendActionToCanvas: this.sendActionToCanvas,
-            returnDeleteSuccess: this.returnDeleteSuccess,
-            returnObjectRedoUndo:this.returnObjectRedoUndo
+            objectList: this.objectList,
+            type:this.type
         }
       },
       tableAttrs(){
@@ -177,34 +156,21 @@ export default {
         return {
             clickPagination:this.clickPagination
         }
-      },
+      }
     },
     data() {
         return {
-          selectData:[],
-          reset:false,
-          type:'view',
-          save:false,
-          objectList:[],
-          deleteObject:null,
-          selectObject:null,
-          objectDelete:null,
-          objectSelect:null,
-          deleteSuccess:null,
-          redoundo:null,
-          addobject:null,
-          tableData:[],
-          floorId:'',
-          imageSrc:'',
-          disabled:true,
-          objects:null,
-          checkList:[],
-          labelChange:[],
-          blockChange:[],
-          isEdit:false,
-          isSelect:false,
-          actionObj:null,
-          origindata:[],
+          checkList:[], //區域選擇
+          floor:null, //正在開啟的樓層
+          selectData:[], //樓層選單
+          disabled:true, //若樓層沒平面圖則不開啟按鈕使用
+          isSelect:false, //是否有尚未儲存的資料
+          type:'view', //檢視&編輯
+          objectList:[], //圖控上的所有元件
+          //跟wsg相關
+          isEdit:false, //是否可編輯圖控
+          actionObj:null, //正在做動的物件
+          origindata:[], //即時訊息
           tableData:[],
           config:[
                 { label:'時間' , prop:'date'},
@@ -217,7 +183,7 @@ export default {
             page: 1,
             limit: 5,
             total: 0
-          },
+          }
         }
     },
     watch: {
@@ -237,25 +203,26 @@ export default {
             if(uid !== this.id){
               switch (type){
                 case 'enterGraphic':
-                  if(this.type == 'edit' && content == this.floorId){
-                    this.$socket.sendMag(this.id,'openEdit',this.floorId)
+                  if(this.type == 'edit' && content == this.floor.getID()){
+                    this.$socket.sendMag(this.id,'openEdit',this.floor.getID())
                   }
                   break;
                 case 'openEdit':
-                  if(content == this.floorId){
+                  if(content == this.floor.getID()){
                     this.isEdit = true
                   }
                   break;
                 case 'closeEdit':
-                  if(content == this.floorId){
+                  if(content == this.floor.getID()){
                     this.isEdit = false
                   }
                   break;
                 default:
                   var cons = JSON.parse(content)
+                  console.log(cons)
                   var index = this.buildingfloors.findIndex(f=>f.id === cons.LinkDevice.FloorId)
                   var index2 = this.buildingdevices.findIndex(d=>d.id === cons.LinkDevice.DeviceId)
-                  if(cons.LinkDevice.FloorId !== this.floorId){
+                  if(cons.LinkDevice.FloorId !== this.floor.getID()){
                     this.handleSelect(this.buildingfloors[index],cons)
                   }else{
                     this.actionObj = cons
@@ -284,25 +251,8 @@ export default {
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
     },
     methods:{
-      async handleSelect(content, device = null){
-        if(this.type == 'edit'){
-          this.$socket.sendMsg(this.id,'closeEdit',this.floorId)
-        }
-        this.type = 'view'
-        this.floorId = content.id
-        if(content.floorPlanID == null){
-            this.imageSrc = ""
-            this.disabled = true
-            this.changeType('view')
-        }else{
-            this.disabled = false
-            this.imageSrc = await idb.loadCacheImage((content.floorPlanID).toString())
-        }
-        await this.getFloorGraphic()
-        await this.broadcast()
-        if(device !== null){
-          this.actionObj = device
-        }
+      async init(){
+
       },
       async clickPagination(){
           this.tableData = this.origindata.filter(
@@ -310,34 +260,65 @@ export default {
             index < this.listQueryParams.limit * this.listQueryParams.page && 
             index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
       },
-      async getFloorGraphic(){ //取得圖控檔案
-        this.objects = await this.$obj.Files.getFloorGraphicFiles(this.floorId)
+      resetCanvas(){ //復原位置
+        this.$refs.graphic.resetCanvas()
       },
-      async broadcast(){
-        this.$socket.sendMsg(this.id,'enterGraphic',this.floorId)
-      },
-      resetCanvas(reset){
-        this.reset = reset
-      },
-      saveCanvasToImage(save){
-        this.save = save
+      saveCanvasToImage(){ //匯出圖片
+        this.$refs.graphic.saveImg()
       },
       changeType(type){
         if(!this.isEdit){
           this.type = type
           if(type == 'edit'){
             this.checkList = ['未分類','警戒區','防護區','放射區','撒水區']
-            this.$socket.sendMsg(this.id,'openEdit',this.floorId)
+            this.$socket.sendMsg(this.id,'openEdit',this.floor.getID())
           }else{
             this.checkList = []
-            this.$socket.sendMsg(this.id,'closeEdit',this.floorId)
+            this.$socket.sendMsg(this.id,'closeEdit',this.floor.getID())
           }
+          this.$refs.graphic.searchBlockType(this.checkList)
         }else{
-          alert('請勿同時使用該樓層圖控系統')
+          alert('請勿同時編輯該樓層圖控系統')
         }
       },
+      changeViewBlock(){
+        this.$refs.graphic.searchBlockType(this.checkList)
+      },
+      //樓層事件
+      async handleSelect(content, device = null){
+        if(this.type == 'edit'){
+          this.$socket.sendMsg(this.id,'closeEdit',this.floor.getID())
+        }
+        this.type = 'view'
+        this.floor = content
+        //this.$refs.objectList.init() //圖層重製
+        //this.$refs.graphic.loadObjects(await this.floor.getGraphicFiles()) //載入初始化物件
+        var obj = await this.floor.getGraphicFiles()
+        console.log(obj)
+        if(content.getImageID() == null){
+            this.disabled = true
+            this.changeType('view')
+            this.$refs.graphic.loadBackgroundImage(obj,'')
+        }else{
+            this.disabled = false
+            var data = await idb.loadCacheImage((content.getImageID()))
+            this.$refs.graphic.loadBackgroundImage(obj,data)
+        }
+        this.$socket.sendMsg(this.id,'enterGraphic',this.floor.getID())
+        if(device !== null){
+          this.actionObj = device
+        }
+      },
+      //圖層事件
+      sendActionToCanvas(index,val){ //圖層選取/刪除物件
+          if(index == "del"){
+            this.$refs.graphic.objectDelete(val)
+          }else{
+            this.$refs.graphic.objectSelect(val)
+          }
+      },
       //圖控的事件
-      sendSaveToSelect(val){
+      sendSaveToSelect(val){ 
         this.isSelect = val
       },
       sendObjectListToLayer(val){ //圖控傳過來的所有物件清單,更新圖層節點用
@@ -345,47 +326,37 @@ export default {
       },
       sendActionToLayer(index,val){ //圖控上面選取/刪除物件
         if(index == 'del'){
-          this.objectDelete = val
+          this.$refs.objectList.objectDelete(val)
         }else{
-          this.objectSelect = val
+          this.$refs.objectList.objectSelect(val)
         }
       },
-      sendLabelChange(id,objname){
-        this.labelChange = [id,objname]
+      sendLabelChange(id,objname){ //圖控更新標題，圖層須連動更新
+        this.$refs.objectList.updateNodeLabel([id,objname])
       },
-      sendBlcokChange(id,objname,blocktype){
-        this.blockChange = [id,objname,blocktype]
+      sendBlcokChange(id,objname,blocktype){ //圖控更新區塊類型，圖層須連動更新
+        this.$refs.objectList.updateNodeLevel([id,objname,blocktype])
       },
-      sendObjectRedoUndoToLayer(val){//圖控上一步下一步
-        this.redoundo = val
+      sendObjectRedoUndoToLayer(val){//圖控上一步下一步，圖層須連動更新
+        this.$refs.objectList.redoundo(val)
       },
-      async sendFloorGraphicFile(state){ //儲存圖控檔案
-        const fileContent = new File([state], this.floorId+'.txt', { type: '' })
+      async sendFloorGraphicFile(state,array){ //儲存圖控檔案，同步更新設備資訊
+        console.log(state)
+        const fileContent = new File([state], this.floor.getID()+'.txt', { type: '' })
         const formData = new FormData()
         formData.append('file', fileContent)
-        var isOk = await this.$obj.Files.postFloorGraphicFiles(this.floorId,formData)
+        var isOk = await this.floor.postGraphicFiles(formData)
         if(isOk){
+          if(array.length !==0 ){
+            await Device.updatefromGraphic(array)
+            this.$store.dispatch('building/setbuildingdevices',await Device.get())
+          }
           this.$message('儲存成功')
         }
       },
-      returnDeleteObjects(){ //重置圖層及圖控刪除的物件
-        this.deleteObject = null
-        this.deleteSuccess = null
-        this.objectDelete = null
-      },
-      //圖層事件
-      returnObjectRedoUndo(){
-        this.redoundo = null
-      },
-      sendActionToCanvas(index,val){ //圖層選取/刪除物件
-          if(index == "del"){
-            this.deleteObject = val
-          }else{
-            this.selectObject = val
-          }
-      },
-      returnDeleteSuccess(val){ //圖控刪除物件給圖層檢查是否可以刪除,刪除成功的回傳
-        this.deleteSuccess = val
+      //畫面
+      async changeTable(value){
+
       }
     }
 }
@@ -420,10 +391,17 @@ i{
 .collapse-wrapper{
     background: snow;
     padding: 15px;
-    margin-bottom: 32px;
-    margin-top: 32px;
-    margin-left: 32px;
+    height: 100px;
+    margin-bottom:5px;
+    overflow-x:hidden;
+    overflow-y:auto;
+}
+.wrapper{
+    background: snow;
+    padding: 15px;
     height: 400px;
+    margin-bottom:5px;
+    margin-top: 32px;
     overflow-x:hidden;
     overflow-y:auto;
 }

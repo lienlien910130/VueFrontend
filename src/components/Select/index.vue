@@ -16,8 +16,8 @@
     <el-option
       v-for="(item,index) in selectData"
       :key="index"
-      :label="item.label"
-      :value="item.id"
+      :label="item.getName()"
+      :value="item.getID()"
       >
     </el-option>
   </el-select>
@@ -38,7 +38,7 @@ export default {
       isSelect: {
           type: Boolean,
           default: false
-      },
+      }
     },
     data() {
       return {
@@ -49,7 +49,7 @@ export default {
       selectData:{
         handler:async function(){
           if(this.title == 'Building' || this.title == 'GraphicFloor'){
-            this.defaultvalue = this.selectData[0].id
+            this.defaultvalue = this.selectData[0].getID()
             this.currentSel(this.defaultvalue)
           }else if(this.title == 'contactunit' || this.title == 'equipment'){
             this.defaultvalue = 'all'

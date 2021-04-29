@@ -77,6 +77,12 @@ class Device extends Parent {
     getSystemUsed(){
         return this.systemUsed == true ? '已設置' : '尚未設置'
     }
+    SystemUsed(){
+        return this.systemUsed
+    }
+    setSystemUsed(systemUsed){
+        this.systemUsed = systemUsed
+    }
     getSystem(){
         var one = this.systemNumber == null ? '尚未設定' :  this.systemNumber
         var two = this.circuitNumber == null ? '尚未設定' :  this.circuitNumber
@@ -304,6 +310,14 @@ class Device extends Parent {
     }
     static async updateAddress(data){
         var data = await api.device.apiPatchDevicesAddress(data).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
+    static async updatefromGraphic(data){
+        var data = await api.device.apiPatchGraphicDevices(data).then(async(response) => {
             return true
         }).catch(error=>{
             return false

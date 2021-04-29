@@ -100,22 +100,12 @@
                                     {{ tagChange(item[option.prop]) }}
                                 </el-tag>
 
-                                <!-- <span 
-                                v-else-if="option.format == 'select' ">
-                                {{ selectStr(item[option.prop]) }}
-                                </span> -->
-
                                 <span v-else-if="option.format == 'fullType' ">
-                                {{ item.getTypeName() }}
+                                {{ item.getType() }}
                                 </span>
 
-                                <!-- <span 
-                                v-else-if="option.format == 'deviceName' ">
-                                {{ changedeviceType(item[option.prop]) }}
-                                </span> -->
-
                                 <span v-else-if="option.format == 'userInfo' " 
-                                @click="handleClickOption('opendialog',item[option.prop])"
+                                @click="clickMessageBox('住戶資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ changeUserName(item[option.prop]) }}
                                 </span>
@@ -133,45 +123,51 @@
                                 </span>
                                 
                                 <span v-else-if="option.format == 'floorOfHouseSelect' " 
-                                @click="handleClickOption('openfloorofhouse',item[option.prop])"
+                                @click="clickMessageBox('門牌資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ changeUsageOfFloor(item[option.prop]) }}
                                 </span>
 
                                 <span v-else-if="option.format == 'floorOfHouseUsersName' " 
-                                @click="handleClickOption('openfloorofhouse',item['linkUsageOfFloors'])"
+                                @click="clickMessageBox('住戶資料','floorOfHouseUsersName',item.getlinkUsageOfFloorsUser())"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ changeUsageOfFloorUsersName(item['linkUsageOfFloors']) }}
+                                    {{ changeUsageOfFloorUsersName(item.getlinkUsageOfFloorsUser()) }}
                                 </span>
-                            
+
+                                <span v-else-if="option.format == 'deviceSelect' " 
+                                @click="clickMessageBox('設備資料',option.format,item[option.prop])"
+                                style="color:#66b1ff;cursor:pointer">
+                                    {{ changeDevice(item[option.prop]) }}
+                                </span>
+<!-- 
                                 <el-button v-else-if="option.format == 'deviceSelect' " 
                                 @click="toAnotherPage('devicesManagement',item[option.prop],'')"
                                 type="text"
                                 style="padding:0px"
                                 >
                                     {{ changeDevice(item[option.prop]) }}
-                                </el-button>
+                                </el-button> -->
 
-                                <span v-else-if="option.format == 'deviceTypeSelect' " 
-                                @click="toAnotherPage('deviceTypesManagement',item[option.prop][0],'')"
+                                <span v-else-if="option.format == 'deviceTypeSelect' "
+                                @click="clickMessageBox('設備種類',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ item.getOnlyType() }}
+                                    {{ item.getLinkType().getSelectName()  }}
                                 </span>
 
                                 <span v-else-if="option.format == 'contactunitSelect' " 
-                                @click="toAnotherPage('sys-Basic',item[option.prop],'co')"
-                                style="color:#66b1ff;cursor:pointer">
+                                @click="clickMessageBox('廠商資料',option.format,item[option.prop])"
+                                 style="color:#66b1ff;cursor:pointer">
                                     {{ changeContainUnit(item[option.prop]) }}
                                 </span>
 
                                 <span v-else-if="option.format == 'buildingSelect' " 
-                                @click="toAnotherPage('sys-Basic',item[option.prop],'co')"
+                                @click="clickMessageBox('建築物資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ changeBuilding(item[option.prop]) }}
                                 </span>
 
                                 <span v-else-if="option.format == 'roleSelect' " 
-                                @click="toAnotherPage('sys-Basic',item[option.prop],'co')"
+                                @click="clickMessageBox('角色資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ changeRoles(item[option.prop]) }}
                                 </span>
@@ -749,7 +745,11 @@ export default {
                         }else if(item == 'linkDeviceTypes'){
                             value = val.getLinkType().getSelectName()
                         }else if(item == 'status'){
-                            value = data[item] == true ? '啟用中' : '未啟用'
+                            if(val.constructor !== Device){
+                                value = data[item] == true ? '啟用中' : '未啟用'
+                            }else{
+                                value = this.changeOptionName(data[item])
+                            }
                         }else if(item == 'removable'){
                             value = data[item] == true ? '允許' : '禁止'
                         }else{

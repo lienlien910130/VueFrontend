@@ -71,12 +71,11 @@ class MaintainManagementList extends Parent {
     }
     static getConfig(){
         return [
-              {
+            {
                 label: '名稱',
                 prop: 'name',
-                format:'MaintainContentOptions',
-                mandatory:true, message:'請輸入名稱',isSelect:false,isSort:true,isHidden:false,maxlength:'20'
-              },
+                mandatory:true, message:'請輸入名稱',isSelect:false,isSort:true,maxlength:'20',isHidden:false
+            },
               {
                 label: '建立時間',
                 prop: 'createdDate',

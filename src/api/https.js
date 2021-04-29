@@ -29,6 +29,9 @@ const errorHandle = (status,msg) =>{
         case 403:
             tip('權限不足')
             break;
+        case 423:
+            tip('請勿刪除正在使用之設定')
+            break;
         case 404:
             tip(msg)
             break;

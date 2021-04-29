@@ -33,6 +33,7 @@ class Files extends Parent {
     }
     static async get(fileId){
         var data = await api.files.apiGetFloorImage(fileId).then(response => {
+            console.log(response)
             return response
         }).catch(error=>{
             return []

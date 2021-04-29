@@ -35,7 +35,7 @@
                                 </span>
                             </div>
                             <span v-if="current == ''">
-                                <i class="el-icon-delete" style="float: right;font-size: 25px;" @click="checkDelete(item.id)"></i>
+                                <i class="el-icon-delete" style="float: right;font-size: 25px;" @click="deleteData(item.id)"></i>
                                 <i class="el-icon-edit" style="float: right;font-size: 25px;" @click="changeEdit(item)"></i>
                             </span>
                         </div>
@@ -140,13 +140,13 @@ export default {
             this.origin = item.textName
             this.$emit('handleButton', this.title, 'changeEdit' , item)
         },
-        checkDelete(id){
+        deleteData(id){
              this.$confirm('是否確定刪除該筆資料?', '提示', {
                 confirmButtonText: '確定',
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                this.$emit('handleButton', this.title, 'checkDelete' , id)
+                this.$emit('handleButton', this.title, 'delete' , id)
             })
         }
     }

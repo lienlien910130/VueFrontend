@@ -11,10 +11,12 @@ export default {
             'buildingcontactunit',
             'buildingroles',
             'buildingarray',
+            'buildingfloors',
             'deviceType',
             'fullscreen',
             'device',
-            'menu'
+            'menu',
+            'wsmsg'
         ])
     },
     watch: {
