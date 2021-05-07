@@ -256,6 +256,11 @@ export default {
         await this.lackinit()
         this.dialogStatus = 'lack'
         this.innerVisible = true
+      }else if(index === 'exportExcel'){
+        this.dialogConfig = this.tableConfig
+        this.exportExcelData = this.blockData
+        this.innerVisible = true
+        this.dialogStatus = 'exportExcel'
       }
     },
     async handleDialog(title ,index, content){ //Dialog相關操作
@@ -287,13 +292,27 @@ export default {
               this.files = await this.inspection.files()
             }
           }else if(index !== 'cancel'){ //更換缺失內容檔案
+            var autoCreate = false
+            var str = ''
+            await  this.$confirm('是否要同步建立維保資料?',
+              '提示', {
+                confirmButtonText: '確定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                autoCreate = true
+               }).catch(()=>{
+                autoCreate = false        
+             })
+            index === 'changeAgain' ? str = str+'更換缺失內容' : str = str+'建立缺失內容'
+            autoCreate === true ? str = str+'及同步建立維護保養中，請稍後 ...' : str = str+'中，請稍後 ...'
             const loading = this.$loading({
                 lock: true,
-                text: '更換缺失內容中，請稍後 ...',
+                text: str,
                 spinner: 'el-icon-loading',
                 background: 'rgba(0, 0, 0, 0.7)'
             })
-            isOk = await this.inspection.settinglackfile(parseInt(content),
+            isOk = await this.inspection.settinglackfile(autoCreate,parseInt(content),
             index === 'changeAgain' ? true : false)
             if(isOk){
               this.$message('更新成功')

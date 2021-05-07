@@ -68,6 +68,7 @@
 import blockmixin from '@/mixin/blockmixin'
 import sharemixin  from '@/mixin/sharemixin'
 import Building from '@/object/building'
+import Floors from '@/object/floors'
 export default {
   mixins:[sharemixin,blockmixin],
   computed: {
@@ -227,7 +228,7 @@ export default {
       }
     },
     async postFloor(buildingId){
-      await this.$obj.Building.postBuildingFloor(buildingId,JSON.stringify(this.floorsArray))
+      await Floors.create(buildingId,this.floorsArray)
     },
     async handleBlock(title,index, content){
         console.log(title,index,JSON.stringify(content))

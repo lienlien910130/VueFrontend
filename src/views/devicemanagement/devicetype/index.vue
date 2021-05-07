@@ -129,7 +129,15 @@ export default {
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,content)
             if(index !== 'cancel'){
-                content.setTypeName(content.getTypeName())
+                var label = ''
+                this.deviceType.filter(function(item, index){
+                    var array = item.children.filter((obj,index)=>{
+                        return obj.value == content.fullType[1]
+                    })
+                    array.length !== 0 ? label = array[0].label  : ''
+                })
+                content.setTypeName(label) 
+                content.setFullType(content.fullType[1])
                 var isOk = index === 'update' ? await content.update() : await content.create()
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')

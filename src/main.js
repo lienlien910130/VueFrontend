@@ -19,8 +19,7 @@ import SIdentify from './views/login/components/identify.vue'
 import socket from './utils/socket'
 import indexedDB from './utils/indexedDB'
 import api from './api'
-import obj from './object'
-import { deepClone } from './utils/index'
+
 
 import '@/icons' // icon
 import '@/permission' // permission control
@@ -47,8 +46,6 @@ Vue.prototype.$socket = socket
 Vue.prototype.$indexedDB = indexedDB
 Vue.prototype.$qs = qs
 Vue.prototype.$api = api
-Vue.prototype.$obj = obj
-Vue.prototype.$deepClone = deepClone
 Vue.prototype.$logForTranslate = logForTranslate
 
 new Vue({

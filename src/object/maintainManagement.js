@@ -74,7 +74,7 @@ class MaintainManagementList extends Parent {
             {
                 label: '名稱',
                 prop: 'name',
-                mandatory:true, message:'請輸入名稱',isSelect:false,isSort:true,maxlength:'20',isHidden:false
+                mandatory:true, message:'請輸入名稱',isSelect:false,isSort:true,maxlength:'40',isHidden:false
             },
               {
                 label: '建立時間',
@@ -100,7 +100,7 @@ class MaintainManagementList extends Parent {
         return [{
                         label: '名稱',
                         prop: 'name',
-                        mandatory:true, message:'請輸入名稱',isSelect:false,isSort:true,maxlength:'20'
+                        mandatory:true, message:'請輸入名稱',isSelect:false,isSort:true,maxlength:'40'
                     },
                     {
                         label: '建立時間',
@@ -121,7 +121,7 @@ class MaintainManagementList extends Parent {
     }
     static async getAllLack(){
         var data = await api.device.apiGetInspectionListByMaintain().then(response => {
-            console.log(JSON.stringify(response))
+            console.log(JSON.stringify(response.result))
             return response.result.sort(function(x,y){
                 var _data1 = new Date(x.label)
                 var _data2 = new Date(y.label)
@@ -199,15 +199,9 @@ class MaintainManagement extends Parent {
     getProcess(){
         return this.processStatus
     }
-    // getlinkDevices(){
-    //     return this.linkDevices
-    // }
-    // getInspectionLacks(){
-    //     return this.linkInspectionLacks.map(item=>{return item.getName()}).toString()
-    // }
-    // getContactUnits(){
-    //     return this.linkContactUnits.map(item=>{return item.getName()}).toString()
-    //}
+    getInspectionLacks(){
+        return this.linkInspectionLacks
+    }
     static empty(){
         return new MaintainManagement({
             id:'',

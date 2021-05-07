@@ -50,6 +50,9 @@ class Account extends Parent {
     getName(){
         return this.name
     }
+    getRoles(){
+        return this.linkRoles
+    }
     static empty(){
         return new Account({
             id:'',
@@ -84,9 +87,9 @@ class Account extends Parent {
     static getTableConfig(){
         return [
             { label:'帳號' , prop:'account', mandatory:true, message:'請輸入帳號',maxlength:'10',
-            pattern:/[\w]{6,10}$/,errorMsg:'請輸入至少6位數',isPattern: true,isHidden:false},
+            pattern:/[\w]{6,10}$/,errorMsg:'請輸入6~10位數英文+數字',isPattern: true,isHidden:false},
             { label:'密碼' , prop:'password', mandatory:true, message:'請輸入密碼',maxlength:'15',
-            pattern:/[\w]{6,10}$/,errorMsg:'請輸入至少6位數',isPattern: true,isHidden:false},
+            pattern:/[\w]{7,15}$/,errorMsg:'請輸入7~15位數英文+數字',isPattern: true,isHidden:false},
             { label:'用戶名' , prop:'name', mandatory:true,message:'請輸入用戶名',maxlength:'20',isHidden:false},
             { label:'描述' , prop:'description',format:'textarea', mandatory:false,message:'請輸入描述',maxlength:'200',isHidden:false},
             { label:'角色' , prop:'linkRoles',format:'roleSelect', mandatory:false,message:'請選擇角色',

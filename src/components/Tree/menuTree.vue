@@ -3,7 +3,7 @@
         <div>
             <h3>目錄</h3>
         </div>
-        <div>
+        <div style="height:600px;overflow-x:hidden;overflow-y:auto">
             <el-tree
             ref="tree"
             :data="treeData"

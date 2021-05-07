@@ -1,7 +1,7 @@
 import { 
   getToken,setToken,removeToken, 
   getID,setID,removeID,
-  removeVersion,removeBuildingid
+  removeVersion
 }  from '../../utils/auth'
 import idb from '../../utils/indexedDB'
 import { resetRouter } from '../../router'

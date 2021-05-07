@@ -4,16 +4,20 @@ import AccessAuthority from './accessAuthority'
 class Menu extends Parent {
     constructor (data) {
         super(data)
-        const { name, description, status, sort, removable, code, linkMainMenus,
-            linkAccessAuthorities } = data
+        const { name, description, status, sort, removable, code, path, redirect, icon,
+             linkMainMenus,linkAccessAuthorities } = data
         var mainMenu = linkMainMenus.map(item=>{ return new Menu(item)})
-        var accessAuthority = linkAccessAuthorities.sort((x,y) => x.sort - y.sort).map(item=>{ return new AccessAuthority(item)})   
+        var accessAuthority = linkAccessAuthorities.sort((x,y) => x.sort - y.sort)
+                .map(item=>{ return new AccessAuthority(item)})   
         this.name = name
         this.description = description
         this.status = status
         this.sort = sort
         this.removable = removable
         this.code = code
+        this.path = path
+        this.redirect = redirect
+        this.icon = icon
         this.linkMainMenus = mainMenu
         this.linkAccessAuthorities = accessAuthority
         return this
@@ -82,14 +86,20 @@ class Menu extends Parent {
             sort :'',
             removable :false,
             code :'',
+            path:'',
+            redirect:'',
+            icon:'',
             linkMainMenus :[],
             linkAccessAuthorities :[]
         })
     }
     static getConfig(){
         return [
-            { label:'名稱' , prop:'name',format:'disableEdit', mandatory:true, message:'請輸入名稱',maxlength:'20',isHidden:false},
-            { label:'Code' , prop:'code',format:'disableEdit', mandatory:true,message:'請輸入Code',maxlength:'40',isHidden:false},
+            { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20',isHidden:false},
+            { label:'Code' , prop:'code', mandatory:true,message:'請輸入Code',maxlength:'40',isHidden:false},
+            { label:'路徑' , prop:'path', mandatory:true,message:'請輸入路徑',maxlength:'40',isHidden:false},
+            { label:'導向' , prop:'redirect', mandatory:false,message:'請輸入導向',maxlength:'40',isHidden:false},
+            { label:'Icon' , prop:'icon', mandatory:false,message:'請輸入icon',maxlength:'40',isHidden:false},
             { label:'描述' , prop:'description',format:'textarea', mandatory:false, message:'請輸入描述',maxlength:'200',isHidden:true},
             { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
             isPattern:false,errorMsg:'',type:'boolean',typemessage:'',isHidden:false},
@@ -101,8 +111,11 @@ class Menu extends Parent {
     }
     static getTableConfig(){
         return [
-            { label:'名稱' , prop:'name',format:'disableEdit', mandatory:true, message:'請輸入名稱',maxlength:'20',isHidden:false},
-            { label:'Code' , prop:'code',format:'disableEdit', mandatory:true,message:'請輸入Code',maxlength:'40',isHidden:false},
+            { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20',isHidden:false},
+            { label:'Code' , prop:'code', mandatory:true,message:'請輸入Code',maxlength:'40',isHidden:false},
+            { label:'路徑' , prop:'path', mandatory:true,message:'請輸入路徑',maxlength:'40',isHidden:false},
+            { label:'導向' , prop:'redirect', mandatory:false,message:'請輸入導向',maxlength:'40',isHidden:false},
+            { label:'Icon' , prop:'icon', mandatory:false,message:'請輸入icon',maxlength:'40',isHidden:false},
             { label:'描述' , prop:'description',format:'textarea', mandatory:false, message:'請輸入描述',maxlength:'200',isHidden:false},
             { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
             isPattern:false,errorMsg:'',type:'boolean',typemessage:'',isHidden:false},
@@ -114,7 +127,11 @@ class Menu extends Parent {
     }
     static async get(){
         var data = await api.authority.apiGetBuildingMainMenuAuthority().then(response => {
-            var result = response.result.sort((x,y) => x.sort - y.sort).map(item=>{ return new Menu(item)})
+            var result = response.result.sort((x,y) => x.sort - y.sort).map(item=>{ 
+                return new Menu(item)})
+            result.forEach(element => {
+                element.getLink().sort((x,y) => x.sort - y.sort)
+            })
             return result
         }).catch(error=>{
             return []

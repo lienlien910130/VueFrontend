@@ -119,7 +119,7 @@ import pdf from 'vue-pdf'
     computed:{
             ...mapGetters([
                 'fullscreen'
-            ]),
+            ])
     },
     props:{
         limit:{ 
@@ -249,6 +249,7 @@ import pdf from 'vue-pdf'
             }
         },
         onPreview(file){
+            console.log(this.fileName)
             this.previewVisible = true
             this.previewPath = "http://192.168.88.65:59119/Public/fileDownload/" + file.getID()
             this.dialogTitle = '【圖片預覽】'+file.fileOriginalName
@@ -355,7 +356,7 @@ import pdf from 'vue-pdf'
                         })
                         this.deleteItem = []
                     }
-                }else{
+                }else{ //設定平面圖
                     var name = this.files.filter((item,index)=> item.id == this.deleteItem[0])[0].extName
                     if(name == 'png' || name == 'jpg'){
                         this.$emit('handleFilesUpload','change',this.title,this.deleteItem[0])  

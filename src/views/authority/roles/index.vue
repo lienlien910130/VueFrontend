@@ -48,7 +48,7 @@ export default {
                 await this.setMenuRoleAccess()
             },
             immediate:true
-        },
+        }
     },
     methods:{
         async init(){
@@ -130,8 +130,8 @@ export default {
                 this.dialogStatus = 'create'
             }else if(index === 'distribution'){
                 this.selectRoleId = content.getID()
-                this.roleAccessAuthority = await content.getAccess()
-                this.originalRoleAccessAuthority = this.$deepClone(this.roleAccessAuthority)
+                this.roleAccessAuthority = await content.getAccess('role')
+                this.originalRoleAccessAuthority =  JSON.parse(JSON.stringify(this.roleAccessAuthority))
                 this.treeData = this.menu.map(item=>{ return new Menu(item)})
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'authoritycreate'},

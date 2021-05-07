@@ -1,10 +1,9 @@
 import api from '@/api'
 
 let Setting = {
-    buildingOptions:[],
-    
     getAllOption: async function(){
         var data = await api.setting.apiGetBuildingOptions().then(response => {
+            console.log()
             return response.result.sort((x,y) => x.id - y.id)
         }).catch(error=>{
             return []
@@ -42,6 +41,6 @@ let Setting = {
             return false
         })
         return data
-    },
+    }
 }
 export default Setting

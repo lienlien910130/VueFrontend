@@ -143,24 +143,20 @@ export default {
                     //this.fullscreen == true ? this.infiniteheight = '800px' : this.infiniteheight = '600px'
                     if(this.fullscreen == true){
                         this.title == 'committee' || this.title == 'contactUnit' || this.title == 'floorOfHouse' ? 
-                        this.infiniteheight = '710px' : this.infiniteheight = '800px'
+                        this.infiniteheight = 710 : this.infiniteheight = 800
                     }else{
                         this.title == 'committee' || this.title == 'contactUnit' || this.title == 'floorOfHouse'  ? 
-                        this.infiniteheight = '550px' : this.infiniteheight = '600px'
+                        this.infiniteheight = 550 : this.infiniteheight = 600
                     }
+                    this.tableheight = '500px'
                 },
                 immediate:true
             }
         },
         data() {
             return {
-                infiniteheight:''
+                infiniteheight:'',
+                tableheight:''
             }
-        },
-        methods: {
-            toAnotherPage(page,data,block){
-                console.log(page,data,block)
-                this.$router.push({ name: page, params: { block:block, target: data }})
-            }
-        },
+        }
 }

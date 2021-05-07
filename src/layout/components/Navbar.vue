@@ -141,6 +141,7 @@ import Contactunit from '@/object/contactunit'
 import Device from '@/object/device'
 import Building from '@/object/building'
 import Floors from '@/object/floors'
+import Setting from '@/object/setting'
 
 export default {
   components: {
@@ -234,7 +235,7 @@ export default {
           this.$store.dispatch('building/setbuildingid',content.id)
           this.$store.dispatch('permission/setRoutes')
           this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
-          this.$store.dispatch('building/setbuildingoptions',await this.$obj.Setting.getAllOption())
+          this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
           this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
           this.$store.dispatch('building/setbuildingdevices',await Device.get())
           this.$store.dispatch('building/setbuildingfloors',await Floors.get())

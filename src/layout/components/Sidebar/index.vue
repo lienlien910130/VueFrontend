@@ -56,6 +56,14 @@ export default {
     isCollapse() {
       return !this.sidebar.opened
     }
+  },
+  watch:{
+    permission_routes:{
+      handler:async function(){
+        console.log(JSON.stringify(this.permission_routes))
+      },
+      immediate:true
+    }
   }
 }
 </script>

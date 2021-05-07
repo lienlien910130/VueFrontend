@@ -1,64 +1,97 @@
-import { DrawingControl,Setting,DevicesManagement,
-  HistoryAnalysis,Basic,EmergencyResponse,AccessAuthority,mercuryfireRoutes, constantRoutes  } from '@/router'
+import { notfound,mercuryfireRoutes, constantRoutes  } from '@/router'
 import idb from '@/utils/indexedDB'
 import store from '@/store'
-import obj from '@/object'
 import router from '@/router'
 import { resetRouter } from '@/router'
 import  Menu  from '@/object/menu'
+import _import from '@/router/_import'
+import Layout from '@/layout'
 /**
  * Use meta.role to determine if the current user has permission
  * @param roles
  * @param route
  */
-function hasPermission(roles, route) {
-  if (route.meta && route.meta.roles) {
-    return roles.some(role => route.meta.roles.includes(role))
-  } else {
-    return true
-  }
-}
+// function hasPermission(roles, route) {
+//   if (route.meta && route.meta.roles) {
+//     return roles.some(role => route.meta.roles.includes(role))
+//   } else {
+//     return true
+//   }
+// }
 
-/**
- * Filter asynchronous routing tables by recursion
- * @param routes asyncRoutes
- * @param roles
- */
-export function filterAsyncRoutes(routes, roles) {
-  const res = []
+// /**
+//  * Filter asynchronous routing tables by recursion
+//  * @param routes asyncRoutes
+//  * @param roles
+//  */
+// export function filterAsyncRoutes(routes, roles) {
+//   const res = []
 
-  routes.forEach(route => {
-    const tmp = { ...route }
-    if (hasPermission(roles, tmp)) {
-      if (tmp.children) {
-        tmp.children = filterAsyncRoutes(tmp.children, roles)
+//   routes.forEach(route => {
+//     const tmp = { ...route }
+//     if (hasPermission(roles, tmp)) {
+//       if (tmp.children) {
+//         tmp.children = filterAsyncRoutes(tmp.children, roles)
+//       }
+//       res.push(tmp)
+//     }
+//   })
+
+//   return res
+// }
+
+function addRouter(routerlist) {
+  routerlist.forEach(e => {
+    delete e.description
+    delete e.status
+    delete e.sort
+    delete e.removable
+    delete e.linkAccessAuthorities
+    delete e.isDelete
+    delete e.createTime
+    delete e.id
+    var hasToCycle
+    if(e.linkMainMenus.length !== 0){ //有子階層
+      hasToCycle = true
+      e.children = e.linkMainMenus
+    }else if(e.linkMainMenus.length == 0 && e.redirect !== ''){ //只有一個階層
+      hasToCycle = false
+      e.children = [
+        {
+          path: e.redirect,
+          name:e.code,
+          component:_import(e.code),
+          meta:{ title:e.name, icon:e.icon }
+        }
+      ]
+      if(e.code == 'sys-Setting' || e.code == 'sys-Building' || e.code == 'sys-Index'){
+        e.hidden = true
       }
-      res.push(tmp)
+    }
+    //有子階層的父層級
+    if(e.linkMainMenus !== undefined && e.linkMainMenus.length !== 0 && e.redirect !== ''){
+      e.meta = { title: e.name, icon: e.icon }
+      e.name = e.code
+    }
+
+    if (e.redirect === '') { //第二階層
+      e.component = _import(e.code) // 動態匹配元件
+      e.meta = { title: e.name, icon: e.icon }
+      e.name = e.code
+      delete e.redirect
+    }else{ //第一階層
+      e.component = Layout 
+    }
+    delete e.linkMainMenus
+    delete e.code
+    delete e.icon
+    
+    if (e.children !== undefined && hasToCycle == true) {
+      // 存在子路由就遞迴
+      addRouter(e.children)
     }
   })
-
-  return res
-}
-
-function checktemplate(menu){
-  switch(menu){
-      case 'sys-Setting':
-        return Setting
-      case 'drawingControl':
-        return DrawingControl
-      case 'sys-DevicesManagement':
-        return DevicesManagement
-      case 'sys-Basic':
-        return Basic
-      case 'historyAnalysis':
-        return HistoryAnalysis
-      case 'emergencyResponse':
-        return EmergencyResponse
-      case 'sys-AccessAuthority':
-        return AccessAuthority
-      default:
-        break;
-  }
+  return routerlist
 }
 
 const state = {
@@ -106,34 +139,40 @@ const actions = {
       resolve()
     })
   },
-  async generateRoutes({ commit }, roles) {
+  async generateRoutes({ commit }, roles) { //起始選單
     let accessedRoutes = []
     if (roles) {
       accessedRoutes = mercuryfireRoutes || []
     } 
+    accessedRoutes = accessedRoutes.concat(notfound)
     commit('SET_ROUTES', accessedRoutes)
     return accessedRoutes
   },
   async setRoutes({ commit }) {
     resetRouter()
-    var data = await  Menu.get()
+    var data = await Menu.get()
     store.dispatch('permission/setmenu',data)
-    let accessedRoutes = []
-    var newArray = []
-    data.forEach(item=>{
-      var router = checktemplate(item.code)
-      accessedRoutes = accessedRoutes.length == 0 ? router : accessedRoutes.concat(router)
-    })
-    for (let item of accessedRoutes) {
-      if (item) {
-        newArray.push(item)
-      }
-    }
-    if(store.getters.id == '1'){
-      newArray = newArray.concat(mercuryfireRoutes)
-    }
-    commit('SET_ROUTES', newArray)
-    router.addRoutes(newArray)
+    var menucopy = data.map(item=>{ return item.clone(item)})
+    var getRouter = addRouter(menucopy)
+    getRouter = getRouter.filter(item => { 
+      return item.path !== '/' 
+    }).concat(notfound)
+    // let accessedRoutes = []
+    // var newArray = []
+    // data.forEach(item=>{
+    //   var router = checktemplate(item.code)
+    //   accessedRoutes = accessedRoutes.length == 0 ? router : accessedRoutes.concat(router)
+    // })
+    // for (let item of accessedRoutes) {
+    //   if (item) {
+    //     newArray.push(item)
+    //   }
+    // }
+    // if(store.getters.id == '1'){
+    //   newArray = newArray.concat(mercuryfireRoutes)
+    // }
+    commit('SET_ROUTES', getRouter)
+    router.addRoutes(getRouter)
   }
 }
 

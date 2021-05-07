@@ -49,7 +49,8 @@ export default {
                         return children
                     })
                     return element
-                })
+                }).filter(item=>{return item.code !== 'sys-Setting' && item.code !== 'sys-Building'
+                    && item.code !== 'sys-Index'})
                 if(this.selectId !== null){
                     var array = []
                     for(let element of this.treeData){
@@ -132,7 +133,7 @@ export default {
                     this.selectId = ''
                     this.$message('刪除成功')
                     this.selectId = temp
-                    this.$store.dispatch('permission/setmenu',await  Menu.get())
+                    this.$store.dispatch('permission/setRoutes')
                 }
             }else if(index === 'empty'){
                 if(this.selectId == null){
@@ -151,10 +152,13 @@ export default {
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,JSON.stringify(content))
             if(index == 'update' || index == 'create'){
-                var isOk = index == 'update' ? await content.update() : await content.create(this.selectId)
+                delete content.linkMainMenus
+                delete content.linkAccessAuthorities
+                var isOk = index == 'update' ? await content.update() : 
+                await content.create(this.selectId)
                 if(isOk){
                     index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                    this.$store.dispatch('permission/setmenu',await  Menu.get())
+                    this.$store.dispatch('permission/setRoutes')
                 }    
             }   
             this.innerVisible = false

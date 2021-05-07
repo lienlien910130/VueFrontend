@@ -113,7 +113,12 @@ export default function(method,url,data = null,isHeader = false) {
     }else if(method == 'delete'){
         return service.delete(url)
     }else if(method == 'put'){
-        return service.put(url)
+        return service.request({
+            url: url,
+            method: 'put',
+            headers: {'Content-Type': 'application/json;charset=UTF-8;'},
+            data
+        })
     }else if(method == 'patch'){
         return service.patch(url,data)
     }else {

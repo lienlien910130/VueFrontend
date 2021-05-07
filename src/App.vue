@@ -8,7 +8,7 @@
 export default {
   name: 'App',
   async created(){
-    this.initsocket()
+    //this.initsocket()
     this.register()
   },
   methods: {

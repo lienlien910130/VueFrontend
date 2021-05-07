@@ -16,8 +16,11 @@ const report = {
     apiPostInspectionLack(inspectionId,data){ return req('post','/reportLack/'+inspectionId+'/inspectionLack',data) },
     apiPatchInspectionLack(data){ return req('patch','/reportLack/inspectionLack',data) },
     apiDeleteInspectionLack(inspectionLackId){ return req('delete','/reportLack/'+inspectionLackId+'/inspectionLack') },
-    apiPostInspectionLackFiles(inspectionId,fileId,cover){ 
-        return req('post','/reportLack/'+inspectionId+'/inspectionLack/load/'+fileId+'/'+cover) },
+    apiPostInspectionLackFiles(autoCreateMaintain,inspectionId,fileId,cover){ 
+        return req('post','/reportLack/'+this.getBid()+'/'+autoCreateMaintain+'/'+inspectionId+
+        '/inspectionLack/load/'+fileId+'/'+cover) },
+    // apiPostInspectionLackFiles(inspectionId,fileId,cover){ 
+    //     return req('post','/reportLack/'+inspectionId+'/inspectionLack/load/'+fileId+'/'+cover) },
     
         //公安申報
     apiGetBuildingPublicSafe(){ return req('get','/reportPublicSafe/buildings/'+this.getBid()) },

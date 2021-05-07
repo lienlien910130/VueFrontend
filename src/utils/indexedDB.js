@@ -1,4 +1,4 @@
-import obj from '@/object'
+
 import Files from '@/object/files'
 const DB_NAME = 'mercuryfire'
 const DB_VERSION = 1

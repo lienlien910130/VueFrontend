@@ -65,6 +65,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import Setting from '@/object/setting'
 export default {
     components:{
         SettingBlock:() => import('./components/SettingBlock.vue')
@@ -97,7 +98,7 @@ export default {
             }
         },
         async getOptions(){ //取得大樓的所有分類
-            this.options = await this.$obj.Setting.getAllOption()
+            this.options = await Setting.getAllOption()
             this.$store.dispatch('building/setbuildingoptions',this.options)
         },
         optionsFilter(title){
@@ -137,14 +138,14 @@ export default {
                     classType:index,
                     textName:content
             }
-            var isOk = await this.$obj.Setting.postOption(JSON.stringify(temp))
+            var isOk = await Setting.postOption(JSON.stringify(temp))
             if(isOk){
                 this.$message("新增成功")
                 await this.getOptions()
             }
         },
         async UpdateData(content){
-            var isOk = await this.$obj.Setting.updateOption(JSON.stringify(content))
+            var isOk = await Setting.updateOption(JSON.stringify(content))
             if(isOk){
                 this.$message("更新成功")
                 this.type = 'view'
@@ -153,7 +154,7 @@ export default {
             }
         },
         async DeleteData(content){
-            var isOk = await this.$obj.Setting.deleteOption(content)
+            var isOk = await Setting.deleteOption(content)
             if(isOk){
                 this.$message("刪除成功")
                 await this.getOptions()

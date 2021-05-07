@@ -1,6 +1,7 @@
 <template>
 
     <el-dialog
+        top="5vh"
         :width="dialogWidth"
         :title="textMap[dialogStatus]"
         :visible="visible"
@@ -75,10 +76,10 @@
         </el-tabs> -->
 
         <!-- dialogStatus : 一般表單/upload/lack/authority -->
-        <keep-alive>
+        <!-- <keep-alive> -->
 
-        <el-form 
-        v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' && dialogStatus !== 'authority'  "
+        <el-form v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' && dialogStatus !== 'authority'
+         && dialogStatus !== 'exportExcel' && dialogStatus !== 'uploadExcel'  "
         ref="dataForm"  
         :model="temp"  
         :label-position="label" 
@@ -179,15 +180,16 @@
                         :key="group.label"
                         :label="group.label">
                             <el-option
-                                v-for="item in group.options"
+                                v-for="item in group.children"
                                 :key="item.id"
                                 :label="item.label"
-                                :value="item">
+                                :value="item"
+                                :disabled="item.status !== ''">
                             </el-option>
                         </el-option-group>
                 </el-select>
                 <!-- 設備種類(後端)下拉選單(單) -->
-                <el-select
+                <!-- <el-select
                     v-else-if="item.format == 'fullType' "
                     v-model="temp[item.prop]"
                     filterable
@@ -205,7 +207,16 @@
                             :value="item.value">
                         </el-option>
                         </el-option-group>
-                </el-select>
+                </el-select> -->
+                <el-cascader
+                    v-else-if="item.format == 'fullType' "
+                    v-model="temp[item.prop]"
+                    placeholder="請選擇"
+                    :options="selectfilter('fullTypeSelect')"
+                    filterable
+                    style="width:100%"
+                    clearable>
+                </el-cascader>
                 <!-- 設定的下拉選單(單) -->
                 <el-select
                     v-else-if="item.format =='BrandOptions' || 
@@ -342,19 +353,18 @@
             </el-form-item>
         </el-form>
         <!-- 檔案 -->
-        <Upload 
-        v-if="dialogStatus === 'upload'"
+        <Upload v-if="dialogStatus === 'upload'"
         v-bind="uploadAttrs" 
-        v-on:handleFilesUpload="handleFilesUpload"></Upload>   
+        v-on:handleFilesUpload="handleFilesUpload">
+        </Upload>   
         <!-- 缺失內容 -->
-        <Table 
-        v-if="dialogStatus === 'lack'"
+        <Table v-if="dialogStatus === 'lack'"
         :list-query-params.sync="listQueryParams"
         v-bind="tableAttrs" 
-        v-on="tableEvent"></Table>  
+        v-on="tableEvent">
+        </Table>  
         <!-- 分配權限 -->
-        <el-table
-            v-if="dialogStatus === 'authority'"
+        <el-table v-if="dialogStatus === 'authority'"
             :data="accessAuthoritiesData"
             style="width: 100%;margin-bottom: 20px;"
             row-key="id"
@@ -364,9 +374,12 @@
             :tree-props="{children: 'linkMainMenus', hasChildren: 'hasChildren'}"
             @select="handleSelectionChange"
             @select-all="handleSelectionAll"
+            :header-cell-class-name="cellClass"
+            :row-class-name="rowClass"
             v-loading = "pictLoading">
             <el-table-column
             type="selection"
+            :selectable="selectable"
             width="55">
             </el-table-column>
             <el-table-column
@@ -379,19 +392,30 @@
             label="權限"
             min-width="80%">
             <template slot-scope="scope">
-                <el-checkbox-group v-model="accessArray" @change="handleCheckedChange(scope.row)">
+                <el-checkbox-group 
+                v-model="accessArray" 
+                @change="handleCheckedChange(scope.row)">
                     <el-checkbox 
                     v-for="item in scope.row.getAccessAuthorities()"
                     :key="item.getID()"
-                    :label="item.getID()">
+                    :label="item.getID()"
+                    :disabled="title == 'account'">
                     {{ item.getName()  }}
                     </el-checkbox>
                 </el-checkbox-group>
             </template>
             </el-table-column>
         </el-table>
+        <!-- 下載檔案 -->
+        <ExportExcel  v-if="dialogStatus === 'exportExcel'"
+            v-bind="exportExcelAttrs">
+        </ExportExcel>
 
-        </keep-alive>
+        <UploadExcel  v-if="dialogStatus === 'uploadExcel'"
+           >
+        </UploadExcel>
+
+        <!-- </keep-alive> -->
         
         <div v-if="isHasButtons" slot="footer" class="dialog-footer">
             <span
@@ -411,6 +435,7 @@
 
 <script>
 import computedmixin  from '@/mixin/computedmixin'
+import Setting from '@/object/setting'
 
 export default {
     name:'Dialog',
@@ -444,6 +469,10 @@ export default {
             required: true
         },
         selectData: {
+            type: Array
+        },
+        //exportExcel
+        exportExcelData: {
             type: Array
         },
         //auth
@@ -492,7 +521,7 @@ export default {
             handler:function(){
                 this.$nextTick(()=>{
                     this.$refs.authorityTable.clearSelection()
-                    this.accessArray = this.$deepClone(this.accessAuthorities)
+                    this.accessArray = JSON.parse(JSON.stringify(this.accessAuthorities))
                     this.treeSelection()
                 })
             }
@@ -510,6 +539,9 @@ export default {
             if (this.$store.state.app.device === 'mobile') {
                 return "90%"
             } else {
+                if(this.dialogStatus == 'exportExcel'){
+                    return "500px"
+                }
                 if(this.title == 'maintainList' || this.title == 'maintain' || this.title == 'lack'){
                     return "1400px"
                 }
@@ -530,6 +562,13 @@ export default {
                 files:this.files,
                 title:this.title,
                 specialId:this.specialId
+            }
+        },
+        exportExcelAttrs(){
+            return{
+                exportExcelData:this.exportExcelData,
+                config:this.config,
+                title:this.title
             }
         },
         tableAttrs(){
@@ -586,24 +625,14 @@ export default {
                                 return v
                             })
                         case 'fullTypeSelect':
+                            console.log(JSON.stringify(this.deviceType))
                             return this.deviceType
                     }
                 }else{
                     return ""
                 }
             }  
-        },
-        // changeAccess(){
-        //     return function (value) {
-        //         if(value !== null){
-        //             let _array = this.selectData.filter((item, index) => 
-        //                 item.id == value 
-        //             )
-        //             return _array[0].name
-        //         }
-        //         return ""
-        //     }
-        // }
+        }
     },
     data() {
         return {
@@ -623,7 +652,6 @@ export default {
     },
     methods: {
         init(){
-            console.log('this.dialogData.length',this.dialogData.length)
             if(this.dialogData.length){
                 this.activeName = this.dialogData[0].getID()
                 this.temp = this.dialogData[0].clone(this.dialogData[0])
@@ -634,7 +662,9 @@ export default {
                     }
                 }
             }
-            if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
+            if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' 
+            && this.dialogStatus !== 'authority' && this.dialogStatus !== 'exportExcel' 
+            && this.dialogStatus !== 'uploadExcel'){
                 this.$nextTick(() => {
                     if(this.$refs.dataForm !== undefined){
                         this.$refs.dataForm.clearValidate()
@@ -688,7 +718,7 @@ export default {
             }
         },
         async getOptions(){ //取得大樓的所有分類
-            this.options = await this.$obj.Setting.getAllOption()
+            this.options = await Setting.getAllOption()
             this.$store.dispatch('building/setbuildingoptions',this.options)
         },
         handleClickOption(status){
@@ -697,7 +727,8 @@ export default {
                 this.temp['checkEndDate'] = this.rangevalue[1]
             }
             if(status !== 'cancel' && status !== 'cancellack' && status !== 'empty' && 
-            this.dialogStatus !== 'upload' && 
+            this.dialogStatus !== 'upload' && this.dialogStatus !== 'exportExcel' && 
+            this.dialogStatus !== 'uploadExcel' &&
             this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
                 this.$refs.dataForm.validate(async(valid) => {
                     if (valid) {
@@ -709,7 +740,7 @@ export default {
                         })
                         if(this.createOption.length !== 0){ //有動態新增選項
                             for(var i =0;i<this.createOption.length;i++){
-                                var isOk = await this.$obj.Setting.postOption(this.createOption[i])
+                                var isOk = await Setting.postOption(this.createOption[i])
                                 if(isOk !== null){
                                     this.temp[this.prop[i]] = isOk.id
                                 }
@@ -776,6 +807,25 @@ export default {
                 this.dialogStatus = 'create'
             }
         },
+        //客製化樣式
+        cellClass(row){
+            if (this.title == 'account') {//帳號管理不可選全選
+                return 'disabledCheck'
+            }
+        },
+        rowClass(row){
+            if (this.title == 'account') {//帳號管理不可選全選
+                return 'disabledEdit'
+            }
+        },
+        selectable(row,index){ //帳號管理不可選每列
+            if(this.title == 'account'){
+                return false
+            }else {
+                return true
+            }
+        },
+        //權限勾選
         async handleSelectionChange(selection, row){ //先檢查該列是否原先有被選取的選項 有的話先刪除 無的話則加入全部
             var isSelect = selection.filter((item,index) => item.id == row.getID())
             var isLevelOne = row.getLink().length > 0 // 是否為第一層
@@ -847,3 +897,11 @@ export default {
     }
 }
 </script>
+<style scoped>
+.el-table /deep/.disabledCheck .cell .el-checkbox__inner{
+    display: none!important;
+}
+.el-table /deep/.disabledEdit  .cell .is-checked .el-checkbox__label{
+    color: red;
+}
+</style>

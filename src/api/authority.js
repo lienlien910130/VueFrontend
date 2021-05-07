@@ -34,10 +34,12 @@ const authority = {
     apiPostAccountAuthority(data){ return req('post','/accountSetting',data) },
     apiPatchAccountAuthority(data){ return req('patch','/accountSetting',data) },
     apiDeleteAccountAuthority(accountId){ return req('delete','/accountSetting/'+accountId) },
+    //帳號取得權限管理
+    apiGetAccountAuthorityByAccount(roleId){ return req('get','/accountSetting/'+this.getBid()+'/accessAuthorities/'+roleId) },
     //角色取得權限管理
     apiGetAccountAuthorityByRole(roleId){ return req('get','/roleSetting/'+this.getBid()+'/accessAuthorities/'+roleId) },
     //角色管理修改權限 - 多筆更新
-    apiPatchAuthorityByRole(data){ return req('patch','/roleSetting/accessAuthorities',data) },
+    apiPutAuthorityByRole(data){ return req('put','/roleSetting/accessAuthorities',data) },
     //選單取得權限管理
     apiGetAccountAuthorityByMenu(mainMenuId){ return req('get','/roleSetting/accessAuthorities/'+mainMenuId) },
 

@@ -43,17 +43,31 @@ class Role extends Parent {
         })
         return data
     }
-    async getAccess(){
-        var data = await api.authority.apiGetAccountAuthorityByRole(this.id).then(response => {
-            var array = []
-            response.result.sort((x,y) => x.id - y.id).forEach(item=>{
-                array.push(item.id)
+    async getAccess(type){
+        if(type == 'role'){
+            var data = await api.authority.apiGetAccountAuthorityByRole(this.id).then(response => {
+                var array = []
+                response.result.sort((x,y) => x.id - y.id).forEach(item=>{
+                    array.push(item.id)
+                })
+                return array
+            }).catch(error=>{
+                return []
             })
-            return array
-        }).catch(error=>{
-            return []
-        })
-        return data
+            return data
+        }else{
+            var data = await api.authority.apiGetAccountAuthorityByAccount(this.id).then(response => {
+                var array = []
+                response.result.sort((x,y) => x.id - y.id).forEach(item=>{
+                    array.push(item.id)
+                })
+                return array
+            }).catch(error=>{
+                return []
+            })
+            return data
+        }
+       
     }
     getName(){
         return this.name
@@ -102,7 +116,7 @@ class Role extends Parent {
         return data
     }
     static async updateAccessAuthority(data){
-        var data = await api.authority.apiPatchAuthorityByRole(data).then(async(response) => {
+        var data = await api.authority.apiPutAuthorityByRole(data).then(async(response) => {
             return true
         }).catch(error=>{
             return false

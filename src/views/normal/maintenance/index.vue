@@ -341,6 +341,7 @@ export default {
                         await this.changeTable(this.isTable)
                     }
             }else if(index === 'createmaintain' || index === 'updatemaintain'){
+                console.log(content.getInspectionLacks())
                 var isOk = index === 'createmaintain' ? 
                 await content.create(this.maintainList.getID()) : await content.update()
                 if(isOk){

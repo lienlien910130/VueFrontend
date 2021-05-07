@@ -40,8 +40,8 @@ class DeviceType extends Parent {
         })
         return data
     }
-    getAll(){
-        
+    setFullType(fullType){
+        this.fullType = fullType
     }
     setTypeName(typeName){
         this.name = typeName
@@ -50,7 +50,7 @@ class DeviceType extends Parent {
         var label = ''
         var fullType = this.fullType
         store.getters.deviceType.filter(function(item, index){
-            var array = item.options.filter((obj,index)=>{
+            var array = item.children.filter((obj,index)=>{
                 return obj.value == fullType
             })
             array.length !== 0 ? label = array[0].label  : ''
@@ -61,7 +61,7 @@ class DeviceType extends Parent {
         var label = ''
         var fullType = this.fullType
         store.getters.deviceType.forEach(item=>{
-            var array = item.options.filter((obj,index)=>{
+            var array = item.children.filter((obj,index)=>{
                 return obj.value == fullType
             })
             array.length !== 0 ? label = item.label  : ''
@@ -100,8 +100,8 @@ class DeviceType extends Parent {
                 label: '設備類型',
                 prop: 'fullType',
                 format:'fullType',
-                mandatory:true, message:'請選擇設備類型',isSelect:true,options:[],selectType:'fullType',select:'',
-                isSort:true,isHidden:false,maxlength:'20'
+                mandatory:true, message:'請選擇設備類型',isSelect:true,options:[],selectType:'fullType',
+                select:'',isSort:true,isHidden:false,maxlength:'20',type:'array'
             },
             {
                 label: '設備名稱',
@@ -112,7 +112,7 @@ class DeviceType extends Parent {
                 label: '廠牌名稱',
                 prop: 'brand',
                 mandatory:true, message:'請輸入廠牌名稱',isSelect:true,options:[],
-                selectType:'options',select:'',isSort:true,isHidden:false,maxlength:'20'
+                select:'',isSort:true,isHidden:false,maxlength:'20'
             },
             {
                 label: '設備型號',
@@ -138,6 +138,7 @@ class DeviceType extends Parent {
             })
         }else if(type == 'deviceTypesManagement'){
             data = await api.device.apiGetDevicesType().then(response => {
+                console.log(JSON.stringify(response.result))
                 return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
             }).catch(error=>{
                 return []
@@ -153,7 +154,7 @@ class DeviceType extends Parent {
     }
     static async getDefault (){
         var data = await api.device.apiGetDefaultFullType().then(response => {
-            return response
+            return JSON.parse(response)
         }).catch(error=>{
             return []
         })

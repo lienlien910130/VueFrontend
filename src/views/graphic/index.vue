@@ -281,7 +281,7 @@ export default {
           alert('請勿同時編輯該樓層圖控系統')
         }
       },
-      changeViewBlock(){
+      changeViewBlock(){ //篩選區塊顯示
         this.$refs.graphic.searchBlockType(this.checkList)
       },
       //樓層事件
@@ -294,7 +294,6 @@ export default {
         //this.$refs.objectList.init() //圖層重製
         //this.$refs.graphic.loadObjects(await this.floor.getGraphicFiles()) //載入初始化物件
         var obj = await this.floor.getGraphicFiles()
-        console.log(obj)
         if(content.getImageID() == null){
             this.disabled = true
             this.changeType('view')
@@ -341,8 +340,8 @@ export default {
         this.$refs.objectList.redoundo(val)
       },
       async sendFloorGraphicFile(state,array){ //儲存圖控檔案，同步更新設備資訊
-        console.log(state)
-        const fileContent = new File([state], this.floor.getID()+'.txt', { type: '' })
+        var str = JSON.stringify(state)
+        const fileContent = new File([str], this.floor.getID()+'.txt', { type: '' })
         const formData = new FormData()
         formData.append('file', fileContent)
         var isOk = await this.floor.postGraphicFiles(formData)

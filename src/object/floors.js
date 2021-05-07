@@ -9,10 +9,10 @@ class Floors extends Parent {
     constructor (data) {
         super(data)
         const { floor, floorPlanID, linkDevices } = data
-        //var devices = linkDevices.map(item=>{ return new Device(item)})
+        var devices = linkDevices.map(item=>{ return new Device(item)})
         this.floor = floor
         this.floorPlanID = floorPlanID
-        this.linkDevices = linkDevices
+        this.linkDevices = devices
         return this
     }
     clone(data){

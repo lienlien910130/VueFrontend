@@ -440,9 +440,9 @@ export default {
           })
           this.canvas.setBackgroundImage(background, this.canvas.renderAll.bind(this.canvas))
           this.canvas.renderAll()
-          this.state = this.canvas.toJSON()
+          //this.state = this.canvas.toJSON()
       })
-      //await this.loadObjects(objects)
+      await this.loadObjects(objects)
     },
     addImageProcess(src){ //載入圖片
       var self = this
@@ -1246,15 +1246,15 @@ export default {
     receiveMessage(event) { //子視窗傳來的
         //event.origin是指發送的消息源，一定要進行驗證！！！
         // if (event.origin !== "http://localhost:9528")return
-        // if (event.data.source === 'vue-devtools-backend-injection' 
-        // || event.data.source === 'vue-devtools-proxy' || event.data.source === 'undefined')return
-        // if(event.data !== "" && event.data !== 'null'){
-        //   this.imgSource = event.data.split(',')
-        //   this.canvas.skipTargetFind = true
-        // }else if (event.data == 'null'){
-        //   this.imgSource = []
-        //   this.canvas.skipTargetFind = false
-        // }
+        if (event.data.source === 'vue-devtools-backend-injection' 
+        || event.data.source === 'vue-devtools-proxy' || event.data.source === 'undefined')return
+        if(event.data !== "" && event.data !== 'null'){
+          this.imgSource = event.data.split(',')
+          this.canvas.skipTargetFind = true
+        }else if (event.data == 'null'){
+          this.imgSource = []
+          this.canvas.skipTargetFind = false
+        }
     },
     //操作
     async drawTypeChange(e) { //切換繪圖類別

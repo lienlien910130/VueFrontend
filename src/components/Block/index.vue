@@ -1,10 +1,10 @@
 <template>
 <div>
     <el-row  :gutter="gutter">
-        <div class="infinite-list-wrapper" :style="{ height: infiniteheight }">
+        <div class="infinite-list-wrapper" :style="{ height: infiniteheight+'px' }">
             <div style="margin-bottom:50px">
                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                    <span v-if="isTable == false">
+                    <!-- <span v-if="isTable == false">
                         <span>排序</span>
                         <el-select 
                         placeholder="請選擇" 
@@ -19,8 +19,8 @@
                                 :value="element.prop">
                             </el-option>
                         </el-select>
-                    </span>
-                    <span v-for="item in selectSetting"
+                    </span> -->
+                    <!-- <span v-for="item in selectSetting"
                         :key="item.prop"
                         >
                             <span>{{ item.label }}</span>
@@ -38,7 +38,7 @@
                                 :value="element.value">
                                 </el-option>
                             </el-select>
-                    </span>
+                    </span> -->
                     <el-button
                         v-if="isTable == false && title !== 'address'"
                         class="filter-item" 
@@ -63,8 +63,7 @@
                     </el-button>
                 </el-col>
             </div>
-            <div v-if="isTable == false"
-            class="list"  
+            <div v-if="isTable == false" 
             >
               <div 
               v-for="(item,index) in blockData" 
@@ -83,7 +82,7 @@
                                 <span>{{ option.label }} :</span>
                             </div>
                             <div :style="{display:'inline-block','word-break':'break-all','padding-top':'5px',
-                            width:itemstyle,}">
+                            width:itemstyle}">
                                 <span v-if="option.format == 'YYYY' | option.format === 'YYYY-MM-DD'">
                                 {{ dataStr(item[option.prop],option.format) }}
                                 </span>
@@ -229,6 +228,8 @@
                     highlight-current-row
                     style="width: 100%;margin-top:10px"
                     empty-text="暫無資料"
+                    @sort-change="sortChange"
+                    :header-cell-class-name="handleHeaderCellClass"
                     >
                             <el-table-column
                             fixed
@@ -241,15 +242,13 @@
                                 :label="item.label" 
                                 :key="index" 
                                 :prop="item.prop" 
-                                sortable
                                 header-align="center"
+                                :column-key="item.prop"
+                                sortable="custom"
+                                :filters="getFilterItems(item.prop)" 
+                                :filter-method="filterHandler"
                                 >
                                 <template slot-scope="scope">
-
-                                        <!-- <span v-if="scope.column.property == 'dateOfFailure' || 
-                                        scope.column.property == 'dateOfCallRepair' || 
-                                        scope.column.property == 'completedTime' " style="width:150px"> 
-                                            {{ dataStr(scope.row[scope.column.property],'YYYY-MM-DD')  }}</span> -->
 
                                         <span v-if="item.format== 'YYYY-MM-DD' || 
                                         item.format== 'YYYY'" style="width:150px"> 
@@ -422,42 +421,50 @@
                             label="操作"
                             v-if="title !== 'address'"
                             >
-                            <template slot="header"  v-if="title !== 'maintain'">
-                                <i class="el-icon-circle-plus-outline" 
-                                @click="handleTableClick('empty','')" 
-                                style="cursor: pointer;font-size:25px;float:right"></i>
-                            </template>
-                            <template slot-scope="scope">
-                                <div style="float:right">
-                                    <el-button v-if="title == 'maintain' || 
-                                    title == 'reportInspectio' || title == 'reportPublicSafe' 
-                                    || title == 'floorOfHouse'   " 
-                                    @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
-                                    <i class="el-icon-folder-opened"  
-                                    style="cursor: pointer;float:right"></i>
-                                    </el-button>
-                                    <el-button v-if="title == 'reportInspectio' || title == 'reportPublicSafe' " 
-                                    @click="handleTableClick('openlacks',scope.row)" type="danger" size="small">
-                                    缺失
-                                    </el-button>
-                                    <el-button v-if="title == 'roles'" 
-                                    @click="handleTableClick('distribution',scope.row)" type="danger" size="small">
-                                    分配權限
-                                    </el-button>
-                                    <el-button 
-                                        @click="handleTableClick('open',scope.row)" 
-                                        type="primary" 
-                                        size="small">
-                                        編輯
-                                    </el-button>
-                                    <el-button 
-                                        type="info" size="small" 
-                                        @click="handleTableClick('delete',scope.row)"
-                                        :disabled="scope.row.removable !== undefined && scope.row.removable == false">
-                                        刪除
-                                    </el-button> 
-                                </div>
-                            </template>
+                                <template slot="header"  v-if="title !== 'maintain'">
+                                    <!-- 檔案上傳&檔案下載&新增資料 -->
+                                    <i class="el-icon-circle-plus-outline" 
+                                    @click="handleTableClick('empty','')" 
+                                    style="cursor: pointer;font-size:25px;float:right"></i>
+                                    <i class="el-icon-download" 
+                                    @click="handleTableClick('exportExcel','')" 
+                                    style="cursor: pointer;font-size:25px;float:right"></i>
+                                    <i class="el-icon-upload2" 
+                                    @click="handleTableClick('uploadExcel','')" 
+                                    style="cursor: pointer;font-size:25px;float:right"></i>
+                                </template>
+                                <template slot-scope="scope">
+                                    <!-- 檔案&缺失&查看/分配權限&編輯&刪除 -->
+                                    <div style="float:right"> 
+                                        <el-button v-if="title == 'maintain' || 
+                                        title == 'reportInspectio' || title == 'reportPublicSafe' 
+                                        || title == 'floorOfHouse'   " 
+                                        @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
+                                        <i class="el-icon-folder-opened"  
+                                        style="cursor: pointer;float:right"></i>
+                                        </el-button>
+                                        <el-button v-if="title == 'reportInspectio' || title == 'reportPublicSafe' " 
+                                        @click="handleTableClick('openlacks',scope.row)" type="danger" size="small">
+                                        缺失
+                                        </el-button>
+                                        <el-button v-if="title == 'roles' || title == 'account'"
+                                        @click="handleTableClick('distribution',scope.row)" type="danger" size="small">
+                                        {{ title == 'roles' ? '分配權限' : '查看權限'}}
+                                        </el-button>
+                                        <el-button 
+                                            @click="handleTableClick('open',scope.row)" 
+                                            type="primary" 
+                                            size="small">
+                                            編輯
+                                        </el-button>
+                                        <el-button 
+                                            type="info" size="small" 
+                                            @click="handleTableClick('delete',scope.row)"
+                                            :disabled="scope.row.removable !== undefined && scope.row.removable == false">
+                                            刪除
+                                        </el-button> 
+                                    </div>
+                                </template>
                             </el-table-column>
                 </el-table>
             </div>
@@ -528,9 +535,9 @@ export default {
         selectSetting: {
             type: Array
         },
-        sortArray: {
-            type: Array
-        },
+        // sortArray: {
+        //     type: Array
+        // },
         listQueryParams: {
             type: Object
         },
@@ -692,7 +699,8 @@ export default {
             rowlabel:[],
             itemkey: Math.random(),
             gutter:0,
-            updateArray:[]
+            updateArray:[],
+            orderArray:[]
         }
     },
     methods: {
@@ -895,9 +903,122 @@ export default {
                 }
             } 
         },
-        // toAnotherPage(page,data,block){
-        //     console.log(page,data,block)
-        //     this.$router.push({ name: page, params: { block:block, target: data }})
+        //篩選
+        filterHandler(value, row, column) {
+            const property = column['property']
+            return row[property] === value
+        },
+        getFilterItems(prop){
+            var data = this.selectSetting.filter(item=>{ 
+                return item.type == prop })
+            return data.length !== 0 ? data[0].options : []
+        },
+        //排序
+        handleHeaderCellClass({row, column, rowIndex, columnIndex}){
+            this.orderArray.forEach(element => {
+                if (column.property===element.prop) {
+                    column.order=element.order
+                }
+            });
+        },
+        // handleSortChange( {column, prop, order} ){    //order值（ascending、descending、null）对应不同的排序方式
+        //     if (order) {  //参与排序
+        //         let flagIsHave=false
+        //         this.orderArray.forEach(element => {
+        //             if (element.prop === prop) {
+        //                 element.order=order
+        //                 flagIsHave=true
+        //             }
+        //         });
+        //         if (!flagIsHave) {
+        //             this.orderArray.push({
+        //                 prop:prop,
+        //                 order:order
+        //             })
+        //         }
+        //     }else{  //不参与排序
+        //         let orderIndex=0
+        //         this.orderArray.forEach((element,index) => {
+        //             if (element.prop === prop) {
+        //                 orderIndex=index
+        //             }
+        //         });
+        //         this.orderArray.splice(orderIndex,1)
+        //     }
+        //     console.log(JSON.stringify(this.orderArray))
+        // },
+        // sortChange(column){
+        //     this.listQueryParams.page = 1 // 排序后返回第一页
+        //     this.$emit('update:listQueryParams', this.listQueryParams)
+        //     this.$emit('sortChange',column)
+        // },
+        //表格排序
+        sortChange(column){
+            var self = this
+            if (column.order === "descending") {
+                this.blockData = this.blockData.sort(function(str1,str2){
+                    return self.sortRule(str2[column.prop],str1[column.prop])
+                })
+            } else if (column.order === "ascending") {
+                this.blockData = this.blockData.sort(function(str1,str2){
+                    return self.sortRule(str1[column.prop],str2[column.prop])
+                })
+            }
+        },
+        sortRule(str1, str2) {
+            let res = 0
+            for (let i = 0; ;i++) {
+				if (!str1[i] || !str2[i]) {
+                    res = str1.length - str2.length
+                    if(typeof str1 == 'boolean' && typeof str2 == 'boolean'){
+                        res = str1 - str2
+                    }
+                    break
+                }
+                const char1 = str1[i]
+                const char1Type = this.getChartType(char1)
+                const char2 = str2[i]
+                const char2Type = this.getChartType(char2)
+
+                if (char1Type[0] === char2Type[0]) {
+                    if (char1 === char2) {
+                        continue
+                    } else {
+                        if (char1Type[0] === 'zh') {
+                            res = char1.localeCompare(char2)
+                        } else if (char1Type[0] === 'en') {
+                            res = char1.charCodeAt(0) - char2.charCodeAt(0)
+                        } else {
+                            res = char1 - char2
+                        }
+                        break
+                    }
+                } else {
+                    // 类型不同的，直接用返回的数字相减
+                    res = char1Type[1] - char2Type[1]
+                    break
+                }
+			}
+			return res
+		},
+		getChartType(char) {
+			// 數字(0-9)->大寫字母(A->Z)->小寫字母(a->z)->中文拼音
+			if (/^[\u4e00-\u9fa5]$/.test(char)) {
+				return ['zh', 300]
+			}
+			if (/^[a-zA-Z]$/.test(char)) {
+				return ['en', 200]
+			}
+			if (/^[0-9]$/.test(char)) {
+				return ['number', 100]
+			}
+			return ['others', 999]
+		},
+        //篩選
+        // filterChange(filters){
+        //     this.listQueryParams.page = 1 // 排序后返回第一页
+        //     this.$emit('update:listQueryParams', this.listQueryParams)
+        //     this.$emit('filterChange',filters)
         // },
         // 改變翻頁組件中每頁數據總數
         handleSizeChange(val) {
@@ -912,10 +1033,10 @@ export default {
             this.$emit('update:listQueryParams', this.listQueryParams)
             this.$emit('clickPagination', this.sort)
         },
-        blockSelect(){
-            this.$emit('update:selectSetting', this.selectSetting)
-            this.$emit('clickPagination',this.sort)
-        },
+        // blockSelect(){
+        //     this.$emit('update:selectSetting', this.selectSetting)
+        //     this.$emit('clickPagination',this.sort)
+        // },
         change(){
             this.$emit('changeTable',!this.isTable)
         }

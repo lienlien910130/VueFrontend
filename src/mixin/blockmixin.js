@@ -6,10 +6,11 @@ export default {
               blockData: this.blockData,
               config: this.tableConfig,
               title:this.title,
-              sortArray:this.sortArray,
+              // sortArray:this.sortArray,
               isTable:this.isTable,
               isHasButtons:this.isHasButtons,
-              buttonsName:this.buttonsName
+              buttonsName:this.buttonsName,
+              selectSetting:this.selectSetting
           }
       }
     },
@@ -18,8 +19,7 @@ export default {
         blockData:[],
         tableConfig:[],
         title:'',
-        sortArray:[],
-        // deviceList:[],
+        //sortArray:[],
         listQueryParams:{
             page: 1,
             limit: 12,
