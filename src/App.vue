@@ -30,7 +30,7 @@ export default {
                     console.log('Service worker 註冊失敗:', error)
                 });
         } else {
-          avalon.log('瀏覽器不支援 serviceWorker')
+          console.log('瀏覽器不支援 serviceWorker')
         }
         window.addEventListener('beforeinstallprompt', function(e) {
             e.userChoice.then(function(choiceResult) {

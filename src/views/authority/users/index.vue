@@ -90,6 +90,7 @@ export default {
             this.dialogConfig = this.tableConfig
             this.dialogTitle = this.title
             this.dialogSelect = this.accessAuthority
+            this.dialogButtonsName = []
             if(index === 'open'){
                 this.dialogData.push(content)
                 this.dialogButtonsName = [
