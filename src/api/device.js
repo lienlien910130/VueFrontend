@@ -6,7 +6,7 @@ const device = {
     getBid(){ return store.getters.buildingid},
 
     //設備管理
-    apiGetBuildingDevicesManagement(){ return req('get','/index/buildings/'+this.getBid()) },
+    apiGetBuildingDevicesManagement(){ return req('get','/index/buildings/'+this.getBid()+'/devices') },
     apiGetDevicesManagement(deviceId){ return req('get','/devicesManagement/'+deviceId) },
     apiPostDevicesManagement(data){ return req('post','/devicesManagement/'+this.getBid(),data) },
     apiPatchDevicesManagement(data){ return req('patch','/devicesManagement',data) },
