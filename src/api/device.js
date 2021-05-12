@@ -6,11 +6,11 @@ const device = {
     getBid(){ return store.getters.buildingid},
 
     //設備管理
-    apiGetBuildingDevicesManagement(){ return req('get','/index/buildings/'+this.getBid()+'/devices') },
-    apiGetDevicesManagement(deviceId){ return req('get','/devicesManagement/'+deviceId+'/devices') },
-    apiPostDevicesManagement(data){ return req('post','/devicesManagement/'+this.getBid()+'/devices',data) },
-    apiPatchDevicesManagement(data){ return req('patch','/devicesManagement/devices',data) },
-    apiDeleteDevicesManagement(deviceId){ return req('delete','/devicesManagement/'+deviceId+'/devices') },
+    apiGetBuildingDevicesManagement(){ return req('get','/index/buildings/'+this.getBid()) },
+    apiGetDevicesManagement(deviceId){ return req('get','/devicesManagement/'+deviceId) },
+    apiPostDevicesManagement(data){ return req('post','/devicesManagement/'+this.getBid(),data) },
+    apiPatchDevicesManagement(data){ return req('patch','/devicesManagement',data) },
+    apiDeleteDevicesManagement(deviceId){ return req('delete','/devicesManagement/'+deviceId) },
     //設備清單-取得設備種類
     apiGetDevicesTypeByDevicesManagement(){ return req('get','/devicesManagement/deviceType/a') },
     //圖控更新設備-多筆更新
