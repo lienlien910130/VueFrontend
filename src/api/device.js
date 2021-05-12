@@ -12,7 +12,7 @@ const device = {
     apiPatchDevicesManagement(data){ return req('patch','/devicesManagement',data) },
     apiDeleteDevicesManagement(deviceId){ return req('delete','/devicesManagement/'+deviceId) },
     //設備清單-取得設備種類
-    apiGetDevicesTypeByDevicesManagement(){ return req('get','/devicesManagement/deviceType/a') },
+    apiGetDevicesTypeByDevicesManagement(){ return req('get','/devicesManagement/devicesType/a') },
     //圖控更新設備-多筆更新
     apiPatchGraphicDevices(data){ return req('patch','/drawingControl/devices',data) },
     //點位設定-多筆更新
