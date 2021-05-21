@@ -11,7 +11,14 @@
                       <el-input ref="buildingName" name="buildingName" v-model="form.buildingName" show-word-limit maxlength="20"/>
                   </el-form-item>
                   <el-form-item label="地址" prop="address">
-                      <el-input ref="address" name="address" v-model="form.address"  show-word-limit maxlength="150"/>
+                      <el-cascader
+                      v-model="addressValue"
+                      :options="options"
+                      :props="{ value: 'label'}"
+                      style="width:100%"
+                      ></el-cascader>
+                      <el-input ref="address" name="address" v-model="form.address"  
+                      show-word-limit maxlength="100"/> 
                   </el-form-item>
                   <el-form-item label="面積" prop="area">
                       <el-input ref="area" name="area" 
@@ -69,6 +76,7 @@ import blockmixin from '@/mixin/blockmixin'
 import sharemixin  from '@/mixin/sharemixin'
 import Building from '@/object/building'
 import Floors from '@/object/floors'
+import constant from '@/constant/index'
 export default {
   mixins:[sharemixin,blockmixin],
   computed: {
@@ -142,7 +150,9 @@ export default {
       },
       floorsArray:[],
       disable:false,
-      loading:false
+      loading:false,
+      options:constant.AreaCode,
+      addressValue:[]
     }
   },
   methods: {
@@ -154,17 +164,23 @@ export default {
     async getAllBuilding(){
       this.blockData = []
       var data = await Building.get()
+      console.log(JSON.stringify(data))
       this.$store.dispatch('building/setbuildingarray',data)
       this.listQueryParams.total = data.length
-      this.blockData = data.filter((item, index) => 
-        index < this.listQueryParams.limit * this.listQueryParams.page && 
-        index >= this.listQueryParams.limit * (this.listQueryParams.page - 1)).sort(function(x,y){
-          return y.id - x.id
-      })
+      this.blockData = data
+      // this.blockData = data.filter((item, index) => 
+      //   index < this.listQueryParams.limit * this.listQueryParams.page && 
+      //   index >= this.listQueryParams.limit * (this.listQueryParams.page - 1)).sort(function(x,y){
+      //     return y.id - x.id
+      // })
     },
     async onPost() {
         this.$refs.form.validate(async(valid) => {
-          if (valid) {
+          if (valid) {  
+              if(this.addressValue.length == 0){
+                this.$message.error('請選擇地址')
+                return false
+              }
               this.loading = true
               const mask = this.$loading({
                   lock: true,
@@ -175,6 +191,7 @@ export default {
               this.floorsArray = []
               await this.crefloor('up',this.form.floorsOfAboveGround)
               await this.crefloor('down',this.form.floorsOfUnderground)
+              this.form.address = this.addressValue[0]+ this.addressValue[1]+this.form.address
               var buildingId = await Building.post(JSON.stringify(this.form))
               if(buildingId !== ''){
                 this.$message('新增成功')
@@ -193,6 +210,7 @@ export default {
     async onEdit(){
       this.$refs.form.validate(async(valid) => {
           if (valid) {
+            this.form.address = this.addressValue[0]+ this.addressValue[1]+this.form.address
             var isUpadte = await this.form.update()
             if(isUpadte){
               this.$message('更新成功')
@@ -206,6 +224,7 @@ export default {
         })
     },
     onCancel() {
+      this.addressValue = []
       this.form = {}
       this.type = 'create'
       this.disable = false
@@ -238,6 +257,8 @@ export default {
               this.$refs.form.clearValidate()
             }
           })
+          this.addressValue = [content.address.substr(0,3), content.address.substr(3,3)]
+          content.address = content.address.substr(6)
           this.type = 'edit'
           this.form = new Building(content)
           this.disable = true
@@ -264,7 +285,7 @@ export default {
 .block-wrapper {
     background: #fff;
     padding: 15px 15px;
-    height: 720px;
+    height: 750px;
 }
 </style>
 

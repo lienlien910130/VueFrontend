@@ -69,8 +69,8 @@
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                     <Block 
+                    ref="block"
                     :list-query-params.sync="listQueryParams"
-                    :selectSetting.sync="selectSetting"
                     v-bind="blockAttrs" 
                     v-on="blockEvent"></Block>
                 </div>
@@ -87,7 +87,6 @@
         </div>
 </template>
 <script>
-import { setSelectSetting } from '@/utils/index'
 import { MaintainManagementList, MaintainManagement }  from '@/object/maintainManagement'
 import Files  from '@/object/files'
 import blockmixin from '@/mixin/blockmixin'
@@ -104,10 +103,10 @@ export default {
             //dialog額外的參數
             maintainFiles:[],
             formtableData:[],
-            formtableconfig:MaintainManagement.getConfig(),
+            formtableconfig: MaintainManagement.getConfig(),
             maintainlistQueryParams:{
                 page: 1,
-                limit: 5,
+                limit: 10,
                 total: 0
             }
         }
@@ -116,82 +115,69 @@ export default {
         blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getBuildingMaintain,
+                clickPagination:this.getBuildingMaintainList,
                 handleDialog:this.handleDialog,
-                changeTable:this.changeTable
+                changeTable:this.changeTable,
+                resetlistQueryParams:this.resetlistQueryParams
             }
         }
     },
     methods:{
         async init(){   
-            this.tableConfig = MaintainManagementList.getConfig()
             this.title = 'maintain'
-            await this.reload()
         },
-        async reload(){
-            this.maintainlistQueryParams = {
-                page: 1,
-                limit: 5,
-                total: 0
+        async resetlistQueryParams(){
+            this.listQueryParams = {
+                pageIndex: 1,
+                pageSize: 12,
+                total:0
             }
-            await this.saveBuildingMaintain()
-            await this.getBuildingMaintain()
-            await this.setSelectSetting()
-        },
-        async saveBuildingMaintain(){
-            var data = await MaintainManagementList.get()
-            this.origin = data.map(item=>{ return item.clone(item) })
-        },
-        async getBuildingMaintain(sort = null){ //取得大樓維護保養
-            this.blockData = []
-            var data = this.origin.map(item=>{ return item.clone(item) })
-            this.listQueryParams.total = data.length
-            this.selectSetting.forEach(element=>{
-                if(element.select != ''){
-                    data = data.filter(function(item,index){
-                        if(typeof item[element.prop] !== 'object'){
-                            return item[element.prop] == element.select
-                        }else{ //物件形式
-                            for(let obj of item[element.prop]){
-                                if(obj.id == element.select){
-                                    return item
-                                }
-                            }
-                        }
-                    })
-                }
-            })
-            if(sort !== '' && sort !== null){
-                if(sort == 'createdDate'){
-                    data = data.sort(function(x,y){
-                        var date1 = x[sort].split(' ')
-                        var date2 = y[sort].split(' ')
-                        var _data1 = new Date(date1[0])
-                        var _data2 = new Date(date2[0])
-                        return  _data2 - _data1
-                    })
-                }else{
-                    data = data.sort(function(x,y){
-                        return y[sort] - x[sort]
-                    })
-                }
+            if(this.isTable == true){
+                this.title = 'maintain'
+                this.tableConfig = MaintainManagement.getConfig()
+                await this.getMaintainAll()
             }else{
-                data = data.sort(function(x,y){
-                    return y.id - x.id
-                })
+                this.title = 'maintainList'
+                this.tableConfig = MaintainManagementList.getConfig()
+                await this.getBuildingMaintainList()
             }
-            data = data.filter((item, index) => 
-                index < this.listQueryParams.limit * this.listQueryParams.page && 
-                index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
-            this.blockData = data
         },
-        async setSelectSetting(){
-            this.selectSetting = await setSelectSetting(this.tableConfig,this.origin)
-            this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
+        async resetmaintainlistQueryParams(){
+            this.maintainlistQueryParams = {
+                pageIndex: 1,
+                pageSize: 10,
+                total:0
+            }
+            await this.getMaintain()
+        },
+        async getBuildingMaintainList(){ //取得大樓維護保養大項
+            var data = await MaintainManagementList.getSearchPage(this.listQueryParams)
+            console.log(JSON.stringify(data))
+            this.blockData = data.result
+            this.listQueryParams.total = data.totalPageCount
+            this.$refs.block.resetpictLoading()
+            await this.getFilterItems()
+        },
+        async getMaintainAll(){ //取得大樓維護保養系項
+            var data = await MaintainManagement.getAllSearchPage(this.listQueryParams)
+            console.log(JSON.stringify(data))
+            this.blockData = data.result
+            this.listQueryParams.total = data.totalPageCount
+            this.$refs.block.resetpictLoading()
+            await this.getFilterItems()
+        },
+        async getMaintain(){ //取得維保大項的細項
+            var data = await MaintainManagement.getSearchPage(this.maintainList.getID(),
+            this.maintainlistQueryParams)
+            console.log(JSON.stringify(data))
+            this.formtableData = data.result
+            this.maintainlistQueryParams.total = data.totalPageCount
+
         },
         async handleBlock(title,index, content) { //維護保養的操作
             console.log(title,index,JSON.stringify(content))
             this.dialogData = []
+            this.dialogButtonsName = []
             if(index === 'open'){
                 this.dialogTitle = 'maintainList' //為了控制dialog大小
                 this.maintainList = content
@@ -202,22 +188,22 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
-                this.maintainArray = content.linkMaintains.map(item=>{ return item.clone(item) })
-                var data = this.maintainArray.map(item=>{ return item.clone(item) })
-                this.maintainlistQueryParams.total = this.maintainArray.length
-                this.formtableData = data.filter((item, index) => 
-                    index < this.maintainlistQueryParams.limit * this.maintainlistQueryParams.page && 
-                    index >= this.maintainlistQueryParams.limit * (this.maintainlistQueryParams.page - 1))
+                await this.getMaintain()
+                // var data = MaintainManagement.getSearchPage(content.getID(),
+                // this.maintainlistQueryParams)
+                // this.maintainlistQueryParams.total = data.totalPageCount
+                // this.formtableData = data.result
+                // this.maintainArray = content.linkMaintains.map(item=>{ return item.clone(item) })
+                // var data = this.maintainArray.map(item=>{ return item.clone(item) })
+                // this.maintainlistQueryParams.total = this.maintainArray.length
+                // this.formtableData = data.filter((item, index) => 
+                //     index < this.maintainlistQueryParams.limit * this.maintainlistQueryParams.page && 
+                //     index >= this.maintainlistQueryParams.limit * (this.maintainlistQueryParams.page - 1))
             }else if(index === 'delete'){
                 var isDelete = await content.delete()
                 if(isDelete){
                     this.$message('刪除成功')
-                    this.listQueryParams = {
-                        page: 1,
-                        limit: 10,
-                        total: 0
-                    }
-                    await this.reload()
+                    await this.resetlistQueryParams()
                 }
             }else if(index === 'empty'){
                 this.dialogTitle = 'createmaintainlist'
@@ -244,11 +230,13 @@ export default {
             }else{
                 if(index === 'create' || index === 'update'){
                     this.$delete(content,'linkMaintains')
-                    var isOk = index === 'update' ? await content.update() : await content.create()
+                    var isOk = index === 'update' ? 
+                      await content.update() : await content.create()
                     if(isOk){
                         this.innerVisible = false
-                        index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                        await this.reload()
+                        index === 'update' ? this.$message('更新成功') : 
+                        this.$message('新增成功')
+                        await this.resetlistQueryParams()
                     }
                 }else if(index === 'createfile'){
                     const formData = new FormData()
@@ -271,44 +259,19 @@ export default {
                     this.innerVisible = false
                 }else if(index === 'clickPagination'){
                     this.maintainlistQueryParams = content
-                    this.formtableData = this.maintainArray.filter((item, index) => 
-                        index <  this.maintainlistQueryParams.limit *  this.maintainlistQueryParams.page && 
-                        index >=  this.maintainlistQueryParams.limit * ( this.maintainlistQueryParams.page - 1))
+                    await this.getMaintain()
                 }
             }
         },
         async changeTable(value){
+            console.log('changeTable',value)
             this.isTable = value
-            this.listQueryParams = {
-                page: 1,
-                limit: 12,
-                total: 0
-            }
-            if(value == true){
-                var array = []
-                for(let element of this.origin){
-                    array.push(element['linkMaintains'])
-                }
-                var concatarray = array.reduce(
-                    function(a, b) {
-                        return a.concat(b)
-                    },[]
-                )
-                this.origin = concatarray.map(item=>{ return item.clone(item) })
-                this.tableConfig = MaintainManagement.getConfig()
-                this.listQueryParams.total = this.origin.length
-                concatarray = concatarray.filter((item, index) => 
-                    index < this.listQueryParams.limit * this.listQueryParams.page && 
-                    index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
-                this.blockData = concatarray
-                this.selectSetting = await setSelectSetting(this.tableConfig,this.origin)
-            }else{
-                await this.init()
-            }
+            await this.resetlistQueryParams()
         },
         async handleMaintain(index, content){
             this.dialogData = []
             this.dialogTitle = 'maintain'
+            this.dialogButtonsName = []
             if(index === 'empty'){
                 this.dialogConfig = this.formtableconfig
                 this.dialogSelect = await MaintainManagementList.getAllLack()
@@ -333,7 +296,7 @@ export default {
                         this.$message('刪除成功')
                     }
                     if(this.isTable == false){
-                        await this.reload()
+                        await this.getBuildingMaintainList()
                         var data = this.blockData.filter((item,index)=> item.id == this.maintainList.getID())[0]
                         await this.handleBlock('maintainList','open',data)
                     }else{
@@ -348,19 +311,18 @@ export default {
                     index === 'updatemaintain' ? this.$message('更新成功') : this.$message('新增成功')
                 }
                 if(this.isTable == false){
-                    await this.reload()
+                    await this.getBuildingMaintainList()
                     var data = this.blockData.filter((item,index)=> item.id == this.maintainList.getID())[0]
                     await this.handleBlock('maintainList','open',data)
                 }else{
-                    await this.saveBuildingMaintain()
-                    await this.changeTable(this.isTable)
+                    await this.getMaintainAll()
                     this.innerVisible = false
                 }
             }else if(index === 'cancel'){
                     if(this.isTable == false){
                         this.maintainlistQueryParams = {
                             page: 1,
-                            limit: 5,
+                            limit: 10,
                             total: 0
                         }
                         var data = this.blockData.filter((item,index)=> item.id == this.maintainList.getID())[0]
@@ -392,6 +354,13 @@ export default {
                     this.$message('刪除成功')
                     this.maintainFiles = await this.maintain.files()
                 }
+            }else if(index === 'exportExcel'){
+                this.exportExcelData = this.blockData
+                this.innerVisible = true
+                this.dialogStatus = 'exportExcel'
+            }else if(index === 'uploadExcel'){
+                this.innerVisible = true
+                this.dialogStatus = 'uploadExcel'
             }
         }
     }

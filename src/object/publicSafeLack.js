@@ -56,12 +56,12 @@ class PublicSafeLack extends Parent {
     }
     static getConfig(){
        return [
-        { label:'項目' , prop:'lackItem',format:'', mandatory:true, message:'請輸入項目',maxlength:'200'},
-        { label:'內容' , prop:'lackContent',format:'textarea',  mandatory:true,message:'請輸入內容',maxlength:'999'},
-        { label:'無法合格理由' , prop:'notPassReason',format:'textarea', mandatory:true, message:'請輸入無法合格理由',maxlength:'999'},
-        { label:'法令依據' , prop:'accordLaws',format:'textarea', mandatory:true, message:'請輸入法令依據',maxlength:'999'},
-        { label:'改善計畫' , prop:'improvePlan',format:'textarea', mandatory:false, message:'請輸入改善計畫',maxlength:'999'},
-        { label:'處理進度' , prop:'status',format:'LackStatusOptions', mandatory:true, message:'請選擇處理進度'}
+        { label:'項目' , prop:'lackItem',format:'', mandatory:true, message:'請輸入項目',maxlength:'200',isHidden:false},
+        { label:'內容' , prop:'lackContent',format:'textarea',  mandatory:true,message:'請輸入內容',maxlength:'999',isHidden:false},
+        { label:'無法合格理由' , prop:'notPassReason',format:'textarea', mandatory:true, message:'請輸入無法合格理由',maxlength:'999',isHidden:false},
+        { label:'法令依據' , prop:'accordLaws',format:'textarea', mandatory:true, message:'請輸入法令依據',maxlength:'999',isHidden:false},
+        { label:'改善計畫' , prop:'improvePlan',format:'textarea', mandatory:false, message:'請輸入改善計畫',maxlength:'999',isHidden:false},
+        { label:'處理進度' , prop:'status',format:'LackStatusOptions', mandatory:true, message:'請選擇處理進度',isHidden:false}
       ]
     }
     static async get (publicSafeId){
@@ -69,6 +69,24 @@ class PublicSafeLack extends Parent {
             return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new PublicSafeLack(item)})
         }).catch(error=>{
             return []
+        })
+        return data
+    }
+    static async getSearchPage(publicSafeId,data){
+        var data = await api.report.apiGetPublicSafeLackSearchPages(publicSafeId,data).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new PublicSafeLack(item)})
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async postMany(publicSafeId,data){
+        var data = await api.report.apiPostPublicSafeLacks(publicSafeId,data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
         })
         return data
     }

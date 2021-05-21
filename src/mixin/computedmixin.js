@@ -19,7 +19,7 @@ export default {
             ]),
             dataStr(){ //日期
                 return function (a,b) {
-                    if(a !== null){
+                    if(a !== null && a !== undefined){
                         return moment(a).format(b)
                     }else{
                         return ''
@@ -109,7 +109,7 @@ export default {
             },
             changeUsageOfFloor(){ //門牌
                 return function (val) {
-                    if(val !== null){
+                    if(val !== null && val !== undefined){
                       return val.map(item=>{ return item.getName() }).toString()
                     }
                     return ''
@@ -117,7 +117,7 @@ export default {
             },
             changeUsageOfFloorUsersName(){ //門牌底下的使用者名稱
                 return function (val) {
-                    if(val !== null){
+                    if(val !== null && val !== undefined){
                         return val.map(item => { return item.getName()}).toString()
                     }
                     return ''
@@ -142,12 +142,15 @@ export default {
                 handler:async function(){
                     //this.fullscreen == true ? this.infiniteheight = '800px' : this.infiniteheight = '600px'
                     if(this.fullscreen == true){
-                        this.title == 'committee' || this.title == 'contactUnit' || this.title == 'floorOfHouse' ? 
+                        this.title == 'committee' || this.title == 'contactUnit' || 
+                        this.title == 'floorOfHouse' || this.title == 'user' ? 
                         this.infiniteheight = 710 : this.infiniteheight = 800
                     }else{
-                        this.title == 'committee' || this.title == 'contactUnit' || this.title == 'floorOfHouse'  ? 
-                        this.infiniteheight = 550 : this.infiniteheight = 600
+                        this.title == 'committee' || this.title == 'contactUnit' || 
+                        this.title == 'floorOfHouse' || this.title == 'user'   ? 
+                        this.infiniteheight = 580 : this.infiniteheight = 680
                     }
+                    this.height = (this.infiniteheight -50).toString() + 'px'
                     this.tableheight = '500px'
                 },
                 immediate:true
@@ -155,6 +158,7 @@ export default {
         },
         data() {
             return {
+                height:'',
                 infiniteheight:'',
                 tableheight:''
             }

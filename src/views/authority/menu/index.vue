@@ -12,8 +12,8 @@
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
                     <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                         <Block 
+                        ref="block"
                         :list-query-params.sync="listQueryParams"
-                        :selectSetting.sync="selectSetting"
                         v-bind="blockAttrs" 
                         v-on="blockEvent"></Block>
                     </div>
@@ -36,11 +36,7 @@ export default {
         menu:{
             handler:async function(){
                 this.blockData = []
-                this.listQueryParams = {
-                    page: 1,
-                    limit: 10,
-                    total: 0
-                }
+                this.listQueryParams = { pageIndex: 1, pageSize: 12, total:0 }
                 var data = this.menu.map(item=>{ return item.clone(item)})
                 this.treeData = data.map(element => {
                     this.$set(element,'children',element.getLink())
@@ -64,7 +60,7 @@ export default {
                     )
                     var data = concatarray.filter(item=>{ return item.id == this.selectId})[0]
                     this.origin = data.getLink()
-                    await this.changePage()
+                    await this.getMainMenu()
                 }
             },
             immediate:true
@@ -81,7 +77,7 @@ export default {
         blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.changePage
+                resetlistQueryParams:this.resetlistQueryParams
             }
         },
         treeAttrs(){
@@ -94,31 +90,32 @@ export default {
     methods:{
         async init(){
             this.title = 'mainMenu'
-            this.tableConfig = Menu.getConfig()
+            this.hasSearch = false
         },
-        async changePage(){
-            this.blockData = this.origin.filter(
-                (item, index) => 
-                index < this.listQueryParams.limit * this.listQueryParams.page && 
-                index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
-            .sort((x,y) => x.sort - y.sort)
-            this.listQueryParams.total = this.origin.length
+        async resetlistQueryParams(){
+            this.listQueryParams = {
+                pageIndex: 1,
+                pageSize: 12,
+                total:0
+            }
+            await this.getMainMenu()
+        },
+        async getMainMenu(){
+            this.blockData = this.origin
+            this.$refs.block.resetpictLoading()
+            await this.getFilterItems()
         },
         async handleTreeNode(node,data){
             this.origin = data.getLink()
             this.selectId = data.getID()
-            this.listQueryParams = {
-                page: 1,
-                limit: 10,
-                total: 0
-            }
-            await this.changePage()
+            await this.resetlistQueryParams()
         },
         async handleBlock(title,index, content){
             console.log(title,index, JSON.stringify(content))
             this.dialogData = []
             this.dialogConfig = this.tableConfig
             this.dialogTitle = this.title
+            this.dialogButtonsName = []
             if(index === 'open'){
                 this.dialogData.push(content)
                 this.dialogButtonsName = [
@@ -147,15 +144,35 @@ export default {
                     { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'create'
+            }else if(index === 'exportExcel'){
+                if(this.selectId == null){
+                    this.$message.error({
+                        message: '請選擇目錄'
+                    })
+                }else{
+                    this.exportExcelData = this.blockData
+                    this.innerVisible = true
+                    this.dialogStatus = 'exportExcel'
+                }
+            }else if(index === 'uploadExcel'){
+                if(this.selectId == null){
+                    this.$message.error({
+                        message: '請選擇目錄'
+                    })
+                }else{
+                    this.innerVisible = true
+                    this.dialogStatus = 'uploadExcel'
+                }
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,JSON.stringify(content))
-            if(index == 'update' || index == 'create'){
+            if(index == 'update' || index == 'create' || index === 'uploadExcelSave'){
                 delete content.linkMainMenus
                 delete content.linkAccessAuthorities
                 var isOk = index == 'update' ? await content.update() : 
-                await content.create(this.selectId)
+                index === 'create' ? await content.create(this.selectId) : 
+                await Menu.postMany(this.selectId,content)
                 if(isOk){
                     index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('permission/setRoutes')
@@ -165,7 +182,9 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
-            value == true ?  this.tableConfig = Menu.getTableConfig() : this.tableConfig = Menu.getConfig()
+            value == true ?  this.tableConfig = Menu.getTableConfig() : 
+            this.tableConfig = Menu.getConfig()
+            await this.getFilterItems()
         }
     }
 }

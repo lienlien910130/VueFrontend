@@ -3,10 +3,10 @@ export default {
     computed: {
       blockAttrs() {
           return {
+              hasSearch:this.hasSearch,
               blockData: this.blockData,
               config: this.tableConfig,
               title:this.title,
-              // sortArray:this.sortArray,
               isTable:this.isTable,
               isHasButtons:this.isHasButtons,
               buttonsName:this.buttonsName,
@@ -16,14 +16,14 @@ export default {
     },
     data() {
       return {
+        hasSearch:true,
         blockData:[],
         tableConfig:[],
         title:'',
-        //sortArray:[],
         listQueryParams:{
-            page: 1,
-            limit: 12,
-            total: 0
+          pageIndex: 1,
+          pageSize: 12,
+          total:0
         },
         isHasButtons:true,
         buttonsName:[
@@ -31,5 +31,4 @@ export default {
           { name:'刪除',type:'info',status:'delete'}]
       }
     }
-    
 }

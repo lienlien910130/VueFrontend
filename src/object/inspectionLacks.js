@@ -56,17 +56,17 @@ class InspectionLacks extends Parent {
             {
                 label: '缺失項目',
                 prop: 'lackItem',
-                mandatory:true, message:'請輸入缺失項目',format:'input',maxlength:'200'
+                mandatory:true, message:'請輸入缺失項目',format:'input',maxlength:'200',isHidden:false
             },
             {
                 label: '缺失內容',
                 prop: 'lackContent',
-                mandatory:true, message:'請輸入缺失內容',format:'textarea',maxlength:'999'
+                mandatory:true, message:'請輸入缺失內容',format:'textarea',maxlength:'999',isHidden:false
             },
             {
                 label: '處理進度',
                 prop: 'status',format:'MaintainProcessOptions',
-                mandatory:false, format:'Options'
+                mandatory:false, format:'Options',isHidden:false
             }
         ]
     }
@@ -76,6 +76,23 @@ class InspectionLacks extends Parent {
             return result
         }).catch(error=>{
             return []
+        })
+        return data
+    }
+    static async getSearchPage(inspectionId,data){
+        var data = await api.report.apiGetInspectionLackSearchPages(inspectionId,data).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new InspectionLacks(item)})
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async postMany(inspectionId,data){
+        var data = await api.report.apiPostInspectionLacks(inspectionId,data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
         })
         return data
     }

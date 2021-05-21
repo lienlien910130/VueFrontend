@@ -138,7 +138,14 @@ class Menu extends Parent {
         })
         return data
     }
-    
+    static async postMany(mainMenuId,data){
+        var data = await api.authority.apiPostMainMenus(mainMenuId,data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
 }
 
 export default Menu

@@ -44,7 +44,6 @@ router.beforeEach(async(to, from, next) => {
             // get user info
             await store.dispatch('user/getInfo')
             await store.dispatch('building/setroles',await Role.get()) //跟大樓無關連
-            await store.dispatch('building/setbuildingusers',await User.get()) ////跟大樓無關連
             await store.dispatch('building/setdeviceType',await DeviceType.getDefault()) ////跟大樓無關連
             const isSystem = store.getters.id == '1'
             if(isSystem){ //系統管理員=>取得所有大樓清單
@@ -53,6 +52,7 @@ router.beforeEach(async(to, from, next) => {
             if(buildingID){ //已經有選過大樓
               console.log('已選擇過建築物大樓')
               await store.dispatch('building/setbuildingid', buildingID)
+              await store.dispatch('building/getbuildingusers')
               await store.dispatch('building/getbuildinginfo')
               if(!isSystem) await store.dispatch('building/getbuildingarray') 
               await store.dispatch('permission/setRoutes') //設定選單資料庫&側邊選單欄

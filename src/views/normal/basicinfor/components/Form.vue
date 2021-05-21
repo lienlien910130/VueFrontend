@@ -10,7 +10,15 @@
         :disabled="type === 'view' ? true : false"/>
       </el-form-item>
       <el-form-item label="地址" prop="address">
-        <el-input ref="address" name="address" v-model="form.address"  show-word-limit maxlength="150"
+        <el-cascader
+          v-model="addressValue"
+          :options="options"
+          :props="{ value: 'label'}"
+          style="width:100%"
+          :disabled="type === 'view' ? true : false"
+          @change="handleChange"
+        ></el-cascader>
+        <el-input ref="address" name="address" v-model="form.address"  show-word-limit maxlength="100"
         :disabled="type === 'view' ? true : false"/>
       </el-form-item>
       <el-form-item label="面積" prop="area">
@@ -22,29 +30,28 @@
         </template>
         </el-input>
       </el-form-item>
-                  <el-form-item label="高度" prop="height">
+      <el-form-item label="高度" prop="height">
                       <el-input ref="height" name="height" v-model.number="form.height"  type="number" min="0"
                       :disabled="type === 'view' ? true : false"/>
-                  </el-form-item>
-                  <el-form-item label="層數" prop="floorsOfAboveGround">
+      </el-form-item>
+      <el-form-item label="層數" prop="floorsOfAboveGround">
                       <el-input ref="floorsOfAboveGround" name="floorsOfAboveGround" 
                       v-model.number="form.floorsOfAboveGround" type="number" min="0" :disabled="true">
                       <template slot="prepend">地上</template>
                       <template slot="append">樓</template>
                       </el-input>
-                  </el-form-item>
-                  <el-form-item prop="floorsOfUnderground">
+      </el-form-item>
+      <el-form-item prop="floorsOfUnderground">
                       <el-input ref="floorsOfUnderground" name="floorsOfUnderground" 
                       v-model.number="form.floorsOfUnderground" type="number" min="0" :disabled="true">
                       <template slot="prepend">地下</template>
                       <template slot="append">樓</template>
                       </el-input>
-                  </el-form-item>
-                  <el-form-item label="使用執照字號" prop="licenseNumber">
+      </el-form-item>
+      <el-form-item label="使用執照字號" prop="licenseNumber">
                       <el-input ref="licenseNumber" name="licenseNumber" v-model="form.licenseNumber" show-word-limit maxlength="30"
                       :disabled="type === 'view' ? true : false"/>
-                  </el-form-item>
-
+      </el-form-item>
       <el-form-item label="所有權人" prop="linkOwners">
         <el-select 
         v-if="this.type === 'edit'" 
@@ -68,7 +75,6 @@
         </el-input>
 
       </el-form-item>
-
       <el-form-item label="防火管理人" prop="linkFireManagers">
         <el-select 
         v-if="this.type === 'edit' " 
@@ -92,7 +98,6 @@
         </el-input>
 
       </el-form-item>
-
     </el-form>
     <div style="float:right">
       <el-button type="primary" @click="onEdit" v-if="type === 'view' ">修改</el-button>
@@ -104,6 +109,7 @@
 <script>
 import Building from '@/object/building'
 import { mapGetters } from 'vuex'
+import constant from '@/constant/index'
 
 export default {
   computed: {
@@ -185,7 +191,9 @@ export default {
       },
       linkOwners:'',
       linkFireManagers:'',
-      loading:false
+      loading:false,
+      options:constant.AreaCode,
+      addressValue:[]
     }
   },
   watch:{
@@ -236,6 +244,7 @@ export default {
       this.$refs.form.validate(async(valid) => {
         if (valid) {
           await this.form.update()
+          this.addressValue = []
           var data = await Building.get()
           this.$store.dispatch('building/setbuildingarray',data)
           this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
@@ -246,10 +255,14 @@ export default {
     },
     onCancel() {
       this.type = 'view'
+      this.addressValue = []
       this.form = new Building(JSON.parse(this.origin))
       this.$nextTick(() => {
         this.$refs.form.clearValidate()
       })
+    },
+    handleChange(value){
+      this.form.address = value[0]+value[1]
     }
   }
 }
@@ -260,7 +273,7 @@ export default {
   text-align: center;
 }
 .buildinginfo{
-  height:560px;
+  height:600px;
   overflow-x: hidden;
   overflow-y: auto;
 }

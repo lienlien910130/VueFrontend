@@ -3,10 +3,10 @@
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                     <Block 
+                        ref="block"
                         :list-query-params.sync="listQueryParams"
                         v-bind="blockAttrs" 
                         v-on="blockEvent"></Block>
-                        <!-- :selectSetting.sync="selectSetting" -->
                 </div>
             </el-col>
             <Dialog 
@@ -29,7 +29,8 @@ export default {
         blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getAllAccount
+                clickPagination:this.getAllAccount,
+                resetlistQueryParams:this.resetlistQueryParams
             }
         }
     },
@@ -45,18 +46,12 @@ export default {
         return{
             roleAccessAuthority:[],
             treeData:[],
-            accessAuthority:[],
-            exportExcelData:[]
+            accessAuthority:[]
         }
     },
     methods:{
         async init(){
-            this.tableConfig = Account.getConfig()
             this.title = 'account'
-            await this.reload()
-        },
-        async reload(){
-            await this.setAllAccount()
             await this.getAllAccount()
         },
         async setMenuRoleAccess(){
@@ -72,17 +67,20 @@ export default {
                 }
             }
         },
-        async setAllAccount(){
-            var data = await Account.get()
-            this.origin = data.map(item=>{ return item.clone(item) })
+        async resetlistQueryParams(){
+            this.listQueryParams = {
+                pageIndex: 1,
+                pageSize: 12,
+                total:0
+            }
+            await this.getAllAccount()
         },
         async getAllAccount(){
-            this.blockData = []
-            var data = this.origin.map(item=>{ return item.clone(item) })
-            this.listQueryParams.total = data.length
-            this.blockData = data.sort((x,y) => x.sort - y.sort).filter((item, index) => 
-                index < this.listQueryParams.limit * this.listQueryParams.page && 
-                index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
+            var data = await Account.getSearchPage(this.listQueryParams)
+            this.blockData = data.result
+            this.listQueryParams.total = data.totalPageCount
+            this.$refs.block.resetpictLoading()
+            await this.getFilterItems()
         },
         async handleBlock(title,index, content){
             console.log(title ,index,JSON.stringify(content))
@@ -102,7 +100,7 @@ export default {
                 var isOk = await content.delete()
                 if(isOk){
                     this.$message('刪除成功')
-                    await this.reload()
+                    await this.resetlistQueryParams()
                 }
             }else if(index === 'empty'){
                 this.dialogData.push( Account.empty() )
@@ -149,10 +147,11 @@ export default {
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,content)
             if(index !== 'cancel'){
-                var isOk = index === 'update' ? await content.update() : await content.create()
+                var isOk = index === 'update' ? await content.update() : 
+                index === 'create' ? await content.create() : await Account.postMany(content)
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                    await this.reload()
+                    await this.getAllAccount()
                 }
             }
             this.innerVisible = false

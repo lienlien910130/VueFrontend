@@ -4,41 +4,33 @@
         <div class="infinite-list-wrapper" :style="{ height: infiniteheight+'px' }">
             <div style="margin-bottom:50px">
                 <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                    <!-- <span v-if="isTable == false">
-                        <span>排序</span>
-                        <el-select 
-                        placeholder="請選擇" 
-                        style="width:8%;margin-left:5px;margin-right:5px;"
-                        @change="blockSelect"
-                        v-model="sort"
-                        clearable >
-                            <el-option
-                                v-for="element in sortArray"
-                                :key="element.prop"
-                                :label="element.label"
-                                :value="element.prop">
-                            </el-option>
-                        </el-select>
-                    </span> -->
-                    <!-- <span v-for="item in selectSetting"
-                        :key="item.prop"
-                        >
-                            <span>{{ item.label }}</span>
-                            <el-select 
-                            placeholder="請選擇" 
-                            style="width:8%;margin-left:5px;margin-right:5px;"
-                            @change="blockSelect"
-                            v-model="item.select"
+                    <el-input 
+                    v-if="hasSearch == true"
+                    placeholder="請輸入內容，多條件搜尋請依左側'勾選條件'依序輸入值並以'逗號'區隔" 
+                    v-model="inputSearch" class="input-with-select" style="width:42%;float:right" clearable
+                    @clear="clearInputSearch" @keyup.enter.native="handleSearchWord"
+                    >
+                        <el-select
+                            v-model="inputSelect"
+                            filterable
+                            multiple
+                            slot="prepend"
+                            value-key="id"
+                            placeholder="請選擇欄位"
+                            style="width:170px"
+                            collapse-tags
                             clearable 
                             >
                                 <el-option
-                                v-for="element in item.options"
-                                :key="element.id"
-                                :label="element.label"
-                                :value="element.value">
-                                </el-option>
-                            </el-select>
-                    </span> -->
+                                v-for="(item,index) in inputSelectChange()"
+                                :key="index"
+                                :label="item.label"
+                                :value="item.prop"
+                                >
+                                </el-option>  
+                        </el-select>
+                        <el-button slot="append" icon="el-icon-search" @click="handleSearchWord"></el-button>
+                    </el-input>
                     <el-button
                         v-if="isTable == false && title !== 'address'"
                         class="filter-item" 
@@ -59,7 +51,7 @@
                         class="filter-item" 
                         type="primary" 
                         @click="change">
-                            <span> {{ isTable == false ? '檢視細項' : '檢視大項'}} </span>                  
+                            <span> {{ isTable == false ? '檢視所有細項' : '檢視大項'}} </span>                  
                     </el-button>
                 </el-col>
             </div>
@@ -221,6 +213,7 @@
             </div>
             <div v-else>
                 <el-table
+                    ref="tableData"
                     class="table"
                     :key="itemkey"
                     :data="blockData"
@@ -230,24 +223,29 @@
                     empty-text="暫無資料"
                     @sort-change="sortChange"
                     :header-cell-class-name="handleHeaderCellClass"
+                    :max-height="height"
+                    v-loading="pictLoading"
+                    element-loading-background = "rgba(0, 0, 0, 0.5)"
+                    element-loading-text = "資料載入中，請稍後..."
+                    element-loading-spinner = "el-icon-loading"
                     >
-                            <el-table-column
+                        <el-table-column
                             fixed
                             type="index">
-                            </el-table-column>
+                        </el-table-column>
 
-                            <el-table-column 
-                                v-for="(item,index) in rowlabel"
-                                align="left" 
-                                :label="item.label" 
-                                :key="index" 
-                                :prop="item.prop" 
-                                header-align="center"
-                                :column-key="item.prop"
-                                sortable="custom"
-                                :filters="getFilterItems(item.prop)" 
-                                :filter-method="filterHandler"
-                                >
+                        <el-table-column 
+                            v-for="(item,index) in rowlabel"
+                            align="left" 
+                            :label="item.label" 
+                            :key="index" 
+                            :prop="item.prop" 
+                            header-align="center"
+                            :column-key="item.prop"
+                            sortable="custom"
+                            :filters="getFilterItems(item.prop)" 
+                            :filter-method="filterHandler"
+                        >
                                 <template slot-scope="scope">
 
                                         <span v-if="item.format== 'YYYY-MM-DD' || 
@@ -256,7 +254,8 @@
 
                                         <span v-else-if="item.format == 'range' ">
                                             {{ dataStr(scope.row['checkStartDate'],'YYYY-MM-DD') }} 
-                                            <span v-if="scope.row['checkStartDate'] !== null"><br></span> 
+                                            <span v-if="scope.row['checkStartDate'] !== null || 
+                                            scope.row['checkStartDate'] !== undefined"><br></span> 
                                             {{ dataStr(scope.row['checkEndDate'],'YYYY-MM-DD') }}
                                         </span>
 
@@ -288,42 +287,6 @@
                                             {{ scope.row.getLinkType().getSelectName()  }}
                                         </span>
 
-                                        <!-- <span v-else-if="item.format == 'deviceTypeSelect' ">
-                                            <el-popover
-                                                v-if="scope.row[item.prop].length !== 0"
-                                                placement="right"
-                                                width="400"
-                                                trigger="click">
-                                                <div>
-                                                    <div 
-                                                    v-for="(item,index) in changeText(scope.row[item.prop][0])"
-                                                    :key="index"
-                                                    style="width:100%">
-                                                        <p>
-                                                            <span style='width:40%;display:inline-block;vertical-align:top'>
-                                                                {{ item.label + '：'  }} 
-                                                            </span>
-                                                            <span style='width:60%;display:inline-block;vertical-align:top'>
-                                                                {{ item.value }} 
-                                                            </span>
-                                                        </p> 
-                                                    </div> 
-                                                    <div>
-                                                        <el-button
-                                                        size="mini"
-                                                        type="primary"
-                                                        @click="handleClickOption(button.status)"
-                                                        style="float:right"
-                                                        >
-                                                        <span>編輯</span>
-                                                        </el-button>
-                                                    </div>
-                                                </div>
-                                                <span slot="reference" style="color:#66b1ff;cursor:pointer">
-                                                    {{ scope.row.getOnlyType()  }}</span>
-                                            </el-popover>
-                                        </span> -->
-
                                         <el-input v-else-if="item.format == 'address' "
                                             v-model="scope.row[scope.column.property]"
                                             :maxlength="item.maxlength"
@@ -332,13 +295,6 @@
                                             @input="scope.row[scope.column.property] = 
                                             scope.row[scope.column.property].replace(/[^\d]/g,'').replace(/\s*/g,'')">
                                         </el-input>
-
-                                        <!-- <span v-else-if="item.format == 'deviceSelect' "
-                                        @click="toAnotherPage('devicesManagement',scope.row[item.prop],'')"
-                                        style="color:#66b1ff;cursor:pointer" 
-                                        > 
-                                            {{ changeDevice(scope.row[item.prop]) }}
-                                        </span> -->
 
                                         <span v-else-if="item.format == 'deviceSelect' " 
                                         @click="clickMessageBox('設備資料',item.format,scope.row[item.prop])"
@@ -358,23 +314,11 @@
                                             {{ changeUsageOfFloor(scope.row[item.prop]) }}
                                         </span>
 
-                                        <!-- <span v-else-if="item.format == 'floorOfHouseSelect' " 
-                                        @click="handleClickOption('openfloorofhouse',scope.row[item.prop])"
-                                        style="color:#66b1ff;cursor:pointer">
-                                            {{ changeUsageOfFloor(scope.row[item.prop]) }}
-                                        </span> -->
-
                                         <span v-else-if="item.format == 'floorOfHouseUsersName' " 
                                         @click="clickMessageBox('住戶資料','floorOfHouseUsersName',scope.row.getlinkUsageOfFloorsUser())"
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ changeUsageOfFloorUsersName(scope.row.getlinkUsageOfFloorsUser()) }}
                                         </span>
-
-                                        <!-- <span v-else-if="item.format == 'floorOfHouseUsersName' " 
-                                        @click="handleClickOption('openfloorofhouse',scope.row['linkUsageOfFloors'])"
-                                        style="color:#66b1ff;cursor:pointer">
-                                            {{ changeUsageOfFloorUsersName(scope.row['linkUsageOfFloors']) }}
-                                        </span> -->
 
                                         <span v-else-if="item.format == 'buildingSelect' " 
                                         @click="clickMessageBox('建築物資料',item.format,scope.row[item.prop])"
@@ -382,23 +326,11 @@
                                             {{ changeBuilding(scope.row[item.prop]) }}
                                         </span>
 
-                                        <!-- <span v-else-if="item.format == 'buildingSelect' " 
-                                        @click="toAnotherPage('sys-Basic',scope.row[item.prop],'co')"
-                                        style="color:#66b1ff;cursor:pointer">
-                                            {{ changeBuilding(scope.row[item.prop]) }}
-                                        </span> -->
-
                                         <span v-else-if="item.format == 'roleSelect' " 
                                         @click="clickMessageBox('角色資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ changeRoles(scope.row[item.prop]) }}
                                         </span>
-
-                                        <!-- <span v-else-if="item.format == 'roleSelect' " 
-                                        @click="toAnotherPage('sys-Basic',scope.row[item.prop],'co')"
-                                        style="color:#66b1ff;cursor:pointer">
-                                            {{ changeRoles(scope.row[item.prop]) }}
-                                        </span> -->
 
                                         <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
                                             {{ changeInspectionLack(scope.row[scope.column.property]) }}
@@ -421,7 +353,7 @@
                             label="操作"
                             v-if="title !== 'address'"
                             >
-                                <template slot="header"  v-if="title !== 'maintain'">
+                                <template slot="header">
                                     <!-- 檔案上傳&檔案下載&新增資料 -->
                                     <i class="el-icon-circle-plus-outline" 
                                     @click="handleTableClick('empty','')" 
@@ -518,6 +450,10 @@ export default {
             type: Boolean,
             default: true
         },
+        hasSearch: {
+            type: Boolean,
+            default: true
+        },
         config: {
             type: Array,
             required: true
@@ -535,9 +471,6 @@ export default {
         selectSetting: {
             type: Array
         },
-        // sortArray: {
-        //     type: Array
-        // },
         listQueryParams: {
             type: Object
         },
@@ -665,10 +598,10 @@ export default {
             } 
         },
         page: function() {
-            return this.listQueryParams.page || 1
+            return this.listQueryParams.pageIndex || 1
         },
         limit: function() {
-            return this.listQueryParams.limit || 10
+            return this.listQueryParams.pageSize || 12
         },
         total: function() {
             return this.listQueryParams.total || 0
@@ -678,6 +611,7 @@ export default {
         config:{
             handler:async function(){
                 this.rowlabel = this.config.filter((item,index)=> item.isHidden == false)
+                this.inputSelectChange()
             },
             immediate:true
         },
@@ -700,7 +634,10 @@ export default {
             itemkey: Math.random(),
             gutter:0,
             updateArray:[],
-            orderArray:[]
+            orderArray:[],
+            inputSelect:null,
+            inputSearch:'',
+            pictLoading:false
         }
     },
     methods: {
@@ -811,8 +748,8 @@ export default {
                                             message: '請先選擇該棟建築物，才可對住戶進行編輯',
                                             type: 'warning'
                                         })
-                                    }else if(this.title == 'floorOfHouse'){ //門牌資料>打開當前視窗
-                                        this.handleClickOption('opendialog',data)
+                                    }else if(this.title == 'floorOfHouse'){ //門牌資料>打開住戶資料
+                                        this.handleClickOption('openuser',data)
                                     }else{
                                         this.$router.push({ name: 'basic', params: { target: data,type:'user' }})
                                     }
@@ -829,8 +766,8 @@ export default {
                                 case 'floorOfHouseSelect': //門牌資料>打開當前視窗
                                     this.handleClickOption('openfloorofhouse',data)
                                     break;
-                                case 'floorOfHouseUsersName': //門牌資料>打開當前視窗
-                                    this.handleClickOption('opendialog',data)
+                                case 'floorOfHouseUsersName': //管委會>打開住戶資料
+                                    this.handleClickOption('openuser',data)
                                     break;
                                 case 'roleSelect': //角色資料>權限設定-角色管理
                                     this.$router.push({ name: 'roleSetting', params: { target: data }})
@@ -864,8 +801,9 @@ export default {
                 this.updateArray.push(data)
             }
         },
+        //區塊&對外連結
         handleClickOption(status,row) {
-            console.log('status',status,'row',row)
+            console.log('status=>',status,'row=>',row)
             if (status === 'delete') {
                 this.$confirm('是否確定刪除該筆資料?', '提示', {
                 confirmButtonText: '確定',
@@ -880,6 +818,7 @@ export default {
                 this.$emit('handleBlock',this.title,status, row)
             } 
         },
+        //表格操作
         handleTableClick(index,row){
             if (index === 'delete') {
                 this.$confirm('是否確定刪除該筆資料?', '提示', {
@@ -906,12 +845,19 @@ export default {
         //篩選
         filterHandler(value, row, column) {
             const property = column['property']
-            return row[property] === value
+            console.log(value,row,property)
+            if(property.indexOf('link') !== -1){
+                return row[property].findIndex(item => item.id == value) !== -1 
+            }else if(property == 'rangeDate'){
+                return row['checkStartDate'] == value
+            }else{
+                return row[property] === value
+            }
         },
         getFilterItems(prop){
             var data = this.selectSetting.filter(item=>{ 
                 return item.type == prop })
-            return data.length !== 0 ? data[0].options : []
+            return data.length !== 0 ? data[0].options : null
         },
         //排序
         handleHeaderCellClass({row, column, rowIndex, columnIndex}){
@@ -919,39 +865,8 @@ export default {
                 if (column.property===element.prop) {
                     column.order=element.order
                 }
-            });
+            })
         },
-        // handleSortChange( {column, prop, order} ){    //order值（ascending、descending、null）对应不同的排序方式
-        //     if (order) {  //参与排序
-        //         let flagIsHave=false
-        //         this.orderArray.forEach(element => {
-        //             if (element.prop === prop) {
-        //                 element.order=order
-        //                 flagIsHave=true
-        //             }
-        //         });
-        //         if (!flagIsHave) {
-        //             this.orderArray.push({
-        //                 prop:prop,
-        //                 order:order
-        //             })
-        //         }
-        //     }else{  //不参与排序
-        //         let orderIndex=0
-        //         this.orderArray.forEach((element,index) => {
-        //             if (element.prop === prop) {
-        //                 orderIndex=index
-        //             }
-        //         });
-        //         this.orderArray.splice(orderIndex,1)
-        //     }
-        //     console.log(JSON.stringify(this.orderArray))
-        // },
-        // sortChange(column){
-        //     this.listQueryParams.page = 1 // 排序后返回第一页
-        //     this.$emit('update:listQueryParams', this.listQueryParams)
-        //     this.$emit('sortChange',column)
-        // },
         //表格排序
         sortChange(column){
             var self = this
@@ -1014,29 +929,57 @@ export default {
 			}
 			return ['others', 999]
 		},
-        //篩選
-        // filterChange(filters){
-        //     this.listQueryParams.page = 1 // 排序后返回第一页
-        //     this.$emit('update:listQueryParams', this.listQueryParams)
-        //     this.$emit('filterChange',filters)
-        // },
+        // 改變搜尋條件
+        inputSelectChange(){
+            return this.config.filter(item => item.isSearch == true)
+        },
+        clearInputSearch(){
+            this.pictLoading = true
+            this.inputSelect = null
+            this.$emit('resetlistQueryParams')
+        },
+        handleSearchWord(){
+            if(this.inputSelect == null || this.inputSelect.length == 0){
+                this.$message.error('請選擇搜尋欄位')
+                return false
+            }
+            var data = this.config.filter(config=>{
+                if(this.inputSelect.findIndex(item=>item == config.prop) !== -1) return config
+            })
+            if(this.inputSearch == ''){
+                this.clearInputSearch()
+            }else{
+                var words = this.inputSearch.split(',')
+                words = words.filter(item=> item !=='')
+                data.forEach((item,index)=>{
+                    if(words[index] !== undefined){
+                        this.$set(this.listQueryParams,item.prop,'{LIKE}'+words[index])
+                    }
+                })
+                this.pictLoading = true
+                this.listQueryParams.pageIndex = 1
+                this.$emit('update:listQueryParams', this.listQueryParams)
+                this.$emit('clickPagination')
+            }
+        },
         // 改變翻頁組件中每頁數據總數
         handleSizeChange(val) {
-            this.listQueryParams.limit = val
-            this.listQueryParams.page = 1 // 改變翻頁數目，將頁面=1
+            this.pictLoading = true
+            this.listQueryParams.pageSize = val
+            this.listQueryParams.pageIndex = 1 // 改變翻頁數目，將頁面=1
             this.$emit('update:listQueryParams', this.listQueryParams)
-            this.$emit('clickPagination', this.sort)
+            this.$emit('clickPagination')
         },
         // 跳到當前是第幾頁
         handleCurrentChange(val) {
-            this.listQueryParams.page = val
+            this.pictLoading = true
+            this.listQueryParams.pageIndex = val
             this.$emit('update:listQueryParams', this.listQueryParams)
-            this.$emit('clickPagination', this.sort)
+            this.$emit('clickPagination')
         },
-        // blockSelect(){
-        //     this.$emit('update:selectSetting', this.selectSetting)
-        //     this.$emit('clickPagination',this.sort)
-        // },
+        resetpictLoading(){
+            this.pictLoading = false
+        },
         change(){
             this.$emit('changeTable',!this.isTable)
         }
@@ -1049,7 +992,6 @@ export default {
     margin-left: 0px;
     margin-right: 0px;
 }
-
 
 </style>
 

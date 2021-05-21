@@ -3,8 +3,8 @@
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                     <Block 
+                        ref="block"
                         :list-query-params.sync="listQueryParams"
-                        :selectSetting.sync="selectSetting"
                         v-bind="blockAttrs" 
                         v-on="blockEvent"></Block>
                 </div>
@@ -38,7 +38,8 @@ export default {
         blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getAllRole
+                clickPagination:this.getAllRole,
+                resetlistQueryParams:this.resetlistQueryParams
             }
         }
     },
@@ -52,34 +53,27 @@ export default {
     },
     methods:{
         async init(){
-            this.tableConfig = Role.getConfig()
             this.title = 'roles'
             this.buttonsName = [
                 { name:'編輯',type:'primary',status:'open'},
                 { name:'刪除',type:'info',status:'delete'},
                 { name:'分配權限',type:'danger',status:'distribution' }]
-            await this.reload()
-            if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
-                if(typeof this.$route.params.target == 'object'){
-                    await this.handleBlock('roles','open',this.$route.params.target)
-                }
-            } 
-        },
-        async reload(){
-            await this.setAllRole()
             await this.getAllRole()
         },
-        async setAllRole(){
-            var data = await Role.get()
-            this.origin = data.map(item=>{ return item.clone(item) })
+        async resetlistQueryParams(){
+            this.listQueryParams = {
+                pageIndex: 1,
+                pageSize: 12,
+                total:0
+            }
+            await this.getAllRole()
         },
         async getAllRole(){
-            this.blockData = []
-            var data = this.origin.map(item=>{ return item.clone(item) })
-            this.listQueryParams.total = data.length
-            this.blockData = data.filter((item, index) => 
-                index < this.listQueryParams.limit * this.listQueryParams.page && 
-                index >= this.listQueryParams.limit * (this.listQueryParams.page - 1)).sort((x,y) => x.sort - y.sort)
+            var data = await Role.getSearchPage(this.listQueryParams)
+            this.blockData = data.result
+            this.listQueryParams.total = data.totalPageCount
+            this.$refs.block.resetpictLoading()
+            await this.getFilterItems()
         },
         async setMenuRoleAccess(){
             this.accessAuthority = []
@@ -100,6 +94,7 @@ export default {
             this.dialogConfig = this.tableConfig
             this.dialogTitle = this.title
             this.dialogSelect = this.accessAuthority
+            this.dialogButtonsName = []
             if(index === 'open'){
                 if(content.length !== undefined){ //代表不是外傳近來的
                     content.forEach(item=>{
@@ -119,7 +114,7 @@ export default {
                     this.$message('刪除成功')
                     this.$store.dispatch('permission/setmenu',await  Menu.get())
                     this.$store.dispatch('building/setroles',await Role.get())
-                    await this.reload()
+                    await this.resetlistQueryParams()
                 }
             }else if(index === 'empty'){
                 this.dialogData.push( Role.empty() )
@@ -138,17 +133,25 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'authority'
+            }else if(index === 'exportExcel'){
+                this.exportExcelData = this.blockData
+                this.innerVisible = true
+                this.dialogStatus = 'exportExcel'
+            }else if(index === 'uploadExcel'){
+                this.innerVisible = true
+                this.dialogStatus = 'uploadExcel'
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title , index, JSON.stringify(content))
-            if(index === 'update' || index === 'create'){
-                var isOk = index === 'update' ? await content.update() : await content.create()
+            if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
+                var isOk = index === 'update' ? await content.update() : 
+                index === 'create' ? await content.create() : await Role.postMany(content)
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('permission/setmenu',await  Menu.get())
                     this.$store.dispatch('building/setroles',await Role.get())
-                    await this.reload()
+                    await this.getAllRole()
                 }
             }else if(index === 'authoritycreate'){
                 const loading = this.$loading({
@@ -218,15 +221,20 @@ export default {
                     loading.close()
                     this.$message('更新成功')
                     this.$store.dispatch('permission/setmenu',await Menu.get())
-                    await this.reload()
+                    await this.getAllRole()
                 }
             }
             this.innerVisible = false
         },
         async changeTable(value){
             this.isTable = value
-            value == true ?  this.tableConfig = Role.getTableConfig() : 
-            this.tableConfig = Role.getConfig()
+            value == true ?  this.tableConfig = Role.getTableConfig() : this.tableConfig = Role.getConfig()
+            await this.getFilterItems()
+            if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+                if(typeof this.$route.params.target == 'object'){
+                    await this.handleBlock('roles','open',this.$route.params.target)
+                }
+            }
         }
     }
 }

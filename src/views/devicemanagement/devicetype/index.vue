@@ -4,8 +4,8 @@
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                     <Block 
+                    ref="block"
                     :list-query-params.sync="listQueryParams"
-                    :selectSetting.sync="selectSetting"
                     v-bind="blockAttrs" 
                     v-on="blockEvent"></Block>
                 </div>
@@ -18,7 +18,7 @@
     </div>
 </template>
 <script>
-import { setSelectSetting } from '@/utils/index'
+import { changeDeviceFullType } from '@/utils/index'
 import blockmixin from '@/mixin/blockmixin'
 import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
@@ -32,72 +32,37 @@ export default {
         blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getBuildingDevicesType
+                clickPagination:this.getBuildingDevicesType,
+                resetlistQueryParams:this.resetlistQueryParams
             }
         }
     },
     methods: {
         async init(){
-            this.tableConfig = DeviceType.getConfig()
             this.title = 'devicetype'
-            await this.reload()
-            if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0){
-                if(typeof this.$route.params.target == 'object'){
-                    await this.handleBlock('devicetype','open',this.$route.params.target[0])
-                }
-            } 
+            await this.getBuildingDevicesType()
         },
-        async reload(){
-            await this.saveBuildingDevicesTypeArray()
-            await this.getBuildingDevicesType() //大樓的所有設備類型
-            await this.setSelectSetting()
-        },
-        async saveBuildingDevicesTypeArray(){
-            var data = await DeviceType.get('deviceTypesManagement')
-            this.origin = data.map(item=>{ return item.clone(item) })
-        },
-        async getBuildingDevicesType(sort = null){
-            this.blockData = []
-            var data = this.origin.map(item=>{ return item.clone(item) })
-            this.listQueryParams.total = data.length
-            this.selectSetting.forEach(element=>{
-                if(element.select !== ''){
-                    data = data.filter(function(item,index){
-                        if(typeof item[element.prop] !== 'object'){
-                            return item[element.prop] == element.select
-                        }else{ //物件形式
-                            for(let obj of item[element.prop]){
-                                if(obj.id == element.select){
-                                return item
-                                }
-                            }
-                        }
-                    })
-                }
-            })
-            if(sort !== '' && sort !== null){
-                data = data.sort(function(x,y){
-                    return y[sort] - x[sort]
-                })
-            }else{
-                data = data.sort(function(x,y){
-                    return y.id - x.id
-                })
+        async resetlistQueryParams(){
+            this.listQueryParams = {
+                pageIndex: 1,
+                pageSize: 12,
+                total:0
             }
-            data = data.filter((item, index) => 
-                index < this.listQueryParams.limit * this.listQueryParams.page && 
-                index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
-            this.blockData = data
+            await this.getBuildingDevicesType()
         },
-        async setSelectSetting(){
-            this.selectSetting = await setSelectSetting(this.tableConfig,this.origin)
-            this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
+        async getBuildingDevicesType(){
+            var data = await DeviceType.getSearchPage(this.listQueryParams)
+            this.blockData = data.result
+            this.listQueryParams.total = data.totalPageCount
+            this.$refs.block.resetpictLoading()
+            await this.getFilterItems()
         },
         async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
             this.dialogData = []
             this.dialogConfig = this.tableConfig
             this.dialogTitle = this.title
+            this.dialogButtonsName = []
             if(index === 'open'){
                 this.dialogStatus = 'update'
                 this.dialogData.push(content)
@@ -110,12 +75,7 @@ export default {
                 if(isDelete){
                     this.$message('刪除成功')
                     this.$store.dispatch('building/setbuildingdevices',await Device.get())
-                    this.listQueryParams = {
-                        page: 1,
-                        limit: 10,
-                        total: 0
-                    }
-                    await this.reload()
+                    await this.resetlistQueryParams()
                 }
             }else if(index === 'empty'){
                 this.dialogData.push( DeviceType.empty() )
@@ -124,31 +84,47 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'create'
+            }else if(index === 'exportExcel'){
+                this.exportExcelData = this.blockData
+                this.innerVisible = true
+                this.dialogStatus = 'exportExcel'
+            }else if(index === 'uploadExcel'){
+                this.innerVisible = true
+                this.dialogStatus = 'uploadExcel'
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
-            console.log(title ,index,content)
-            if(index !== 'cancel'){
-                var label = ''
-                this.deviceType.filter(function(item, index){
-                    var array = item.children.filter((obj,index)=>{
-                        return obj.value == content.fullType[1]
-                    })
-                    array.length !== 0 ? label = array[0].label  : ''
-                })
+            console.log(title ,index,JSON.stringify(content))
+            if(index === 'update' || index === 'create'){
+                var label = changeDeviceFullType(content.fullType,false,true)
                 content.setTypeName(label) 
-                content.setFullType(content.fullType[1])
-                var isOk = index === 'update' ? await content.update() : await content.create()
+                var isOk = index === 'update' ? await content.update() : 
+                await content.create()
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('building/setbuildingdevices',await Device.get())
-                    await this.reload()
+                    await this.getBuildingDevicesType()
+                }
+            }else if(index === 'uploadExcelSave'){
+                var isOk = await DeviceType.postMany(content)
+                if(isOk){
+                    this.$message('新增成功')
+                    await this.getBuildingDevicesType()
                 }
             }
             this.innerVisible = false
         },
         async changeTable(value){
             this.isTable = value
+            this.tableConfig = DeviceType.getConfig()
+            // value == true ?  this.tableConfig = DeviceType.getTableConfig() : 
+            // this.tableConfig = DeviceType.getConfig()
+            await this.getFilterItems()
+            if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0){
+                if(typeof this.$route.params.target == 'object'){
+                    await this.handleBlock('devicetype','open',this.$route.params.target[0])
+                }
+            } 
         }
     }
 }

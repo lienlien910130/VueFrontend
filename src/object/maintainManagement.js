@@ -1,6 +1,6 @@
 import api from '@/api'
 import Parent from './parent' 
-import { formatTime } from '@/utils'
+import moment from 'moment'
 import Files  from './files'
 import Device from './device'
 import Contactunit from './contactunit'
@@ -65,7 +65,7 @@ class MaintainManagementList extends Parent {
         return new MaintainManagementList({
             id:'',
             name:'',
-            createdDate: formatTime(new Date(), '{y}-{m}-{d}'),
+            createdDate: moment().format('YYYY-MM-DD'),
             linkMaintains:[]
         })
     }
@@ -98,30 +98,47 @@ class MaintainManagementList extends Parent {
     }
     static getCreateConfig(){
         return [{
-                        label: '名稱',
-                        prop: 'name',
-                        mandatory:true, message:'請輸入名稱',isSelect:false,isSort:true,maxlength:'40'
-                    },
-                    {
-                        label: '建立時間',
-                        prop: 'createdDate',
-                        format:'YYYY-MM-DD',
-                        mandatory:true, message:'請選擇建立時間',isSelect:true,options:[],
-                                selectType:'dateOfDate',select:'',isSort:true
-            }]
+                    label: '名稱',
+                    prop: 'name',
+                    mandatory:true, message:'請輸入名稱',maxlength:'40'
+                },
+                {
+                    label: '建立時間',
+                    prop: 'createdDate',
+                    format:'YYYY-MM-DD',
+                    mandatory:true, message:'請選擇建立時間'
+                }]
     }
     static async get (){
         var data = await api.device.apiGetBuildingMaintainsList().then(response => {
-            var array = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new MaintainManagementList(item) })
+            var array = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new MaintainManagementList(item) })
             return array
         }).catch(error=>{
             return []
         })
         return data
     }
+    static async getSearchPage(data){
+        var data = await api.device.apiGetMaintainsListSearchPages(data).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new MaintainManagementList(item)})
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async postMany(data){
+        var data = await api.device.apiPostMaintainsLists(data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
     static async getAllLack(){
         var data = await api.device.apiGetInspectionListByMaintain().then(response => {
-            console.log(JSON.stringify(response.result))
             return response.result.sort(function(x,y){
                 var _data1 = new Date(x.label)
                 var _data2 = new Date(y.label)
@@ -165,7 +182,7 @@ class MaintainManagement extends Parent {
         return data
     }
     async create(maintainListId){
-        var data = await api.device.apiPostMaintains(maintainListId,this).then(response => {
+        var data = await api.device.apiPostMaintain(maintainListId,this).then(response => {
             return true
         }).catch(error=>{
             return false
@@ -233,6 +250,44 @@ class MaintainManagement extends Parent {
             { label:'設備' , prop:'linkDevices',format:'deviceSelect', mandatory:true,message:'請選擇設備',type:'array',typemessage:'',isSelect:false,isHidden:false},
             { label:'備註' , prop:'note',format:'textarea', mandatory:false,message:'請輸入備註',maxlength:'200',isSelect:false,isHidden:false},
         ]
+    }
+    static async get (){
+        var data = await api.device.apiGetMaintainAll().then(response => {
+            var array = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new MaintainManagement(item) })
+            return array
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async getAllSearchPage (data){
+        var data = await api.device.apiGetMaintainAllSearchPages(data).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new MaintainManagement(item)})
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async getSearchPage(maintainListId,data){
+        var data = await api.device.apiGetMaintainSearchPages(maintainListId,data).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new MaintainManagement(item)})
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async postMany(maintainListId,data){
+        var data = await api.device.apiPostMaintains(maintainListId,data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
     }
 }
 

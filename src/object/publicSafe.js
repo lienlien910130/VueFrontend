@@ -1,6 +1,6 @@
 import Parent from './parent'
 import api from '@/api'
-import { formatTime } from '@/utils'
+import moment from 'moment'
 import Files  from './files'
 
 class PublicSafe extends Parent {
@@ -71,9 +71,9 @@ class PublicSafe extends Parent {
     static empty(){
         return new PublicSafe({
             id:'',
-            declareYear : formatTime(new Date(), '{y}'),
+            declareYear : moment().format('YYYY-MM-DD'),
             declareDeadline :null,
-            declareDate : formatTime(new Date(), '{y}-{m}-{d}'),
+            declareDate : moment().format('YYYY-MM-DD'),
             declareResult :'',
             declarationImproveDate :null,
             checkStartDate :null,
@@ -168,76 +168,69 @@ class PublicSafe extends Parent {
                  label: '申報年度',
                  prop: 'declareYear',
                  format:'YYYY',
-                 mandatory:true, message:'請選擇年度',isSelect:true,options:[],
-                 selectType:'dateOfYear',select:'',isSort:true,isHidden:false
+                 mandatory:true, message:'請選擇年度',isHidden:false,isSearch:false
              },
              {
                  label: '申報期限',
                  prop: 'declareDeadline',
                  format:'YYYY-MM-DD',
-                 mandatory:true, message:'請選擇期限',isSelect:true,options:[],
-                 selectType:'dateOfDate',select:'',isSort:true,isHidden:false
+                 mandatory:true, message:'請選擇期限',isHidden:false,isSearch:false
              },
              {
                  label: '申報日期',
                  prop: 'declareDate',
                  format:'YYYY-MM-DD',
-                 mandatory:true, message:'請選擇日期',isSelect:true,options:[],
-                 selectType:'dateOfDate',select:'',isSort:true,isHidden:false
+                 mandatory:true, message:'請選擇日期',isHidden:false,isSearch:false
              },
              {
                  label: '檢測日期',
                  prop: 'rangeDate',
-                 format:'range',isSelect:false,isSort:false,isHidden:false
+                 format:'range',isHidden:false,isSearch:false
              },
              {
                  label: '專技人員',
-                 prop: 'professName',isSelect:true,options:[],
-                         selectType:'',select:'',isSort:true,isHidden:false,maxlength:'10'
+                 prop: 'professName',isHidden:false,maxlength:'10',isSearch:true
              },
              {
                  label: '證號',
-                 prop: 'certificateNumber',isSelect:false,isSort:true,isHidden:false,maxlength:'20'
+                 prop: 'certificateNumber',isHidden:false,maxlength:'20',isSearch:true
              },
              {
                  label: '改善期限',
                  prop: 'declarationImproveDate',
-                 format:'YYYY-MM-DD',mandatory:true, message:'請選擇日期',isSelect:true,options:[],
-                     selectType:'dateOfDate',select:'',isSort:true,isHidden:false
+                 format:'YYYY-MM-DD',mandatory:true, message:'請選擇日期',isHidden:false,isSearch:false
              },
              {
                  label: '改善狀況',
                  prop: 'isImproved',
                  format:'tag',
                  type:'boolean',
-                 mandatory:false, isPattern:false,trigger:'change',isSelect:true,options:[],
-                 selectType:'reportBool',select:'',isSort:true,isHidden:false
+                 mandatory:false, isPattern:false,trigger:'change',isHidden:false,isSearch:false
              },
              {
                  label: '下次檢查日期',
                  prop: 'nextInspectionDate',
                  format:'YYYY-MM-DD',
-                 mandatory:true, message:'請選擇日期',isSelect:true,options:[],
-                 selectType:'dateOfDate',select:'',isSort:true,isHidden:false
+                 mandatory:true, message:'請選擇日期',isHidden:false,isSearch:false
              },
              {
                  label: '備註',
                  prop: 'note',
                  format:'textarea',
-                 mandatory:false, isPattern:false,isSelect:false,isSort:false,isHidden:false
+                 mandatory:false, isPattern:false,isHidden:false,isSearch:true
              },
              {
                  label: '檢附文件',
                  prop: 'file',
-                 format:'openfiles',isSelect:false,isSort:false,isHidden:true
+                 format:'openfiles',isHidden:true,isSearch:false
              },
              {
                  label: '缺失項目',
                  prop: 'missingContent',
-                 format:'openlacks',isSelect:false,isSort:false,isHidden:true
+                 format:'openlacks',isHidden:true,isSearch:false
              }
          ]  
-     }
+    }
     static async get (){
         var data = await api.report.apiGetBuildingPublicSafe().then(response => {
             var result = response.result.sort((x,y) => x.id - y.id).map(item=>{return new PublicSafe(item)})
@@ -247,7 +240,23 @@ class PublicSafe extends Parent {
         })
         return data
     }
-    
+    static async getSearchPage(data){
+        var data = await api.report.apiGetPublicSafeSearchPages(data).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new PublicSafe(item)})
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async postMany(data){
+        var data = await api.report.apiPostPublicSafes(data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
 }
 
 export default PublicSafe

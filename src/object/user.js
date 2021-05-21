@@ -35,6 +35,14 @@ class User extends Parent {
         })
         return data
     }
+    async delete(){
+        var data = await api.building.apiDeleteUser(this.id).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
     getName(){
         return this.name
     }
@@ -65,12 +73,47 @@ class User extends Parent {
         { label:'備註' , prop:'note', mandatory:false,format:'textarea',maxlength:'200'}, 
       ]
     }
+    static getTableConfig(){
+        return [
+         { label:'姓名' , prop:'name', mandatory:true, message:'請輸入姓名',maxlength:'15',isHidden:false,isSearch:true},
+         { label:'身份證' , prop:'identityCard', mandatory:true,message:'請輸入身份證',
+         pattern:/^[A-Z]{1}[1-2]{1}[0-9]{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,maxlength:'10',isHidden:true,isSearch:false},
+         { label:'生日' , prop:'birthday',format:'YYYY-MM-DD', mandatory:true,message:'請輸入生日',isHidden:false,isSearch:false},
+         { label:'電話' , prop:'callNumber', mandatory:false,maxlength:'15',isHidden:false,isSearch:true},
+         { label:'手機號碼' , prop:'cellPhoneNumber', mandatory:true, message:'請輸入手機號碼',
+         pattern:/^09\d{8}$/,errorMsg:'輸入格式為09xxxxxxxx',isPattern: true,maxlength:'10',isHidden:false,isSearch:true},
+         { label:'緊急電話' , prop:'emergencyNumber', mandatory:false,maxlength:'15',isHidden:false,isSearch:true},   
+         { label:'電子信箱' , prop:'email', mandatory:true,message:'請輸入電子信箱',
+         pattern:/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/,
+         errorMsg:'格式錯誤,請重新輸入',isPattern: true,maxlength:'100',isHidden:false,isSearch:true},    
+         { label:'備註' , prop:'note', mandatory:false,format:'textarea',maxlength:'200',isHidden:false,isSearch:true}, 
+       ]
+    }
     static async get (){
         var data = await api.building.apiGetAllBuildingOfUser().then(response => {
-            var result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new User(item) })
+            var result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new User(item) })
             return result
         }).catch(error=>{
             return []
+        })
+        return data
+    }
+    static async getSearchPage(data){
+        var data = await api.building.apiGetUserSearchPages(data).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new User(item)})
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async postMany(data){
+        var data = await api.building.apiPostUsers(data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
         })
         return data
     }

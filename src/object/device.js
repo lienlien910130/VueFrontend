@@ -207,81 +207,74 @@ class Device extends Parent {
              {
                  label: '名稱',
                  prop: 'name',
-                 mandatory:true, message:'請輸入名稱',isSelect:false,options:[],selectType:'',
-                 isSort:true,isHidden:false,maxlength:'20'
+                 mandatory:true, message:'請輸入名稱',isHidden:false,maxlength:'20',isSearch:true
              },
              {
                  label: '種類',
                  prop: 'linkDeviceTypes',
                  format:'deviceTypeSelect',
-                 mandatory:true, message:'請選擇種類',isSelect:true,options:[],
-                 selectType:'deviceType',select:'',isSort:true,isHidden:false,type:'array',typemessage:''
+                 mandatory:true, message:'請選擇種類',isHidden:false,type:'array',typemessage:'',isSearch:false
              },
              {
                  label: '購買日期',
                  prop: 'dateOfPurchase',
                  format:'YYYY-MM-DD',
-                 mandatory:false, message:'請輸入購買日期',isSelect:false,options:[],selectType:'',
-                 isSort:true,isHidden:false
+                 mandatory:false, message:'請輸入購買日期',isHidden:false,isSearch:false
              },
              {
                  label: '保固日期',
                  prop: 'dateOfWarranty',
                  format:'YYYY-MM-DD',
-                 mandatory:false, message:'請輸入保固日期',isSelect:false,options:[],selectType:'',
-                 isSort:true,isHidden:false
+                 mandatory:false, message:'請輸入保固日期',isHidden:false,isSearch:false
              },
              {
                  label: '位置設置',
                  prop: 'location',
-                 mandatory:false, message:'請輸入位置設置',isSelect:false,options:[],selectType:'',
-                 isSort:true,isHidden:false,maxlength:'20'
+                 mandatory:false, message:'請輸入位置設置',isHidden:false,maxlength:'20',isSearch:true
              },
              {
                  label: '分類群組',
                  prop: 'groupID',
-                 mandatory:false, message:'請輸入分類群組',isSelect:true,options:[],
-                 selectType:'group',select:'',isSort:true,isHidden:false,maxlength:'10'
+                 mandatory:false, message:'請輸入分類群組',isHidden:false,maxlength:'10',isSearch:true
              },
              {
                  label: '保管單位',
                  prop: 'linkKeeperUnits',
                  format:'contactunitSelect',
-                 mandatory:true,trigger: 'change', message:'請選擇保管單位',isSelect:true,options:[],
-                 selectType:'contactunit',select:'',isSort:true,type:'array',typemessage:'',isHidden:false
+                 mandatory:true,trigger: 'change', message:'請選擇保管單位',type:'array',typemessage:'',
+                 isHidden:false,isSearch:false
              },
              {
                  label: '維護廠商',
                  prop: 'linkMaintainVendors',
                  format:'contactunitSelect',
-                 mandatory:true,trigger: 'change', message:'請選擇維護廠商',isSelect:true,options:[],
-                 selectType:'contactunit',select:'',isSort:true,type:'array',typemessage:'',isHidden:false 
+                 mandatory:true,trigger: 'change', message:'請選擇維護廠商',type:'array',typemessage:'',
+                 isHidden:false,isSearch:false
              },
              {
                  label: '設備狀況',
                  prop: 'status',
                  format:'DeviceStatusOptions',
-                 mandatory:true, message:'請選擇設備狀況',isSelect:true,options:[],
-                 selectType:'options',select:'',isSort:true,isHidden:false
+                 mandatory:true, message:'請選擇設備狀況',isHidden:false,isSearch:false
              },
-             {
-                 label: '系統',
-                 prop: 'systemNumber',
-                 mandatory:false, message:'請輸入系統',isSelect:false,options:[],selectType:'',
-                 isSort:true,isHidden:false,maxlength:'2'
-             },
-             {
-                 label: '迴路',
-                 prop: 'circuitNumber',
-                 mandatory:false, message:'請輸入迴路',isSelect:false,options:[],selectType:'',
-                 isSort:true,isHidden:false,maxlength:'3'
-             },
-             {
-                 label: '點位',
-                 prop: 'address',
-                 mandatory:false, message:'請輸入點位',isSelect:false,options:[],selectType:'',
-                 isSort:true,isHidden:false,maxlength:'5'
-             }
+            //  {
+            //      label: '系統',
+            //      prop: 'systemNumber',
+            //      mandatory:false, message:'請輸入系統',isSelect:false,options:[],selectType:'',
+            //      isSort:true,isHidden:false,maxlength:'2'
+            //  },
+            //  {
+            //      label: '迴路',
+            //      prop: 'circuitNumber',
+            //      mandatory:false, message:'請輸入迴路',isSelect:false,options:[],selectType:'',
+            //      isSort:true,isHidden:false,maxlength:'3'
+            //  },
+            //  {
+            //      label: '點位',
+            //      prop: 'address',
+            //      mandatory:false, message:'請輸入點位',isSelect:false,options:[],selectType:'',
+            //      isSort:true,isHidden:false,maxlength:'5'
+            //  }
          ]
     }
     static getAddressConfig(){
@@ -308,6 +301,24 @@ class Device extends Parent {
         })
         return data
     }
+    static async getSearchPage(data){
+        var data = await api.device.apiGetDevicesManagementSearchPages(data).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new Device(item)})
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async postMany(data){
+        var data = await api.device.apiPostDevicesManagements(data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
     static async updateAddress(data){
         var data = await api.device.apiPatchDevicesAddress(data).then(async(response) => {
             return true
@@ -324,6 +335,7 @@ class Device extends Parent {
         })
         return data
     }
+
 }
 
 export default Device

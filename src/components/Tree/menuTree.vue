@@ -38,8 +38,6 @@ export default {
     watch:{
       treeData:{
         handler:function(){
-          console.log('treeData')
-          console.log(JSON.stringify(this.treeData))
           if(this.selectId !== null){
             this.$nextTick(()=>{
               this.$refs.tree.setCurrentKey(this.selectId)

@@ -10,16 +10,6 @@
         @close="handleClickOption('cancel')"
         center>
         <div v-if="dialogData.length > 1" >
-            <!-- <el-tabs 
-            v-if="title === 'user' || title === 'contactUnit' || title === 'equipment'" 
-            v-model="activeName" 
-            @tab-click="handleTabClick">
-                <el-tab-pane
-                v-for="(item) in dialogData"
-                :key="item.id"
-                :label="item.name"
-                :name="item.id"></el-tab-pane>
-            </el-tabs> -->
            <el-tabs 
             v-if="title === 'floorOfHouse' " 
             v-model="activeName" 
@@ -41,44 +31,11 @@
                 :name="item.id"></el-tab-pane>
             </el-tabs>
         </div>
-
-        <!-- <el-tabs 
-        v-if="title === 'user' && dialogData.length > 1" 
-        v-model="activeName" 
-        @tab-click="handleTabClick">
-            <el-tab-pane
-            v-for="(item) in dialogData"
-            :key="item.id"
-            :label="item.name"
-            :name="item.id"></el-tab-pane>
-        </el-tabs> -->
-
-        <!-- <el-tabs 
-        v-if="title === 'equipment' && dialogData.length > 1" 
-        v-model="activeName" 
-        @tab-click="handleTabClick">
-            <el-tab-pane
-            v-for="(item) in dialogData"
-            :key="item.id"
-            :label="item.name"
-            :name="item.id"></el-tab-pane>
-        </el-tabs> -->
-
-        <!-- <el-tabs 
-        v-else-if="title === 'floorOfHouse' && dialogData.length > 1" 
-        v-model="activeName" 
-        @tab-click="handleTabClick">
-            <el-tab-pane
-            v-for="(item) in dialogData"
-            :key="item.id"
-            :label="item.houseNumber"
-            :name="item.id"></el-tab-pane>
-        </el-tabs> -->
-
         <!-- dialogStatus : 一般表單/upload/lack/authority -->
-        <!-- <keep-alive> -->
+        <keep-alive>
 
-        <el-form v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' && dialogStatus !== 'authority'
+        <el-form v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' 
+        && dialogStatus !== 'authority'
          && dialogStatus !== 'exportExcel' && dialogStatus !== 'uploadExcel'  "
         ref="dataForm"  
         :model="temp"  
@@ -210,7 +167,7 @@
                 </el-select> -->
                 <el-cascader
                     v-else-if="item.format == 'fullType' "
-                    v-model="temp[item.prop]"
+                    v-model="fulltypevalue"
                     placeholder="請選擇"
                     :options="selectfilter('fullTypeSelect')"
                     filterable
@@ -352,6 +309,8 @@
 
             </el-form-item>
         </el-form>
+
+        </keep-alive>
         <!-- 檔案 -->
         <Upload v-if="dialogStatus === 'upload'"
         v-bind="uploadAttrs" 
@@ -410,12 +369,12 @@
         <ExportExcel  v-if="dialogStatus === 'exportExcel'"
             v-bind="exportExcelAttrs">
         </ExportExcel>
-
+        <!-- 上傳檔案 -->
         <UploadExcel  v-if="dialogStatus === 'uploadExcel'"
-           >
+        v-on:handleTableClick="handleTableClick">
         </UploadExcel>
 
-        <!-- </keep-alive> -->
+        
         
         <div v-if="isHasButtons" slot="footer" class="dialog-footer">
             <span
@@ -436,6 +395,7 @@
 <script>
 import computedmixin  from '@/mixin/computedmixin'
 import Setting from '@/object/setting'
+import { changeDeviceFullType } from '@/utils/index'
 
 export default {
     name:'Dialog',
@@ -643,6 +603,7 @@ export default {
             activeName:'',
             temp:{},
             rangevalue: [],
+            fulltypevalue:[],
             pictLoading:false,
             isSelectAll:false,
             accessArray:[],
@@ -661,10 +622,15 @@ export default {
                         this.dialogData[0]['checkEndDate']]
                     }
                 }
+                if(this.title == 'devicetype'){
+                    var fullType = this.dialogData[0]['fullType']
+                    var value = changeDeviceFullType(fullType,true,false)
+                    this.fulltypevalue = [value,fullType]
+                }
             }
             if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' 
-            && this.dialogStatus !== 'authority' && this.dialogStatus !== 'exportExcel' 
-            && this.dialogStatus !== 'uploadExcel'){
+                && this.dialogStatus !== 'authority' && this.dialogStatus !== 'exportExcel' 
+                && this.dialogStatus !== 'uploadExcel'){
                 this.$nextTick(() => {
                     if(this.$refs.dataForm !== undefined){
                         this.$refs.dataForm.clearValidate()
@@ -726,6 +692,9 @@ export default {
                 this.temp['checkStartDate'] = this.rangevalue[0]
                 this.temp['checkEndDate'] = this.rangevalue[1]
             }
+            if(this.title == 'devicetype'){
+                this.temp['fullType'] = this.fulltypevalue[1]
+            }
             if(status !== 'cancel' && status !== 'cancellack' && status !== 'empty' && 
             this.dialogStatus !== 'upload' && this.dialogStatus !== 'exportExcel' && 
             this.dialogStatus !== 'uploadExcel' &&
@@ -763,11 +732,15 @@ export default {
                 this.$emit('handleDialog',this.title, status , data)
             }
         },
+        //table表格&上傳檔案
         handleTableClick(title,index,row){
-            this.$emit('handleDialog', title , index , row)
+            var str = title == '' ? this.title : title
+            this.$emit('handleDialog', str , index , row)
         },
+        //table表格分頁
         clickPagination(){
-            this.$emit('handleDialog', this.title , 'clickPagination' , this.listQueryParams)
+            this.$emit('handleDialog', this.title , 'clickPagination' , 
+            this.listQueryParams)
         },
         async handleTabClick(tab, event) {
             if(this.title === 'user'){

@@ -36,9 +36,17 @@
 
 <script>
 import moment from 'moment'
+import { mapGetters } from 'vuex'
+import { changeDeviceFullType } from '@/utils/index'
 
 export default {
   name: 'ExportExcel',
+  computed: {
+        ...mapGetters([
+            'buildingoptions',
+            'deviceType'
+        ])
+  },
   props:{
     exportExcelData: {
       type: Array,
@@ -68,6 +76,12 @@ export default {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
         var array = this.config.filter(item=>{ return item.isHidden == false})
+        var index = array.findIndex(item=>item.prop == 'rangeDate')
+        if(index != -1){
+          array.splice(index,1)
+          array.push({ label: '檢測日期-開始時間',prop:'checkStartDate'}
+          ,{label:'檢測日期-結束時間',prop:'checkEndDate'})
+        }
         const tHeader = array.map(item=>item.label)
         const filterVal = array.map(function(element){
           return {
@@ -89,13 +103,27 @@ export default {
     },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => {
-        if (j.format == 'YYYY-MM-DD') {
-          return moment(v[j.prop]).format(j.format)
-        } else if (typeof v[j.prop] == 'object') {
-          return v[j.prop].map(item => item.getName())
-        } else {
-          return v[j.prop]
-        }
+          if (j.format == 'YYYY-MM-DD' || j.format == 'YYYY') {
+            if(v[j.prop] !== null && v[j.prop] !== undefined){
+              return moment(v[j.prop]).format(j.format)
+            }
+          } else if (j.format == 'fullType'){
+            var label = changeDeviceFullType(v[j.prop],true,true)
+            return label
+          } else if (typeof v[j.prop] == 'object') {
+            if(v[j.prop] !== null){
+              return v[j.prop].map(item => item.getName())
+            }
+          } else if (j.format == 'LackStatusOptions' || 
+          j.format == 'MaintainProcessOptions' || 
+          j.format == 'DeviceStatusOptions' || j.format == 'ContactUnitOptions'){
+            let _array = this.buildingoptions.filter((item, index) => 
+              item.id == v[j.prop] 
+            )
+            return _array.length !== 0 ? _array[0].textName : ''
+          } else {
+            return v[j.prop]
+          }
       }))
     }
   }

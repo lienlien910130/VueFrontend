@@ -68,8 +68,8 @@
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                   <Block 
+                    ref="block"
                     :list-query-params.sync="listQueryParams"
-                    :selectSetting.sync="selectSetting"
                     v-bind="blockAttrs" 
                     v-on="blockEvent"></Block>
                 </div>
@@ -86,7 +86,6 @@
         </div>
 </template>
 <script>
-import { setSelectSetting } from '@/utils/index'
 import Files  from '@/object/files'
 import PublicSafe from '@/object/publicSafe'
 import PublicSafeLack from '@/object/publicSafeLack'
@@ -99,15 +98,14 @@ export default {
     data(){
         return{
             publicSafe:'',
-            lackorigin:[],
             //dialog額外的參數
             files:[],
             formtableData:[],
-            formtableconfig:PublicSafeLack.getConfig(),
+            formtableconfig: PublicSafeLack.getConfig(),
             lacklistQueryParams:{
-                page: 1,
-                limit: 10,
-                total: 0
+                pageIndex: 1,
+                pageSize: 10,
+                total:0
             }
         }
     },
@@ -115,104 +113,50 @@ export default {
       blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getBuildingPublicSafeReport
+                clickPagination:this.getBuildingPublicSafeReport,
+                resetlistQueryParams:this.resetlistQueryParams
             }
       }
   },
   methods: {
     async init(){
-      this.lacklistQueryParams = {page: 1,limit: 10,total: 0}
-      this.tableConfig = PublicSafe.getConfig()
       this.title = 'reportPublicSafe'
-      await this.reloadPublicSafe()
+      await this.getBuildingPublicSafeReport()
     },
-    async reloadPublicSafe(){
-      await this.saveBuildingPublicSafeReport()
-      await this.getBuildingPublicSafeReport() 
-      await this.setSelectSetting()
-    },
-    async lackinit(){
-      this.lacklistQueryParams = {page: 1,limit: 10,total: 0}
-      await this.savePublicSafeLack()
-      await this.getPublicSafeLack() 
-    },
-    async saveBuildingPublicSafeReport(){
-      var data = await PublicSafe.get()
-      this.origin = data.map(item=>{ return item.clone(item)})
-    },
-    async getBuildingPublicSafeReport(sort = null) { 
-      this.blockData = []
-      var data = this.origin.map(item=>{ return item.clone(item)})
-      this.listQueryParams.total = data.length
-        this.selectSetting.forEach(element=>{
-            if(element.select !== ''){
-              data = data.filter(function(item,index){
-                  if(typeof item[element.prop] !== 'object'){
-                      return item[element.prop] == element.select
-                  }else{
-                      if(item[element.prop].length > 0){
-                        return item[element.prop][0].id == element.select
-                      }
-                  }
-              })
-            }
-        })
-        if(sort !== '' && sort !== null){
-          if(sort == 'declareDeadline' || sort == 'declareDate' || sort == 'declarationImproveDate'){
-            data = data.sort(function(x,y){
-              var date1 = x[sort].split(' ')
-              var date2 = y[sort].split(' ')
-              var _data1 = new Date(date1[0])
-              var _data2 = new Date(date2[0])
-              return  _data2 - _data1
-            })
-          }else if(sort == 'declareYear'){
-            data = data.sort(function(x,y){
-                var date1 = x[sort].split(' ')
-                var date2 = y[sort].split(' ')
-                var _data1 = new Date(date1[0]).getFullYear()
-                var _data2 = new Date(date2[0]).getFullYear()
-                return  _data2 - _data1
-            })
-          }else{
-            data = data.sort(function(x,y){
-                return y[sort] - x[sort]
-            })
-          }
-        }else{
-            data = data.sort(function(x,y){
-                var a = x.isImproved
-                var b = y.isImproved
-                if(a == b){
-                  return y.id - x.id
-                }
-                return x.isImproved - y.isImproved
-            })
+    async resetlistQueryParams(){
+      this.listQueryParams = {
+        pageIndex: 1,
+        pageSize: 12,
+        total:0
       }
-      data = data.filter((item, index) => 
-        index < this.listQueryParams.limit * this.listQueryParams.page && 
-        index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
-      this.blockData = data
+      await this.getBuildingPublicSafeReport()
     },
-    async setSelectSetting(){
-      this.selectSetting = await setSelectSetting(this.tableConfig,this.origin)
-      this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
-    }, 
-    async savePublicSafeLack(){
-      var data =  await PublicSafeLack.get(this.publicSafe.getID())
-      this.lackorigin = data.map(item=>{ return item.clone(item)})
+    async resetlacklistQueryParams(){
+      this.lacklistQueryParams = {
+        pageIndex: 1,
+        pageSize: 10,
+        total:0
+      }
+      await this.getPublicSafeLack()
+    },
+    async getBuildingPublicSafeReport() { 
+      var data = await PublicSafe.getSearchPage(this.listQueryParams)
+      this.blockData = data.result
+      this.listQueryParams.total = data.totalPageCount
+      this.$refs.block.resetpictLoading()
+      await this.getFilterItems()
     },
     async getPublicSafeLack(){ //取得缺失內容
-      var data =  this.lackorigin.map(item=>{ return item.clone(item)})
-      this.lacklistQueryParams.total = data.length
-      this.formtableData = data.filter((item, index) => 
-          index < this.lacklistQueryParams.limit * this.lacklistQueryParams.page && 
-          index >= this.lacklistQueryParams.limit * (this.lacklistQueryParams.page - 1))
+      var data =  await PublicSafeLack.getSearchPage(this.publicSafe.getID(),
+      this.lacklistQueryParams)
+      this.formtableData = data.result
+      this.lacklistQueryParams.total = data.totalPageCount
     },
     async handleBlock(title,index, content) { //公安申報的操作
-      console.log(index,JSON.stringify(content))
+      console.log(title,index,JSON.stringify(content))
       this.dialogData = []
       this.dialogTitle = this.title
+      this.dialogButtonsName = []
       if(index === 'open'){
           this.dialogData.push(content)
           this.dialogButtonsName = [
@@ -225,12 +169,7 @@ export default {
         var isDelete = await content.delete()
         if(isDelete){
           this.$message('刪除成功')
-          this.listQueryParams = {
-                page: 1,
-                limit: 10,
-                total: 0
-          }
-          await this.reloadPublicSafe()
+          await this.resetlistQueryParams()
         }
       }else if(index === 'empty'){
         this.dialogData.push( PublicSafe.empty() )
@@ -243,27 +182,34 @@ export default {
       }else if(index === 'openfiles'){
           this.publicSafe = content
           this.files = await content.files()
-          this.dialogButtonsName = []
           this.innerVisible = true
           this.dialogStatus = 'upload'
       }else if(index === 'openlacks'){
         this.dialogTitle = 'lack'
         this.publicSafe = content
-        this.dialogButtonsName = []
-        await this.lackinit()
+        await this.resetlacklistQueryParams()
         this.dialogStatus = 'lack'
         this.innerVisible = true
+      }else if(index === 'exportExcel'){
+        this.dialogConfig = this.tableConfig
+        this.exportExcelData = this.blockData
+        this.innerVisible = true
+        this.dialogStatus = 'exportExcel'
+      }else if(index === 'uploadExcel'){
+        this.innerVisible = true
+        this.dialogStatus = 'uploadExcel'
       }
     },
     async handleDialog(title ,index, content){ //Dialog相關操作
-        console.log(title ,index,JSON.stringify(content))
+        console.log(title ,index, JSON.stringify(content))
         var isOk = false
         if(title === 'reportPublicSafe'){
-          if(index === 'update' || index === 'create'){
-            isOk = index === 'update' ? await content.update() : await content.create()
+          if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
+            isOk = index === 'update' ? await content.update() :
+            index === 'create' ? await content.create() : await PublicSafe.postMany(content)
             if(isOk){
               index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-              await this.reloadPublicSafe()
+              await this.getBuildingPublicSafeReport()
             }
             this.innerVisible = false
           }else if(index === 'createfile'){
@@ -313,10 +259,12 @@ export default {
           var isDelete = await content.delete()
           if(isDelete){
               this.$message('刪除成功')
-              await this.lackinit()
+              await this.resetlacklistQueryParams()
           }
         }else if(index === 'createlack' || index === 'updatelack'){
-          var isOk = index === 'createlack' ? await content.create(this.publicSafe.getID()) : await content.update()
+          var isOk = index === 'createlack' ? 
+          await content.create(this.publicSafe.getID()) : 
+          await content.update()
           if(isOk){
               index === 'updatelack' ? this.$message('更新成功') : this.$message('新增成功')
               await this.handleBlock('lack','openlacks',this.publicSafe)
@@ -324,25 +272,41 @@ export default {
         }else if(index === 'cancel'){
           this.innerVisible = false
           this.lacklistQueryParams = {
-            page: 1,
-            limit: 5,
-            total: 0
+            pageIndex: 1,
+            pageSize: 10,
+            total:0
           }
         }else if(index === 'cancellack'){
           this.lacklistQueryParams = {
-            page: 1,
-            limit: 10,
-            total: 0
+            pageIndex: 1,
+            pageSize: 10,
+            total:0
           }
           await this.handleBlock('lack','openlacks',this.publicSafe)
         }else if(index === 'clickPagination'){
           this.lacklistQueryParams = content
           await this.getPublicSafeLack()
+        }else if(index === 'exportExcel'){
+          this.dialogConfig = this.formtableconfig  
+          this.exportExcelData = this.formtableData
+          this.innerVisible = true
+          this.dialogStatus = 'exportExcel'
+        }else if(index === 'uploadExcel'){
+          this.innerVisible = true
+          this.dialogStatus = 'uploadExcel'
+        }else if(index === 'uploadExcelSave'){
+          var isOk = await PublicSafeLack.postMany(this.publicSafe.getID(),content)
+           if(isOk){
+              this.$message('新增成功')
+              await this.handleBlock('lack','openlacks',this.publicSafe)
+          }
         }
     },
     async changeTable(value){
       this.isTable = value
-      value == true ?  this.tableConfig = PublicSafe.getTableConfig() : this.tableConfig = PublicSafe.getConfig()
+      value == true ?  this.tableConfig = PublicSafe.getTableConfig() : 
+      this.tableConfig = PublicSafe.getConfig()
+      await this.getFilterItems()
     }
   }
 }

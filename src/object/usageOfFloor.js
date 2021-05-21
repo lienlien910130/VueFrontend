@@ -104,24 +104,53 @@ class UsageOfFloor extends Parent {
     }
     static getTableConfig(){
         return [
-             { label:'戶號' , prop:'houseNumber', mandatory:true, message:'請輸入戶號',isSelect:false,isSort:true,isHidden:false,maxlength:'20'},
-             { label:'場所名稱' , prop:'placeName', mandatory:true, message:'請輸入場所名稱',isSelect:false,isSort:true,isHidden:false,maxlength:'100'},
+             { label:'戶號' , prop:'houseNumber', mandatory:true, message:'請輸入戶號',isHidden:false,maxlength:'20',isSearch:false},
+             { label:'場所名稱' , prop:'placeName', mandatory:true, message:'請輸入場所名稱',isHidden:false,maxlength:'100',isSearch:true},
              { label:'收容人數' , prop:'capacity',format:'inputnumber',type:'number',typemessage:'',mandatory:true,message:'請輸入收容人數',
-             isSelect:false,isSort:false,isHidden:false},
+             isHidden:false,isSearch:false},
              { label:'所有人' , prop:'linkOwners',format:'userInfo', mandatory:true, message:'請選擇所有人',
-             isSelect:false,isSort:false,type:'array',typemessage:'',isHidden:false},
+             type:'array',typemessage:'',isHidden:false,isSearch:false},
              { label:'使用人' , prop:'linkUsers',format:'userInfo', mandatory:true, message:'請選擇使用人',
-             isSelect:false,isSort:false,type:'array',typemessage:'',isHidden:false},
-             { label:'檢附文件' , prop: 'file',format:'openfiles',isSelect:false,isSort:false,isHidden:true}, 
-             { label:'備註' , prop:'note',format:'textarea',mandatory:false,isSelect:false,isSort:false,isHidden:true,maxlength:'200'},
+             type:'array',typemessage:'',isHidden:false,isSearch:false},
+             { label:'檢附文件' , prop: 'file',format:'openfiles',isHidden:true,isSearch:false}, 
+             { label:'備註' , prop:'note',format:'textarea',mandatory:false,isHidden:false,maxlength:'200',isSearch:true},
          ]
      }
-    static async get (){
+    static async getAll(){
         var data = await api.building.apiGetBuildingOfHouse().then(response => {
-            var result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new UsageOfFloor(item)})
+            var result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new UsageOfFloor(item)})
             return result
         }).catch(error=>{
             return []
+        })
+        return data
+    }
+    static async get(floorId){
+        var data = await api.building.apiGetFloorOfHouse(floorId).then(response => {
+            var result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new UsageOfFloor(item)})
+            return result
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async getSearchPage(floorId,data){
+        var data = await api.building.apiGetFloorOfHouseSearchPages(floorId,data).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new UsageOfFloor(item)})
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async postMany(floorId,data){
+        var data = await api.building.apiPostFloorOfHouses(floorId,data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
         })
         return data
     }

@@ -68,8 +68,8 @@
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                     <Block 
+                    ref="block"
                     :list-query-params.sync="listQueryParams"
-                    :selectSetting.sync="selectSetting"
                     v-bind="blockAttrs" 
                     v-on="blockEvent"></Block>
                 </div>
@@ -100,7 +100,6 @@ export default {
     data(){
         return{
             inspection:'',
-            lackorigin:[],
             //dialog額外的參數
             lackFileId:'', //缺失檔案id
             files:[],
@@ -117,104 +116,50 @@ export default {
       blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getBuildingMaintenanceReport
+                clickPagination:this.getBuildingMaintenanceReport,
+                resetlistQueryParams:this.resetlistQueryParams
             }
       }
   },
   methods: {
     async init(){
-      this.lacklistQueryParams = {page: 1,limit: 10,total: 0}
-      this.tableConfig = Inspection.getConfig()
       this.title = 'reportInspectio'
-      await this.reloadInspectio()
+      await this.getBuildingMaintenanceReport()
     },
-    async reloadInspectio(){
-      await this.saveBuildingMaintenanceReport()
-      await this.getBuildingMaintenanceReport() 
-      await this.setSelectSetting()
+    async resetlistQueryParams(){
+      this.listQueryParams = {
+        pageIndex: 1,
+        pageSize: 12,
+        total:0
+      }
+      await this.getBuildingMaintenanceReport()
     },
-    async lackinit(){
-      this.lacklistQueryParams = {page: 1,limit: 10,total: 0}
-      await this.saveInspectionLack()
-      await this.getInspectionLack() 
+    async resetlacklistQueryParams(){
+      this.lacklistQueryParams = {
+        pageIndex: 1,
+        pageSize: 10,
+        total:0
+      }
+      await this.getInspectionLack()
     },
-    async saveBuildingMaintenanceReport(){
-      var data = await Inspection.get()
-      this.origin = data.map(item=>{ return item.clone(item) })
-    },
-    async getBuildingMaintenanceReport(sort = null) { //取得檢修申報
-      this.blockData = []
-      var data = this.origin.map(item=>{ return item.clone(item) })
-      this.listQueryParams.total = data.length
-      this.selectSetting.forEach(element=>{
-        if(element.select !== ''){
-          data = data.filter(function(item,index){
-              if(typeof item[element.prop] !== 'object'){
-                  return item[element.prop] == element.select
-              }else{
-                  if(item[element.prop].length > 0){
-                    return item[element.prop][0].id == element.select
-                  }
-              }
-          })
-        }
-      })
-      if(sort !== '' && sort !== null){
-          if(sort == 'declareDeadline' || sort == 'declareDate' || sort == 'declarationImproveDate'){
-            data = data.sort(function(x,y){
-              var date1 = x[sort].split(' ')
-              var date2 = y[sort].split(' ')
-              var _data1 = new Date(date1[0])
-              var _data2 = new Date(date2[0])
-              return  _data2 - _data1
-            })
-          }else if(sort == 'declareYear'){
-            data = data.sort(function(x,y){
-                var date1 = x[sort].split(' ')
-                var date2 = y[sort].split(' ')
-                var _data1 = new Date(date1[0]).getFullYear()
-                var _data2 = new Date(date2[0]).getFullYear()
-                return  _data2 - _data1
-            })
-          }else{
-            data = data.sort(function(x,y){
-                return y[sort] - x[sort]
-            })
-          }
-        }else{
-            data = data.sort(function(x,y){
-                var a = x.isImproved
-                var b = y.isImproved
-                if(a == b){
-                  return y.id - x.id
-                }
-                return x.isImproved - y.isImproved
-            })
-        }
-        data = data.filter((item, index) => 
-          index < this.listQueryParams.limit * this.listQueryParams.page && 
-          index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
-        this.blockData = data
+    async getBuildingMaintenanceReport() { //取得檢修申報
+      var data = await Inspection.getSearchPage(this.listQueryParams)
+      this.blockData = data.result
+      this.listQueryParams.total = data.totalPageCount
+      this.$refs.block.resetpictLoading()
+      await this.getFilterItems()
     },  
-    async setSelectSetting(){
-      this.selectSetting = await setSelectSetting(this.tableConfig,this.origin)
-      this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
-    },
-    async saveInspectionLack(){
-      var data =  await InspectionLacks.get(this.inspection.getID())
-      this.lackorigin = data.map(item=>{ return item.clone(item) })
-    },
     async getInspectionLack(){ //取得缺失內容
-      var data = this.lackorigin.map(item=>{ return item.clone(item) })
-      this.lacklistQueryParams.total = data.length
-      this.formtableData = data.filter((item, index) => 
-          index < this.lacklistQueryParams.limit * this.lacklistQueryParams.page && 
-          index >= this.lacklistQueryParams.limit * (this.lacklistQueryParams.page - 1))
+      var data =  await InspectionLacks.getSearchPage(this.inspection.getID(),
+      this.lacklistQueryParams)
+      this.formtableData = data.result
+      this.lacklistQueryParams.total = data.totalPageCount
     },
     async handleBlock(title,index, content) { //檢修申報的操作
       console.log(index,JSON.stringify(content))
       this.dialogData = []
       this.dialogTitle = this.title
+      this.dialogButtonsName = []
       if(index === 'open'){
         this.dialogData.push(content)
         this.dialogButtonsName = [
@@ -227,12 +172,7 @@ export default {
         var isDelete = await content.delete()
         if(isDelete){
           this.$message('刪除成功')
-          this.listQueryParams = {
-                page: 1,
-                limit: 10,
-                total: 0
-          }
-          await this.reloadInspectio()
+          await this.resetlistQueryParams()
         }
       }else if(index === 'empty'){
           this.dialogData.push( Inspection.empty() )
@@ -246,14 +186,12 @@ export default {
         this.inspection = content
         this.files = await content.files()
         this.lackFileId = await content.getlackfileID()
-        this.dialogButtonsName = []
         this.innerVisible = true
         this.dialogStatus = 'upload'
       }else if(index === 'openlacks'){
         this.dialogTitle = 'lack'
         this.inspection = content
-        this.dialogButtonsName = []
-        await this.lackinit()
+        await this.resetlacklistQueryParams()
         this.dialogStatus = 'lack'
         this.innerVisible = true
       }else if(index === 'exportExcel'){
@@ -261,17 +199,21 @@ export default {
         this.exportExcelData = this.blockData
         this.innerVisible = true
         this.dialogStatus = 'exportExcel'
+      }else if(index === 'uploadExcel'){
+        this.innerVisible = true
+        this.dialogStatus = 'uploadExcel'
       }
     },
     async handleDialog(title ,index, content){ //Dialog相關操作
         console.log(title ,index,JSON.stringify(content))
         var isOk = false
         if(title === 'reportInspectio'){
-          if(index === 'update' || index === 'create'){
-            var isOk = index === 'update' ? await content.update() : await content.create()
+          if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
+            var isOk = index === 'update' ? await content.update() : 
+             index === 'create' ? await content.create() : await Inspection.postMany(content)
             if(isOk){
               index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-              await this.reloadInspectio()
+              await this.getBuildingMaintenanceReport()
             }
             this.innerVisible = false
           }else if(index === 'createfile'){
@@ -349,7 +291,7 @@ export default {
           var isDelete = await content.delete()
           if(isDelete){
               this.$message('刪除成功')
-              await this.lackinit()
+              await this.resetlacklistQueryParams()
           }
         }else if(index === 'createlack' || index === 'updatelack'){
           var isOk = index === 'createlack' ? await content.create(this.inspection.getID()) : await content.update()
@@ -374,11 +316,27 @@ export default {
         }else if(index === 'clickPagination'){
           this.lacklistQueryParams = content
           await this.getInspectionLack()
+        }else if(index === 'exportExcel'){
+          this.dialogConfig = this.formtableconfig  
+          this.exportExcelData = this.formtableData
+          this.innerVisible = true
+          this.dialogStatus = 'exportExcel'
+        }else if(index === 'uploadExcel'){
+          this.innerVisible = true
+          this.dialogStatus = 'uploadExcel'
+        }else if(index === 'uploadExcelSave'){
+          var isOk = await InspectionLacks.postMany(this.inspection.getID(),content)
+           if(isOk){
+              this.$message('新增成功')
+              await this.handleBlock('lack','openlacks',this.inspection)
+          }
         }
     },
     async changeTable(value){
       this.isTable = value
-      value == true ?  this.tableConfig = Inspection.getTableConfig() : this.tableConfig = Inspection.getConfig()
+      value == true ?  this.tableConfig = Inspection.getTableConfig() : 
+      this.tableConfig = Inspection.getConfig()
+      await this.getFilterItems()
     }
   }
 }

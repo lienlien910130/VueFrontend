@@ -555,6 +555,23 @@ export function changeLink(title,content,action){
   }
   return content
 }
+//取得外層的名稱或值
+export function changeDeviceFullType(fullType,isFirst,isLabel){
+  var label = ''
+  store.getters.deviceType.forEach(item=>{
+    var array = item.children.filter((obj,index)=>{
+      return obj.value == fullType
+    })
+    if(array.length !== 0){
+      if(isFirst == true){
+        label = isLabel == true ? item.label : item.value
+      }else{
+        label = isLabel == true ? array[0].label : array[0].value
+      }
+    }
+  })
+  return label
+}
 // /**
 //  * @param {Array} arr
 //  * @returns {Array}

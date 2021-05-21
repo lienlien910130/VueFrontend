@@ -7,7 +7,7 @@
       <el-button :loading="loading" style="margin-left:16px;" size="mini" type="primary" @click="handleUpload">
         開啟資料夾
       </el-button>
-      <el-button type="primary" size="mini" >
+      <el-button type="primary" size="mini" @click="handleSave" >
         <span>儲存資料</span>
       </el-button>
     </div>
@@ -34,10 +34,6 @@ export default {
       tableHeader: [],
       loading: false
     }
-  },
-  mounted(){
-    this.tableData = []
-    this.tableHeader = []
   },
   methods: {
     beforeUpload(file) {
@@ -87,6 +83,16 @@ export default {
       const rawFile = files[0] // only use files[0]
       if (!rawFile) return
       this.upload(rawFile)
+    },
+    handleSave(){
+      console.log(JSON.stringify(this.tableData))
+      if(this.tableData.length !== 0){
+        this.$emit('handleTableClick', '' , 'uploadExcelSave' , this.tableData)
+        this.tableData = []
+        this.tableHeader = []
+      }else{
+        this.$message.error('請先上傳檔案再儲存資料')
+      }
     },
     upload(rawFile) {
       this.$refs['excel-upload-input'].value = null // fix can't select the same excel

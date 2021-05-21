@@ -1,6 +1,6 @@
 import Parent from './parent'
-import store from '@/store'
 import api from '@/api'
+import { changeDeviceFullType } from '@/utils/index'
 
 class DeviceType extends Parent {
     constructor (data) {
@@ -47,25 +47,11 @@ class DeviceType extends Parent {
         this.name = typeName
     }
     getTypeName(){ //設備種類名稱
-        var label = ''
-        var fullType = this.fullType
-        store.getters.deviceType.filter(function(item, index){
-            var array = item.children.filter((obj,index)=>{
-                return obj.value == fullType
-            })
-            array.length !== 0 ? label = array[0].label  : ''
-        })
+        var label = changeDeviceFullType(this.fullType,false,true)
         return label
     }
     getType(){ //設備種類
-        var label = ''
-        var fullType = this.fullType
-        store.getters.deviceType.forEach(item=>{
-            var array = item.children.filter((obj,index)=>{
-                return obj.value == fullType
-            })
-            array.length !== 0 ? label = item.label  : ''
-        })
+        var label = changeDeviceFullType(this.fullType,true,true)
         return label
     }
     getBrand(){
@@ -100,31 +86,28 @@ class DeviceType extends Parent {
                 label: '設備類型',
                 prop: 'fullType',
                 format:'fullType',
-                mandatory:true, message:'請選擇設備類型',isSelect:true,options:[],selectType:'fullType',
-                select:'',isSort:true,isHidden:false,maxlength:'20',type:'array'
+                mandatory:true, message:'請選擇設備類型',maxlength:'20',
+                isHidden:false,isSearch:false
             },
             {
                 label: '設備名稱',
                 prop: 'name',format:'hide',
-                mandatory:false, message:'請輸入設備名稱',isSelect:false,isSort:true,isHidden:false,maxlength:'20'
+                mandatory:false, message:'請輸入設備名稱',isHidden:false,maxlength:'20',isSearch:true
             },
             {
                 label: '廠牌名稱',
                 prop: 'brand',
-                mandatory:true, message:'請輸入廠牌名稱',isSelect:true,options:[],
-                select:'',isSort:true,isHidden:false,maxlength:'20'
+                mandatory:true, message:'請輸入廠牌名稱',isHidden:false,maxlength:'20',isSearch:true
             },
             {
                 label: '設備型號',
                 prop: 'productId',
-                mandatory:true, message:'請輸入設備型號',isSelect:true,options:[],selectType:'',select:'',
-                isSort:true,isHidden:false,maxlength:'20'
+                mandatory:true, message:'請輸入設備型號',isHidden:false,maxlength:'20',isSearch:true
             },
             {
                 label: '國家認證編號',
                 prop: 'certificationNumber',
-                mandatory:true, message:'請輸入國家認證編號',isSelect:false,options:[],selectType:'',select:'',
-                isSort:true,isHidden:false,maxlength:'20'
+                mandatory:true, message:'請輸入國家認證編號',isHidden:false,maxlength:'20',isSearch:true
             }
         ]   
     }
@@ -157,6 +140,23 @@ class DeviceType extends Parent {
             return JSON.parse(response)
         }).catch(error=>{
             return []
+        })
+        return data
+    }
+    static async getSearchPage(data){
+        var data = await api.device.apiGetDevicesTypeSearchPages(data).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item)})
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async postMany(data){
+        var data = await api.device.apiPostDevicesTypes(data).then(response => {
+            return true
+        }).catch(error=>{
+            return false
         })
         return data
     }

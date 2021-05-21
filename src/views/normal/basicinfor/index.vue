@@ -15,23 +15,24 @@
                         <el-tabs v-model="activeName" type="border-card" 
                         >
                           <el-tab-pane label="管委會" name="MC" >
-                          <Block 
-                          v-if="activeName == 'MC'"
-                          :list-query-params.sync="listQueryParams"
-                          :selectSetting.sync="selectSetting"
-                          v-bind="blockAttrs" 
-                          v-on="ManagementListblockEvent"></Block>
+                            <Block 
+                            v-if="activeName == 'MC'"
+                            ref="block"
+                            :list-query-params.sync="listQueryParams"
+                            v-bind="blockAttrs" 
+                            v-on="ManagementListblockEvent">
+                            </Block>
                           </el-tab-pane>
                           <el-tab-pane label="廠商資料" name="Vender" >
                             <Block 
                             v-if="activeName == 'Vender'"
+                            ref="block"
                             :list-query-params.sync="listQueryParams"
-                            :selectSetting.sync="selectSetting"
                             v-bind="blockAttrs" 
                             v-on="ContactunitListblockEvent">
                             </Block>
                           </el-tab-pane>
-                          <el-tab-pane label="相關資料" name="BOT" >
+                          <el-tab-pane label="大樓相關資料" name="BOT" >
                             <Upload 
                             v-if="activeName == 'BOT'"
                             v-bind="buildingUploadAttrs"
@@ -49,12 +50,19 @@
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
                     <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                         <el-tabs v-model="activeFloor" type="border-card">
-                            <el-tab-pane label="基本資料" name="IN" :disabled="!isChoose">
+                            <el-tab-pane label="大樓住戶資料" name="US" >
+                              <Block 
+                              ref="downblock"
+                              :list-query-params.sync="downlistQueryParams"
+                              v-bind="downBlockAttrs" 
+                              v-on="UserblockEvent"></Block>
+                            </el-tab-pane>
+                            <el-tab-pane label="樓層門牌資料" name="IN" :disabled="!isChoose">
                               <Block 
                               v-if="activeFloor == 'IN' && isChoose"
-                              :list-query-params.sync="floorlistQueryParams"
-                              :selectSetting.sync="floorselectSetting"
-                              v-bind="floorAttrs" 
+                              ref="downblock"
+                              :list-query-params.sync="downlistQueryParams"
+                              v-bind="downBlockAttrs" 
                               v-on="FloorblockEvent"></Block>
                             </el-tab-pane>
                             <el-tab-pane label="樓層平面圖" name="IM" :disabled="!isChoose">
@@ -62,7 +70,7 @@
                               v-if="activeFloor == 'IM' && isChoose"
                               v-bind="floorImageAttrs"></FloorImage>
                             </el-tab-pane>
-                            <el-tab-pane  label="相關資料" name="OT" :disabled="!isChoose">
+                            <el-tab-pane  label="樓層相關資料" name="OT" :disabled="!isChoose">
                               <Upload 
                               v-if="activeFloor == 'OT' && isChoose"
                               v-bind="floorUploadAttrs" 
@@ -81,7 +89,6 @@
 </template>
 
 <script>
-import { setSelectSetting  } from '@/utils/index'
 import blockmixin from '@/mixin/blockmixin'
 import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
@@ -104,6 +111,13 @@ export default {
     Range: () => import('./components/Range')
   },
   computed: {
+    floorwrapper(){
+      if (this.$store.state.app.device === 'mobile') {
+        return 'floorMobile'
+      } else {
+        return 'floornotMobile'
+      }
+    },
     floorImageAttrs(){
       return{
         imageSrc:this.imageSrc,
@@ -113,7 +127,7 @@ export default {
     buildingUploadAttrs(){
       return{
         files:this.buildingFiles,
-        title:'building',
+        title:'buildingFiles',
         isneed:true
       }
     },
@@ -121,49 +135,52 @@ export default {
       return{
         specialId:this.floorImageId,
         files:this.floorFiles,
-        title:'floor',
+        title:'floorFiles',
         isneed:true
       }
     },
-    floorAttrs() {
+    downBlockAttrs(){
       return {
-        blockData: this.floorData,
-        config: this.floorConfig,
-        title:'floorOfHouse',
-        sortArray:this.floorsortArray,
-        isTable:this.isTable
-      }
-    },
-    floorwrapper(){
-      if (this.$store.state.app.device === 'mobile') {
-        return 'floorMobile'
-      } else {
-        return 'floornotMobile'
+        blockData: this.downData,
+        config: this.downConfig,
+        title:this.downTitle,
+        isTable:this.isTable,
+        selectSetting:this.downselectSetting
       }
     },
     ManagementListblockEvent(){
       return{
           handleBlock:this.handleBlock,
-          clickPagination:this.getManagementList
+          clickPagination:this.getManagementList,
+          resetlistQueryParams:this.resetlistQueryParams
       }
     },
     ContactunitListblockEvent(){
       return{
           handleBlock:this.handleBlock,
-          clickPagination:this.getContactunitList
+          clickPagination:this.getContactunitList,
+          resetlistQueryParams:this.resetlistQueryParams
       }
     },
     FloorblockEvent(){
       return{
           handleBlock:this.handleBlock,
-          clickPagination:this.getFloorList
+          clickPagination:this.getFloorOfHouseList,
+          resetlistQueryParams:this.resetdownlistQueryParams
       }
     },
+    UserblockEvent(){
+      return{
+          handleBlock:this.handleBlock,
+          clickPagination:this.getUserList,
+          resetlistQueryParams:this.resetdownlistQueryParams
+      }
+    }
   },
   data() {
     return {
       activeName: 'MC',
-      activeFloor:'IN',
+      activeFloor:'US',
       selectFloor:null,
       isChoose:false,
       //Form 
@@ -177,19 +194,18 @@ export default {
       floorImageId:'',
       floorFiles:[],
       //block
-      
+      downTitle:'',
+      downData:[],
+      downConfig:[],
+      downselectSetting:[],
+      downlistQueryParams:{
+        pageIndex: 1,
+        pageSize: 12,
+        total:0
+      },
+
       usageOfFloorSelectList:[],
-      floorofhouse :'',
-      floorData:[],
-      floorConfig: UsageOfFloor.getConfig(),
-      floorselectSetting:[],
-      floorsortArray:[],
-      floororigin:[],
-      floorlistQueryParams:{
-          page: 1,
-          limit: 10,
-          total: 0
-      }
+      floorofhouse :''
     }
   },
   watch: {
@@ -205,12 +221,23 @@ export default {
       immediate:true
     },
     async activeFloor(val){
+      this.downData = []
+      this.downselectSetting = []
+      if(val == 'US'){
+        this.downTitle = 'user'
+        this.changeTable(this.isTable)
+        await this.resetdownlistQueryParams()
+      }
       if(this.selectFloor !== null){
         if(val == 'IN'){
-          await this.floorOfHouseinit()
+          this.downTitle = 'floorOfHouse'
+          this.changeTable(this.isTable)
+          await this.resetdownlistQueryParams()
         }else if(val == 'IM'){
+          this.downTitle = 'floorImage'
           this.getFloorImage()
-        }else {
+        }else if(val == 'OT'){
+          this.downTitle = 'floorFiles'
           this.floorFiles = await this.selectFloor.files()
         }
       } 
@@ -223,87 +250,48 @@ export default {
         this.title = 'committee'
         this.changeTable(this.isTable)
         await this.getFloorOfHouse()
-        await this.managementListinit()
+        await this.resetlistQueryParams()
       }else if(val == 'Vender'){
         this.title = 'contactUnit'
         this.changeTable(this.isTable)
-        await this.contactunitListinit()
+        await this.resetlistQueryParams()
       }else{ //BOT
+        this.title = 'buildingFiles'
         this.buildingFiles = await Building.files()
       }
     }
   },
-  // async mounted() {
-  //   if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
-  //     console.log(this.$route.params.target,this.$route.params.type)
-  //     if(typeof this.$route.params.target == 'object' && this.$route.params.type == 'user'){
-  //       await this.handleBuildingInfo('open',this.$route.params.target)
-  //     }else if(typeof this.$route.params.target == 'object' && this.$route.params.type == 'contactunit'){
-  //       this.activeName = 'Vender'
-  //       // this.blockData = []
-  //       // this.usageOfFloorSelectList = []
-  //       // this.selectSetting = []
-  //       this.title = 'contactUnit'
-  //       this.changeTable(this.isTable)
-  //       await this.contactunitListinit()
-  //       this.$nextTick(async()=>{
-  //         await this.handleBlock('contactUnit','open',this.$route.params.target)
-  //       })
-  //     }
-  //     // this.activeName = 'Vender'
-  //     // this.usageOfFloorSelectList = []
-  //     // this.tableConfig = [
-  //     //     { label:'公司名稱' , prop:'name', mandatory:true, message:'請輸入內容',isSelect:false,isSort:true,isHidden:false,maxlength:'20'},
-  //     //     { label:'類別' , prop:'type', format:'ContactUnitOptions', mandatory:true, message:'請選擇類別',
-  //     //     isSelect:true,options:[],selectType:'options',select:'',isSort:true,isHidden:false },
-  //     //     { label:'電話' , prop:'contactNumber',mandatory:true, message:'請輸入內容',
-  //     //     pattern:/^[0][9]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,isSelect:false,isSort:false,isHidden:true,maxlength:'10'},
-  //     //     { label:'地址' , prop:'address', mandatory:true, message:'請輸入內容',isSelect:false,isSort:false,isHidden:true,maxlength:'200'},
-  //     //     { label:'備註' , prop:'note',format:'textarea', mandatory:false,isSelect:false,isSort:false,isHidden:true,maxlength:'200'},
-  //     //     { label:'狀態' , prop:'collaborate', format:'tag', mandatory:false, message:'請輸入內容',
-  //     //     isSelect:true,options:[],selectType:'collaborateBool',select:'',isSort:true,type:'boolean',typemessage:'',isHidden:false }
-  //     // ]
-  //     // await this.contactunitListinit()
-  //     // let _array = this.blockData.filter((item, index) => 
-  //     //   item.id == this.$route.params.target
-  //     // )
-  //     // await this.handleBlock('contactunit','open',_array[0])
-  //   } 
-  // },
   methods: { 
     async init(){
       this.title = 'committee'
-      this.tableConfig = Committee.getConfig()
+      this.downTitle = 'user'
       await this.getFloorOfHouse()
-      await this.managementListinit()
-      if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
-        if(typeof this.$route.params.target == 'object' && this.$route.params.type == 'user'){
-          await this.handleBuildingInfo('open',this.$route.params.target)
-        }else if(typeof this.$route.params.target == 'object' && this.$route.params.type == 'contactunit'){
-          this.activeName = 'Vender'
-          this.title = 'contactUnit'
-          this.changeTable(this.isTable)
-          await this.contactunitListinit()
-          this.$nextTick(async()=>{
-            await this.handleBlock('contactUnit','open',this.$route.params.target)
-          })
-        }
+      await this.getManagementList()
+      await this.getUserList()
+    },
+    async resetlistQueryParams(){
+      this.listQueryParams = {
+        pageIndex: 1,
+        pageSize: 12,
+        total:0
+      }
+      if(this.activeName == 'MC'){
+        await this.getManagementList()
+      }else{
+        await this.getContactunitList()
       }
     },
-    async managementListinit(){
-      await this.saveManagementList()
-      await this.getManagementList()
-      await this.setSelectSetting()
-    },
-    async contactunitListinit(){
-      await this.saveContactunitList()
-      await this.getContactunitList()
-      await this.setSelectSetting()
-    },
-    async floorOfHouseinit(){
-      await this.saveFloorList()
-      await this.getFloorList()
-      await this.setFloorSelectSetting()
+    async resetdownlistQueryParams(){
+      this.downlistQueryParams = {
+        pageIndex: 1,
+        pageSize: 12,
+        total:0
+      }
+      if(this.activeFloor == 'US'){
+        await this.getUserList()
+      }else{
+        await this.getFloorOfHouseList()
+      }
     },
     async getFloorImage(){ //載入平面圖
       if(this.floorImageId == null){
@@ -316,7 +304,7 @@ export default {
       }
     },
     async getFloorOfHouse(){ //取得大樓所有門牌
-      var data = await UsageOfFloor.get()
+      var data = await UsageOfFloor.getAll()
       this.usageOfFloorSelectList = data.map(v => {
           this.$set(v, 'id', v.id) 
           this.$set(v, 'label', v.houseNumber) 
@@ -324,168 +312,62 @@ export default {
           return v
       })
     },
-    async saveManagementList(){
-      var data = await Committee.get()
-      this.origin = data.map(item=>{ return item.clone(item)})
+    async getManagementList() { //取得管委會
+      var data = await Committee.getSearchPage(this.listQueryParams)
+      this.blockData = data.result
+      this.listQueryParams.total = data.totalPageCount
+      this.$refs.block.resetpictLoading()
+      await this.getFilterItems()
     },
-    async getManagementList(sort = null) { //取得管委會
-      this.blockData = []
-      var data = this.origin.map(item=>{ return item.clone(item)})
-      this.selectSetting.forEach(element=>{
-        if(element.select != ''){
-          data = data.filter(function(item,index){
-              if(typeof item[element.prop] !== 'object'){
-                  return item[element.prop] == element.select
-              }else{ //物件形式
-                  for(let obj of item[element.prop]){
-                    if(obj.id == element.select){
-                      return item
-                    }
-                  }
-              }
-          })
-        }
-      })
-      this.listQueryParams.total = data.length
-      if(sort !== '' && sort !== null){
-          data = data.sort(function(x,y){
-            return y[sort] - x[sort]
-          })
-      }else{
-          data = data.sort(function(x,y){
-            return y.id - x.id
-          })
-      }
-      data = data.filter((item, index) => 
-          index < this.listQueryParams.limit * this.listQueryParams.page && 
-          index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
-      this.blockData = data
+    async getContactunitList(){ //取得廠商資料
+      var data = await Contactunit.getSearchPage(this.listQueryParams)
+      this.blockData = data.result
+      this.listQueryParams.total = data.totalPageCount
+      this.$refs.block.resetpictLoading()
+      await this.getFilterItems()
     },
-    async saveContactunitList(){
-      var data = await Contactunit.get()
-      this.origin = data.map(item=>{ return item.clone(item)})
+    async getFloorOfHouseList(){ //取得樓層門牌資料
+      var data = await UsageOfFloor.getSearchPage(this.selectFloor.getID(),
+      this.downlistQueryParams)
+      this.downData = data.result
+      this.downlistQueryParams.total = data.totalPageCount
+      this.$refs.downblock.resetpictLoading()
+      await this.getFilterItems(this.downConfig)
     },
-    async getContactunitList(sort = null){ //取得廠商資料
-      this.blockData = []
-      var data = this.origin.map(item=>{ return item.clone(item)})
-      this.selectSetting.forEach(element=>{
-        if(element.select !== '' || typeof element.select === 'boolean'){
-          data = data.filter((item,index)=> item[element.prop] == element.select)
-        }
-      })
-      this.listQueryParams.total = data.length
-      if(sort !== '' && sort !== null){
-            data = data.sort(function(x,y){
-              return y[sort] - x[sort]
-            })
-      }else{
-            data = data.sort(function(x,y){
-                var a = x.collaborate
-                var b = y.collaborate
-                if(a == b){
-                  return y.id - x.id
-                }
-                return y.collaborate - x.collaborate
-              })
-          }
-      data = data.filter((item, index) => 
-          index < this.listQueryParams.limit * this.listQueryParams.page && 
-          index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
-      this.blockData = data
+    async getUserList(){ //取得大樓住戶資料
+      var data = await User.getSearchPage(this.downlistQueryParams)
+      console.log(JSON.stringify(data))
+      this.downData = data.result
+      this.downlistQueryParams.total = data.totalPageCount
+      this.$refs.downblock.resetpictLoading()
+      await this.getFilterItems(this.downConfig)
     },
-    async saveFloorList(){
-      this.floororigin = await this.selectFloor.getUsageOfFloor()
-    },
-    async getFloorList(sort = null){ //取得樓層資料
-      this.floorData = []
-      var data = this.floororigin.map(item=>{ return item.clone(item)})
-      this.floorlistQueryParams.total = data.length
-      this.floorselectSetting.forEach(element=>{
-        if(element.select != ''){
-          data = data.filter(function(item,index){
-              if(typeof item[element.prop] !== 'object'){
-                  return item[element.prop] == element.select
-              }else{
-                  if(item[element.prop].length > 0){
-                    return item[element.prop][0].id == element.select
-                  }
-              }
-          })
-        }
-      })
-      if(sort !== '' && sort !== null){
-          data = data.sort(function(x,y){
-            return y[sort] - x[sort]
-      })}else{
-          data = data.sort(function(x,y){
-            return y.id - x.id
-          })
-      }
-      data = data.filter((item, index) => 
-        index < this.floorlistQueryParams.limit * this.floorlistQueryParams.page && 
-        index >= this.floorlistQueryParams.limit * (this.floorlistQueryParams.page - 1))
-      this.floorData = data
-    },
-    async setSelectSetting(){
-      this.selectSetting = await setSelectSetting(this.tableConfig,this.blockData,this.usageOfFloorSelectList)
-      this.sortArray = this.tableConfig.filter((item,index)=>item.isSort == true)
-    },
-    async setFloorSelectSetting(){
-        this.floorselectSetting = await setSelectSetting(this.floorConfig,this.floorData)
-        this.floorsortArray = this.floorConfig.filter((item,index)=>item.isSort == true)
-    },
-    async handleBuildingInfo(index, content){ //基本資料相關操作
-      this.dialogTitle = 'user'
-      this.dialogConfig = User.getConfig()
-      this.dialogData = []
+    async handleBuildingInfo(index, content){ //轉接口
+      console.log('handleBuildingInfo',index,content)
       if (index == 'empty'){
-        this.dialogData.push(User.empty())
-        this.dialogButtonsName = [
-          { name:'儲存',type:'primary',status:'create'},{ name:'取消',type:'info',status:'cancel'}]
-        this.dialogStatus = 'create'
-        this.innerVisible = true
+        await this.handleBlock('user','empty','')
       }else if (index == 'open') {
-        await Promise.all(content.map(async (item) => {
-          await this.dialogData.push(this.buildingusers.filter((element,index) => element.id == item.id)[0])
-        }))
-        this.dialogData = this.dialogData.sort((x,y) => x.id - y.id)
-        this.dialogButtonsName = [
-          { name:'新增用戶資料',type:'primary',status:'empty'},
-          { name:'儲存',type:'primary',status:'update'},{ name:'取消',type:'info',status:'cancel'}]
-        this.innerVisible = true
-        this.dialogStatus = 'update'
-      }
-    },
-    async handleDialog(title ,index, content){ //Dialog相關操作
-      console.log(title ,index,JSON.stringify(content))
-      if(index === 'cancel'){
-        this.innerVisible = false
+        await this.handleBlock('user','open',content)
+      }else if(index == 'openfloorofhouse'){
+        await this.handleBlock('floorOfHouse','open',content)
       }else{
-        switch(title){
-          case 'user':
-            this.onUserActions(index, content)
-            break;
-          case 'committee':
-            this.onCommitteeActions(index, content)
-            break;
-          case 'contactUnit':
-            this.onContactUnitActions(index, content)
-            break;  
-          case 'floorOfHouse':
-            this.onFloorOfHouseActions(index, content)
-            break;  
-        }
+        await this.handleBlock('contactunit','open',content)
       }
     },
-    async handleBuildingFloorSelect(content){ //選擇樓層後的操作
+    async handleBuildingFloorSelect(content){ //選擇樓層後的操作-儲存樓層&儲存樓層平面圖ID
       this.isChoose = true
       this.selectFloor = content
-      content.floorPlanID == null ? this.floorImageId = null : this.floorImageId = content.getImageID()
-      if(this.activeFloor == 'IN'){
-        await this.floorOfHouseinit()
+      this.floorImageId = content.floorPlanID == null ? 
+         null : content.getImageID()
+      if(this.activeFloor  == 'IN'){
+        this.downTitle = 'floorOfHouse'
+        this.changeTable(this.isTable)
+        await this.resetdownlistQueryParams()
       }else if(this.activeFloor == 'IM'){
-        await this.getFloorImage()
-      }else {
+        this.downTitle = 'floorImage'
+        this.getFloorImage()
+      }else if(this.activeFloor == 'OT'){
+        this.downTitle = 'floorFiles'
         this.floorFiles = await this.selectFloor.files()
       }
     },
@@ -528,10 +410,37 @@ export default {
     },
     async handleBlock(title,index, content) { //管委會、廠商資料、樓層門牌相關操作
       console.log(title,index,JSON.stringify(content))
+      var empty = []
+      var exportdata = [] 
       this.dialogData = []
-      this.dialogSelect =  title === 'floorOfHouse' ? this.buildingUsers : this.usageOfFloorSelectList
-      this.dialogTitle =  title === 'floorOfHouse' ? 'floorOfHouse' : this.activeName === 'MC' ? 'committee' : 'contactUnit'
-      this.dialogConfig = title === 'floorOfHouse' ? this.floorConfig : this.activeName === 'MC' ? Committee.getDialogConfig() : this.tableConfig
+      this.dialogSelect =  []
+      this.dialogTitle =  title
+      this.dialogConfig = []
+      this.dialogButtonsName = []
+      switch(title){
+        case 'committee':
+          this.dialogSelect = this.usageOfFloorSelectList
+          this.dialogConfig = Committee.getDialogConfig()
+          empty = Committee.empty()
+          exportdata = this.blockData
+          break;
+        case 'contactUnit':
+          this.dialogConfig = this.tableConfig
+          empty = Contactunit.empty()
+          exportdata = this.blockData
+          break;
+        case 'floorOfHouse':
+          this.dialogSelect = this.buildingUsers
+          this.dialogConfig = UsageOfFloor.getTableConfig()
+          empty = UsageOfFloor.empty()
+          exportdata = this.downData
+          break;
+        case 'user':
+          this.dialogConfig = User.getTableConfig()
+          empty = User.empty()
+          exportdata = this.downData
+          break;  
+      }
       if (index === 'open') {
         this.dialogStatus = 'update'
         if(content.length !== undefined){ //代表不是外傳近來的
@@ -549,101 +458,129 @@ export default {
         var isDelete = await content.delete()
         if(isDelete){
             this.$message('刪除成功')
-            title === 'floorOfHouse' ? 
-              this.floorlistQueryParams = {page: 1,limit: 12, total: 0} : 
-              this.listQueryParams = {page: 1,limit: 12, total: 0} 
-            title === 'floorOfHouse' ? await this.floorOfHouseinit() :
-            title === 'committee' ? await this.managementListinit() : await this.contactunitListinit()
+            switch(title){
+              case 'committee':
+                await this.resetlistQueryParams()
+                break;
+              case 'contactUnit':
+                this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
+                await this.resetlistQueryParams()
+                break;
+              case 'user': //刪除user時重整建築物資料&管委會資料
+                this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+                this.$store.dispatch('building/setbuildingusers',await User.get())
+                if(this.activeName == 'MC'){ //重整管委會
+                  await this.getFloorOfHouse()
+                  await this.getManagementList()
+                }
+                await this.resetdownlistQueryParams()
+                break;
+              case 'floorOfHouse':
+                if(this.activeName == 'MC'){ //重整管委會
+                  await this.getFloorOfHouse()
+                  await this.getManagementList()
+                }  
+                await this.resetdownlistQueryParams()
+                break;
+            }
         }
       }else if(index === 'empty'){
-        var data = title === 'floorOfHouse' ? UsageOfFloor.empty() : 
-        this.activeName === 'MC' ? Committee.empty() : Contactunit.empty()
-        this.dialogData.push(data)
+        this.dialogData.push(empty)
         this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'create'},
           { name:'取消',type:'info',status:'cancel'}]
         this.innerVisible = true
         this.dialogStatus = 'create'
-      }else if(index == 'opendialog'){
+      }else if(index == 'openuser'){ //打開住戶資訊
         await this.handleBuildingInfo('open',content)
-      }else if(index === 'openfiles'){
+      }else if(index === 'openfiles'){ //門牌檔案
         this.floorofhouse = content
         this.floorFiles = await content.files()
-        this.dialogButtonsName = []
         this.dialogTitle = 'floorOfHouse'
         this.innerVisible = true
         this.dialogStatus = 'upload'
-      }else if(index === 'openfloorofhouse'){ 
-        console.log(content)
-        this.dialogTitle = 'floorOfHouse'
-        this.dialogConfig = this.floorConfig
-        this.dialogSelect = this.buildingUsers
-        content.forEach(item=>{
-          this.dialogData.push(item)
-        })
-        this.dialogButtonsName = [
-                { name:'儲存',type:'primary',status:'update'},
-                { name:'取消',type:'info',status:'cancel'}]
-        this.dialogData = this.dialogData.sort((x,y) => x.id - y.id)
-        this.dialogStatus = 'update'
+      }else if(index === 'openfloorofhouse'){ //管委會關聯門牌
+        await this.handleBuildingInfo('openfloorofhouse',content)
+        // this.dialogTitle = 'floorOfHouse'
+        // this.dialogConfig = UsageOfFloor.getTableConfig()
+        // this.dialogSelect = this.buildingUsers
+        // content.forEach(item=>{
+        //   this.dialogData.push(item)
+        // })
+        // this.dialogButtonsName = [
+        //         { name:'儲存',type:'primary',status:'update'},
+        //         { name:'取消',type:'info',status:'cancel'}]
+        // this.dialogData = this.dialogData.sort((x,y) => x.id - y.id)
+        // this.dialogStatus = 'update'
+        // this.innerVisible = true
+      }else if(index === 'exportExcel'){
+        this.exportExcelData = exportdata
         this.innerVisible = true
+        this.dialogStatus = 'exportExcel'
+      }else if(index === 'uploadExcel'){
+        this.innerVisible = true
+        this.dialogStatus = 'uploadExcel'
       }
     },
-    async onUserActions(index, content){
-      if(index === 'empty'){
-        this.dialogData = []
-        this.dialogData.push(User.empty())
-        this.dialogButtonsName = [
-          { name:'儲存',type:'primary',status:'create'},{ name:'取消',type:'info',status:'cancel'}]
-        this.dialogStatus = 'create'
-      }else if(index === 'cancel'){
+    async handleDialog(title ,index, content){ //Dialog相關操作
+      console.log(title ,index,JSON.stringify(content))
+      if(index === 'cancel'){
         this.innerVisible = false
       }else{
-        var isOk = index === 'update' ? await content.update() : await content.create()
-        if(isOk){
-          index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-          this.$store.dispatch('building/setbuildingusers',await User.get())
-          await this.managementListinit()
-          if(this.activeFloor == 'IN' && this.selectFloor !== null){
-            await this.floorOfHouseinit()
-          }
-          this.innerVisible = false
+        switch(title){
+          case 'user':
+            this.onUserActions(index, content)
+            break;
+          case 'committee':
+            this.onCommitteeActions(index, content)
+            break;
+          case 'contactUnit':
+            this.onContactUnitActions(index, content)
+            break;  
+          case 'floorOfHouse':
+            this.onFloorOfHouseActions(index, content)
+            break;  
         }
       }
     },
     async onCommitteeActions(index, content){
       if(index !== 'cancel'){
-        var isOk = index === 'update' ? await content.update() : await content.create()
+        var isOk = index === 'update' ? await content.update() : 
+        index === 'create' ? await content.create() : await Committee.postMany(content)
         if(isOk){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-          await this.managementListinit()
+          await this.getManagementList()
         }
       }
       this.innerVisible = false
     },
     async onContactUnitActions(index, content){
        if(index !== 'cancel'){
-        var isOk = index === 'update' ? await content.update() : await content.create()
+        var isOk = index === 'update' ? await content.update() : 
+        index === 'create' ? await content.create() : await Contactunit.postMany(content)
         if(isOk){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
-          await this.contactunitListinit()
+          await this.getContactunitList()
         }
       }
       this.innerVisible = false
     },
     async onFloorOfHouseActions(index, content){
-      if(index === 'update' || index === 'create' ){
-        var isOk = index === 'create' ? await content.create(this.selectFloor.getID()) : await content.update()
+      if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
+        var isOk = index === 'update' ? await content.update() :
+        index === 'create' ? 
+          await content.create(this.selectFloor.getID()) : 
+          await UsageOfFloor.postMany(this.selectFloor.getID(),content)
         if(isOk){
-          index === 'create' ? this.$message('新增成功') : this.$message('更新成功')
+          index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           this.innerVisible = false
           if(this.selectFloor !== null){
-            await this.floorOfHouseinit()
+            await this.getFloorOfHouseList()
           }
-          if(this.activeName == 'MC'){
+          if(this.activeName == 'MC'){ //重整管委會
             await this.getFloorOfHouse()
-            await this.managementListinit()
+            await this.getManagementList()
           }
         }
       }else if(index === 'createfile'){
@@ -652,17 +589,62 @@ export default {
         await this.handleFilesUpload('deletefile','floorOfHouse',content)
       }
     },
+    async onUserActions(index, content){
+      if(index !== 'cancel'){
+        var isOk = index === 'update' ? await content.update() : 
+        index === 'create' ? await content.create() : await User.postMany(content)
+        if(isOk){
+          index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+          this.$store.dispatch('building/setbuildingusers',await User.get())
+          this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+          await this.getUserList()
+          if(this.activeName == 'MC'){ //重整管委會
+            await this.getFloorOfHouse()
+            await this.getManagementList()
+          }
+        }
+      }
+      this.innerVisible = false
+    },
     async changeTable(value){
       this.isTable = value
-      console.log(this.title)
+      console.log(this.title,this.downTitle)
       if(value == true){
-        this.floorConfig = UsageOfFloor.getTableConfig()
-        this.title === 'committee' ?  this.tableConfig = Committee.getConfig() : 
-        this.title === 'contactUnit' ?  this.tableConfig = Contactunit.getTableConfig() : ''
+        if(this.title === 'committee' || this.title === 'contactUnit'){
+          this.tableConfig = this.title === 'committee' ?  
+              Committee.getConfig() : Contactunit.getTableConfig() 
+        }
+        if(this.downTitle === 'floorOfHouse' || this.downTitle === 'user'){
+          this.downConfig = this.downTitle === 'floorOfHouse' ?  
+              UsageOfFloor.getTableConfig() : User.getTableConfig()
+        }
       }else{
-        this.floorConfig = UsageOfFloor.getConfig()
-        this.title === 'committee' ?  this.tableConfig = Committee.getConfig() : 
-        this.title === 'contactUnit' ?  this.tableConfig = Contactunit.getConfig() : ''
+        if(this.title === 'committee' || this.title === 'contactUnit'){
+          this.tableConfig = this.title === 'committee' ?  
+              Committee.getConfig() : Contactunit.getConfig() 
+        }
+        if(this.downTitle === 'floorOfHouse' || this.downTitle === 'user'){
+          this.downConfig = this.downTitle === 'floorOfHouse' ?  
+              UsageOfFloor.getConfig() : User.getConfig()
+        }
+      }
+      await this.getFilterItems()
+      await this.getFilterItems(this.downConfig)
+      if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+        if(typeof this.$route.params.target == 'object' && 
+        this.$route.params.type == 'user'){
+          await this.handleBuildingInfo('open',this.$route.params.target)
+        }else if(typeof this.$route.params.target == 'object' && 
+        this.$route.params.type == 'contactunit'){
+          await this.handleBuildingInfo('contactunit',this.$route.params.target)
+          // this.activeName = 'Vender'
+          // this.title = 'contactUnit'
+          // this.changeTable(this.isTable)
+          // await this.resetlistQueryParams()
+          // this.$nextTick(async()=>{
+          //   await this.handleBlock('contactUnit','open',this.$route.params.target)
+          // })
+        }
       }
     }
   }
