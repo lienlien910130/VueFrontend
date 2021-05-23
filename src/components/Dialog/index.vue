@@ -36,7 +36,7 @@
 
         <el-form v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' 
         && dialogStatus !== 'authority'
-         && dialogStatus !== 'exportExcel' && dialogStatus !== 'uploadExcel'  "
+         && dialogStatus !== 'exportExcel' && dialogStatus !== 'uploadExcel' && dialogStatus !== 'selectMaintain'  "
         ref="dataForm"  
         :model="temp"  
         :label-position="label" 
@@ -374,7 +374,21 @@
         v-on:handleTableClick="handleTableClick">
         </UploadExcel>
 
-        
+        <el-select v-if="dialogStatus === 'selectMaintain'"
+            v-model="maintainListID"
+            filterable
+            placeholder="請選擇"
+            style="width:100%"
+            value-key="id"
+            >
+                <el-option
+                    v-for="(item,index) in selectData"
+                    :key="index"
+                    :label="item.getName()"
+                    :value="item"
+                >
+                </el-option>  
+        </el-select>
         
         <div v-if="isHasButtons" slot="footer" class="dialog-footer">
             <span
@@ -598,7 +612,8 @@ export default {
         return {
             textMap: {
                 update: '編輯',
-                create: '新增'
+                create: '新增',
+                selectMaintain: '關聯維保大項'
             },
             activeName:'',
             temp:{},
@@ -608,7 +623,8 @@ export default {
             isSelectAll:false,
             accessArray:[],
             createOption:[],
-            prop:[]
+            prop:[],
+            maintainListID:''
         }
     },
     methods: {
@@ -630,7 +646,7 @@ export default {
             }
             if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' 
                 && this.dialogStatus !== 'authority' && this.dialogStatus !== 'exportExcel' 
-                && this.dialogStatus !== 'uploadExcel'){
+                && this.dialogStatus !== 'uploadExcel' && this.dialogStatus !== 'selectMaintain'){
                 this.$nextTick(() => {
                     if(this.$refs.dataForm !== undefined){
                         this.$refs.dataForm.clearValidate()
@@ -687,6 +703,7 @@ export default {
             this.options = await Setting.getAllOption()
             this.$store.dispatch('building/setbuildingoptions',this.options)
         },
+        //子傳父窗口
         handleClickOption(status){
             if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                 this.temp['checkStartDate'] = this.rangevalue[0]
@@ -697,7 +714,7 @@ export default {
             }
             if(status !== 'cancel' && status !== 'cancellack' && status !== 'empty' && 
             this.dialogStatus !== 'upload' && this.dialogStatus !== 'exportExcel' && 
-            this.dialogStatus !== 'uploadExcel' &&
+            this.dialogStatus !== 'uploadExcel' && this.dialogStatus !== 'selectMaintain' &&
             this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
                 this.$refs.dataForm.validate(async(valid) => {
                     if (valid) {
@@ -727,9 +744,14 @@ export default {
                 })
             }
             if(status == 'cancel' || status == 'cancellack' || 
-            status == 'empty' || status == 'authoritycreate'){
+            status == 'empty' || status == 'authoritycreate' ){
                 var data = status == 'authoritycreate' ? this.accessArray : ''
                 this.$emit('handleDialog',this.title, status , data)
+            }else if (status == 'openempty'){
+                console.log('tablemaintainlist')
+                this.$emit('handleDialog','maintainList', status , '')
+            }else if (status == 'tablemaintain'){
+                this.$emit('handleDialog',this.title, 'empty' , this.maintainListID)
             }
         },
         //table表格&上傳檔案

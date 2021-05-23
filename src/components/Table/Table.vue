@@ -57,18 +57,30 @@
             fixed="right"
             label="操作">
             <template slot="header" >
-                <!-- <i class="el-icon-circle-plus-outline" 
-                @click="handleTableClick('empty','')" 
-                style="cursor: pointer;font-size:25px;float:right"></i> -->
-                <i class="el-icon-circle-plus-outline" 
-                @click="handleTableClick('empty','')" 
-                style="cursor: pointer;font-size:25px;float:right"></i>
-                <i class="el-icon-download" 
-                @click="handleTableClick('exportExcel','')" 
-                style="cursor: pointer;font-size:25px;float:right"></i>
-                <i class="el-icon-upload2" 
-                @click="handleTableClick('uploadExcel','')" 
-                style="cursor: pointer;font-size:25px;float:right"></i>
+                <el-tooltip 
+                  class="item" effect="dark" content="新增" 
+                  placement="top">
+                  <i 
+                    class="el-icon-circle-plus-outline" 
+                    @click="handleTableClick('empty','')" 
+                    style="cursor: pointer;font-size:25px;float:right"></i>
+                </el-tooltip>
+                <el-tooltip 
+                  v-if="title !== 'maintainList'"
+                  class="item" effect="dark" content="匯出檔案" 
+                  placement="top">
+                  <i class="el-icon-download" 
+                    @click="handleTableClick('exportExcel','')" 
+                    style="cursor: pointer;font-size:25px;float:right"></i>
+                </el-tooltip>
+                <el-tooltip 
+                  v-if="title !== 'maintainList'"
+                  class="item" effect="dark" content="匯入檔案" 
+                  placement="top">
+                  <i class="el-icon-upload2" 
+                    @click="handleTableClick('uploadExcel','')" 
+                    style="cursor: pointer;font-size:25px;float:right"></i>
+                </el-tooltip>
             </template>
             <template slot-scope="scope">
                 <el-button v-if="title !== 'lack'" @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
@@ -208,7 +220,6 @@ export default {
 		},
     //窗口
     handleTableClick(index,row){
-      console.log(this.title)
       var title = this.title === 'maintainList' ? 'maintain' : ''
       if(index === 'delete'){
         this.$confirm('是否確定刪除該筆資料?', '提示', {

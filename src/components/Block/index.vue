@@ -32,27 +32,28 @@
                         <el-button slot="append" icon="el-icon-search" @click="handleSearchWord"></el-button>
                     </el-input>
                     <el-button
-                        v-if="isTable == false && title !== 'address'"
+                        v-if="title == 'maintain' || title == 'maintainList'"
+                        class="filter-item" 
+                        type="primary" 
+                        @click="change">
+                            <span> {{ isTable == false ? '檢視所有細項' : '檢視大項'}} </span>                  
+                    </el-button>
+                    <el-button
+                        v-if="isTable == false"
                         class="filter-item" 
                         type="primary" 
                         @click="handleClickOption('empty','')">
                         新增
                     </el-button>
-                    <el-button
+                    <!-- <el-button
                         v-if="title == 'address'"
                         class="filter-item" 
                         type="primary" 
                         @click="handleClickOption('update',updateArray)"
                         >
                         儲存
-                    </el-button>
-                    <el-button
-                        v-if="title == 'maintain'"
-                        class="filter-item" 
-                        type="primary" 
-                        @click="change">
-                            <span> {{ isTable == false ? '檢視所有細項' : '檢視大項'}} </span>                  
-                    </el-button>
+                    </el-button> -->
+                    
                 </el-col>
             </div>
             <div v-if="isTable == false" 
@@ -130,14 +131,6 @@
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ changeDevice(item[option.prop]) }}
                                 </span>
-<!-- 
-                                <el-button v-else-if="option.format == 'deviceSelect' " 
-                                @click="toAnotherPage('devicesManagement',item[option.prop],'')"
-                                type="text"
-                                style="padding:0px"
-                                >
-                                    {{ changeDevice(item[option.prop]) }}
-                                </el-button> -->
 
                                 <span v-else-if="option.format == 'deviceTypeSelect' "
                                 @click="clickMessageBox('設備種類',option.format,item[option.prop])"
@@ -354,16 +347,39 @@
                             v-if="title !== 'address'"
                             >
                                 <template slot="header">
-                                    <!-- 檔案上傳&檔案下載&新增資料 -->
-                                    <i class="el-icon-circle-plus-outline" 
-                                    @click="handleTableClick('empty','')" 
-                                    style="cursor: pointer;font-size:25px;float:right"></i>
-                                    <i class="el-icon-download" 
-                                    @click="handleTableClick('exportExcel','')" 
-                                    style="cursor: pointer;font-size:25px;float:right"></i>
-                                    <i class="el-icon-upload2" 
-                                    @click="handleTableClick('uploadExcel','')" 
-                                    style="cursor: pointer;font-size:25px;float:right"></i>
+                                    <!-- 建立維保大項&檔案上傳&檔案下載&新增資料 -->
+                                    <el-tooltip 
+                                    v-if="title == 'maintain'"
+                                    class="item" effect="dark" content="請先選擇維保大項" 
+                                    placement="top">
+                                        <i 
+                                        class="el-icon-circle-plus-outline" 
+                                        @click="handleTableClick('tablemaintain','')" 
+                                        style="cursor: pointer;font-size:25px;float:right"></i>
+                                    </el-tooltip>
+                                    <el-tooltip 
+                                    v-else
+                                    class="item" effect="dark" content="新增" 
+                                    placement="top">
+                                        <i 
+                                        class="el-icon-circle-plus-outline" 
+                                        @click="handleTableClick('empty','')" 
+                                        style="cursor: pointer;font-size:25px;float:right"></i>
+                                    </el-tooltip>
+                                    <el-tooltip 
+                                    class="item" effect="dark" content="匯出檔案" 
+                                    placement="top">
+                                        <i class="el-icon-download" 
+                                        @click="handleTableClick('exportExcel','')" 
+                                        style="cursor: pointer;font-size:25px;float:right"></i>
+                                    </el-tooltip>
+                                    <el-tooltip 
+                                    class="item" effect="dark" content="匯入檔案" 
+                                    placement="top">
+                                        <i class="el-icon-upload2" 
+                                        @click="handleTableClick('uploadExcel','')" 
+                                        style="cursor: pointer;font-size:25px;float:right"></i>
+                                    </el-tooltip>
                                 </template>
                                 <template slot-scope="scope">
                                     <!-- 檔案&缺失&查看/分配權限&編輯&刪除 -->
@@ -416,6 +432,7 @@
             ></el-pagination>
         </div>
     </el-row>
+
 </div>
     
 </template>
@@ -629,7 +646,6 @@ export default {
                 create: '新增'
             },
             temp: {},
-            sort:'',
             rowlabel:[],
             itemkey: Math.random(),
             gutter:0,
@@ -637,7 +653,8 @@ export default {
             orderArray:[],
             inputSelect:null,
             inputSearch:'',
-            pictLoading:false
+            pictLoading:false,
+            dialogVisible:false
         }
     },
     methods: {
@@ -811,7 +828,7 @@ export default {
                 type: 'warning',
                 center: true
                 }).then(() => {
-                this.$emit('handleBlock',this.title,status, row)
+                    this.$emit('handleBlock',this.title,status, row)
                 }).catch(() => {
                 })
             } else {

@@ -115,7 +115,7 @@ export default {
               return v[j.prop].map(item => item.getName())
             }
           } else if (j.format == 'LackStatusOptions' || 
-          j.format == 'MaintainProcessOptions' || 
+          j.format == 'MaintainProcessOptions' || j.format == 'MaintainContentOptions' ||
           j.format == 'DeviceStatusOptions' || j.format == 'ContactUnitOptions'){
             let _array = this.buildingoptions.filter((item, index) => 
               item.id == v[j.prop] 

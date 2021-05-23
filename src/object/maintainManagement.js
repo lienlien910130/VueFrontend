@@ -20,6 +20,9 @@ class MaintainManagementList extends Parent {
     clone(data){
         return new MaintainManagementList(data)
     }
+    getName(){
+        return this.name
+    }
     async update(){
         var data = await api.device.apiPatchMaintainsList(this).then(async(response) => {
             return true
@@ -29,7 +32,6 @@ class MaintainManagementList extends Parent {
         return data
     }
     async create(){
-        console.log(JSON.stringify(this))
         var data = await api.device.apiPostMaintainsList(this).then(response => {
             return true
         }).catch(error=>{
@@ -108,6 +110,14 @@ class MaintainManagementList extends Parent {
                     format:'YYYY-MM-DD',
                     mandatory:true, message:'請選擇建立時間'
                 }]
+    }
+    static async post(data){
+        var data = await api.device.apiPostMaintainsList(data).then(response => {
+            return response.result.id
+        }).catch(error=>{
+            return []
+        })
+        return data
     }
     static async get (){
         var data = await api.device.apiGetBuildingMaintainsList().then(response => {
@@ -235,20 +245,27 @@ class MaintainManagement extends Parent {
     }
     static getConfig(){
         return [
-            { label:'系統' , prop:'processContent',format:'MaintainContentOptions', mandatory:true, message:'請選擇系統',
-            isSelect:true,options:[],selectType:'options',select:'',isHidden:false,type:'string',typemessage:''},
-            { label:'故障日期' , prop:'dateOfFailure',format:'YYYY-MM-DD', mandatory:false, message:'請選擇故障日期',isSelect:false,isHidden:false},
-            { label:'叫修日期' , prop:'dateOfCallRepair',format:'YYYY-MM-DD',  mandatory:false,message:'請選擇叫修日期',
-            isSelect:true,options:[],selectType:'dateOfDate',select:'',isHidden:false},
-            { label:'完成時間' , prop:'completedTime',format:'YYYY-MM-DD', mandatory:false, message:'請選擇完成時間',isSelect:false,isHidden:false},
-            { label:'處理進度' , prop:'processStatus',format:'MaintainProcessOptions', mandatory:false, message:'請選擇處理進度',
-            isSelect:true,options:[],selectType:'options',select:'',isHidden:false},
-            { label:'改善廠商' , prop:'linkContactUnits',format:'contactunitSelect', mandatory:false,message:'請選擇廠商',
-            type:'array',typemessage:'',isSelect:true,options:[],selectType:'contactunit',select:'',isHidden:false},
-            { label:'檢修申報' , prop:'linkInspectionLacks',format:'inspectionSelect', mandatory:false,message:'請選擇申報',
-            type:'array',typemessage:'',isSelect:false,isHidden:false},
-            { label:'設備' , prop:'linkDevices',format:'deviceSelect', mandatory:true,message:'請選擇設備',type:'array',typemessage:'',isSelect:false,isHidden:false},
-            { label:'備註' , prop:'note',format:'textarea', mandatory:false,message:'請輸入備註',maxlength:'200',isSelect:false,isHidden:false},
+            { label:'系統' , prop:'processContent',format:'MaintainContentOptions', 
+            mandatory:true, message:'請選擇系統',
+            isHidden:false,type:'string',typemessage:'',isSearch:false},
+            { label:'故障日期' , prop:'dateOfFailure',format:'YYYY-MM-DD', 
+            mandatory:false, message:'請選擇故障日期',isHidden:false,isSearch:false},
+            { label:'叫修日期' , prop:'dateOfCallRepair',format:'YYYY-MM-DD',  
+            mandatory:false,message:'請選擇叫修日期',isHidden:false,isSearch:false},
+            { label:'完成時間' , prop:'completedTime',format:'YYYY-MM-DD', 
+            mandatory:false, message:'請選擇完成時間',isHidden:false,isSearch:false},
+            { label:'處理進度' , prop:'processStatus',format:'MaintainProcessOptions', 
+            mandatory:false, message:'請選擇處理進度',isHidden:false,isSearch:false},
+            { label:'改善廠商' , prop:'linkContactUnits',format:'contactunitSelect', 
+            mandatory:false,message:'請選擇廠商',
+            type:'array',typemessage:'',isHidden:false,isSearch:false},
+            { label:'檢修申報' , prop:'linkInspectionLacks',format:'inspectionSelect', 
+            mandatory:false,message:'請選擇申報',
+            type:'array',typemessage:'',isHidden:false,isSearch:false},
+            { label:'設備' , prop:'linkDevices',format:'deviceSelect', 
+            mandatory:true,message:'請選擇設備',type:'array',typemessage:'',isHidden:false,isSearch:false},
+            { label:'備註' , prop:'note',format:'textarea', mandatory:false,message:'請輸入備註',
+            maxlength:'200',isHidden:false,isSearch:true},
         ]
     }
     static async get (){

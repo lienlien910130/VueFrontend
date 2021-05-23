@@ -636,14 +636,13 @@ export default {
           await this.handleBuildingInfo('open',this.$route.params.target)
         }else if(typeof this.$route.params.target == 'object' && 
         this.$route.params.type == 'contactunit'){
-          await this.handleBuildingInfo('contactunit',this.$route.params.target)
-          // this.activeName = 'Vender'
-          // this.title = 'contactUnit'
-          // this.changeTable(this.isTable)
-          // await this.resetlistQueryParams()
-          // this.$nextTick(async()=>{
-          //   await this.handleBlock('contactUnit','open',this.$route.params.target)
-          // })
+          this.activeName = 'Vender'
+          this.title = 'contactUnit'
+          this.tableConfig = this.isTable == true ? Contactunit.getTableConfig()  : Contactunit.getConfig() 
+          await this.resetlistQueryParams()
+          this.$nextTick(async()=>{
+            await this.handleBlock('contactUnit','open',this.$route.params.target)
+          })
         }
       }
     }

@@ -190,7 +190,8 @@ export default {
                         return { text: str, value: item[prop] }
                     }
                 }else if(format =='DeviceStatusOptions' || 
-                format == 'ContactUnitOptions' || format == 'MaintainContentOptions'){
+                format == 'ContactUnitOptions' || format == 'MaintainContentOptions' || 
+                format == 'MaintainProcessOptions'){
                     let _array = this.buildingoptions.filter((obj, index) => 
                         obj.id == item[prop]
                     )
