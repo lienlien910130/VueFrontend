@@ -164,14 +164,12 @@ export default {
         },
         async getBuildingMaintainList(){ //取得大樓維護保養大項
             var data = await MaintainManagementList.getSearchPage(this.listQueryParams)
-            console.log(JSON.stringify(data))
             this.blockData = data.result
             this.listQueryParams.total = data.totalPageCount
             this.$refs.block.resetpictLoading()
         },
         async getMaintainAll(){ //取得大樓所有維護保養細項
             var data = await MaintainManagement.getAllSearchPage(this.listQueryParams)
-            console.log(JSON.stringify(data))
             this.blockData = data.result
             this.listQueryParams.total = data.totalPageCount
             this.$refs.block.resetpictLoading()
@@ -180,7 +178,6 @@ export default {
         async getMaintain(){ //取得維保大項的細項
             var data = await MaintainManagement.getSearchPage(this.maintainList.getID(),
             this.maintainlistQueryParams)
-            console.log(JSON.stringify(data))
             this.formtableData = data.result
             this.maintainlistQueryParams.total = data.totalPageCount
         },

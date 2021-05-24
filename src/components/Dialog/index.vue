@@ -36,7 +36,8 @@
 
         <el-form v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' 
         && dialogStatus !== 'authority'
-         && dialogStatus !== 'exportExcel' && dialogStatus !== 'uploadExcel' && dialogStatus !== 'selectMaintain'  "
+         && dialogStatus !== 'exportExcel' && dialogStatus !== 'uploadExcel' 
+         && dialogStatus !== 'selectMaintain'  "
         ref="dataForm"  
         :model="temp"  
         :label-position="label" 

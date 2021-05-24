@@ -36,7 +36,7 @@ const building = {
     apiDeleteFloors(floorId){ return req('delete','/basic/floors/'+floorId) },
     
     //門牌資料
-    apiGetBuildingOfHouse(){ return req('get','/basic/buildingId/'+this.getBid()+'/floors/a/usage-of-floors') },
+    apiGetBuildingOfHouse(){ return req('get','/index/buildingId/'+this.getBid()+'/floors/a/usage-of-floors') },
     apiGetFloorOfHouse(floorId){ return req('get','/basic/floors/'+floorId+'/usage-of-floors') },
     apiGetHouse(usageOfFloorId){ return req('get','/basic/usage-of-floors/'+usageOfFloorId) },
     apiPostFloorOfHouse(floorId,data){ return req('post','/basic/floors/'+floorId+'/usage-of-floors',data) },

@@ -532,7 +532,7 @@ export default {
                 return { height : '130px'}
             }else if(this.title == 'floorOfHouse'){
                 return { height : '185px'}
-            }else if(this.title == 'maintain'){
+            }else if(this.title == 'maintainList'){
                 return { height : '130px'}
             }else if(this.title == 'equipment'){
                 return { height : '270px'}
@@ -559,7 +559,7 @@ export default {
                 return { height : '190px'}
             }else if(this.title == 'floorOfHouse'){
                 return { height : '245px'}
-            }else if(this.title == 'maintain'){
+            }else if(this.title == 'maintainList'){
                 return { height : '190px'}
             }else if(this.title == 'equipment'){
                 return { height : '330px'}
@@ -653,8 +653,7 @@ export default {
             orderArray:[],
             inputSelect:null,
             inputSearch:'',
-            pictLoading:false,
-            dialogVisible:false
+            pictLoading:false
         }
     },
     methods: {
@@ -867,6 +866,8 @@ export default {
                 return row[property].findIndex(item => item.id == value) !== -1 
             }else if(property == 'rangeDate'){
                 return row['checkStartDate'] == value
+            }else if(value == null){
+                return row[property] === value || row[property] === ''
             }else{
                 return row[property] === value
             }

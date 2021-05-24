@@ -198,9 +198,11 @@ export default {
                     var str = _array.length !== 0 ? _array[0].textName : '尚未設定值'
                     return { text: str, value: item[prop] }
                 }else {
-                    var str = item[prop] == '' || item[prop] == null ? 
-                    '尚未設定值' : item[prop]
-                    return { text: str, value: item[prop] }
+                    if(item[prop] == '' || item[prop] == null ){
+                        return { text: '尚未設定值', value: null }
+                    }else{
+                        return { text: item[prop], value: item[prop] }
+                    }
                 } 
             })
             list = removeDuplicates(list,'value')

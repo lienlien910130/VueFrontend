@@ -76,25 +76,24 @@ class MaintainManagementList extends Parent {
             {
                 label: '名稱',
                 prop: 'name',
-                mandatory:true, message:'請輸入名稱',isSelect:false,isSort:true,maxlength:'40',isHidden:false
+                mandatory:true, message:'請輸入名稱',maxlength:'40',isHidden:false,isSearch:true
             },
               {
                 label: '建立時間',
                 prop: 'createdDate',
                 format:'YYYY-MM-DD',
-                mandatory:true, message:'請選擇建立時間',isSelect:true,options:[],
-                        selectType:'dateOfDate',select:'',isSort:true,isHidden:false
+                mandatory:true, message:'請選擇建立時間',isHidden:false,isSearch:false
               },
               {
                 label: '細項',
                 prop: 'linkMaintains',
                 format:'openmaintain',
-                mandatory:false, message:'請選擇',isSelect:false,isSort:false,type:'array',typemessage:'',isHidden:false
+                mandatory:false, message:'請選擇',type:'array',typemessage:'',isHidden:false,isSearch:false
               },
               {
                 label: '檢附文件',
                 prop: 'file',
-                format:'openfiles',isSelect:false,isSort:false,isHidden:false
+                format:'openfiles',isHidden:false,isSearch:false
               }
         ]
     }
