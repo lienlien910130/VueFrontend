@@ -145,7 +145,8 @@ export default {
         config: this.downConfig,
         title:this.downTitle,
         isTable:this.isTable,
-        selectSetting:this.downselectSetting
+        selectSetting:this.downselectSetting,
+        buttonsName:this.downButtonsName
       }
     },
     ManagementListblockEvent(){
@@ -198,6 +199,9 @@ export default {
       downData:[],
       downConfig:[],
       downselectSetting:[],
+      downButtonsName:[
+        { name:'刪除',icon:'el-icon-delete',status:'delete'},
+        { name:'編輯',icon:'el-icon-edit',status:'open'}],
       downlistQueryParams:{
         pageIndex: 1,
         pageSize: 12,
@@ -205,7 +209,8 @@ export default {
       },
 
       usageOfFloorSelectList:[],
-      floorofhouse :''
+      floorofhouse :'',
+      building:null
     }
   },
   watch: {
@@ -220,9 +225,18 @@ export default {
       },
       immediate:true
     },
+    buildinginfo:{
+      handler:async function(){
+        this.building = this.buildinginfo[0]
+      },
+      immediate:true
+    },
     async activeFloor(val){
       this.downData = []
       this.downselectSetting = []
+      this.downButtonsName = [
+        { name:'刪除',icon:'el-icon-delete',status:'delete'},
+        { name:'編輯',icon:'el-icon-edit',status:'open'}]
       if(val == 'US'){
         this.downTitle = 'user'
         this.changeTable(this.isTable)
@@ -233,6 +247,11 @@ export default {
           this.downTitle = 'floorOfHouse'
           this.changeTable(this.isTable)
           await this.resetdownlistQueryParams()
+          this.downButtonsName = [
+            { name:'刪除',icon:'el-icon-delete',status:'delete'},
+            { name:'編輯',icon:'el-icon-edit',status:'open'},
+            { name:'檔案',icon:'el-icon-folder-opened',status:'openfiles'}
+          ]
         }else if(val == 'IM'){
           this.downTitle = 'floorImage'
           this.getFloorImage()
@@ -257,7 +276,7 @@ export default {
         await this.resetlistQueryParams()
       }else{ //BOT
         this.title = 'buildingFiles'
-        this.buildingFiles = await Building.files()
+        this.buildingFiles = await this.building.files()
       }
     }
   },
@@ -336,7 +355,6 @@ export default {
     },
     async getUserList(){ //取得大樓住戶資料
       var data = await User.getSearchPage(this.downlistQueryParams)
-      console.log(JSON.stringify(data))
       this.downData = data.result
       this.downlistQueryParams.total = data.totalPageCount
       this.$refs.downblock.resetpictLoading()
@@ -380,9 +398,9 @@ export default {
           formData.append('file', item.raw)
         })
         isOk = 
-          title === 'building' ? 
-            await Building.createfiles(formData) : 
-          title === 'floor' ?
+          title === 'buildingFiles' ? 
+            await this.building.createfiles(formData) : 
+          title === 'floorFiles' ?
             await this.selectFloor.createfiles(formData) :
             await this.floorofhouse.createfiles(formData)
       }else if(index === 'deletefile'){
@@ -393,7 +411,7 @@ export default {
           id:this.selectFloor.getID(),
           FloorPlanID:parseInt(content)
         }
-        isOk = await Floors.update(_temp)
+        isOk = await this.selectFloor.update(_temp)
         if(isOk){
           this.floorImageId = content
           this.$store.dispatch('building/setbuildingfloors',await Floors.get())
@@ -402,9 +420,9 @@ export default {
       if(isOk){
         index === 'createfile' ? this.$message('上傳成功') : 
         index === 'deletefile' ? this.$message('刪除成功') : this.$message('更新成功')
-        title === 'building' ? 
-          this.buildingFiles = await Building.files() :  
-        title === 'floor' ?
+        title === 'buildingFiles' ? 
+          this.buildingFiles = await this.building.files() :  
+        title === 'floorFiles' ?
           this.floorFiles = await this.selectFloor.files() : this.floorFiles = await this.floorofhouse.files()
       }
     },

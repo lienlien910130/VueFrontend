@@ -4,8 +4,21 @@
                 <div slot="header" class="clearfix">
                     <span>{{ titleToch }}</span>
                     <div style="margin-top:10px">
-                        <el-row >
-                            <el-input :style="{float: 'left', margin: '5px',width:inputstyle}" v-model="input" 
+                        <el-row
+                        >
+                            <el-date-picker
+                            v-if="title === 'PublicSafeTimeOptions' || 
+                                title === 'InspectionTimeOptions'"
+                            :style="{float: 'left', margin: '5px',width:inputstyle}"
+                            v-model="input"
+                            type="date"
+                            placeholder="請選擇日期"
+                            format="yyyy 年 MM 月 dd 日"
+                            value-format="yyyy-MM-dd">
+                            </el-date-picker>
+                            <el-input 
+                            v-else
+                            :style="{float: 'left', margin: '5px',width:inputstyle}" v-model="input" 
                             placeholder="請輸入名稱" @keyup.enter.native="onSubmit"
                             maxlength="30"
                             show-word-limit></el-input>
@@ -15,29 +28,39 @@
                     </div>
                 </div>
                 <div class="settingbody">
-                    <div v-for="(item,index) in option" :key="index" class="text" :style="itemtext">
-                        <div v-if="type == 'edit' && current == item.id" >
-                            <!-- <span >
-                                名稱：
-                            </span> -->
-                            <el-input v-model="item.textName" style="width:60%" maxlength="30"
-                            show-word-limit @keyup.enter.native="onEdit(item)"></el-input>
-                           <i class="el-icon-circle-close" style="float: right;font-size: 30px;margin-top:5px" 
-                           @click="onCancel()"></i>
-                            <i class="el-icon-circle-check" style="float: right;font-size: 30px;margin-top:5px" 
-                            @click="onEdit(item)"></i>
-                        </div>
-                        <div v-else >
-                            <div :style="{display:'inline-block',width:labelstyle}">
-                                 <span>
-                                    {{ index+1 }}. 
-                                    {{ item.textName }} 
+                    <div>
+                        <div 
+                        v-for="(item,index) in option" :key="index" class="text" 
+                        :style="itemtext">
+                            <div v-if="type == 'edit' && current == item.id" >
+                                <el-input v-model="item.textName" style="width:60%" maxlength="30"
+                                show-word-limit @keyup.enter.native="onEdit(item)"></el-input>
+                                <i class="el-icon-circle-close" style="float: right;font-size: 30px;margin-top:5px" 
+                                @click="onCancel()"></i>
+                                <i 
+                                class="el-icon-circle-check" 
+                                style="float: right;font-size: 30px;margin-top:5px" 
+                                @click="onEdit(item)"></i>
+                            </div>
+                            <div v-else >
+                                <div :style="{display:'inline-block',width:labelstyle}">
+                                    <span>
+                                        {{ index+1 }}. 
+                                        {{ item.textName }} 
+                                    </span>
+                                </div>
+                                <span v-if="current == ''">
+                                    <i class="el-icon-delete" 
+                                    style="float: right;font-size: 25px;" 
+                                    @click="deleteData(item.id)"></i>
+                                    <i 
+                                    v-if="title !== 'PublicSafeTimeOptions' && 
+                                    title !== 'InspectionTimeOptions' "
+                                    class="el-icon-edit" 
+                                    style="float: right;font-size: 25px;" 
+                                    @click="changeEdit(item)"></i>
                                 </span>
                             </div>
-                            <span v-if="current == ''">
-                                <i class="el-icon-delete" style="float: right;font-size: 25px;" @click="deleteData(item.id)"></i>
-                                <i class="el-icon-edit" style="float: right;font-size: 25px;" @click="changeEdit(item)"></i>
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -63,7 +86,8 @@ export default {
     data(){
         return{
             input:'',
-            origin:''
+            origin:'',
+            datetime:null
         }
     },
     computed:{
@@ -72,23 +96,23 @@ export default {
                 case 'ContactUnitOptions':
                     return '廠商類別'
                     break;
-                case 'DeviceOptions':
-                    return '設備種類'
-                    break;
                 case 'MaintainContentOptions':
                     return '維護保養內容'
                     break;
-                case 'BrandOptions':
-                    return '廠牌名稱'
-                    break;
                 case 'LackStatusOptions':
-                    return '缺失內容改善狀況'
+                    return '公安申報缺失內容改善狀況'
                     break;
                 case 'MaintainProcessOptions':
                     return '維護保養處理狀況'
                     break;
-                case 'DeviceStatusOptions':
-                    return '設備狀況'
+                case 'PublicSafeTimeOptions':
+                    return '公安申報提醒設定'
+                    break;
+                case 'InspectionTimeOptions':
+                    return '檢修申報提醒設定'
+                    break;
+                case 'MaintainTimeOptions':
+                    return '維護保養提醒設定'
                     break;
             }
         },
@@ -134,7 +158,6 @@ export default {
             }else{
                 this.onCancel()
             }
-            
         },
         changeEdit(item){
             this.origin = item.textName

@@ -15,7 +15,8 @@ const setting = {
   apiPostOption(data){ return req('post','/settings/'+this.getBid()+'/options',data) },
   apiPatchOption(data){ return req('patch','/settings/options',data) },
   apiDeleteOption(optionId){ return req('delete','/settings/'+optionId+'/options') },
-
+  //查詢是否有重複值
+  apiSearchOption(data){ return req('post','/settings/'+this.getBid()+'/options/ss',data)}
 }
 
 export default setting

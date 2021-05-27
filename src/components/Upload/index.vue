@@ -5,10 +5,17 @@
             label-width="auto" 
             :inline="true"
         >
+        <!-- txt,jpg,png,jpeg,pdf,word,excel,ppt,zip,7z,rar -->
         <el-form-item style="width:30%">
             <el-upload
                 ref="upload"
                 action="upload"
+                accept="text/plain,image/jpeg,image/png,application/pdf,
+                .doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+                application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,
+                application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+                application/x-rar-compressed,application/zip,application/x-7z-compressed
+                "
                 :on-remove="handleRemove"
                 :on-change="handleChange"
                 :before-remove="beforeRemove"
@@ -43,9 +50,9 @@
                         </div>
                         <div style="display:table-cell;width:80%">
                             <el-button 
-                                v-if="title === 'reportInspectio' || title === 'floor' " 
+                                v-if="title === 'reportInspectio' || title === 'floorFiles'  " 
                                 type="danger" @click="onChange">
-                                {{ title === 'floor' ? '平面圖' : '缺失內容'}}
+                                {{ title === 'floorFiles' ? '平面圖' : '缺失內容'}}
                             </el-button>
                         </div>
                     </div>
@@ -57,15 +64,6 @@
                 v-for="(item,index) in filescopy" :key="item.getID()" class="filesdiv">
                     <el-checkbox v-model="deleteItem" :label="item.getID()">【{{ index+1 }}】</el-checkbox>
                     <i class="el-icon-view" style="font-size:18px" @click="onPreview(item)"/>
-                    <!-- <el-link 
-                        :href="downloadfile(item.getID())"  :style="check(item.getID())">
-                        <span>
-                            {{ item.getFileName() }}.{{item.getExtName()}}
-                        </span>
-                        <span style="float:right">
-                            {{ item.getUploadTime() }}
-                        </span>
-                    </el-link> -->
                     <span 
                     @click="downloadfile(item)"  :style="check(item.getID())">
                         <span>
@@ -104,9 +102,6 @@
             </div>
         </el-dialog>
     </div>
-    
-
-<!-- accept="image/jpeg,image/gif,image/png,application/pdf" -->
 </template>
 
 <script>
@@ -197,19 +192,24 @@ import pdf from 'vue-pdf'
             }
         },
         handleChange(file, fileList) {
+            console.log(file)
+            console.log(JSON.stringify(file))
             const m = file.size / 1024 / 1024 
             const array = file.name.split('.')
-            const t = array[1] !== 'dwg'
-            file.name = file.name + ' --- 大小:' + file.size
-            if (!t) {
-                this.disable.push(file)
-                this.$message.error('dwg檔請壓縮成zip檔再上傳')
-            }else if(m > 10){
+            const t = array[1]
+            if(m > 10){
                 this.disable.push(file)
                 this.$message.error('上傳檔案不能超過10MB')
                 file.name = '(X)'+ file.name + ' --- 大小:' + file.size
+            }else if(t !== 'txt' && t !== 'pdf' && t !== 'png' && t !== 'jpeg' && t !== 'jpg'
+            && t !== 'doc' && t !== 'docx' && t !== 'xlsx' && t !== 'xls' && t !== 'ppt' && t !== 'pptx'
+            && t !== '7z' && t !== 'zip' && t !== 'rar' ){
+                this.disable.push(file)
+                this.$message.error('請勿上傳')
+                file.name = '(X)'+ file.name + ' --- 大小:' + file.size
+            }else{
+                file.name = file.name + ' --- 大小:' + file.size
             }
-            
             fileList.sort((x,y)=>y.size-x.size)
             this.importFiles = fileList
             if (this.importFiles.length > 0) {
@@ -239,12 +239,14 @@ import pdf from 'vue-pdf'
             }
         },
         handlePreview(file){
+            console.log(file.raw.type)
+            var type = file.raw.type
             this.previewVisible = true
             this.previewPath = file.url
             this.dialogTitle = '【圖片預覽】'+file.name
-            if(file.raw.type == 'application/pdf'){
+            if(type == 'application/pdf'){
                 this.isImage = false
-            }else{
+            }else if(type == 'image/png' || type == 'image/jpeg'){
                 this.isImage = true
             }
         },
@@ -277,11 +279,19 @@ import pdf from 'vue-pdf'
                 this.$message.error('上傳檔案格式或檔案大小錯誤,請移除錯誤的檔案後重新上傳')
             }
         },
-        downloadfile(item) {
+        async downloadfile(item) {
+            console.log('download',item.getExtName())
+            var data = await item.download()
+            let pdfUrl = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+            console.log(pdfUrl)
             let link = document.createElement('a')
-            link.href = "http://192.168.88.65:59119/Public/fileDownload/" + item.getID()
+            link.href = pdfUrl
             link.download = item.getFileName() + '.'+item.getExtName()
+            link.style.display = 'none'
+            document.body.appendChild(link)
             link.click()
+            URL.revokeObjectURL(link.href)
+            document.body.removeChild(link)
         },
         async deletefile() {
             if(this.deleteItem.length == 0){
@@ -298,7 +308,7 @@ import pdf from 'vue-pdf'
                 }).then(async() => {
                     if(this.deleteItem.indexOf(this.specialId) !== -1){
                         this.$message({
-                            message: this.title === 'floor' ?
+                            message: this.title === 'floorFiles' ?
                             '此檔為平面圖，請先設定其他檔為平面圖再進行刪除' : 
                             '此為缺失內容檔案，不可刪除',
                             type: 'warning'

@@ -53,7 +53,6 @@
                         >
                         儲存
                     </el-button> -->
-                    
                 </el-col>
             </div>
             <div v-if="isTable == false" 
@@ -280,14 +279,14 @@
                                             {{ scope.row.getLinkType().getSelectName()  }}
                                         </span>
 
-                                        <el-input v-else-if="item.format == 'address' "
+                                        <!-- <el-input v-else-if="item.format == 'address' "
                                             v-model="scope.row[scope.column.property]"
                                             :maxlength="item.maxlength"
                                             show-word-limit
                                             @change="checkUpdate(scope.row)"
                                             @input="scope.row[scope.column.property] = 
                                             scope.row[scope.column.property].replace(/[^\d]/g,'').replace(/\s*/g,'')">
-                                        </el-input>
+                                        </el-input> -->
 
                                         <span v-else-if="item.format == 'deviceSelect' " 
                                         @click="clickMessageBox('設備資料',item.format,scope.row[item.prop])"
@@ -348,43 +347,39 @@
                             >
                                 <template slot="header">
                                     <!-- 建立維保大項&檔案上傳&檔案下載&新增資料 -->
-                                    <el-tooltip 
-                                    v-if="title == 'maintain'"
-                                    class="item" effect="dark" content="請先選擇維保大項" 
-                                    placement="top">
-                                        <i 
-                                        class="el-icon-circle-plus-outline" 
-                                        @click="handleTableClick('tablemaintain','')" 
-                                        style="cursor: pointer;font-size:25px;float:right"></i>
-                                    </el-tooltip>
-                                    <el-tooltip 
-                                    v-else
-                                    class="item" effect="dark" content="新增" 
-                                    placement="top">
-                                        <i 
-                                        class="el-icon-circle-plus-outline" 
-                                        @click="handleTableClick('empty','')" 
-                                        style="cursor: pointer;font-size:25px;float:right"></i>
-                                    </el-tooltip>
-                                    <el-tooltip 
-                                    class="item" effect="dark" content="匯出檔案" 
-                                    placement="top">
-                                        <i class="el-icon-download" 
-                                        @click="handleTableClick('exportExcel','')" 
-                                        style="cursor: pointer;font-size:25px;float:right"></i>
-                                    </el-tooltip>
-                                    <el-tooltip 
-                                    class="item" effect="dark" content="匯入檔案" 
-                                    placement="top">
-                                        <i class="el-icon-upload2" 
-                                        @click="handleTableClick('uploadExcel','')" 
-                                        style="cursor: pointer;font-size:25px;float:right"></i>
-                                    </el-tooltip>
+                                    <span
+                                        v-for="(button, index) in headerButtonsName"
+                                        :key="index"
+                                        >
+                                        <el-tooltip 
+                                        class="item" effect="dark" :content="button.name" 
+                                        placement="top">
+                                            <i 
+                                            :class="button.icon" 
+                                            @click="handleClickOption(button.status,'')" 
+                                            style="cursor: pointer;font-size:25px;float:right"></i>
+                                        </el-tooltip>
+                                    </span>
                                 </template>
                                 <template slot-scope="scope">
                                     <!-- 檔案&缺失&查看/分配權限&編輯&刪除 -->
                                     <div style="float:right"> 
-                                        <el-button v-if="title == 'maintain' || 
+                                        <span
+                                        v-for="(button, index) in buttonsName"
+                                        :key="index"
+                                        >
+                                            <el-tooltip
+                                            class="item" effect="dark" :content="button.name" 
+                                            placement="top">
+                                                <i 
+                                                :class="button.icon" 
+                                                @click="handleClickOption(button.status,scope.row)" 
+                                                style="cursor: pointer;font-size:25px;float:right"
+                                                >
+                                                </i>
+                                            </el-tooltip>
+                                        </span>
+                                        <!-- <el-button v-if="title == 'maintain' || 
                                         title == 'reportInspectio' || title == 'reportPublicSafe' 
                                         || title == 'floorOfHouse'   " 
                                         @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
@@ -410,7 +405,7 @@
                                             @click="handleTableClick('delete',scope.row)"
                                             :disabled="scope.row.removable !== undefined && scope.row.removable == false">
                                             刪除
-                                        </el-button> 
+                                        </el-button>  -->
                                     </div>
                                 </template>
                             </el-table-column>
@@ -459,8 +454,17 @@ export default {
             type: Array,
             default: function() {
                 return [
-                { name:'編輯',type:'primary',status:'open'},
-                { name:'刪除',type:'info',status:'delete'}]
+                { name:'刪除',icon:'el-icon-delete',status:'delete'},
+                { name:'編輯',icon:'el-icon-edit',status:'open'}]
+            }
+        },
+        headerButtonsName:{
+            type: Array,
+            default: function() {
+                return [
+                { name:'新增資料',icon:'el-icon-circle-plus-outline',status:'empty'},
+                { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
+                { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}]
             }
         },
         isHasButtons: {
@@ -817,51 +821,62 @@ export default {
                 this.updateArray.push(data)
             }
         },
-        //區塊&對外連結
+        //區塊&表格&對外連結
         handleClickOption(status,row) {
             console.log('status=>',status,'row=>',row)
             if (status === 'delete') {
-                this.$confirm('是否確定刪除該筆資料?', '提示', {
-                confirmButtonText: '確定',
-                cancelButtonText: '取消',
-                type: 'warning',
-                center: true
-                }).then(() => {
-                    this.$emit('handleBlock',this.title,status, row)
-                }).catch(() => {
-                })
-            } else {
-                this.$emit('handleBlock',this.title,status, row)
-            } 
-        },
-        //表格操作
-        handleTableClick(index,row){
-            if (index === 'delete') {
-                this.$confirm('是否確定刪除該筆資料?', '提示', {
-                confirmButtonText: '確定',
-                cancelButtonText: '取消',
-                type: 'warning',
-                center: true
-                }).then(() => {
-                    if(this.title == 'maintain'){
-                        this.$emit('handleDialog', this.title , index , row)
-                    }else{
-                        this.$emit('handleBlock', this.title , index , row)
-                    }
-                }).catch(() => {
-                })
+                if(row.removable !== undefined && row.removable == false){
+                    this.$message.error('該筆資料不可刪除')
+                }else{
+                    this.$confirm('是否確定刪除該筆資料?', '提示', {
+                    confirmButtonText: '確定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                    }).then(() => {
+                        if(this.title == 'maintain'){
+                            this.$emit('handleDialog', this.title , status , row)
+                        }else{
+                            this.$emit('handleBlock', this.title , status , row)
+                        }
+                    }).catch(() => {
+                    })
+                }
             } else {
                 if(this.title == 'maintain'){
-                    this.$emit('handleDialog', this.title , index , row)
+                    this.$emit('handleDialog', this.title , status , row)
                 }else{
-                    this.$emit('handleBlock', this.title , index , row)
+                    this.$emit('handleBlock', this.title , status , row)
                 }
             } 
         },
+        //表格操作
+        // handleTableClick(index,row){
+        //     if (index === 'delete') {
+        //         this.$confirm('是否確定刪除該筆資料?', '提示', {
+        //         confirmButtonText: '確定',
+        //         cancelButtonText: '取消',
+        //         type: 'warning',
+        //         center: true
+        //         }).then(() => {
+        //             if(this.title == 'maintain'){
+        //                 this.$emit('handleDialog', this.title , index , row)
+        //             }else{
+        //                 this.$emit('handleBlock', this.title , index , row)
+        //             }
+        //         }).catch(() => {
+        //         })
+        //     } else {
+        //         if(this.title == 'maintain'){
+        //             this.$emit('handleDialog', this.title , index , row)
+        //         }else{
+        //             this.$emit('handleBlock', this.title , index , row)
+        //         }
+        //     } 
+        // },
         //篩選
         filterHandler(value, row, column) {
             const property = column['property']
-            console.log(value,row,property)
             if(property.indexOf('link') !== -1){
                 return row[property].findIndex(item => item.id == value) !== -1 
             }else if(property == 'rangeDate'){

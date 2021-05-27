@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- 缺失&維保&樓層 -->
     <el-table
       :key="itemkey"
       :data="tableData"
@@ -74,7 +75,7 @@
                     style="cursor: pointer;font-size:25px;float:right"></i>
                 </el-tooltip>
                 <el-tooltip 
-                  v-if="title !== 'maintainList'"
+                  v-if="title !== 'maintainList' && title !== 'floor'"
                   class="item" effect="dark" content="匯入檔案" 
                   placement="top">
                   <i class="el-icon-upload2" 
@@ -83,12 +84,16 @@
                 </el-tooltip>
             </template>
             <template slot-scope="scope">
-                <el-button v-if="title !== 'lack'" @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
+                <el-button v-if="title !== 'lack'" 
+                @click="handleTableClick('openfiles',scope.row)" 
+                type="primary" size="small">
                   <i class="el-icon-folder-opened"  
                   style="cursor: pointer;float:right"></i>
                 </el-button>
-                <el-button @click="handleTableClick('open',scope.row)" type="primary" size="small">編輯</el-button>
-                <el-button type="info" size="small" @click="handleTableClick('delete',scope.row)">刪除</el-button> 
+                <el-button 
+                @click="handleTableClick('open',scope.row)" type="primary" size="small">編輯</el-button>
+                <el-button type="info" size="small" 
+                @click="handleTableClick('delete',scope.row)">刪除</el-button> 
             </template>
             </el-table-column>
     </el-table>

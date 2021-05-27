@@ -87,7 +87,7 @@ export default {
     handleSave(){
       console.log(JSON.stringify(this.tableData))
       if(this.tableData.length !== 0){
-        this.$emit('handleTableClick', '' , 'uploadExcelSave' , this.tableData)
+        this.$emit('handleFilesUpload','uploadExcelSave','',this.tableData)
         this.tableData = []
         this.tableHeader = []
       }else{

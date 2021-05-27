@@ -25,8 +25,8 @@ const actions = {
     sendJson({ commit } ,data){
       return new Promise((resolve, reject) => {
         commit('SET_JSON', data[0].content)
-        idb.deleteData('graphicJson')
-        idb.saveValue('graphicJson',data)
+        // idb.deleteData('graphicJson')
+        // idb.saveValue('graphicJson',data)
         resolve()
       })
     },

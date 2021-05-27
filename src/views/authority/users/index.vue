@@ -53,6 +53,11 @@ export default {
         async init(){
             this.title = 'account'
             await this.getAllAccount()
+            this.buttonsName = [
+                { name:'刪除',icon:'el-icon-delete',status:'delete'},
+                { name:'編輯',icon:'el-icon-edit',status:'open'},
+                { name:'查看權限',icon:'el-icon-view',status:'distribution'}
+            ]
         },
         async setMenuRoleAccess(){
             this.accessAuthority = []

@@ -32,11 +32,12 @@ const building = {
     apiGetBuildingFloors(){ return req('get','/index/building/'+this.getBid()+'/a/floors') },
     apiGetFloor(floorId){ return req('get','/basic/floors/'+floorId) },
     apiPostFloors(buildingId,data){ return req('post','/index/building/'+buildingId+'/floors',data) },
-    apiPatchFloors(data){ return req('patch','/basic/floors',data) },
-    apiDeleteFloors(floorId){ return req('delete','/basic/floors/'+floorId) },
+    apiPatchFloors(data){ return req('patch','/index/floors',data) },
+    apiDeleteFloors(floorId){ return req('delete','/index/floors/'+floorId) },
+    apiGetFloorSearchPages(buildingId,data){ return req('post','/index/building/'+buildingId+'/a/floors/ss',data)  },
     
     //門牌資料
-    apiGetBuildingOfHouse(){ return req('get','/index/buildingId/'+this.getBid()+'/floors/a/usage-of-floors') },
+    apiGetBuildingOfHouse(){ return req('get','/basic/buildingId/'+this.getBid()+'/floors/a/usage-of-floors') },
     apiGetFloorOfHouse(floorId){ return req('get','/basic/floors/'+floorId+'/usage-of-floors') },
     apiGetHouse(usageOfFloorId){ return req('get','/basic/usage-of-floors/'+usageOfFloorId) },
     apiPostFloorOfHouse(floorId,data){ return req('post','/basic/floors/'+floorId+'/usage-of-floors',data) },
@@ -49,7 +50,7 @@ const building = {
     apiPostFloorOfHouseUser(floorofhouseId,data){ return req('post','/basic/usageOfFloors/'+floorofhouseId+'/house-holders',data) },
     
     //使用者資料
-    apiGetAllBuildingOfUser(){ return req('get','/basic/'+this.getBid()+'/a/house-holders') },
+    apiGetAllBuildingOfUser(){ return req('get','/index/'+this.getBid()+'/a/house-holders') },
     apiGetUser(userId){ return req('get','/basic/house-holders/'+userId) },
     apiPostUser(data){ return req('post','/basic/'+this.getBid()+'/house-holders',data) },
     apiPatchUser(data){ return req('patch','/basic/house-holders',data) },

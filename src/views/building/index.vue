@@ -1,7 +1,7 @@
 <template>
   <div class="editor-container">
     <el-row :gutter="32">
-      <el-col :xs="24" :sm="24" :md="24" :lg="7">
+      <!-- <el-col :xs="24" :sm="24" :md="24" :lg="7">
           <div class="block-wrapper" :style="{ height: blockwrapperheight }">
               <h3>建築物</h3>
               <el-form class="buildinginfo" 
@@ -57,40 +57,43 @@
                   <el-button type="info" @click="onCancel">清空</el-button>
               </div>
           </div>
-      </el-col>
-      <el-col :xs="24" :sm="24" :md="24" :lg="17">
+      </el-col> -->
+      <el-col :xs="24" :sm="24" :md="24" :lg="24">
           <div class="block-wrapper" :style="{ height: blockwrapperheight }">
             <Block 
+              ref="block"
               :list-query-params.sync="listQueryParams"
-              :selectSetting.sync="selectSetting"
               v-bind="blockAttrs" 
               v-on="blockEvent"></Block>
           </div>
       </el-col>
     </el-row>
-    
+    <Dialog 
+        v-if="innerVisible === true"
+        v-bind="dialogAttrs" 
+        :files="files"
+        :specialId="floorImageId"
+        :formtableData="formtableData"
+        :formtableconfig="formtableconfig"
+        :listQueryParams="floorlistQueryParams"
+        v-on:handleDialog="handleDialog"></Dialog>
   </div>
 </template>
 <script>
+import Files  from '@/object/files'
 import blockmixin from '@/mixin/blockmixin'
+import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
 import Building from '@/object/building'
 import Floors from '@/object/floors'
-import constant from '@/constant/index'
 export default {
-  mixins:[sharemixin,blockmixin],
+  mixins:[sharemixin,blockmixin,dialogmixin],
   computed: {
-    label() {
-      if (this.$store.state.app.device === 'mobile') {
-        return 'top'
-      } else {
-        return 'left'
-      }
-    },
     blockEvent(){
       return{
         handleBlock:this.handleBlock,
         clickPagination:this.getAllBuilding,
+        resetlistQueryParams:this.resetlistQueryParams
       }
     }
   },
@@ -98,180 +101,273 @@ export default {
     await this.init()
   },
   data() {
-    const vaildateInt = (rule, value, callback) => {
-      if (!value) {
-        return callback(new Error('請輸入層數'))
-      }
-      if (!Number(value)) {
-        callback(new Error('請輸入正確格式'))
-      } else {
-        const re = /^[0-9]*[1-9][0-9]*$/
-        const rsCheck = re.test(value)
-        if (!rsCheck) {
-          callback(new Error('請輸入正確格式'))
-        } else {
-          callback();
-        }
-      }
-    }
-    const validateNumber = (rule, value, callback) => {
-      let numberReg = /^\d+$|^\d+[.]?\d+$/
-      if (!value) {
-        rule.name == 'area' ? callback(new Error('請輸入面積')) : callback(new Error('請輸入高度'))
-      }else{
-        if (!numberReg.test(value)) {
-          callback(new Error('請輸入正確格式'))
-        } else {
-          callback()
-        }
-      }
-    }
-    const validateText = (rule, value, callback) => {
-      if (!value) {
-        rule.name == 'buildingName' ? callback(new Error('請輸入名稱')) : 
-        rule.name == 'address' ? callback(new Error('請輸入地址')) : callback(new Error('請輸入執照字號'))
-      } else {
-        callback()
-      }
-    }
     return {
-      type:'create',
-      form: {},
-      formRules: {
-            buildingName: [{ required: true, trigger: 'blur', validator: validateText, name:'buildingName' }],
-            address: [{ required: true, trigger: 'blur', validator: validateText, name:'address' }],
-            area: [{ required: true, trigger: 'blur', validator: validateNumber, name:'area' }],
-            height: [{ required: true, trigger: 'blur', validator: validateNumber, name:'height' }],
-            floorsOfAboveGround: [{ required: true, trigger: 'blur', validator: vaildateInt, name:'floorsOfAboveGround' }],
-            floorsOfUnderground: [{ required: true, trigger: 'blur', validator: vaildateInt, name:'floorsOfUnderground' }],
-            licenseNumber: [{ required: true, trigger: 'blur', validator: validateText, name:'licenseNumber' }],
-            linkOwners: [{ required: false, trigger: 'change', message: '請選擇所有權人' }],
-            linkFireManagers: [{ required: false, trigger: 'change', message: '請選擇防火管理人' }]
-      },
       floorsArray:[],
-      disable:false,
-      loading:false,
-      options:constant.AreaCode,
-      addressValue:[]
+      building:null,
+      floor:null,
+      files:[],
+      floorImageId:'',
+      //dialog額外的參數
+      formtableData:[],
+      formtableconfig: Floors.getConfig(),
+      floorlistQueryParams:{
+        pageIndex: 1,
+        pageSize: 10,
+        total:0
+      }
     }
   },
   methods: {
     async init(){
       this.tableConfig = Building.getConfig()
       this.title = 'building'
+      this.buttonsName = [
+        { name:'刪除',icon:'el-icon-delete',status:'delete'},
+        { name:'編輯',icon:'el-icon-edit',status:'open'},
+        { name:'樓層',icon:'el-icon-position',status:'openfloors'},
+        { name:'檔案',icon:'el-icon-folder-opened',status:'openfiles'}
+      ]
       await this.getAllBuilding()
+    },
+    async resetlistQueryParams(){
+      this.listQueryParams = {
+        pageIndex: 1,
+        pageSize: 12,
+        total:0
+      }
+      await this.getAllBuilding()
+    },
+    async resetfloorlistQueryParams(){
+      this.floorlistQueryParams = {
+        pageIndex: 1,
+        pageSize: 10,
+        total:0
+      }
+      await this.getFloorList()
     },
     async getAllBuilding(){
       this.blockData = []
       var data = await Building.get()
-      console.log(JSON.stringify(data))
-      this.$store.dispatch('building/setbuildingarray',data)
+      // console.log(JSON.stringify(data))
       this.listQueryParams.total = data.length
       this.blockData = data
-      // this.blockData = data.filter((item, index) => 
-      //   index < this.listQueryParams.limit * this.listQueryParams.page && 
-      //   index >= this.listQueryParams.limit * (this.listQueryParams.page - 1)).sort(function(x,y){
-      //     return y.id - x.id
-      // })
+      await this.getFilterItems()
     },
-    async onPost() {
-        this.$refs.form.validate(async(valid) => {
-          if (valid) {  
-              if(this.addressValue.length == 0){
-                this.$message.error('請選擇地址')
-                return false
-              }
-              this.loading = true
-              const mask = this.$loading({
-                  lock: true,
-                  text: '建立建築物中，請稍後...',
-                  spinner: 'el-icon-loading',
-                  background: 'rgba(0, 0, 0, 0.7)'
-              })  
-              this.floorsArray = []
-              await this.crefloor('up',this.form.floorsOfAboveGround)
-              await this.crefloor('down',this.form.floorsOfUnderground)
-              this.form.address = this.addressValue[0]+ this.addressValue[1]+this.form.address
-              var buildingId = await Building.post(JSON.stringify(this.form))
-              if(buildingId !== ''){
-                this.$message('新增成功')
-                this.onCancel()
-                await this.postFloor(buildingId)
-                await this.getAllBuilding()
-                mask.close()
-                this.loading = false
-              }
-          }else {
-            this.$message.error('請輸入完整資訊')
-            return false
-          }
-        })
-    },
-    async onEdit(){
-      this.$refs.form.validate(async(valid) => {
-          if (valid) {
-            this.form.address = this.addressValue[0]+ this.addressValue[1]+this.form.address
-            var isUpadte = await this.form.update()
-            if(isUpadte){
-              this.$message('更新成功')
-              if(this.buildingid == this.form.getID()){
-                this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
-              }
-              this.onCancel()
-              await this.getAllBuilding()
-            }
-          }
-        })
-    },
-    onCancel() {
-      this.addressValue = []
-      this.form = {}
-      this.type = 'create'
-      this.disable = false
-      this.$nextTick(() => {
-        this.$refs.form.clearValidate()
-      })
+    async getFloorList(){
+      var data =  await Floors.getSearchPage(this.building.getID(),
+      this.floorlistQueryParams)
+      console.log(JSON.stringify(data))
+      this.formtableData = data.result
+      this.floorlistQueryParams.total = data.totalPageCount
     },
     async crefloor(index,val) {
-      if (index == "up") {
-        for (var i = 1; i <= val; i++) {
-          var floor = { floor: i.toString() }
+      const length = this.floorsArray.length
+      for (var i = 1; i <= val; i++) {
+          var str = index == "up" ? i.toString() + 'F' : '地下'+ i.toString() + 'F'
+          var sor = index == "up" ? i*10 : (length+i)*10
+          var floor = { floor: str,sort:sor }
           await this.floorsArray.push(floor)
-        }
-      } else {
-        for (var i = 1; i <= val; i++) {
-          var count = -i
-          var floor = { floor: count.toString() }
-          await this.floorsArray.push(floor)
-        }
       }
     },
     async postFloor(buildingId){
-      await Floors.create(buildingId,this.floorsArray)
+      var isOk = await Floors.create(buildingId,this.floorsArray)
+      return isOk
     },
     async handleBlock(title,index, content){
         console.log(title,index,JSON.stringify(content))
+        this.dialogData = []
+        this.dialogTitle = this.title
+        this.dialogButtonsName = []
         if(index === 'open'){
-          this.$nextTick(() => {
-            if(this.$refs.form !== undefined){
-              this.$refs.form.clearValidate()
-            }
-          })
-          this.addressValue = [content.address.substr(0,3), content.address.substr(3,3)]
-          content.address = content.address.substr(6)
-          this.type = 'edit'
-          this.form = new Building(content)
-          this.disable = true
+          this.dialogConfig = this.tableConfig
+          this.dialogData.push(content)
+          this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'update'},
+          { name:'取消',type:'info',status:'cancel'}]
+          this.innerVisible = true
+          this.dialogStatus = 'update'
+        }else if(index === 'empty'){
+          this.dialogConfig = Building.getCreateConfig()
+          this.dialogData.push( Building.empty() )
+          this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'create'},
+          { name:'取消',type:'info',status:'cancel'}]
+          this.innerVisible = true
+          this.dialogStatus = 'create'
         }else if(index === 'delete'){
           var isOk = await content.delete()
           if(isOk){
             this.$message('刪除成功')
+            await this.resetlistQueryParams()
+            if(this.buildingid == content.getID()){
+              this.$store.dispatch('building/setbuildingarray',await Building.get())
+              this.$store.dispatch('permission/generateRoutes', true)
+              this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
+            }
+          }
+        }else if(index === 'exportExcel'){
+          this.dialogConfig = this.tableConfig
+          this.exportExcelData = this.blockData
+          this.innerVisible = true
+          this.dialogStatus = 'exportExcel'
+        }else if(index === 'uploadExcel'){
+          this.innerVisible = true
+          this.dialogStatus = 'uploadExcel'
+        }else if(index === 'openfloors'){
+          this.dialogTitle = 'floor'
+          this.building = content
+          await this.resetfloorlistQueryParams()
+          this.dialogStatus = 'floor'
+          this.innerVisible = true
+        }else if(index === 'openfiles'){
+          this.building = content
+          await this.handleUpload(this.building,index,content)
+        }
+    },
+    async handleDialog(title ,index, content){
+      console.log(title ,index,JSON.stringify(content))
+      if(title === 'building'){
+        if(index === 'create'){
+          this.floorsArray = []
+          await this.crefloor('up',content.floorsOfAboveGround)
+          await this.crefloor('down',content.floorsOfUnderground)
+          var buildingId = await content.create()
+          var isOk = await this.postFloor(buildingId)
+          if(isOk){
+            this.$message('新增成功')
+            this.$store.dispatch('building/setbuildingarray',await Building.get())
             await this.getAllBuilding()
           }
+        }else if(index === 'update'){
+          var isOk = await content.update()
+          if(isOk){
+            this.$message('更新成功')
+            this.$store.dispatch('building/setbuildingarray',await Building.get())
+            if(this.buildingid == content.getID()){
+              this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+            }
+            await this.getAllBuilding()
+          }
+        }else if(index === 'uploadExcelSave'){
+
+        }else if(index === 'createfile' || index === 'deletefile'){
+          await this.handleUpload(this.building,index,content)
         }
+        this.innerVisible = false
+      }else{
+        await this.handleFloor(index,content)
+      }
+    },
+    async handleFloor(index,content){
+      this.dialogData = []
+      this.dialogTitle = 'floor'
+      this.dialogConfig = this.formtableconfig
+      this.dialogButtonsName = []
+      if(index === 'empty'){
+        this.dialogData.push( Floors.empty() )
+        this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'createfloor'},
+          { name:'返回',type:'info',status:'cancelfloor'}]
+        this.innerVisible = true
+        this.dialogStatus = 'create'
+      }else if(index === 'open'){   
+        this.dialogData.push(content)
+        this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'updatefloor'},
+          { name:'取消',type:'info',status:'cancelfloor'}]
+        this.innerVisible = true
+        this.dialogStatus = 'update'
+      }else if(index === 'delete'){
+        var isDelete = await content.delete()
+        if(isDelete){
+            this.$message('刪除成功')
+            await this.resetfloorlistQueryParams()
+        }
+      }else if(index === 'createfloor' || index === 'updatefloor'){
+        var floorsArray = []
+        floorsArray.push(content)
+        var isOk = index === 'createfloor' ? 
+        await Floors.create(this.building.getID(),floorsArray) : 
+        await content.update()
+        if(isOk){
+            index === 'updatefloor' ? this.$message('更新成功') : this.$message('新增成功')
+            if(this.buildingid == this.building.getID()){
+              this.$store.dispatch('building/setbuildingfloors',await Floors.get())
+            }
+            await this.handleBlock('floor','openfloors',this.building)
+        }
+      }else if(index === 'openfiles'){
+        this.dialogTitle = 'floorFiles'
+        this.floor = content
+        this.floorImageId = content.floorPlanID == null ? 
+         null : content.getImageID()
+        await this.handleUpload(this.floor,index,content)
+      }else if(index === 'createfile' || index === 'deletefile'){
+        await this.handleUpload(this.floor,index,content)
+      }else if(index === 'cancel'){
+        this.innerVisible = false
+        this.floorlistQueryParams = {
+          pageIndex: 1,
+          pageSize: 10,
+          total:0
+        }
+      }else if(index === 'cancelfloor'){
+        this.floorlistQueryParams = {
+          pageIndex: 1,
+          pageSize: 10,
+          total:0
+        }
+        await this.handleBlock('floor','openfloors',this.building)
+      }else if(index === 'clickPagination'){
+        this.floorlistQueryParams = content
+        await this.getFloorList()
+      }else if(index === 'exportExcel'){
+        this.dialogConfig = Floors.getDownloadConfig()
+        this.exportExcelData = this.formtableData
+        this.innerVisible = true
+        this.dialogStatus = 'exportExcel'
+      }else if(index === 'change'){
+        console.log('更換平面圖')
+        var _temp = {
+          id:this.floor.getID(),
+          FloorPlanID:parseInt(content)
+        }
+        isOk = await this.floor.update(_temp)
+        if(isOk){
+          this.floorImageId = content
+          this.$store.dispatch('building/setbuildingfloors',await Floors.get())
+        }
+      }
+    },
+    //打開檔案&上傳檔案&刪除檔案
+    async handleUpload(type,index,content){
+      if(index == 'openfiles'){
+        this.files = await content.files()
+        this.innerVisible = true
+        this.dialogStatus = 'upload'
+      }else if(index === 'createfile'){
+        const formData = new FormData()
+        content.forEach(item => {
+          formData.append('file', item.raw)
+        })
+        isOk = await type.createfiles(formData)
+        if(isOk){
+          this.$message('上傳成功')
+          this.files = await type.files()
+        }
+      }else {
+        var data = { id:content.toString() }
+        isOk = await Files.delete(data)
+        if(isOk){
+          this.$message('刪除成功')
+          this.files = await type.files()
+        }
+      }
     },
     async changeTable(value){
       this.isTable = value
+      this.tableConfig = Building.getConfig()
+      await this.getFilterItems()
     }
   }
 }

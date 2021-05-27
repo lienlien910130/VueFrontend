@@ -8,7 +8,7 @@
                     <span>場所名稱 :</span>
                   </div>
                   <div class="content">
-                    <span> {{ this.buildinginfo[0].buildingName }}</span> 
+                    <span> {{ this.buildinginfo[0].getName() }}</span> 
                   </div>
                 </div>
                 <div class="verticalhalfdiv">
@@ -16,7 +16,7 @@
                     <span>下次申報時間 :</span>
                   </div>
                   <div class="content">
-                    <span class="report"> 2021/03/20 </span> 
+                    <span class="report"> {{ TimeOptions("InspectionTimeOptions") }} </span> 
                   </div>
                 </div>
               </div>
@@ -87,7 +87,6 @@
         </div>
 </template>
 <script>
-import { setSelectSetting } from '@/utils/index'
 import Files  from '@/object/files'
 import Inspection  from '@/object/inspection'
 import InspectionLacks from '@/object/inspectionLacks'
@@ -125,6 +124,12 @@ export default {
     async init(){
       this.title = 'reportInspectio'
       await this.getBuildingMaintenanceReport()
+      this.buttonsName = [
+        { name:'刪除',icon:'el-icon-delete',status:'delete'},
+        { name:'編輯',icon:'el-icon-edit',status:'open'},
+        { name:'缺失內容',icon:'el-icon-document',status:'openlacks'},
+        { name:'檔案',icon:'el-icon-folder-opened',status:'openfiles'}
+      ]
     },
     async resetlistQueryParams(){
       this.listQueryParams = {

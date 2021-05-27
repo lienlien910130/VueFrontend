@@ -11,28 +11,6 @@
                         </el-col>
                     </el-row>
                 </el-tab-pane>
-                <!-- <el-tab-pane label="設備">
-                    <el-row :gutter="20">
-                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
-                            <SettingBlock
-                            v-bind="settingAttrs('DeviceStatusOptions')"
-                            v-on:handleButton="handleButton"
-                            ></SettingBlock>
-                        </el-col>
-                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
-                            <SettingBlock
-                            v-bind="settingAttrs('DeviceOptions')"
-                            v-on:handleButton="handleButton"
-                            ></SettingBlock>
-                        </el-col>
-                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
-                            <SettingBlock
-                            v-bind="settingAttrs('BrandOptions')"
-                            v-on:handleButton="handleButton"
-                            ></SettingBlock>
-                        </el-col>
-                    </el-row>
-                </el-tab-pane> -->
                 <el-tab-pane label="維護保養">
                     <el-row :gutter="20">
                         <el-col :xs="24" :sm="24" :md="24" :lg="8">
@@ -49,16 +27,28 @@
                         </el-col>
                     </el-row>
                 </el-tab-pane>
-                <!-- <el-tab-pane label="檢修及公安申報">
+                <el-tab-pane label="檢修及公安申報">
                     <el-row :gutter="20">
                         <el-col :xs="24" :sm="24" :md="24" :lg="8">
                             <SettingBlock
                             v-bind="settingAttrs('LackStatusOptions')"
                             v-on:handleButton="handleButton"
                             ></SettingBlock>
-                        </el-col>  
+                        </el-col> 
+                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                            <SettingBlock
+                            v-bind="settingAttrs('PublicSafeTimeOptions')"
+                            v-on:handleButton="handleButton"
+                            ></SettingBlock>
+                        </el-col> 
+                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                            <SettingBlock
+                            v-bind="settingAttrs('InspectionTimeOptions')"
+                            v-on:handleButton="handleButton"
+                            ></SettingBlock>
+                        </el-col> 
                     </el-row>   
-                </el-tab-pane> -->
+                </el-tab-pane>
         </el-tabs>
     </div>
 </template>
@@ -105,6 +95,13 @@ export default {
             let data = this.options.filter((item, index) => 
                 item.classType == title 
             )
+            if(title == 'PublicSafeTimeOptions' || title == 'InspectionTimeOptions'){
+                data = data.sort(function(x,y){
+                    var _data1 = new Date(x.textName)
+                    var _data2 = new Date(y.textName)
+                    return  _data1 - _data2
+                })
+            }
             return data
         },
         async handleButton(index,operation,content){
@@ -138,10 +135,15 @@ export default {
                     classType:index,
                     textName:content
             }
-            var isOk = await Setting.postOption(JSON.stringify(temp))
-            if(isOk){
-                this.$message("新增成功")
-                await this.getOptions()
+            var originalDate = await Setting.searchOption(temp)
+            if(originalDate.length){
+                this.$message.error("不可重複新增")
+            }else{
+                var isOk = await Setting.postOption(JSON.stringify(temp))
+                if(isOk){
+                    this.$message("新增成功")
+                    await this.getOptions()
+                }
             }
         },
         async UpdateData(content){

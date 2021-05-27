@@ -19,7 +19,27 @@ export default {
             'device',
             'menu',
             'wsmsg'
-        ])
+        ]),
+        TimeOptions(){ //設定名稱
+            return function (value) {
+                if(value !== null){
+                    let array = this.buildingoptions.filter((item, index) => 
+                        item.classType == value 
+                    ).sort(function(x,y){
+                        var _data1 = new Date(x.textName)
+                        var _data2 = new Date(y.textName)
+                        return  _data1 - _data2
+                    })
+                    var datetime = moment(new Date()).valueOf()
+                    var index = array.findIndex((element)=>{
+                        var data = moment(element.textName).valueOf()
+                        return  (datetime-data)<0
+                    })
+                    return index !== -1 ? array[index].textName : ''
+                }
+                return ""
+            }
+        }
     },
     watch: {
         buildingid:{

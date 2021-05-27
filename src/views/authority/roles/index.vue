@@ -54,11 +54,12 @@ export default {
     methods:{
         async init(){
             this.title = 'roles'
-            this.buttonsName = [
-                { name:'編輯',type:'primary',status:'open'},
-                { name:'刪除',type:'info',status:'delete'},
-                { name:'分配權限',type:'danger',status:'distribution' }]
             await this.getAllRole()
+            this.buttonsName = [
+                { name:'刪除',icon:'el-icon-delete',status:'delete'},
+                { name:'編輯',icon:'el-icon-edit',status:'open'},
+                { name:'分配權限',icon:'el-icon-magic-stick',status:'distribution'}
+            ]
         },
         async resetlistQueryParams(){
             this.listQueryParams = {

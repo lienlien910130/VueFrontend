@@ -11,16 +11,15 @@
         center>
         <div v-if="dialogData.length > 1" >
            <el-tabs 
-            v-if="title === 'floorOfHouse' " 
             v-model="activeName" 
             @tab-click="handleTabClick">
                 <el-tab-pane
                 v-for="(item) in dialogData"
                 :key="item.id"
-                :label="item.houseNumber"
+                :label="title === 'floorOfHouse' ? item.houseNumber : item.name"
                 :name="item.id"></el-tab-pane>
             </el-tabs>
-            <el-tabs 
+            <!-- <el-tabs 
             v-else
             v-model="activeName" 
             @tab-click="handleTabClick">
@@ -29,7 +28,7 @@
                 :key="item.id"
                 :label="item.name"
                 :name="item.id"></el-tab-pane>
-            </el-tabs>
+            </el-tabs> -->
         </div>
         <!-- dialogStatus : 一般表單/upload/lack/authority -->
         <keep-alive>
@@ -37,7 +36,7 @@
         <el-form v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' 
         && dialogStatus !== 'authority'
          && dialogStatus !== 'exportExcel' && dialogStatus !== 'uploadExcel' 
-         && dialogStatus !== 'selectMaintain'  "
+         && dialogStatus !== 'selectMaintain' && dialogStatus !== 'floor' "
         ref="dataForm"  
         :model="temp"  
         :label-position="label" 
@@ -48,29 +47,23 @@
             :key="index"
             :prop="item.prop"
             :label="item.label"
-            v-show="item.format !== 'hide' &&  item.format !== 'Options' &&  item.format !== 'openfiles' 
+            v-show="item.format !== 'hide' &&  item.format !== 'Options' &&  
+            item.format !== 'openfiles' 
             &&  item.format !== 'openlacks' && item.format !== 'deviceName' "
             :rules="[
             { required: item.mandatory, message: item.message},
             item.isPattern ? { pattern: item.pattern , message:item.errorMsg } : 
             { type: item.type, message: item.typemessage }]"
             >
+                <!-- 年度&日期 -->
                 <el-date-picker 
-                v-if="item.format == 'YYYY'" 
+                v-if="item.format == 'YYYY' || item.format == 'YYYY-MM-DD'" 
                 v-model="temp[item.prop]" 
                 value-format="yyyy-MM-dd" 
+                placeholder="請選擇"
                 style="width:100%"
-                type="year" /> 
-
-                <el-date-picker 
-                v-else-if="item.format == 'YYYY-MM-DD'" 
-                :ref="item.prop"
-                :name="item.prop"
-                v-model="temp[item.prop]" 
-                value-format="yyyy-MM-dd" 
-                style="width:100%"
-                type="date" /> 
-
+                :type="item.format == 'YYYY' ? 'year' : 'date' " /> 
+                <!-- 範圍 -->
                 <span v-else-if="item.format == 'range'">
                     <el-date-picker
                         ref="picker"
@@ -105,8 +98,11 @@
                 </el-select>
                 <!-- 設備 / 廠商 / 角色 / 建築物 下拉選單(多) -->
                 <el-select
-                    v-else-if="item.format == 'deviceSelect' || item.format =='contactunitSelect' || 
-                    item.format =='roleSelect' ||  item.format =='buildingSelect' || item.format == 'floorOfHouseSelect'
+                    v-else-if="item.format == 'deviceSelect' || 
+                    item.format =='contactunitSelect' || 
+                    item.format =='roleSelect' ||  
+                    item.format =='buildingSelect' || 
+                    item.format == 'floorOfHouseSelect'
                     || item.format =='userInfo'  "
                     v-model="temp[item.prop]"
                     value-key="id"
@@ -179,8 +175,10 @@
                 <el-select
                     v-else-if="item.format =='BrandOptions' || 
                     item.format =='MaintainContentOptions' 
-                    || item.format =='MaintainProcessOptions' || item.format == 'DeviceStatusOptions' 
-                    || item.format == 'ContactUnitOptions' || item.format == 'LackStatusOptions'
+                    || item.format =='MaintainProcessOptions' || 
+                    item.format == 'DeviceStatusOptions' 
+                    || item.format == 'ContactUnitOptions' || 
+                    item.format == 'LackStatusOptions'
                     "
                     ref="settingOption"
                     v-model="temp[item.prop]"
@@ -199,8 +197,21 @@
                         >
                         </el-option>  
                 </el-select>
-
-                <el-select
+                <!-- 地址 -->
+                <span
+                 v-else-if="item.format =='address'">
+                    <el-cascader
+                      v-model="addressvalue"
+                      :options="selectfilter(item.format)"
+                      :props="{ value: 'label'}"
+                      style="width:100%"
+                      @change="handleChange"
+                      placeholder="請選擇縣市區域"
+                      ></el-cascader>
+                    <el-input ref="address" name="address" v-model="temp[item.prop]"  
+                      show-word-limit maxlength="100"/> 
+                </span>
+                <!-- <el-select
                     v-else-if="item.format =='menuSelect'"
                     v-model="temp[item.prop]"
                     placeholder="請選擇"
@@ -217,8 +228,8 @@
                     <el-option label="角色管理" key="9" value="roleSetting"></el-option>
                     <el-option label="帳號管理" key="10" value="accountSetting"></el-option>
                     <el-option label="設定" key="11" value="settings"></el-option>
-                </el-select>
-
+                </el-select> -->
+                <!-- 權限設定 -->
                 <el-select
                     v-else-if="item.format =='actionSelect'"
                     v-model="temp[item.prop]"
@@ -259,23 +270,40 @@
                 >
                 {{ checkboxChange(temp[item.prop]) }}
                 </el-checkbox>
+                <!-- inputnumber -->
+                <el-input
+                v-else-if="item.format =='inputnumber'"
+                v-model.number="temp[item.prop]" 
+                type="number" min="0">
+                    <template 
+                    v-if="item.prop == 'floorsOfAboveGround' || 
+                    item.prop == 'floorsOfUnderground'"
+                    slot="prepend">地上</template>
+                    <template 
+                    v-if="item.prop !== 'sort'"
+                    slot="append">
+                        <span v-if="item.prop =='area'">m<sup>2</sup></span>
+                        <span v-else-if="item.prop == 'capacity'">人</span>
+                        <span v-else>樓</span>
+                    </template>
+                </el-input>
 
-                <el-input-number 
+                <!-- <el-input-number 
                 v-else-if="item.format =='inputnumber'"
                 v-model="temp[item.prop]"  
                 controls-position="right" 
                 :min="0"
                 :precision="0"
                 style="width:100%"
-                ></el-input-number>
+                ></el-input-number> -->
 
-                <el-input 
+                <!-- <el-input 
                 v-else-if="item.format =='number' "
                 v-model="temp[item.prop]"
                 :maxlength="item.maxlength"
                 show-word-limit
                 @input="temp[item.prop] = temp[item.prop].replace(/[^\d]/g,'').replace(/\s*/g,'')">
-                </el-input>
+                </el-input> -->
 
                 <el-input v-else-if="item.format =='textarea'"
                 v-model="temp[item.prop]" 
@@ -293,18 +321,20 @@
                     </Table>  
                 </div>
                 
-                <el-input v-else-if="item.format == 'disableEdit' && dialogStatus == 'update'"
+                <!-- <el-input v-else-if="item.format == 'disableEdit' && 
+                dialogStatus == 'update'"
                 v-model="temp[item.prop]" 
                 :maxlength="item.maxlength"
                 show-word-limit
                 :disabled="true"
                 >
-                </el-input>
+                </el-input> -->
 
                 <el-input v-else
                 v-model="temp[item.prop]" 
                 :maxlength="item.maxlength"
                 show-word-limit
+                :placeholder="item.placeholder"
                 >
                 </el-input>
 
@@ -318,7 +348,7 @@
         v-on:handleFilesUpload="handleFilesUpload">
         </Upload>   
         <!-- 缺失內容 -->
-        <Table v-if="dialogStatus === 'lack'"
+        <Table v-if="dialogStatus === 'lack' || dialogStatus === 'floor'"
         :list-query-params.sync="listQueryParams"
         v-bind="tableAttrs" 
         v-on="tableEvent">
@@ -372,7 +402,7 @@
         </ExportExcel>
         <!-- 上傳檔案 -->
         <UploadExcel  v-if="dialogStatus === 'uploadExcel'"
-        v-on:handleTableClick="handleTableClick">
+        v-on:handleFilesUpload="handleFilesUpload">
         </UploadExcel>
 
         <el-select v-if="dialogStatus === 'selectMaintain'"
@@ -411,6 +441,7 @@
 import computedmixin  from '@/mixin/computedmixin'
 import Setting from '@/object/setting'
 import { changeDeviceFullType } from '@/utils/index'
+import constant from '@/constant/index'
 
 export default {
     name:'Dialog',
@@ -582,7 +613,12 @@ export default {
                         case 'floorOfHouseSelect':
                             return this.selectData
                         case 'userInfo':
-                            return this.selectData
+                            return this.buildingusers.map(v => {
+                                this.$set(v, 'value', v.getID()) 
+                                this.$set(v, 'label', v.getName()) 
+                                this.$set(v, 'id', v.getID()) 
+                                return v
+                            })
                         case 'roleSelect' :
                             return this.buildingroles.map(v => {
                                 this.$set(v, 'value', v.getID()) 
@@ -600,8 +636,9 @@ export default {
                                 return v
                             })
                         case 'fullTypeSelect':
-                            console.log(JSON.stringify(this.deviceType))
                             return this.deviceType
+                        case 'address':
+                            return constant.AreaCode
                     }
                 }else{
                     return ""
@@ -620,6 +657,7 @@ export default {
             temp:{},
             rangevalue: [],
             fulltypevalue:[],
+            addressvalue:[],
             pictLoading:false,
             isSelectAll:false,
             accessArray:[],
@@ -688,6 +726,7 @@ export default {
                 return ""
             }
         },
+        //動態新增選項
         changeValue(event,format,prop){
             var array = this.optionfilter(format)
             var data = array.filter(item=> item.id == event)
@@ -714,9 +753,12 @@ export default {
                 this.temp['fullType'] = this.fulltypevalue[1]
             }
             if(status !== 'cancel' && status !== 'cancellack' && status !== 'empty' && 
+            status !== 'cancelfloor' &&
             this.dialogStatus !== 'upload' && this.dialogStatus !== 'exportExcel' && 
-            this.dialogStatus !== 'uploadExcel' && this.dialogStatus !== 'selectMaintain' &&
-            this.dialogStatus !== 'lack' && this.dialogStatus !== 'authority'){
+            this.dialogStatus !== 'uploadExcel' && this.dialogStatus !== 'selectMaintain' 
+            &&
+            this.dialogStatus !== 'lack' && this.dialogStatus !== 'floor' &&
+             this.dialogStatus !== 'authority'){
                 this.$refs.dataForm.validate(async(valid) => {
                     if (valid) {
                         const loading = this.$loading({
@@ -744,7 +786,7 @@ export default {
                     }
                 })
             }
-            if(status == 'cancel' || status == 'cancellack' || 
+            if(status == 'cancel' || status == 'cancellack' || status == 'cancelfloor' ||
             status == 'empty' || status == 'authoritycreate' ){
                 var data = status == 'authoritycreate' ? this.accessArray : ''
                 this.$emit('handleDialog',this.title, status , data)
@@ -755,7 +797,11 @@ export default {
                 this.$emit('handleDialog',this.title, 'empty' , this.maintainListID)
             }
         },
-        //table表格&上傳檔案
+        //地址欄位
+        handleChange(value){
+            this.temp.address = value[0]+value[1]
+        },
+        //table表格
         handleTableClick(title,index,row){
             var str = title == '' ? this.title : title
             this.$emit('handleDialog', str , index , row)
@@ -765,12 +811,17 @@ export default {
             this.$emit('handleDialog', this.title , 'clickPagination' , 
             this.listQueryParams)
         },
+        //頁籤
         async handleTabClick(tab, event) {
-            if(this.title === 'user'){
-                this.temp = this.buildingusers.filter((element,index) => element.id == tab.name)[0]
-            }else{
-                this.temp = this.dialogData.filter((element,index) => element.id == tab.name)[0]
-            }
+            this.temp = this.dialogData
+             .filter((element,index) => element.id == tab.name)[0]
+            // if(this.title === 'user'){
+            //     this.temp = this.buildingusers
+            //     .filter((element,index) => element.id == tab.name)[0]
+            // }else{
+            //     this.temp = this.dialogData
+            //     .filter((element,index) => element.id == tab.name)[0]
+            // }
             // else{
             //     var data = this.$deepClone(await this.$obj.Building.getBuildingOfHouseById(tab.name))
             //     this.temp = changeLink('floorOfHouse',data,'open')
@@ -779,30 +830,30 @@ export default {
         async handleFilesUpload(index,title,data) { 
             this.$emit('handleDialog',this.title, index , data)
         },
-        async handleTableRow(index, row, option){
-            console.log(index, row, option)
-            this.dialogData = []
-            this.dialogConfig = this.config
-            if(option === '編輯'){
-                this.dialogData.push(row)
-                this.dialogButtonsName = [
-                { name:'儲存',type:'primary',status:'update'},
-                { name:'取消',type:'info',status:'cancel'}]
-                this.innerVisible = true
-                this.dialogStatus = 'update'
-            }else if(option === '刪除'){
-                await this.$api.authority.apiDeleteAccessAuthority(row.id).then(async(response)=>{
-                    this.$message('刪除成功')
-                    await this.getAllAccessAuthority()
-                })
-            }else if(option === '新增'){
-                this.dialogButtonsName = [
-                { name:'儲存',type:'primary',status:'create'},
-                { name:'取消',type:'info',status:'cancel'}]
-                this.innerVisible = true
-                this.dialogStatus = 'create'
-            }
-        },
+        // async handleTableRow(index, row, option){
+        //     console.log(index, row, option)
+        //     this.dialogData = []
+        //     this.dialogConfig = this.config
+        //     if(option === '編輯'){
+        //         this.dialogData.push(row)
+        //         this.dialogButtonsName = [
+        //         { name:'儲存',type:'primary',status:'update'},
+        //         { name:'取消',type:'info',status:'cancel'}]
+        //         this.innerVisible = true
+        //         this.dialogStatus = 'update'
+        //     }else if(option === '刪除'){
+        //         await this.$api.authority.apiDeleteAccessAuthority(row.id).then(async(response)=>{
+        //             this.$message('刪除成功')
+        //             await this.getAllAccessAuthority()
+        //         })
+        //     }else if(option === '新增'){
+        //         this.dialogButtonsName = [
+        //         { name:'儲存',type:'primary',status:'create'},
+        //         { name:'取消',type:'info',status:'cancel'}]
+        //         this.innerVisible = true
+        //         this.dialogStatus = 'create'
+        //     }
+        // },
         //客製化樣式
         cellClass(row){
             if (this.title == 'account') {//帳號管理不可選全選

@@ -73,8 +73,8 @@ const actions = {
   setroles({ commit }, roles) { 
     return new Promise((resolve, reject) => {
       commit('SET_ROLES', roles)
-      idb.deleteData('roles')
-      idb.saveValue('roles',roles)
+      // idb.deleteData('roles')
+      // idb.saveValue('roles',roles)
       resolve()
     })
   },
@@ -90,8 +90,8 @@ const actions = {
   setbuildinginfo({ commit }, buildinginfo) { 
     return new Promise((resolve, reject) => {
       commit('SET_BUILDINGINFO', buildinginfo)
-      idb.deleteData('buildingInfo')
-      idb.saveValue('buildingInfo',buildinginfo)
+      // idb.deleteData('buildingInfo')
+      // idb.saveValue('buildingInfo',buildinginfo)
       resolve()
     })
   },
@@ -102,8 +102,8 @@ const actions = {
   setbuildingarray({ commit }, buildingarray) { //登入時儲存再網頁資料庫&store
     return new Promise((resolve, reject) => {
         commit('SET_BUILDINGARRAY', buildingarray)
-        idb.deleteData('buildingList')
-        idb.saveValue('buildingList',buildingarray)
+        // idb.deleteData('buildingList')
+        // idb.saveValue('buildingList',buildingarray)
         resolve()
     })
   },
@@ -114,8 +114,8 @@ const actions = {
   setbuildingoptions({ commit }, buildingoptions) {
     return new Promise((resolve, reject) => {
         commit('SET_BUILDINGOPTIONS', buildingoptions)
-        idb.deleteData('buildingOptions')
-        idb.saveValue('buildingOptions',buildingoptions)
+        // idb.deleteData('buildingOptions')
+        // idb.saveValue('buildingOptions',buildingoptions)
         resolve()
     })
   },
@@ -127,8 +127,8 @@ const actions = {
   setbuildingcontactunit({ commit }, buildingcontactunit) {
     return new Promise((resolve, reject) => {
         commit('SET_BUILDINGCONTACTUNIT', buildingcontactunit)
-        idb.deleteData('buildingContactunit')
-        idb.saveValue('buildingContactunit',buildingcontactunit)
+        // idb.deleteData('buildingContactunit')
+        // idb.saveValue('buildingContactunit',buildingcontactunit)
         resolve()
     })
   },
@@ -140,8 +140,8 @@ const actions = {
   setbuildingusers({ commit }, buildingusers) {
     return new Promise((resolve, reject) => {
         commit('SET_BUILDINGUSERS', buildingusers)
-        idb.deleteData('buildingUsers')
-        idb.saveValue('buildingUsers',buildingusers)
+        // idb.deleteData('buildingUsers')
+        // idb.saveValue('buildingUsers',buildingusers)
         resolve()
     })
   },
@@ -153,8 +153,8 @@ const actions = {
   setbuildingdevices({ commit }, buildingdevices) {
     return new Promise((resolve, reject) => {
         commit('SET_BUILDINGDEVICES', buildingdevices)
-        idb.deleteData('buildingDevices')
-        idb.saveValue('buildingDevices',buildingdevices)
+        // idb.deleteData('buildingDevices')
+        // idb.saveValue('buildingDevices',buildingdevices)
         resolve()
     })
   },
@@ -166,8 +166,8 @@ const actions = {
   setbuildingfloors({ commit }, buildingfloors) {
     return new Promise((resolve, reject) => {
         commit('SET_BUILDINGFLOORS', buildingfloors)
-        idb.deleteData('buildingFloors')
-        idb.saveValue('buildingFloors',buildingfloors)
+        // idb.deleteData('buildingFloors')
+        // idb.saveValue('buildingFloors',buildingfloors)
         resolve()
     })
   },

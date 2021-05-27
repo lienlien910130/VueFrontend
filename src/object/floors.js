@@ -8,15 +8,32 @@ class Floors extends Parent {
  
     constructor (data) {
         super(data)
-        const { floor, floorPlanID, linkDevices } = data
+        const { floor, floorPlanID, sort, linkDevices } = data
         var devices = linkDevices.map(item=>{ return new Device(item)})
         this.floor = floor
         this.floorPlanID = floorPlanID
+        this.sort = sort
         this.linkDevices = devices
         return this
     }
     clone(data){
         return new Floors(data)
+    }
+    async update(){
+        var data = await api.building.apiPatchFloors(this).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
+    async delete(){
+        var data = await api.building.apiDeleteFloors(this.id).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
     }
     async getUsageOfFloor(){
         var data = await api.building.apiGetFloorOfHouse(this.id).then(response => {
@@ -61,29 +78,60 @@ class Floors extends Parent {
         return data        
     }
     getName(){
-        return this.floor>0 ? this.floor+'F' : '地下 '+this.floor.substr(1)+'F'
+        return this.floor
     }
     getImageID(){
         return this.floorPlanID.toString()
     }
+    static empty(){
+        return new Floors({
+            id:'',
+            floor :'',
+            floorPlanID:null,
+            sort:99,
+            linkDevices:[]
+        })
+    }
     static getConfig(){
-       return []
+       return [
+            { label:'樓層' , prop:'floor', 
+                mandatory:true, message:'請輸入樓層',maxlength:'10',
+                isHidden:false,isSearch:true},
+            { label:'平面圖檔' , prop:'floorPlanID',format:'hide',
+                type:'number',typemessage:'',
+                mandatory:false, isHidden:false,isSearch:false },
+            { label:'排序' , prop:'sort', format:'inputnumber',
+                type:'number',typemessage:'',
+                pattern:/^[1-9]*[1-9][0-9]*$/,errorMsg:'請輸入正整數',isPattern:true,
+                mandatory:true, message:'請輸入排序',maxlength:'3',
+                isHidden:false,isSearch:true}
+       ]
+    }
+    static getDownloadConfig(){
+        return [
+             { label:'樓層' , prop:'floor',isHidden:false},
+             { label:'排序' , prop:'sort',isHidden:false}
+        ]
     }
     static async get (){
         var data = await api.building.apiGetBuildingFloors().then(response => {
-            console.log('getFloor',JSON.stringify(response))
-            var result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Floors(item)})
+            console.log('getfloor')
+            console.log(JSON.stringify(response))
+            var result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new Floors(item)})
             return result
         }).catch(error=>{
             return []
         })
         return data
     }
-    static async update(data){
-        var data = await api.building.apiPatchFloors(data).then(async(response) => {
-            return true
+    static async getSearchPage(buildingId,data){
+        var data = await api.building.apiGetFloorSearchPages(buildingId,data).then(response => {
+            response.result = response.result.sort((x,y) => x.sort - y.sort)
+            .map(item=>{ return new Floors(item)})
+            return response
         }).catch(error=>{
-            return false
+            return []
         })
         return data
     }

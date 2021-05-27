@@ -126,6 +126,16 @@ export default {
     methods:{
         async init(){   
             this.title = 'maintain'
+            this.headerButtonsName = [
+                { name:'請先選擇維保大項',icon:'el-icon-circle-plus-outline',status:'tablemaintain'},
+                { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
+                { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}
+            ]
+            this.buttonsName = [
+                { name:'刪除',icon:'el-icon-delete',status:'delete'},
+                { name:'編輯',icon:'el-icon-edit',status:'open'},
+                { name:'檔案',icon:'el-icon-folder-opened',status:'openfiles'}
+            ]
         },
         async resetlistQueryParams(){
             this.listQueryParams = {
@@ -133,15 +143,7 @@ export default {
                 pageSize: 12,
                 total:0
             }
-            if(this.isTable == true){
-                this.title = 'maintain'
-                this.tableConfig = MaintainManagement.getConfig()
-                await this.getMaintainAll()
-            }else{
-                this.title = 'maintainList'
-                this.tableConfig = MaintainManagementList.getConfig()
-                await this.getBuildingMaintainList()
-            }
+            await this.searchAndPage()
         },
         async resetmaintainlistQueryParams(){
             this.maintainlistQueryParams = {

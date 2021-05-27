@@ -67,14 +67,21 @@ export default {
   watch:{
     buildingfloors:{
       handler:async function(newValue,oldValue){
-        var array = this.buildingfloors.map(item=>{ return new Floors(item)})
+        console.log(JSON.stringify(this.buildingfloors))
+        var array = this.buildingfloors
         if(this.buildingfloors.length>0 && oldValue == undefined ){ //第一次建立
-          this.upFloors = array.filter((item,index) => item.getName().includes("地下") == false)
-          this.downFloors = array.filter((item,index) => item.getName().includes("地下") == true)
+          this.upFloors = array.filter((item,index) => 
+          item.getName().includes("地下") == false)
+          this.downFloors = array.filter((item,index) => 
+          item.getName().includes("地下") == true)
+          console.log(this.upFloors)
+          console.log(this.downFloors)
           this.setRange()
         }else{ //修改平面圖
-          this.upFloors = array.filter((item,index) => item.getName().includes("地下") == false)
-          this.downFloors = array.filter((item,index) => item.getName().includes("地下") == true)
+          this.upFloors = array.filter((item,index) => 
+          item.getName().includes("地下") == false)
+          this.downFloors = array.filter((item,index) => 
+          item.getName().includes("地下") == true)
           this.onSelectRange(this.selectRange)
         }
       },
@@ -119,11 +126,11 @@ export default {
     },
     addClass(index){
         this.classenable = true
-        this.current = index;
+        this.current = index
     },
     removeClass(index){
         this.classenable = false
-        this.current = index;
+        this.current = index
     },
     handleFloorSelect(val){
       this.selectFloor = val[0].id

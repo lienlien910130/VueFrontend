@@ -10,6 +10,7 @@ export default {
               isTable:this.isTable,
               isHasButtons:this.isHasButtons,
               buttonsName:this.buttonsName,
+              headerButtonsName:this.headerButtonsName,
               selectSetting:this.selectSetting
           }
       }
@@ -27,8 +28,12 @@ export default {
         },
         isHasButtons:true,
         buttonsName:[
-          { name:'編輯',type:'primary',status:'open'},
-          { name:'刪除',type:'info',status:'delete'}]
+          { name:'刪除',icon:'el-icon-delete',status:'delete'},
+                { name:'編輯',icon:'el-icon-edit',status:'open'}],
+        headerButtonsName:[
+          { name:'新增資料',icon:'el-icon-circle-plus-outline',status:'empty'},
+          { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
+          { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}]
       }
     }
 }

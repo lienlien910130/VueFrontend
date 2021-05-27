@@ -101,7 +101,7 @@ export default function(method,url,data = null,isHeader = false) {
             return service.post(url,data)
         }
     }else if(method == 'get'){
-        if(isHeader !== false){ //檔案上傳
+        if(isHeader !== false){ //下載圖片檔&檔案
             return service.request({
                 url: url,
                 method: 'get',

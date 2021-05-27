@@ -41,6 +41,14 @@ let Setting = {
             return false
         })
         return data
+    },
+    searchOption:async function(data){
+        var data = await api.setting.apiSearchOption(data).then(response => {
+            return response.result
+        }).catch(error=>{
+            return response.result
+        })
+        return data
     }
 }
 export default Setting
