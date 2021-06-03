@@ -99,7 +99,7 @@ export default {
                 data = data.sort(function(x,y){
                     var _data1 = new Date(x.textName)
                     var _data2 = new Date(y.textName)
-                    return  _data1 - _data2
+                    return  _data2 - _data1
                 })
             }
             return data

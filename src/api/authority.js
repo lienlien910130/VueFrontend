@@ -41,6 +41,7 @@ const authority = {
     apiGetAccountAuthority(accountId){ return req('get','/accountSetting/'+accountId) },
     apiPostAccountAuthority(data){ return req('post','/accountSetting',data) },
     apiPatchAccountAuthority(data){ return req('patch','/accountSetting',data) },
+    apiPutAccountAuthority(data){ return req('put','/accountSetting',data) },
     apiDeleteAccountAuthority(accountId){ return req('delete','/accountSetting/'+accountId) },
     apiGetAccountAuthoritySearchPages(data){ return req('post','/accountSetting/ss',data)  },
     apiPostAccountAuthorities(data){ return req('post','/accountSetting/s',data) },

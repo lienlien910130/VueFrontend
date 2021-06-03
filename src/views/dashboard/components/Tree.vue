@@ -99,7 +99,7 @@ import { removeDuplicates } from '@/utils/index'
             })
             const _temp = { 
                 id: item.linkDeviceTypes.length !== 0 ? item.linkDeviceTypes[0].id : '',
-                name: item.getOnlyType(),
+                name: item.getOnlyTypeName(),
                 count:typedata.length,
                 leaf: false,
                 children: typedata
@@ -117,7 +117,7 @@ import { removeDuplicates } from '@/utils/index'
           message: h('div', null, [
             h('p',{ style: 'width:100%' },[
               h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'種類 ：'),
-              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getLinkType().getType()+'-'+data.getLinkType().getTypeName())
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getLinkType().getType()+'-'+data.getLinkType().getName())
             ]),
             h('p',{ style: 'width:100%' },[
               h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'廠牌 ：'),
@@ -149,11 +149,11 @@ import { removeDuplicates } from '@/utils/index'
             ]),
             h('p',{ style: 'width:100%' },[
               h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'保管單位 ：'),
-              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getKeeperUnits())
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getKeeperUnitsName())
             ]),
             h('p',{ style: 'width:100%' },[
               h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'維護廠商 ：'),
-              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getMaintainVendors())
+              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getMaintainVendorsName())
             ]),
             h('p',{ style: 'width:100%' },[
               h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'分類群組 ：'),

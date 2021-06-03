@@ -58,35 +58,36 @@ class User extends Parent {
             email :''
         })
     }
-    static getConfig(){
-       return [
-        { label:'姓名' , prop:'name', mandatory:true, message:'請輸入姓名',maxlength:'15'},
-        { label:'身份證' , prop:'identityCard', mandatory:true,message:'請輸入身份證',
-        pattern:/^[A-Z]{1}[1-2]{1}[0-9]{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,maxlength:'10'},
-        { label:'生日' , prop:'birthday',format:'YYYY-MM-DD', mandatory:true,message:'請輸入生日'},
-        { label:'電話' , prop:'callNumber', mandatory:true,message:'請輸入電話',maxlength:'15'},
-        { label:'手機號碼' , prop:'cellPhoneNumber', mandatory:true, message:'請輸入手機號碼',
-        pattern:/^09\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,maxlength:'10'},
-        { label:'緊急電話' , prop:'emergencyNumber', mandatory:false,maxlength:'15'},   
-        { label:'電子信箱' , prop:'email', mandatory:true,message:'請輸入電子信箱',
-        pattern:/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,maxlength:'25'},    
-        { label:'備註' , prop:'note', mandatory:false,format:'textarea',maxlength:'200'}, 
-      ]
-    }
     static getTableConfig(){
         return [
-         { label:'姓名' , prop:'name', mandatory:true, message:'請輸入姓名',maxlength:'15',isHidden:false,isSearch:true},
+         { label:'姓名' , prop:'name', mandatory:true, message:'請輸入姓名',maxlength:'15',
+         isHidden:false,isSearch:true,placeholder:'請輸入姓名',
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
          { label:'身份證' , prop:'identityCard', mandatory:true,message:'請輸入身份證',
-         pattern:/^[A-Z]{1}[1-2]{1}[0-9]{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,maxlength:'10',isHidden:true,isSearch:false},
-         { label:'生日' , prop:'birthday',format:'YYYY-MM-DD', mandatory:true,message:'請輸入生日',isHidden:false,isSearch:false},
-         { label:'電話' , prop:'callNumber', mandatory:false,maxlength:'15',isHidden:false,isSearch:true},
+         pattern:/^[A-Z]{1}[1-2]{1}[0-9]{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,
+         maxlength:'10',isHidden:true,isSearch:false,placeholder:'請輸入身份證',
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+         { label:'生日' , prop:'birthday',format:'YYYY-MM-DD', 
+         mandatory:false,isHidden:false,isSearch:false,
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+         { label:'電話' , prop:'callNumber', mandatory:false,maxlength:'15',
+         isHidden:true,isSearch:true,placeholder:'請輸入電話',
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
          { label:'手機號碼' , prop:'cellPhoneNumber', mandatory:true, message:'請輸入手機號碼',
-         pattern:/^09\d{8}$/,errorMsg:'輸入格式為09xxxxxxxx',isPattern: true,maxlength:'10',isHidden:false,isSearch:true},
-         { label:'緊急電話' , prop:'emergencyNumber', mandatory:false,maxlength:'15',isHidden:false,isSearch:true},   
-         { label:'電子信箱' , prop:'email', mandatory:true,message:'請輸入電子信箱',
+         pattern:/^09\d{8}$/,errorMsg:'輸入格式為09xxxxxxxx',isPattern: true,
+         maxlength:'10',isHidden:false,isSearch:true,placeholder:'請輸入手機號碼，格式為09xxxxxxxx',
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+         { label:'緊急電話' , prop:'emergencyNumber', mandatory:false,maxlength:'15',
+         isHidden:false,isSearch:true,placeholder:'請輸入緊急電話',
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},   
+         { label:'電子信箱' , prop:'email', mandatory:false,
          pattern:/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/,
-         errorMsg:'格式錯誤,請重新輸入',isPattern: true,maxlength:'100',isHidden:false,isSearch:true},    
-         { label:'備註' , prop:'note', mandatory:false,format:'textarea',maxlength:'200',isHidden:false,isSearch:true}, 
+         errorMsg:'格式錯誤,請重新輸入',isPattern: true,maxlength:'100',
+         isHidden:false,isSearch:true,placeholder:'請輸入電子信箱',
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},    
+         { label:'備註' , prop:'note', mandatory:false,format:'textarea',maxlength:'200',
+         isHidden:false,isSearch:true,placeholder:'請輸入職稱',
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false}, 
        ]
     }
     static async get (){

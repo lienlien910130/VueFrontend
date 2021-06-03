@@ -5,7 +5,9 @@
               <div class="chart-wrapper">
                 <div class="verticalhalfdiv">
                   <div class="label">
-                    <span>場所名稱 :</span>
+                    <i class="el-icon-edit">
+                        <a @click="openWindows('basic')" style="color:#66b1ff"> 場所名稱：</a>
+                    </i>
                   </div>
                   <div class="content">
                     <span> {{ this.buildinginfo[0].getName() }}</span> 
@@ -13,10 +15,14 @@
                 </div>
                 <div class="verticalhalfdiv">
                   <div class="label">
-                    <span>下次申報時間 :</span>
+                    <i class="el-icon-edit">
+                        <a @click="openWindows('sys-Setting')" style="color:#66b1ff"> 下次申報時間：</a>
+                    </i>
                   </div>
                   <div class="content">
-                    <span class="report"> {{ TimeOptions("PublicSafeTimeOptions") }} </span> 
+                    <span class="report"> 
+                      {{ TimeOptions("PublicSafeTimeOptions") }} 
+                    </span> 
                   </div>
                 </div>
               </div>
@@ -26,7 +32,9 @@
                 <el-col :xs="24" :sm="24" :md="24" :lg="12">
                   <div class="horizontalhalfdiv">
                     <div class="label">
-                      <span>管理權人 :</span>
+                      <i class="el-icon-edit">
+                          <a @click="openWindows('basic')" style="color:#66b1ff"> 管理權人：</a>
+                      </i>
                     </div>
                     <div class="content">
                       <div
@@ -45,7 +53,9 @@
                 <el-col :xs="24" :sm="24" :md="24" :lg="12">
                   <div class="horizontalhalfdiv">
                     <div class="label">
-                      <span>防火管理人 :</span>
+                      <i class="el-icon-edit">
+                          <a @click="openWindows('basic')" style="color:#66b1ff"> 防火管理人：</a>
+                      </i>
                     </div>
                     <div class="content">
                       <div
@@ -101,7 +111,7 @@ export default {
             //dialog額外的參數
             files:[],
             formtableData:[],
-            formtableconfig: PublicSafeLack.getConfig(),
+            formtableconfig: PublicSafeLack.getTableConfig(),
             lacklistQueryParams:{
                 pageIndex: 1,
                 pageSize: 10,
@@ -121,6 +131,7 @@ export default {
   methods: {
     async init(){
       this.title = 'reportPublicSafe'
+      this.tableConfig = PublicSafe.getTableConfig()
       await this.getBuildingPublicSafeReport()
       this.buttonsName = [
         { name:'刪除',icon:'el-icon-delete',status:'delete'},
@@ -202,6 +213,7 @@ export default {
         this.innerVisible = true
         this.dialogStatus = 'exportExcel'
       }else if(index === 'uploadExcel'){
+        this.dialogConfig = this.tableConfig
         this.innerVisible = true
         this.dialogStatus = 'uploadExcel'
       }
@@ -298,6 +310,7 @@ export default {
           this.innerVisible = true
           this.dialogStatus = 'exportExcel'
         }else if(index === 'uploadExcel'){
+          this.dialogConfig = this.formtableconfig 
           this.innerVisible = true
           this.dialogStatus = 'uploadExcel'
         }else if(index === 'uploadExcelSave'){
@@ -310,9 +323,6 @@ export default {
     },
     async changeTable(value){
       this.isTable = value
-      value == true ?  this.tableConfig = PublicSafe.getTableConfig() : 
-      this.tableConfig = PublicSafe.getConfig()
-      await this.getFilterItems()
     }
   }
 }

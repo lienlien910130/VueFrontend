@@ -52,6 +52,7 @@ export default {
     methods:{
         async init(){
             this.title = 'account'
+            this.tableConfig = Account.getTableConfig()
             await this.getAllAccount()
             this.buttonsName = [
                 { name:'刪除',icon:'el-icon-delete',status:'delete'},
@@ -163,8 +164,6 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
-            this.tableConfig =  value == true ?  Account.getTableConfig() : Account.getConfig()
-            await this.getFilterItems()
         }
     }
 }

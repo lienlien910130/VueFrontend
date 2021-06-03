@@ -38,8 +38,9 @@ export default {
     },
     methods: {
         async init(){
-            this.dialogSelect = await DeviceType.get('devicesManagement')
             this.title = 'equipment'
+            this.tableConfig = Device.getTableConfig()
+            this.dialogSelect = await DeviceType.get('devicesManagement')
             await this.getBuildingDevicesManage()
         },
         async resetlistQueryParams(){
@@ -114,9 +115,6 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
-            this.tableConfig = value == true ? 
-                Device.getTableConfig() : Device.getConfig()
-            await this.getFilterItems()
             if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
                 if(typeof this.$route.params.target == 'object'){
                     await this.handleBlock('equipment','open',this.$route.params.target)

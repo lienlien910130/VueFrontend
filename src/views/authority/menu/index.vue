@@ -90,6 +90,7 @@ export default {
     methods:{
         async init(){
             this.title = 'mainMenu'
+            this.tableConfig = Menu.getTableConfig()
             this.hasSearch = false
         },
         async resetlistQueryParams(){
@@ -136,7 +137,7 @@ export default {
                 if(this.selectId == null){
                     this.$alert('如需新增子目錄，請先選擇父節點，再進行新增', '新增提醒', {
                         confirmButtonText: '確定'
-                    });
+                    })
                 }
                 this.dialogData.push( Menu.empty() )    
                     this.dialogButtonsName = [
@@ -182,9 +183,6 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
-            value == true ?  this.tableConfig = Menu.getTableConfig() : 
-            this.tableConfig = Menu.getConfig()
-            await this.getFilterItems()
         }
     }
 }

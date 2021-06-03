@@ -40,9 +40,9 @@ class PublicSafeLack extends Parent {
         })
         return data
     }
-    getName(){
-        return '【'+this.lackItem+'】'+this.lackContent
-    }
+    // getName(){
+    //     return '【'+this.lackItem+'】'+this.lackContent
+    // }
     static empty(){
         return new PublicSafeLack({
             id:'',
@@ -54,14 +54,32 @@ class PublicSafeLack extends Parent {
             status :''
         })
     }
-    static getConfig(){
+    static getTableConfig(){
        return [
-        { label:'項目' , prop:'lackItem',format:'', mandatory:true, message:'請輸入項目',maxlength:'200',isHidden:false},
-        { label:'內容' , prop:'lackContent',format:'textarea',  mandatory:true,message:'請輸入內容',maxlength:'999',isHidden:false},
-        { label:'無法合格理由' , prop:'notPassReason',format:'textarea', mandatory:true, message:'請輸入無法合格理由',maxlength:'999',isHidden:false},
-        { label:'法令依據' , prop:'accordLaws',format:'textarea', mandatory:true, message:'請輸入法令依據',maxlength:'999',isHidden:false},
-        { label:'改善計畫' , prop:'improvePlan',format:'textarea', mandatory:false, message:'請輸入改善計畫',maxlength:'999',isHidden:false},
-        { label:'處理進度' , prop:'status',format:'LackStatusOptions', mandatory:true, message:'請選擇處理進度',isHidden:false}
+        { label:'項目' , prop:'lackItem',
+        mandatory:true, message:'請輸入項目',maxlength:'200',
+        isHidden:false,placeholder:'請輸入項目',
+        isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+        { label:'內容' , prop:'lackContent',format:'textarea', 
+         mandatory:false,maxlength:'200',
+         isHidden:false,placeholder:'請輸入內容',
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+        { label:'無法合格理由' , prop:'notPassReason',format:'textarea', 
+        mandatory:false, maxlength:'200',
+        isHidden:false,placeholder:'請輸入無法合格理由',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+        { label:'法令依據' , prop:'accordLaws',format:'textarea', 
+        mandatory:false, maxlength:'200',
+        isHidden:false,placeholder:'請輸入法令依據',
+        isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+        { label:'改善計畫' , prop:'improvePlan',format:'textarea', 
+        mandatory:false, maxlength:'200',
+        isHidden:false,placeholder:'請輸入改善計畫',
+        isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+        { label:'處理進度' , prop:'status',format:'LackStatusOptions', 
+        mandatory:true, message:'請選擇處理進度',
+        isHidden:false,placeholder:'請輸入名稱',
+        isAssociate:true,isEdit:true,isUpload:true,isExport:true,isBlock:true}
       ]
     }
     static async get (publicSafeId){

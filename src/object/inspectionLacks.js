@@ -51,22 +51,27 @@ class InspectionLacks extends Parent {
             status :''
         })
     }
-    static getConfig(){
+    static getTableConfig(){
        return [
             {
                 label: '缺失項目',
                 prop: 'lackItem',
-                mandatory:true, message:'請輸入缺失項目',format:'input',maxlength:'200',isHidden:false
+                mandatory:true, message:'請輸入缺失項目',maxlength:'200',
+                isHidden:false,placeholder:'請輸入缺失項目',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
                 label: '缺失內容',
                 prop: 'lackContent',
-                mandatory:true, message:'請輸入缺失內容',format:'textarea',maxlength:'999',isHidden:false
+                mandatory:true, message:'請輸入缺失內容',format:'textarea',maxlength:'200',
+                isHidden:false,placeholder:'請輸入缺失內容',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
                 label: '處理進度',
                 prop: 'status',format:'MaintainProcessOptions',
-                mandatory:false, format:'Options',isHidden:false
+                mandatory:false, isHidden:false,
+                isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true
             }
         ]
     }

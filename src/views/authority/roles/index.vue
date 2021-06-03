@@ -54,6 +54,7 @@ export default {
     methods:{
         async init(){
             this.title = 'roles'
+            this.tableConfig = Role.getTableConfig()
             await this.getAllRole()
             this.buttonsName = [
                 { name:'刪除',icon:'el-icon-delete',status:'delete'},
@@ -65,11 +66,13 @@ export default {
             this.listQueryParams = {
                 pageIndex: 1,
                 pageSize: 12,
-                total:0
+                total:0,
+                orderBy:'sort'
             }
             await this.getAllRole()
         },
         async getAllRole(){
+            this.listQueryParams.orderBy = 'sort'    
             var data = await Role.getSearchPage(this.listQueryParams)
             this.blockData = data.result
             this.listQueryParams.total = data.totalPageCount
@@ -229,8 +232,6 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
-            value == true ?  this.tableConfig = Role.getTableConfig() : this.tableConfig = Role.getConfig()
-            await this.getFilterItems()
             if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
                 if(typeof this.$route.params.target == 'object'){
                     await this.handleBlock('roles','open',this.$route.params.target)

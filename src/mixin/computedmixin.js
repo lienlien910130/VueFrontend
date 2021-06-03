@@ -66,31 +66,6 @@ export default {
                     return ""
                 }
             },
-            changeRoles(){ //角色名稱
-                return function (val) {
-                  if(val !== null){
-                    return val.map(item=>{ 
-                        return item.getName() }).toString()
-                  }
-                  return ''
-                } 
-            },
-            changeInspectionLack(){ //檢修申報缺失內容
-                return function (val) {
-                  if(val !== null){
-                    return val.map(item=>{ return item.getName() }).toString()
-                  }
-                  return ''
-                }
-            },
-            changeDevice(){ //設備名稱
-                return function (val) {
-                    if(val !== null){
-                        return val.map(item=>{ return item.getName() }).toString()
-                    }
-                    return ''
-                }
-            },    
             changeContainUnit(){ //廠商名稱
                 return function (val) {
                   if(val !== null){
@@ -99,30 +74,22 @@ export default {
                   return ''
                 } 
             },
-            changeBuilding(){ //建築物名稱
-                return function (val) {
-                    if(val !== null){
-                      return val.map(item=>{ return item.getName() }).toString()
-                    }
-                    return ''
-                } 
-            },
-            changeUsageOfFloor(){ //門牌
-                return function (val) {
-                    if(val !== null && val !== undefined){
-                      return val.map(item=>{ return item.getName() }).toString()
-                    }
-                    return ''
-                } 
-            },
-            changeUsageOfFloorUsersName(){ //門牌底下的使用者名稱
-                return function (val) {
-                    if(val !== null && val !== undefined){
-                        return val.map(item => { return item.getName()}).toString()
-                    }
-                    return ''
-                } 
-            },
+            // changeUsageOfFloor(){ //門牌
+            //     return function (val) {
+            //         if(val !== null && val !== undefined){
+            //           return val.map(item=>{ return item.getName() }).toString()
+            //         }
+            //         return ''
+            //     } 
+            // },
+            // changeUsageOfFloorUsersName(){ //門牌底下的使用者名稱
+            //     return function (val) {
+            //         if(val !== null && val !== undefined){
+            //             return val.map(item => { return item.getName()}).toString()
+            //         }
+            //         return ''
+            //     } 
+            // },
             changeUserName(){ //住戶名稱
                 return function (val) {
                     if(val !== null){
@@ -154,6 +121,33 @@ export default {
                     this.tableheight = '500px'
                 },
                 immediate:true
+            }
+        },
+        filters:{
+            changeBoolean: function(val,format) {
+                if(val == true){
+                    switch(format){
+                        case 'accountStatusSelect':
+                            return '啟用'
+                        case 'collaborateBoolean':
+                            return '配合中'
+                        case 'removableSelect':
+                            return '允許'
+                        case 'improvedBoolean':
+                            return '已改善'
+                    }
+                }else{  
+                    switch(format){
+                        case 'accountStatusSelect':
+                            return '禁用'
+                        case 'collaborateBoolean':
+                            return '未配合'
+                        case 'removableSelect':
+                            return '禁止'
+                        case 'improvedBoolean':
+                            return '未改善'
+                    }
+                }
             }
         },
         data() {

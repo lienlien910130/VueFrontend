@@ -96,6 +96,36 @@ export function formatTime(time, option) {
   }
 }
 
+export function removeDuplicates(originalArray, prop) {
+  var newArray = []
+  var lookupObject  = {}
+  for(var i in originalArray) {
+      lookupObject[originalArray[i][prop]] = originalArray[i]
+  }
+  for(i in lookupObject) {
+      newArray.push(lookupObject[i])
+  }
+  return newArray
+}
+
+//取得外層的名稱或值
+export function changeDeviceFullType(fullType,isFirst,isLabel){
+  var label = ''
+  store.getters.deviceType.forEach(item=>{
+    var array = item.children.filter((obj,index)=>{
+      return obj.value == fullType
+    })
+    if(array.length !== 0){
+      if(isFirst == true){
+        label = isLabel == true ? item.label : item.value
+      }else{
+        label = isLabel == true ? array[0].label : array[0].value
+      }
+    }
+  })
+  return label
+}
+
 // /**
 //  * @param {string} url
 //  * @returns {Object}
@@ -253,40 +283,40 @@ export function formatTime(time, option) {
  * @param {boolean} immediate
  * @return {*}
  */
-// export function debounce(func, wait, immediate) {
-//   let timeout, args, context, timestamp, result
+export function debounce(func, wait, immediate) {
+  let timeout, args, context, timestamp, result
 
-//   const later = function() {
-//     // 据上一次触发时间间隔
-//     const last = +new Date() - timestamp
+  const later = function() {
+    // 据上一次触发时间间隔
+    const last = +new Date() - timestamp
 
-//     // 上次被包装函数被调用时间间隔 last 小于设定时间间隔 wait
-//     if (last < wait && last > 0) {
-//       timeout = setTimeout(later, wait - last)
-//     } else {
-//       timeout = null
-//       // 如果设定为immediate===true，因为开始边界已经调用过了此处无需调用
-//       if (!immediate) {
-//         result = func.apply(context, args)
-//         if (!timeout) context = args = null
-//       }
-//     }
-//   }
+    // 上次被包装函数被调用时间间隔 last 小于设定时间间隔 wait
+    if (last < wait && last > 0) {
+      timeout = setTimeout(later, wait - last)
+    } else {
+      timeout = null
+      // 如果设定为immediate===true，因为开始边界已经调用过了此处无需调用
+      if (!immediate) {
+        result = func.apply(context, args)
+        if (!timeout) context = args = null
+      }
+    }
+  }
 
-//   return function(...args) {
-//     context = this
-//     timestamp = +new Date()
-//     const callNow = immediate && !timeout
-//     // 如果延时不存在，重新设定延时
-//     if (!timeout) timeout = setTimeout(later, wait)
-//     if (callNow) {
-//       result = func.apply(context, args)
-//       context = args = null
-//     }
+  return function(...args) {
+    context = this
+    timestamp = +new Date()
+    const callNow = immediate && !timeout
+    // 如果延时不存在，重新设定延时
+    if (!timeout) timeout = setTimeout(later, wait)
+    if (callNow) {
+      result = func.apply(context, args)
+      context = args = null
+    }
 
-//     return result
-//   }
-// }
+    return result
+  }
+}
 
 /**
  * This is just a simple version of deep copy
@@ -310,268 +340,242 @@ export function formatTime(time, option) {
 //   return targetObj
 // }
 
-export function removeDuplicates(originalArray, prop) {
-  var newArray = []
-  var lookupObject  = {}
-  for(var i in originalArray) {
-      lookupObject[originalArray[i][prop]] = originalArray[i]
-  }
-  for(i in lookupObject) {
-      newArray.push(lookupObject[i])
-  }
-  return newArray
-}
 
-export async function changeLabel(selectType,value,selectdata){
-  //console.log(selectType,value)
-  var label = ''
-  switch(selectType){
-      case 'options':
-          if(store.getters.buildingoptions.length == 0){
-            await api.setting.apiGetOptionById(value).then(response=>{
-                label = response.result[0].textName
-            }) 
-          }else{
-            let options = store.getters.buildingoptions.filter((item, index) => 
-                item.id == value 
-            )
-            label = options.length !== 0 ? options[0].textName : ''
-          }
-          break;
-      case 'contactunit': 
-          if(store.getters.buildingcontactunit == 0){
-              await api.building.apiGetContactUnit(value).then(response=>{
-                  label = response.result[0].name
-              })
-          }else{
-            let contactunit = store.getters.buildingcontactunit.filter((item, index) => 
-                  item.id == value.id
-              )
-            label = contactunit.length !== 0 ? contactunit[0].name : ''
-          }
-          break;
-      case 'usageOfFloor': 
-          let usageOfFloor = selectdata.filter((item, index) => 
-              item.id == value.id
-          )
-          label = usageOfFloor[0].houseNumber
-          break;
-      case 'user': 
-          if(store.getters.buildingusers.length == 0){
-            await api.building.apiGetUser(value).then(response=>{
-              label = response.result[0].name
-            })
-          }else{
-            let user = store.getters.buildingusers.filter((item, index) => 
-                  item.id == value 
-              )
-            label =  user.length !== 0 ? user[0].name : ''
-          }
-          break;
-      case 'fullType':
-          var dataArray = store.getters.deviceType == 0 ? 
-            await api.device.apiGetDefaultFullType() : 
-            store.getters.deviceType
-            dataArray.filter(function(item, index){
-              var array = item.children.filter((obj,index)=>{
-                return obj.value == value
-              })
-              if(array.length){
-                label = array[0].label 
-              }
-            })
-        break;
-      case 'deviceType':
-        let devicetype = selectdata.filter((item, index) => 
-              item.id == value.id
-        )
-        label = devicetype[0].getTypeName()
-        break;
-      case 'collaborateBool': 
-          label = value == true ? '配合中' : '未配合'
-          break;
-      case 'reportBool': 
-          label = value == true ? '已改善' : '未改善'
-          break;
-      case 'dateOfYear':
-          if(value !== null){
-            label = formatTime(new Date(value), '{y}')
-          }
-          break;
-      case 'dateOfDate': 
-          if(value !== null){
-            label = formatTime(new Date(value), '{y}-{m}-{d}')
-          }
-          break;
-      default:
-          label = value
-          break;
-  }
-  return label
-}
 
-export async function setSelectSetting(config,list,selectdata = null){
-  var data = config.filter((item,index)=>item.isSelect == true) //可篩選的
-  for(let item of data){
-    var array = []
-    item.options = []
-    for(let element of list){
-      array.push(element[item.prop])
-    }
-    var concatarray = array.reduce(
-      function(a, b) {
-        return a.concat(b)
-      },[]
-    )
-    //單一 or 物件
-    var _temp = 
-      item.selectType == 'contactunit' 
-      || item.selectType == 'usageOfFloor' 
-      || item.selectType == 'user' || item.selectType == 'deviceType'  ?  
-          removeDuplicates(concatarray,'id') : 
-          concatarray.filter(function(element, index, arr){
-              return arr.indexOf(element) === index
-          })
-    for(let obj of _temp) {
-      if(obj == null || obj.length == 0){
-        // item.options.push({
-        //       id:obj.id,
-        //       value:value,
-        //       label:label
-        // })
-      }else{
-        var label = await changeLabel(item.selectType,obj,selectdata)
-        var value = typeof obj == 'object' ? obj.id : obj
-        item.options.push({
-              id:obj.id,
-              value:value,
-              label:label
-        })
-      }
+// export async function changeLabel(selectType,value,selectdata){
+//   //console.log(selectType,value)
+//   var label = ''
+//   switch(selectType){
+//       case 'options':
+//           if(store.getters.buildingoptions.length == 0){
+//             await api.setting.apiGetOptionById(value).then(response=>{
+//                 label = response.result[0].textName
+//             }) 
+//           }else{
+//             let options = store.getters.buildingoptions.filter((item, index) => 
+//                 item.id == value 
+//             )
+//             label = options.length !== 0 ? options[0].textName : ''
+//           }
+//           break;
+//       case 'contactunit': 
+//           if(store.getters.buildingcontactunit == 0){
+//               await api.building.apiGetContactUnit(value).then(response=>{
+//                   label = response.result[0].name
+//               })
+//           }else{
+//             let contactunit = store.getters.buildingcontactunit.filter((item, index) => 
+//                   item.id == value.id
+//               )
+//             label = contactunit.length !== 0 ? contactunit[0].name : ''
+//           }
+//           break;
+//       case 'usageOfFloor': 
+//           let usageOfFloor = selectdata.filter((item, index) => 
+//               item.id == value.id
+//           )
+//           label = usageOfFloor[0].houseNumber
+//           break;
+//       case 'user': 
+//           if(store.getters.buildingusers.length == 0){
+//             await api.building.apiGetUser(value).then(response=>{
+//               label = response.result[0].name
+//             })
+//           }else{
+//             let user = store.getters.buildingusers.filter((item, index) => 
+//                   item.id == value 
+//               )
+//             label =  user.length !== 0 ? user[0].name : ''
+//           }
+//           break;
+//       case 'fullType':
+//           var dataArray = store.getters.deviceType == 0 ? 
+//             await api.device.apiGetDefaultFullType() : 
+//             store.getters.deviceType
+//             dataArray.filter(function(item, index){
+//               var array = item.children.filter((obj,index)=>{
+//                 return obj.value == value
+//               })
+//               if(array.length){
+//                 label = array[0].label 
+//               }
+//             })
+//         break;
+//       case 'deviceType':
+//         let devicetype = selectdata.filter((item, index) => 
+//               item.id == value.id
+//         )
+//         label = devicetype[0].getTypeName()
+//         break;
+//       case 'collaborateBool': 
+//           label = value == true ? '配合中' : '未配合'
+//           break;
+//       case 'reportBool': 
+//           label = value == true ? '已改善' : '未改善'
+//           break;
+//       case 'dateOfYear':
+//           if(value !== null){
+//             label = formatTime(new Date(value), '{y}')
+//           }
+//           break;
+//       case 'dateOfDate': 
+//           if(value !== null){
+//             label = formatTime(new Date(value), '{y}-{m}-{d}')
+//           }
+//           break;
+//       default:
+//           label = value
+//           break;
+//   }
+//   return label
+// }
+
+// export async function setSelectSetting(config,list,selectdata = null){
+//   var data = config.filter((item,index)=>item.isSelect == true) //可篩選的
+//   for(let item of data){
+//     var array = []
+//     item.options = []
+//     for(let element of list){
+//       array.push(element[item.prop])
+//     }
+//     var concatarray = array.reduce(
+//       function(a, b) {
+//         return a.concat(b)
+//       },[]
+//     )
+//     //單一 or 物件
+//     var _temp = 
+//       item.selectType == 'contactunit' 
+//       || item.selectType == 'usageOfFloor' 
+//       || item.selectType == 'user' || item.selectType == 'deviceType'  ?  
+//           removeDuplicates(concatarray,'id') : 
+//           concatarray.filter(function(element, index, arr){
+//               return arr.indexOf(element) === index
+//           })
+//     for(let obj of _temp) {
+//       if(obj == null || obj.length == 0){
+//         // item.options.push({
+//         //       id:obj.id,
+//         //       value:value,
+//         //       label:label
+//         // })
+//       }else{
+//         var label = await changeLabel(item.selectType,obj,selectdata)
+//         var value = typeof obj == 'object' ? obj.id : obj
+//         item.options.push({
+//               id:obj.id,
+//               value:value,
+//               label:label
+//         })
+//       }
       
-    }
-  }
-  return data
-}
+//     }
+//   }
+//   return data
+// }
 
-export function changeLink(title,content,action){
-  if(title === 'floorOfHouse'){
-    var array = []
-    action === 'open' ? 
-      content.linkOwners.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-      content.linkOwners.length !== 0 ?
-      content.linkOwners.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-      array.push({ id:content.linkOwners.id == undefined ? content.linkOwners : content.linkOwners.id })
-    content.linkOwners = array
-    array = []
-    action === 'open' ? 
-      content.linkUsers.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-      content.linkUsers.length !== 0 ?
-      content.linkUsers.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-      array.push({ id:content.linkUsers.id == undefined ? content.linkUsers : content.linkUsers.id })
-    content.linkUsers = array 
-  }else if(title === 'committee'){
-    var array = []
-    action === 'open' ? 
-      content.linkUsageOfFloors.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-      content.linkUsageOfFloors.length !== 0 ?
-      content.linkUsageOfFloors.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-        array.push({ id:content.linkUsageOfFloors.id == undefined ? 
-          content.linkUsageOfFloors : content.linkUsageOfFloors.id })
-    content.linkUsageOfFloors = array
-  }else if(title === 'equipment'){
-    //var array = []
-    // action === 'open' ? 
-    //   content.linkKeeperUnits.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-    //   content.linkKeeperUnits.length !== 0 ?
-    //     content.linkKeeperUnits.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-    //     array.push({ id:content.linkKeeperUnits.id == undefined ? 
-    //       content.linkKeeperUnits : content.linkKeeperUnits.id })
-    // content.linkKeeperUnits = array
-    // array = []
-    // action === 'open' ? 
-    //   content.linkMaintainVendors.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
-    //   content.linkMaintainVendors.length !== 0 ?
-    //     content.linkMaintainVendors.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-    //     array.push({ id:content.linkMaintainVendors.id == undefined ? content.linkMaintainVendors : content.linkMaintainVendors.id })
-    // content.linkMaintainVendors = array
-    // array = []
-    // action === 'open' ? 
-    //   content.linkDeviceTypes.forEach(item=>{ array = item.id == undefined ? item : item.id  }) :
-    //   content.linkDeviceTypes.length !== 0 ?
-    //   array.push({ id:content.linkDeviceTypes.id == undefined ? content.linkDeviceTypes : 
-    //     content.linkDeviceTypes.id }) : []
-    // content.linkDeviceTypes = array
-  }else if(title === 'maintain'){
-    var array = []
-    // action === 'open' ? 
-    //   content.linkDevices.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-    //   content.linkDevices.length !== 0 ?
-    //     content.linkDevices.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
-    //     // array.push({ id:content.linkDevices.id == undefined ? 
-    //     //   content.linkDevices : content.linkDevices.id })
-    // content.linkDevices = array
-    // array = []
-    action === 'open' ? 
-      content.linkInspectionLacks.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
-      content.linkInspectionLacks.length !== 0 ?
-        content.linkInspectionLacks.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) 
-        : []
-        // array.push({ id:content.linkInspectionLacks.id == undefined ? content.linkInspectionLacks : content.linkInspectionLacks.id })
-    content.linkInspectionLacks = array
-    // array = []
-    // action === 'open' ? 
-    //   content.linkContactUnits.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
-    //   content.linkContactUnits.length !== 0 ?
-    //     content.linkContactUnits.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
-    //     // array.push({ id:content.linkContactUnits.id == undefined ? content.linkContactUnits : content.linkContactUnits.id })
-    //   content.linkContactUnits = array
-  }else if(title === 'auth'){
-    // var array = []
-    // action === 'open' ? 
-    //   content.linkRoles.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-    //   content.linkRoles.length !== 0 ?
-    //   content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-    //     array.push({ id:content.linkRoles.id == undefined ? 
-    //       content.linkRoles : content.linkRoles.id })
-    // content.linkRoles = array
-  }else if(title === 'user'){
-    // var array = []
-    // action === 'open' ? 
-    //   content.linkRoles.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-    //   content.linkRoles.length !== 0 ?
-    //   content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
-    //     // array.push({ id:content.linkRoles.id == undefined ? 
-    //     //   content.linkRoles : content.linkRoles.id })
-    // content.linkRoles = array
-    // array = []
-    // action === 'open' ? 
-    //   content.linkBuildings.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
-    //   content.linkBuildings.length !== 0 ?
-    //   content.linkBuildings.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
-    //     array.push({ id:content.linkBuildings.id == undefined ? 
-    //       content.linkBuildings : content.linkBuildings.id })
-    // content.linkBuildings = array
-  }
-  return content
-}
-//取得外層的名稱或值
-export function changeDeviceFullType(fullType,isFirst,isLabel){
-  var label = ''
-  store.getters.deviceType.forEach(item=>{
-    var array = item.children.filter((obj,index)=>{
-      return obj.value == fullType
-    })
-    if(array.length !== 0){
-      if(isFirst == true){
-        label = isLabel == true ? item.label : item.value
-      }else{
-        label = isLabel == true ? array[0].label : array[0].value
-      }
-    }
-  })
-  return label
-}
+// export function changeLink(title,content,action){
+//   if(title === 'floorOfHouse'){
+//     var array = []
+//     action === 'open' ? 
+//       content.linkOwners.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+//       content.linkOwners.length !== 0 ?
+//       content.linkOwners.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+//       array.push({ id:content.linkOwners.id == undefined ? content.linkOwners : content.linkOwners.id })
+//     content.linkOwners = array
+//     array = []
+//     action === 'open' ? 
+//       content.linkUsers.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+//       content.linkUsers.length !== 0 ?
+//       content.linkUsers.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+//       array.push({ id:content.linkUsers.id == undefined ? content.linkUsers : content.linkUsers.id })
+//     content.linkUsers = array 
+//   }else if(title === 'committee'){
+//     var array = []
+//     action === 'open' ? 
+//       content.linkUsageOfFloors.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+//       content.linkUsageOfFloors.length !== 0 ?
+//       content.linkUsageOfFloors.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+//         array.push({ id:content.linkUsageOfFloors.id == undefined ? 
+//           content.linkUsageOfFloors : content.linkUsageOfFloors.id })
+//     content.linkUsageOfFloors = array
+//   }else if(title === 'equipment'){
+//     //var array = []
+//     // action === 'open' ? 
+//     //   content.linkKeeperUnits.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+//     //   content.linkKeeperUnits.length !== 0 ?
+//     //     content.linkKeeperUnits.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+//     //     array.push({ id:content.linkKeeperUnits.id == undefined ? 
+//     //       content.linkKeeperUnits : content.linkKeeperUnits.id })
+//     // content.linkKeeperUnits = array
+//     // array = []
+//     // action === 'open' ? 
+//     //   content.linkMaintainVendors.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
+//     //   content.linkMaintainVendors.length !== 0 ?
+//     //     content.linkMaintainVendors.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+//     //     array.push({ id:content.linkMaintainVendors.id == undefined ? content.linkMaintainVendors : content.linkMaintainVendors.id })
+//     // content.linkMaintainVendors = array
+//     // array = []
+//     // action === 'open' ? 
+//     //   content.linkDeviceTypes.forEach(item=>{ array = item.id == undefined ? item : item.id  }) :
+//     //   content.linkDeviceTypes.length !== 0 ?
+//     //   array.push({ id:content.linkDeviceTypes.id == undefined ? content.linkDeviceTypes : 
+//     //     content.linkDeviceTypes.id }) : []
+//     // content.linkDeviceTypes = array
+//   }else if(title === 'maintain'){
+//     var array = []
+//     // action === 'open' ? 
+//     //   content.linkDevices.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+//     //   content.linkDevices.length !== 0 ?
+//     //     content.linkDevices.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
+//     //     // array.push({ id:content.linkDevices.id == undefined ? 
+//     //     //   content.linkDevices : content.linkDevices.id })
+//     // content.linkDevices = array
+//     // array = []
+//     action === 'open' ? 
+//       content.linkInspectionLacks.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
+//       content.linkInspectionLacks.length !== 0 ?
+//         content.linkInspectionLacks.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) 
+//         : []
+//         // array.push({ id:content.linkInspectionLacks.id == undefined ? content.linkInspectionLacks : content.linkInspectionLacks.id })
+//     content.linkInspectionLacks = array
+//     // array = []
+//     // action === 'open' ? 
+//     //   content.linkContactUnits.forEach(item=>{ array.push(item.id == undefined ? item : item.id)  }) :
+//     //   content.linkContactUnits.length !== 0 ?
+//     //     content.linkContactUnits.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
+//     //     // array.push({ id:content.linkContactUnits.id == undefined ? content.linkContactUnits : content.linkContactUnits.id })
+//     //   content.linkContactUnits = array
+//   }else if(title === 'auth'){
+//     // var array = []
+//     // action === 'open' ? 
+//     //   content.linkRoles.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+//     //   content.linkRoles.length !== 0 ?
+//     //   content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+//     //     array.push({ id:content.linkRoles.id == undefined ? 
+//     //       content.linkRoles : content.linkRoles.id })
+//     // content.linkRoles = array
+//   }else if(title === 'user'){
+//     // var array = []
+//     // action === 'open' ? 
+//     //   content.linkRoles.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+//     //   content.linkRoles.length !== 0 ?
+//     //   content.linkRoles.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) : []
+//     //     // array.push({ id:content.linkRoles.id == undefined ? 
+//     //     //   content.linkRoles : content.linkRoles.id })
+//     // content.linkRoles = array
+//     // array = []
+//     // action === 'open' ? 
+//     //   content.linkBuildings.forEach(item=>{ array.push(item.id == undefined ? item : item.id) }) :
+//     //   content.linkBuildings.length !== 0 ?
+//     //   content.linkBuildings.forEach(item=>{ array.push({ id:item.id == undefined ? item : item.id }) }) :
+//     //     array.push({ id:content.linkBuildings.id == undefined ? 
+//     //       content.linkBuildings : content.linkBuildings.id })
+//     // content.linkBuildings = array
+//   }
+//   return content
+// }
+
 // /**
 //  * @param {Array} arr
 //  * @returns {Array}

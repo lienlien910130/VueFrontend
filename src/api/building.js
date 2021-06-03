@@ -10,6 +10,8 @@ const building = {
     apiPostBuilding(data){ return req('post','/index/buildings',data) },
     apiDeleteBuilding(buildingId){ return req('delete','/index/buildings/'+buildingId) },
     apiPatchBuildingInfo(data){ return req('patch','/index/buildings',data) }, //修改建築物資料
+    apiGetBuildingSearchPages(data){ return req('post','index/buildings/ss',data)  },
+    apiPostBuildings(data){ return req('post','index/buildings/s',data) },    
     
     //管委會
     apiGetCommittee(){ return req('get','/basic/'+this.getBid()+'/community-management-committee') },

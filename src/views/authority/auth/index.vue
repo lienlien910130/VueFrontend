@@ -78,6 +78,7 @@ export default {
     methods:{
         async init(){
             this.title = 'accessAuthority'
+            this.tableConfig = AccessAuthority.getTableConfig()
             this.hasSearch = false
         },
         async resetlistQueryParams(){
@@ -117,15 +118,14 @@ export default {
                 var isOk = await content.delete()
                 if(isOk){
                     this.selectId = ''
-                    this.$message('刪除成功')
                     this.selectId = temp
                     this.$store.dispatch('permission/setmenu',await  Menu.get())
+                    this.$message('刪除成功')
                 }
             }else if(index === 'empty'){
                 if(this.selectId == null){
-                    this.$message({
-                        message: '請選擇目錄',
-                        type: 'warning'
+                    this.$message.error({
+                        message: '請選擇目錄'
                     })
                 }else{
                     this.dialogData.push( AccessAuthority.empty() )    
@@ -177,9 +177,6 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
-            value == true ?  this.tableConfig = AccessAuthority.getTableConfig() : 
-            this.tableConfig = AccessAuthority.getConfig()
-            await this.getFilterItems()
         }
     }
 }

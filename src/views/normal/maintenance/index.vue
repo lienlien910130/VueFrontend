@@ -6,63 +6,72 @@
                 <div class="chart-wrapper">
                     <div class="verticalhalfdiv">
                     <div class="label">
-                        <span>場所名稱 :</span>
+                        <i class="el-icon-edit">
+                            <a @click="openWindows('basic')" style="color:#66b1ff"> 場所名稱：</a>
+                        </i>
                     </div>
                     <div class="content">
-                        <span> {{ this.buildinginfo[0].buildingName }}</span> 
+                        <span> {{ this.buildinginfo[0].getName() }}</span> 
                     </div>
                     </div>
                     <div class="verticalhalfdiv">
                     <div class="label">
-                        <span>下次保養時間 :</span>
+                        <span> 下次維保時間：</span> 
+                        <!-- <i class="el-icon-edit">
+                            <a @click="openWindows('sys-Setting')" style="color:#66b1ff"> 下次申報時間：</a>
+                        </i> -->
                     </div>
                     <div class="content">
-                        <span class="report"> 2021/03/20 </span> 
+                        <span class="report"> </span> 
                     </div>
                     </div>
                 </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="12">
                 <div class="chart-wrapper">
-                    <el-col :xs="24" :sm="24" :md="24" :lg="12">
+                <el-col :xs="24" :sm="24" :md="24" :lg="12">
                     <div class="horizontalhalfdiv">
-                        <div class="label">
-                        <span>管理權人 :</span>
-                        </div>
-                        <div class="content">
-                        <div
-                            v-for="(item,index) in this.buildinginfo[0].linkOwners"
-                            :key="index" class="user">
-                            <div style="padding-bottom:2px">
-                                姓名 ： {{ item.name }}
+                            <div class="label">
+                            <i class="el-icon-edit">
+                                <a @click="openWindows('basic')" style="color:#66b1ff"> 管理權人：</a>
+                            </i>
                             </div>
-                            <div>
-                                電話 ： {{ item.cellPhoneNumber }}
+                            <div class="content">
+                            <div
+                                v-for="(item,index) in this.buildinginfo[0].linkOwners"
+                                :key="index" class="user">
+                                <div style="padding-bottom:2px">
+                                    姓名 ： {{ item.name }}
+                                </div>
+                                <div>
+                                    電話 ： {{ item.cellPhoneNumber }}
+                                </div>
                             </div>
-                        </div>
-                        </div>
+                            </div>
                     </div>
-                    </el-col>
-                    <el-col :xs="24" :sm="24" :md="24" :lg="12">
-                    <div class="horizontalhalfdiv">
-                        <div class="label">
-                        <span>防火管理人 :</span>
-                        </div>
-                        <div class="content">
-                        <div
-                            v-for="(item,index) in this.buildinginfo[0].linkFireManagers"
-                            :key="index" class="user">
-                            <div style="padding-bottom:2px">
-                                姓名 ： {{ item.name }}
-                            </div>
-                            <div>
-                                電話 ： {{ item.cellPhoneNumber }}
-                            </div>
-                        </div> 
-                        </div>
+                </el-col>
+                <el-col :xs="24" :sm="24" :md="24" :lg="12">
+                  <div class="horizontalhalfdiv">
+                    <div class="label">
+                      <i class="el-icon-edit">
+                          <a @click="openWindows('basic')" style="color:#66b1ff"> 防火管理人：</a>
+                      </i>
                     </div>
-                    </el-col>
-                </div>
+                    <div class="content">
+                      <div
+                        v-for="(item,index) in this.buildinginfo[0].linkFireManagers"
+                        :key="index" class="user">
+                        <div style="padding-bottom:2px">
+                            姓名 ： {{ item.name }}
+                        </div>
+                        <div>
+                            電話 ： {{ item.cellPhoneNumber }}
+                        </div>
+                      </div> 
+                    </div>
+                  </div>
+                </el-col>
+              </div>
                 </el-col>
             </el-row>
             <el-row :gutter="32">
@@ -104,11 +113,11 @@ export default {
             //dialog額外的參數
             maintainFiles:[],
             formtableData:[],
-            formtableconfig: MaintainManagement.getConfig(),
+            formtableconfig: MaintainManagement.getTableConfig(),
             maintainlistQueryParams:{
-                page: 1,
-                limit: 10,
-                total: 0
+                pageIndex: 1,
+                pageSize: 10,
+                total:0
             }
         }
     },
@@ -126,6 +135,7 @@ export default {
     methods:{
         async init(){   
             this.title = 'maintain'
+            this.tableConfig = MaintainManagement.getTableConfig()
             this.headerButtonsName = [
                 { name:'請先選擇維保大項',icon:'el-icon-circle-plus-outline',status:'tablemaintain'},
                 { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
@@ -156,11 +166,11 @@ export default {
         async searchAndPage(){
             if(this.isTable == true){
                 this.title = 'maintain'
-                this.tableConfig = MaintainManagement.getConfig()
+                this.tableConfig = MaintainManagement.getTableConfig()
                 await this.getMaintainAll()
             }else{
                 this.title = 'maintainList'
-                this.tableConfig = MaintainManagementList.getConfig()
+                this.tableConfig = MaintainManagementList.getTableConfig()
                 await this.getBuildingMaintainList()
             }
         },
@@ -192,12 +202,12 @@ export default {
                 this.maintainList = content
                 this.dialogData.push(content)
                 this.dialogConfig = this.tableConfig
+                await this.getMaintain()
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
-                await this.getMaintain()
             }else if(index === 'delete'){
                 var isDelete = await content.delete()
                 if(isDelete){
@@ -233,7 +243,8 @@ export default {
                       await content.update() : await content.create()
                     if(isOk){
                         this.innerVisible = false
-                        index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+                        index === 'update' ? this.$message('更新成功') : 
+                        this.$message('新增成功')
                         await this.resetlistQueryParams()
                     }
                 }else if(index === 'createfile'){
@@ -262,11 +273,6 @@ export default {
                     await this.handleBlock('maintainList', 'empty' , '')
                 }
             }
-        },
-        async changeTable(value){
-            console.log('changeTable',value)
-            this.isTable = value
-            await this.resetlistQueryParams()
         },
         async handleMaintain(index, content){
             this.dialogData = []
@@ -328,9 +334,9 @@ export default {
             }else if(index === 'cancel'){
                     if(this.isTable == false){
                         this.maintainlistQueryParams = {
-                            page: 1,
-                            limit: 10,
-                            total: 0
+                            pageIndex: 1,
+                            pageSize: 10,
+                            total:0
                         }
                         var data = this.blockData.filter((item,index)=> item.id == this.maintainList.getID())[0]
                         await this.handleBlock('maintainList','open',data)
@@ -367,6 +373,7 @@ export default {
                 this.innerVisible = true
                 this.dialogStatus = 'exportExcel'
             }else if(index === 'uploadExcel'){
+                this.dialogConfig = this.formtableconfig 
                 this.innerVisible = true
                 this.dialogStatus = 'uploadExcel'
             }else if(index === 'uploadExcelSave'){
@@ -380,6 +387,10 @@ export default {
                     this.innerVisible = false
                 }
             }
+        },
+        async changeTable(value){
+            this.isTable = value
+            await this.resetlistQueryParams()
         }
     }
 }

@@ -40,19 +40,20 @@ class DeviceType extends Parent {
         })
         return data
     }
-    setFullType(fullType){
-        this.fullType = fullType
-    }
+    //設定設備名稱
     setTypeName(typeName){
         this.name = typeName
     }
-    getTypeName(){ //設備種類名稱
-        var label = changeDeviceFullType(this.fullType,false,true)
-        return label
-    }
-    getType(){ //設備種類
+    // getTypeName(){ //設備名稱
+    //     var label = changeDeviceFullType(this.fullType,false,true)
+    //     return label
+    // }
+    getType(){ //設備種類轉化
         var label = changeDeviceFullType(this.fullType,true,true)
         return label
+    }
+    getName(){
+        return this.name
     }
     getBrand(){
         return this.brand
@@ -63,11 +64,13 @@ class DeviceType extends Parent {
     getCertificationNumber(){
         return this.certificationNumber
     }
-    getName(){
-        return '【'+this.getType()+'】'+this.getTypeName()
-    }
+    // getTypeName(){
+    //     return '【'+this.getType()+'】'+this.name
+    // }
+    //設備清單使用
     getSelectName(){
-        return this.getType() !== '' ? '【'+this.getType()+'】'+this.getTypeName()+'-'+this.getBrand()+'-'+this.getProductId() : 
+        return this.getType() !== '' ? 
+        '【'+this.getType()+'】'+this.name+'-'+this.brand+'-'+this.productId : 
         ''
     }
     static empty(){
@@ -80,34 +83,43 @@ class DeviceType extends Parent {
             certificationNumber :''
         })
     }
-    static getConfig(){
+    static getTableConfig(){
        return [
             {
                 label: '設備類型',
                 prop: 'fullType',
                 format:'fullType',
-                mandatory:true, message:'請選擇設備類型',maxlength:'20',
-                isHidden:false,isSearch:false
+                mandatory:true, message:'請選擇設備類型',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
                 label: '設備名稱',
-                prop: 'name',format:'hide',
-                mandatory:false, message:'請輸入設備名稱',isHidden:false,maxlength:'20',isSearch:true
+                prop: 'name',
+                mandatory:false,isHidden:false,
+                isSearch:true,
+                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true
             },
             {
                 label: '廠牌名稱',
                 prop: 'brand',
-                mandatory:true, message:'請輸入廠牌名稱',isHidden:false,maxlength:'20',isSearch:true
+                mandatory:true, message:'請輸入廠牌名稱',isHidden:false,maxlength:'20',
+                isSearch:true,placeholder:'請輸入廠牌名稱',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
                 label: '設備型號',
                 prop: 'productId',
-                mandatory:true, message:'請輸入設備型號',isHidden:false,maxlength:'20',isSearch:true
+                mandatory:true, message:'請輸入設備型號',isHidden:false,maxlength:'20',
+                isSearch:true,placeholder:'請輸入設備型號',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
                 label: '國家認證編號',
                 prop: 'certificationNumber',
-                mandatory:true, message:'請輸入國家認證編號',isHidden:false,maxlength:'20',isSearch:true
+                mandatory:false,isHidden:false,maxlength:'20',
+                isSearch:true,placeholder:'請輸入國家認證編號',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             }
         ]   
     }

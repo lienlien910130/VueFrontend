@@ -45,14 +45,6 @@
                         @click="handleClickOption('empty','')">
                         新增
                     </el-button>
-                    <!-- <el-button
-                        v-if="title == 'address'"
-                        class="filter-item" 
-                        type="primary" 
-                        @click="handleClickOption('update',updateArray)"
-                        >
-                        儲存
-                    </el-button> -->
                 </el-col>
             </div>
             <div v-if="isTable == false" 
@@ -85,12 +77,6 @@
                                     {{ dataStr(item['checkEndDate'],'YYYY-MM-DD') }}
                                 </span>
 
-                                <el-tag v-else-if="option.format == 'tag' "
-                                :class="item[option.prop] === false ? 'tag-co' : 'tag-noco' "
-                                > 
-                                    {{ tagChange(item[option.prop]) }}
-                                </el-tag>
-
                                 <span v-else-if="option.format == 'fullType' ">
                                 {{ item.getType() }}
                                 </span>
@@ -101,8 +87,10 @@
                                     {{ changeUserName(item[option.prop]) }}
                                 </span>
 
-                                <span v-else-if="option.format == 'accountStatusSelect' ">
-                                    {{ item[option.prop] | changeStatus }}
+                                 <span v-else-if="option.format == 'accountStatusSelect' ||
+                                option.format == 'removableSelect' || option.format == 'improvedBoolean'
+                                || option.format == 'collaborateBoolean' ">
+                                    {{ item[option.prop] | changeBoolean(option.format) }}
                                 </span>
 
                                 <span v-else-if="option.format == 'MaintainContentOptions' || 
@@ -116,19 +104,19 @@
                                 <span v-else-if="option.format == 'floorOfHouseSelect' " 
                                 @click="clickMessageBox('門牌資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ changeUsageOfFloor(item[option.prop]) }}
+                                    {{ item.getUsageOfFloorsName() }}
                                 </span>
 
                                 <span v-else-if="option.format == 'floorOfHouseUsersName' " 
                                 @click="clickMessageBox('住戶資料','floorOfHouseUsersName',item.getlinkUsageOfFloorsUser())"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ changeUsageOfFloorUsersName(item.getlinkUsageOfFloorsUser()) }}
+                                    {{ changeUserName(item.getlinkUsageOfFloorsUser()) }}
                                 </span>
 
                                 <span v-else-if="option.format == 'deviceSelect' " 
                                 @click="clickMessageBox('設備資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ changeDevice(item[option.prop]) }}
+                                    {{ item.getDevicesName() }}
                                 </span>
 
                                 <span v-else-if="option.format == 'deviceTypeSelect' "
@@ -146,26 +134,32 @@
                                 <span v-else-if="option.format == 'buildingSelect' " 
                                 @click="clickMessageBox('建築物資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ changeBuilding(item[option.prop]) }}
+                                    {{ item.getBuildingsName() }}
                                 </span>
 
                                 <span v-else-if="option.format == 'roleSelect' " 
                                 @click="clickMessageBox('角色資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
-                                    {{ changeRoles(item[option.prop]) }}
+                                    {{ item.getRolesName() }}
                                 </span>
 
-                                <el-input v-else-if="option.format == 'address' "
+                                <span v-else-if="option.format == 'inspectionSelect' " 
+                                @click="clickMessageBox('缺失內容',option.format,item[option.prop])"
+                                style="color:#66b1ff;cursor:pointer">
+                                    {{ item.getInspectionLackName() }}
+                                </span>
+
+                                <!-- <el-input v-else-if="option.format == 'address' "
                                 v-model="item[option.prop]"
                                 :maxlength="option.maxlength"
                                 show-word-limit
                                 @change="checkUpdate(item)"
                                 @input="item[option.prop] = 
                                 item[option.prop].replace(/[^\d]/g,'').replace(/\s*/g,'')">
-                                </el-input>
+                                </el-input> -->
                                 
                                 <span v-else-if="option.format == 'openmaintain' ">
-                                    {{ changeMaintain(item[option.prop]) }}
+                                    <!-- {{ changeMaintain(item[option.prop]) }} -->
                                 </span>
                                 
                                 <el-button v-else-if="option.format == 'openfiles' "
@@ -189,10 +183,11 @@
                             :key="index"
                             >
                             <el-button
-                            :type="index == 0 ? 'primary' : index == 1 ? 'info' : 'danger'"
+                            :type="button.status == 'open' ? 'primary' : button.status == 'delete' ? 'info' : 'danger'"
                             @click="handleClickOption(button.status,item)"
                             size="mini"
-                            :disabled="index == 1 && item.removable !== undefined && item.removable == false"
+                            :disabled="button.status == 'delete' && 
+                            item.removable !== undefined && item.removable == false"
                             >
                             <span >{{ button.name }}</span>
                             </el-button>
@@ -253,24 +248,24 @@
 
                                         <span v-else-if="item.format == 'MaintainContentOptions' || 
                                         item.format == 'MaintainProcessOptions' || 
-                                        item.format == 'BrandOptions' || item.format == 'ContactUnitOptions' ||
+                                        item.format == 'BrandOptions' || 
+                                        item.format == 'ContactUnitOptions' ||
                                         item.format == 'DeviceStatusOptions' "
                                         >
                                         {{ changeOptionName(scope.row[item.prop]) }}
                                         </span>
 
-                                        <span v-else-if="item.format == 'accountStatusSelect' ">
-                                            {{ scope.row[item.prop] | changeStatus }}
+                                        <span v-else-if="item.format == 'accountStatusSelect' ||
+                                        item.format == 'removableSelect' || 
+                                        item.format == 'improvedBoolean'
+                                        || item.format == 'collaborateBoolean' ">
+                                            {{ scope.row[item.prop] | changeBoolean(item.format) }}
                                         </span>
 
                                         <span v-else-if="item.format == 'userInfo' "
                                         @click="clickMessageBox('住戶資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ changeUserName(scope.row[item.prop]) }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'removableSelect' ">
-                                            {{ scope.row[item.prop] | changeRemoveable }}
                                         </span>
 
                                         <span v-else-if="item.format == 'deviceTypeSelect' "
@@ -291,7 +286,7 @@
                                         <span v-else-if="item.format == 'deviceSelect' " 
                                         @click="clickMessageBox('設備資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
-                                             {{ changeDevice(scope.row[item.prop]) }}
+                                             {{ scope.row.getDevicesName() }}
                                         </span>
 
                                         <span v-else-if="item.format == 'contactunitSelect' " 
@@ -303,37 +298,35 @@
                                         <span v-else-if="item.format == 'floorOfHouseSelect' " 
                                         @click="clickMessageBox('門牌資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
-                                            {{ changeUsageOfFloor(scope.row[item.prop]) }}
+                                            {{ scope.row.getUsageOfFloorsName() }}
                                         </span>
 
                                         <span v-else-if="item.format == 'floorOfHouseUsersName' " 
                                         @click="clickMessageBox('住戶資料','floorOfHouseUsersName',scope.row.getlinkUsageOfFloorsUser())"
                                         style="color:#66b1ff;cursor:pointer">
-                                            {{ changeUsageOfFloorUsersName(scope.row.getlinkUsageOfFloorsUser()) }}
+                                            {{ changeUserName(scope.row.getlinkUsageOfFloorsUser()) }}
                                         </span>
 
                                         <span v-else-if="item.format == 'buildingSelect' " 
                                         @click="clickMessageBox('建築物資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
-                                            {{ changeBuilding(scope.row[item.prop]) }}
+                                            {{ scope.row.getBuildingsName() }}
                                         </span>
 
                                         <span v-else-if="item.format == 'roleSelect' " 
                                         @click="clickMessageBox('角色資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
-                                            {{ changeRoles(scope.row[item.prop]) }}
+                                            {{ scope.row.getRolesName() }}
                                         </span>
 
-                                        <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
-                                            {{ changeInspectionLack(scope.row[scope.column.property]) }}
+                                        <span v-else-if="item.format == 'inspectionSelect'"
+                                        @click="clickMessageBox('缺失內容',item.format,scope.row[item.prop])"
+                                        style="color:#66b1ff;cursor:pointer"> 
+                                            {{ scope.row.getInspectionLackName() }}
                                         </span>
 
-                                        <span v-else-if="scope.column.property == 'fullType'"> 
+                                        <span v-else-if="item.format == 'fullType'"> 
                                             {{ scope.row.getType() }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'tag' "> 
-                                            {{ tagChange(scope.row[scope.column.property]) }}
                                         </span>
 
                                         <span v-else>{{  scope.row[item.prop] }}</span>
@@ -441,6 +434,7 @@ import Contactunit from '@/object/contactunit'
 import UsageOfFloor from '@/object/usageOfFloor'
 import Role from '@/object/role'
 import Building from '@/object/building'
+import InspectionLacks from '@/object/inspectionLacks'
 
 export default {
     mixins:[computedmixin],
@@ -506,14 +500,6 @@ export default {
             default: false
         }
     },
-    filters:{
-        changeStatus: function(val) {
-            return val == true ?  '啟用' : '禁用'
-        },
-        changeRemoveable: function(val) {
-            return val == true ?  '允許' : '禁止'
-        }
-    },
     computed: {
         labelstyle(){
             if (this.$store.state.app.device === 'mobile') {
@@ -537,7 +523,7 @@ export default {
             }else if(this.title == 'floorOfHouse'){
                 return { height : '185px'}
             }else if(this.title == 'maintainList'){
-                return { height : '130px'}
+                return { height : '100px'}
             }else if(this.title == 'equipment'){
                 return { height : '270px'}
             }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
@@ -564,7 +550,7 @@ export default {
             }else if(this.title == 'floorOfHouse'){
                 return { height : '245px'}
             }else if(this.title == 'maintainList'){
-                return { height : '190px'}
+                return { height : '160px'}
             }else if(this.title == 'equipment'){
                 return { height : '330px'}
             }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
@@ -583,41 +569,18 @@ export default {
                 return { height : '405px'}
             }
         },
-        tagChange(){
-            return function (a) {
-                if(this.title == 'reportInspectio' | this.title == 'reportPublicSafe'){
-                    switch(a){
-                        case false:
-                            return '未改善'
-                            break;
-                        case true:
-                            return '已改善'
-                            break;    
-                    }
-                }else if(this.title == 'contactUnit'){
-                    switch(a){
-                        case false:
-                            return '未配合'
-                            break;
-                        case true:
-                            return '配合中'
-                            break;    
-                    }
-                }
-            }
-        },
-        changeMaintain(){
-            return function (a) {
-                if(a !== null && a.length){
-                    var done = a.filter(item=>{
-                        return item.getProcess() === "79"
-                    })
-                    return done.length.toString()+'/'+(a.length - done.length).toString()+'/'+a.length.toString()
-                }else{
-                    return "0/0/0"
-                }
-            } 
-        },
+        // changeMaintain(){
+        //     return function (a) {
+        //         if(a !== null && a.length){
+        //             var done = a.filter(item=>{
+        //                 return item.getProcess() === "79"
+        //             })
+        //             return done.length.toString()+'/'+(a.length - done.length).toString()+'/'+a.length.toString()
+        //         }else{
+        //             return "0/0/0"
+        //         }
+        //     } 
+        // },
         page: function() {
             return this.listQueryParams.pageIndex || 1
         },
@@ -629,16 +592,22 @@ export default {
         }
     },
     watch:{
-        config:{
-            handler:async function(){
-                this.rowlabel = this.config.filter((item,index)=> item.isHidden == false)
-                this.inputSelectChange()
-            },
-            immediate:true
-        },
+        // config:{
+        //     handler:async function(){
+        //         this.rowlabel = this.config.filter((item,index)=> item.isHidden == false)
+        //         console.log('this.config')
+        //         this.inputSelectChange()
+        //     },
+        //     immediate:true
+        // },
         isTable:{
             handler:async function(){
                this.isTable == true ? this.gutter = 0 :this.gutter =  32
+               if(this.isTable == true){
+                   this.rowlabel = this.config.filter((item,index)=> item.isHidden == false)
+               }else{
+                   this.rowlabel = this.config.filter((item,index)=> item.isBlock == true)
+               }
             },
             immediate:true
         }
@@ -665,25 +634,28 @@ export default {
             var config = null
             switch(val.constructor){
                 case User:
-                    config = User.getConfig()
+                    config = User.getTableConfig()
                     break;
                 case DeviceType:
-                    config = DeviceType.getConfig()
+                    config = DeviceType.getTableConfig()
                     break;
                 case Device:
-                    config = Device.getConfig()
+                    config = Device.getTableConfig()
                     break;
                 case Contactunit:
-                    config = Contactunit.getConfig()
+                    config = Contactunit.getTableConfig()
                     break;
                 case UsageOfFloor:
-                    config = UsageOfFloor.getConfig()
+                    config = UsageOfFloor.getTableConfig()
                     break;
                 case Role:
-                    config = Role.getConfig()
+                    config = Role.getTableConfig()
                     break;
                 case Building:
-                    config = Building.getConfig()
+                    config = Building.getTableConfig()
+                    break;
+                case InspectionLacks:
+                    config = InspectionLacks.getTableConfig()
                     break;
             }
             if(val !== undefined){
@@ -699,24 +671,23 @@ export default {
                             value = val.getType()
                         }else if(item == 'collaborate'){
                             value = data[item] == true ? '合作中' : '未配合'
-                        }else if(item == 'linkOwners'){
-                            value = val.getOwners()
-                        }else if(item == 'linkUsers' || item == 'linkFireManagers'){
-                            value = val.getUsers()
-                        }else if(item == 'linkKeeperUnits'){
-                            value = val.getKeeperUnits()
-                        }else if(item == 'linkMaintainVendors'){
-                            value = val.getMaintainVendors()
+                        }else if(item == 'linkOwners' || item == 'linkUsers' || 
+                        item == 'linkFireManagers' ){
+                            value = this.changeUserName(data[item])
+                        }else if(item == 'linkKeeperUnits' || item == 'linkMaintainVendors'){
+                            value = this.changeContainUnit(data[item])
                         }else if(item == 'linkDeviceTypes'){
                             value = val.getLinkType().getSelectName()
                         }else if(item == 'status'){
-                            if(val.constructor !== Device){
+                            if(val.constructor == Role ){
                                 value = data[item] == true ? '啟用中' : '未啟用'
                             }else{
                                 value = this.changeOptionName(data[item])
                             }
                         }else if(item == 'removable'){
                             value = data[item] == true ? '允許' : '禁止'
+                        }else if(item == 'systemUsed'){
+                            value = data[item] == true ? '已使用' : '未使用'
                         }else{
                             value = data[item]
                         }
@@ -753,7 +724,7 @@ export default {
                 })
                 this.$msgbox({
                     title: title,
-                    message:  h('div', {style:'max-height:700px;overflow-x:hidden;overflow-y:auto;'}, bigData) ,
+                    message:  h('div', {style:'max-height:500px;overflow-x:hidden;overflow-y:auto;'}, bigData) ,
                     showCancelButton: true,
                     distinguishCancelAndClose: true,
                     confirmButtonText: '編輯',
@@ -791,6 +762,9 @@ export default {
                                     break;
                                 case 'roleSelect': //角色資料>權限設定-角色管理
                                     this.$router.push({ name: 'roleSetting', params: { target: data }})
+                                    break;
+                                case 'inspectionSelect': //缺失內容>檢修申報
+                                    this.$router.push({ name: 'ReportInspection', params: { target: data }})
                                     break;
                                 case 'buildingSelect':
                                     break;
@@ -850,30 +824,6 @@ export default {
                 }
             } 
         },
-        //表格操作
-        // handleTableClick(index,row){
-        //     if (index === 'delete') {
-        //         this.$confirm('是否確定刪除該筆資料?', '提示', {
-        //         confirmButtonText: '確定',
-        //         cancelButtonText: '取消',
-        //         type: 'warning',
-        //         center: true
-        //         }).then(() => {
-        //             if(this.title == 'maintain'){
-        //                 this.$emit('handleDialog', this.title , index , row)
-        //             }else{
-        //                 this.$emit('handleBlock', this.title , index , row)
-        //             }
-        //         }).catch(() => {
-        //         })
-        //     } else {
-        //         if(this.title == 'maintain'){
-        //             this.$emit('handleDialog', this.title , index , row)
-        //         }else{
-        //             this.$emit('handleBlock', this.title , index , row)
-        //         }
-        //     } 
-        // },
         //篩選
         filterHandler(value, row, column) {
             const property = column['property']
@@ -905,11 +855,15 @@ export default {
             var self = this
             if (column.order === "descending") {
                 this.blockData = this.blockData.sort(function(str1,str2){
-                    return self.sortRule(str2[column.prop],str1[column.prop])
+                    var s1 = str1[column.prop] == null ? '' : str1[column.prop]
+                    var s2 = str2[column.prop] == null ? '' : str2[column.prop]
+                    return self.sortRule(s2,s1)
                 })
             } else if (column.order === "ascending") {
                 this.blockData = this.blockData.sort(function(str1,str2){
-                    return self.sortRule(str1[column.prop],str2[column.prop])
+                    var s1 = str1[column.prop] == null ? '' : str1[column.prop]
+                    var s2 = str2[column.prop] == null ? '' : str2[column.prop]
+                    return self.sortRule(s1,s2)
                 })
             }
         },
@@ -1014,7 +968,9 @@ export default {
             this.pictLoading = false
         },
         change(){
+            this.pictLoading = true
             this.$emit('changeTable',!this.isTable)
+            
         }
     }
 }

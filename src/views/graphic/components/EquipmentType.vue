@@ -52,17 +52,17 @@
 </template>
 
 <script>
-import constant from '../../../../src/constant';
+import constant from '@/constant';
 
 export default {
+    name:'',
     data(){
         return{
             viewlist:constant.Equipment,
             type:'icon',
             search:'',
             temp:[],
-            select:null,
-            tt:require("../../../assets/equipment/1.png")
+            select:null
         }
     },
     mounted(){
@@ -72,7 +72,7 @@ export default {
         changeToImage(obj){
             console.log(obj.viewlist[0].imgSrc)
             var str = "../../../assets/equipment/"+obj.viewlist[0].imgSrc
-            return require(str)
+            return  require(`${str}`)
         }
     },
     methods:{

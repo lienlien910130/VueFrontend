@@ -71,44 +71,51 @@ class MaintainManagementList extends Parent {
             linkMaintains:[]
         })
     }
-    static getConfig(){
+    static getTableConfig(){
         return [
             {
                 label: '名稱',
                 prop: 'name',
-                mandatory:true, message:'請輸入名稱',maxlength:'40',isHidden:false,isSearch:true
+                mandatory:true, message:'請輸入名稱',maxlength:'40',
+                isHidden:false,isSearch:true,placeholder:'請輸入名稱',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
               {
                 label: '建立時間',
                 prop: 'createdDate',
                 format:'YYYY-MM-DD',
-                mandatory:true, message:'請選擇建立時間',isHidden:false,isSearch:false
+                mandatory:true, message:'請選擇建立時間',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
               },
               {
                 label: '細項',
                 prop: 'linkMaintains',
                 format:'openmaintain',
-                mandatory:false, message:'請選擇',type:'array',typemessage:'',isHidden:false,isSearch:false
-              },
-              {
-                label: '檢附文件',
-                prop: 'file',
-                format:'openfiles',isHidden:false,isSearch:false
+                mandatory:false, type:'array',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
               }
         ]
     }
     static getCreateConfig(){
-        return [{
-                    label: '名稱',
-                    prop: 'name',
-                    mandatory:true, message:'請輸入名稱',maxlength:'40'
-                },
-                {
-                    label: '建立時間',
-                    prop: 'createdDate',
-                    format:'YYYY-MM-DD',
-                    mandatory:true, message:'請選擇建立時間'
-                }]
+        return [
+            {
+                label: '名稱',
+                prop: 'name',
+                mandatory:true, message:'請輸入名稱',maxlength:'40',
+                isHidden:false,isSearch:true,placeholder:'請輸入名稱',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '建立時間',
+                prop: 'createdDate',
+                format:'YYYY-MM-DD',
+                mandatory:true, message:'請選擇建立時間',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            }
+        ]
     }
     static async post(data){
         var data = await api.device.apiPostMaintainsList(data).then(response => {
@@ -222,12 +229,18 @@ class MaintainManagement extends Parent {
         })
         return data
     }
-    getProcess(){
-        return this.processStatus
+    // getProcess(){
+    //     return this.processStatus
+    // }
+    getDevicesName(){
+        return this.linkDevices.map(item => item.getName()).toString()
     }
-    getInspectionLacks(){
-        return this.linkInspectionLacks
+    getInspectionLackName(){
+        return this.linkInspectionLacks.map(item => item.getName()).toString()
     }
+    // getInspectionLacks(){
+    //     return this.linkInspectionLacks
+    // }
     static empty(){
         return new MaintainManagement({
             id:'',
@@ -242,29 +255,45 @@ class MaintainManagement extends Parent {
             linkContactUnits:[]
         })
     }
-    static getConfig(){
+    static getTableConfig(){
         return [
             { label:'系統' , prop:'processContent',format:'MaintainContentOptions', 
             mandatory:true, message:'請選擇系統',
-            isHidden:false,type:'string',typemessage:'',isSearch:false},
+            isHidden:false,type:'string',typemessage:'',isSearch:false,
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
             { label:'故障日期' , prop:'dateOfFailure',format:'YYYY-MM-DD', 
-            mandatory:false, message:'請選擇故障日期',isHidden:false,isSearch:false},
+            mandatory:false,
+            isHidden:false,isSearch:false,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
             { label:'叫修日期' , prop:'dateOfCallRepair',format:'YYYY-MM-DD',  
-            mandatory:false,message:'請選擇叫修日期',isHidden:false,isSearch:false},
+            mandatory:false,
+            isHidden:false,isSearch:false,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
             { label:'完成時間' , prop:'completedTime',format:'YYYY-MM-DD', 
-            mandatory:false, message:'請選擇完成時間',isHidden:false,isSearch:false},
+            mandatory:false, 
+            isHidden:false,isSearch:false,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
             { label:'處理進度' , prop:'processStatus',format:'MaintainProcessOptions', 
-            mandatory:false, message:'請選擇處理進度',isHidden:false,isSearch:false},
+            mandatory:false,
+            isHidden:false,isSearch:false,
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
             { label:'改善廠商' , prop:'linkContactUnits',format:'contactunitSelect', 
-            mandatory:false,message:'請選擇廠商',
-            type:'array',typemessage:'',isHidden:false,isSearch:false},
+            mandatory:false,
+            type:'array',typemessage:'',
+            isHidden:false,isSearch:false,
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
             { label:'檢修申報' , prop:'linkInspectionLacks',format:'inspectionSelect', 
-            mandatory:false,message:'請選擇申報',
-            type:'array',typemessage:'',isHidden:false,isSearch:false},
+            mandatory:false,
+            type:'array',typemessage:'',
+            isHidden:false,isSearch:false,
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
             { label:'設備' , prop:'linkDevices',format:'deviceSelect', 
-            mandatory:true,message:'請選擇設備',type:'array',typemessage:'',isHidden:false,isSearch:false},
-            { label:'備註' , prop:'note',format:'textarea', mandatory:false,message:'請輸入備註',
-            maxlength:'200',isHidden:false,isSearch:true},
+            mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
+            isHidden:false,isSearch:false,
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+            { label:'備註' , prop:'note',format:'textarea', mandatory:false,
+            maxlength:'200',isHidden:false,isSearch:true,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true}
         ]
     }
     static async get (){

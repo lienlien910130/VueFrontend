@@ -1,63 +1,6 @@
 <template>
   <div class="editor-container">
     <el-row :gutter="32">
-      <!-- <el-col :xs="24" :sm="24" :md="24" :lg="7">
-          <div class="block-wrapper" :style="{ height: blockwrapperheight }">
-              <h3>建築物</h3>
-              <el-form class="buildinginfo" 
-                  ref="form" :model="form" 
-                  :rules="formRules" :label-position="label" label-width="auto">
-                  <el-form-item label="名稱" prop="buildingName">
-                      <el-input ref="buildingName" name="buildingName" v-model="form.buildingName" show-word-limit maxlength="20"/>
-                  </el-form-item>
-                  <el-form-item label="地址" prop="address">
-                      <el-cascader
-                      v-model="addressValue"
-                      :options="options"
-                      :props="{ value: 'label'}"
-                      style="width:100%"
-                      ></el-cascader>
-                      <el-input ref="address" name="address" v-model="form.address"  
-                      show-word-limit maxlength="100"/> 
-                  </el-form-item>
-                  <el-form-item label="面積" prop="area">
-                      <el-input ref="area" name="area" 
-                      v-model.number="form.area" 
-                      type="number" min="0">
-                      <template slot="append">
-                          m<sup>2</sup>
-                      </template>
-                      </el-input>
-                  </el-form-item>
-                  <el-form-item label="高度" prop="height">
-                      <el-input ref="height" name="height" v-model.number="form.height"  type="number" min="0"/>
-                  </el-form-item>
-                  <el-form-item label="層數" prop="floorsOfAboveGround">
-                      <el-input ref="floorsOfAboveGround" name="floorsOfAboveGround" 
-                      v-model.number="form.floorsOfAboveGround" type="number" min="0" :disabled="disable">
-                      <template slot="prepend">地上</template>
-                      <template slot="append">樓</template>
-                      </el-input>
-                  </el-form-item>
-                  <el-form-item prop="floorsOfUnderground">
-                      <el-input ref="floorsOfUnderground" name="floorsOfUnderground" 
-                      v-model.number="form.floorsOfUnderground" type="number" min="0" :disabled="disable">
-                      <template slot="prepend">地下</template>
-                      <template slot="append">樓</template>
-                      </el-input>
-                  </el-form-item>
-                  <el-form-item label="使用執照字號" prop="licenseNumber">
-                      <el-input ref="licenseNumber" name="licenseNumber" v-model="form.licenseNumber" show-word-limit maxlength="30"/>
-                  </el-form-item>
-
-              </el-form>
-              <div style="float:right">
-                  <el-button v-if="type=='create'" type="primary" @click="onPost" :loading="loading">新增</el-button>
-                  <el-button v-else type="primary" @click="onEdit">更新</el-button>
-                  <el-button type="info" @click="onCancel">清空</el-button>
-              </div>
-          </div>
-      </el-col> -->
       <el-col :xs="24" :sm="24" :md="24" :lg="24">
           <div class="block-wrapper" :style="{ height: blockwrapperheight }">
             <Block 
@@ -77,6 +20,15 @@
         :formtableconfig="formtableconfig"
         :listQueryParams="floorlistQueryParams"
         v-on:handleDialog="handleDialog"></Dialog>
+    <el-dialog
+      top="5vh"
+      :title="previewTitle"
+      :visible.sync="previewVisible"
+      width="80%"
+      :modal="isneed"
+      >
+      <img :src="previewPath" class="previewImg" />
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -86,6 +38,7 @@ import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
 import Building from '@/object/building'
 import Floors from '@/object/floors'
+
 export default {
   mixins:[sharemixin,blockmixin,dialogmixin],
   computed: {
@@ -98,7 +51,9 @@ export default {
     }
   },
   async mounted(){
-    await this.init()
+    if(this.buildingid == '' || this.buildingid == null || this.buildingid == undefined){
+      await this.init()
+    }
   },
   data() {
     return {
@@ -107,19 +62,25 @@ export default {
       floor:null,
       files:[],
       floorImageId:'',
+      //平面圖
+      isneed:false,
+      previewVisible:false,
+      previewPath:'',
+      previewTitle:'',
       //dialog額外的參數
       formtableData:[],
-      formtableconfig: Floors.getConfig(),
+      formtableconfig: Floors.getTableConfig(),
       floorlistQueryParams:{
         pageIndex: 1,
         pageSize: 10,
-        total:0
+        total:0,
+        orderBy:'sort'
       }
     }
   },
   methods: {
     async init(){
-      this.tableConfig = Building.getConfig()
+      this.tableConfig = Building.getTableConfig()
       this.title = 'building'
       this.buttonsName = [
         { name:'刪除',icon:'el-icon-delete',status:'delete'},
@@ -141,22 +102,22 @@ export default {
       this.floorlistQueryParams = {
         pageIndex: 1,
         pageSize: 10,
-        total:0
+        total:0,
+        orderBy:'sort'
       }
       await this.getFloorList()
     },
     async getAllBuilding(){
       this.blockData = []
-      var data = await Building.get()
-      // console.log(JSON.stringify(data))
-      this.listQueryParams.total = data.length
-      this.blockData = data
+      var data = await Building.getSearchPage(this.listQueryParams)
+      this.blockData = data.result
+      this.listQueryParams.total = data.totalPageCount
+      this.$refs.block.resetpictLoading()
       await this.getFilterItems()
     },
     async getFloorList(){
       var data =  await Floors.getSearchPage(this.building.getID(),
       this.floorlistQueryParams)
-      console.log(JSON.stringify(data))
       this.formtableData = data.result
       this.floorlistQueryParams.total = data.totalPageCount
     },
@@ -179,7 +140,7 @@ export default {
         this.dialogTitle = this.title
         this.dialogButtonsName = []
         if(index === 'open'){
-          this.dialogConfig = this.tableConfig
+          this.dialogConfig = Building.getUpdateConfig()
           this.dialogData.push(content)
           this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'update'},
@@ -187,7 +148,7 @@ export default {
           this.innerVisible = true
           this.dialogStatus = 'update'
         }else if(index === 'empty'){
-          this.dialogConfig = Building.getCreateConfig()
+          this.dialogConfig = this.tableConfig
           this.dialogData.push( Building.empty() )
           this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'create'},
@@ -199,8 +160,8 @@ export default {
           if(isOk){
             this.$message('刪除成功')
             await this.resetlistQueryParams()
+            this.$store.dispatch('building/setbuildingarray',await Building.get())
             if(this.buildingid == content.getID()){
-              this.$store.dispatch('building/setbuildingarray',await Building.get())
               this.$store.dispatch('permission/generateRoutes', true)
               this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
             }
@@ -211,6 +172,7 @@ export default {
           this.innerVisible = true
           this.dialogStatus = 'exportExcel'
         }else if(index === 'uploadExcel'){
+          this.dialogConfig = this.tableConfig
           this.innerVisible = true
           this.dialogStatus = 'uploadExcel'
         }else if(index === 'openfloors'){
@@ -249,7 +211,19 @@ export default {
             await this.getAllBuilding()
           }
         }else if(index === 'uploadExcelSave'){
-
+          var buildingarray = await Building.postMany(content)
+          var isOk
+          for(let item of buildingarray){
+            this.floorsArray = []
+            await this.crefloor('up',item.floorsOfAboveGround)
+            await this.crefloor('down',item.floorsOfUnderground)
+            isOk = await this.postFloor(item.id)
+          }
+          if(isOk){
+            this.$message('新增成功')
+            this.$store.dispatch('building/setbuildingarray',await Building.get())
+            await this.getAllBuilding()
+          }
         }else if(index === 'createfile' || index === 'deletefile'){
           await this.handleUpload(this.building,index,content)
         }
@@ -281,6 +255,9 @@ export default {
         var isDelete = await content.delete()
         if(isDelete){
             this.$message('刪除成功')
+            if(this.buildingid == this.building.getID()){
+              this.$store.dispatch('building/setbuildingfloors',await Floors.get())
+            }
             await this.resetfloorlistQueryParams()
         }
       }else if(index === 'createfloor' || index === 'updatefloor'){
@@ -309,34 +286,38 @@ export default {
         this.floorlistQueryParams = {
           pageIndex: 1,
           pageSize: 10,
-          total:0
+          total:0,
+          orderBy:'sort'
         }
       }else if(index === 'cancelfloor'){
         this.floorlistQueryParams = {
           pageIndex: 1,
           pageSize: 10,
-          total:0
+          total:0,
+          orderBy:'sort'
         }
         await this.handleBlock('floor','openfloors',this.building)
       }else if(index === 'clickPagination'){
         this.floorlistQueryParams = content
         await this.getFloorList()
       }else if(index === 'exportExcel'){
-        this.dialogConfig = Floors.getDownloadConfig()
         this.exportExcelData = this.formtableData
         this.innerVisible = true
         this.dialogStatus = 'exportExcel'
       }else if(index === 'change'){
-        console.log('更換平面圖')
-        var _temp = {
-          id:this.floor.getID(),
-          FloorPlanID:parseInt(content)
-        }
-        isOk = await this.floor.update(_temp)
+        this.dialogTitle = 'floorFiles'
+        this.floor.setFloorPlanID(parseInt(content))
+        var isOk = await this.floor.update()
         if(isOk){
+          this.$message('更新成功')
           this.floorImageId = content
           this.$store.dispatch('building/setbuildingfloors',await Floors.get())
         }
+      }else if(index === 'image'){
+        var _temp = await content.getImage()
+        this.previewPath = _temp
+        this.previewTitle = content.getName() + '平面圖'
+        this.previewVisible = true
       }
     },
     //打開檔案&上傳檔案&刪除檔案
@@ -366,8 +347,6 @@ export default {
     },
     async changeTable(value){
       this.isTable = value
-      this.tableConfig = Building.getConfig()
-      await this.getFilterItems()
     }
   }
 }
@@ -382,6 +361,10 @@ export default {
     background: #fff;
     padding: 15px 15px;
     height: 750px;
+}
+.previewImg{
+    width: 100%;
+    height: auto;
 }
 </style>
 

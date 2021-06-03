@@ -5,7 +5,9 @@
               <div class="chart-wrapper">
                 <div class="verticalhalfdiv">
                   <div class="label">
-                    <span>場所名稱 :</span>
+                    <i class="el-icon-edit">
+                        <a @click="openWindows('basic')" style="color:#66b1ff"> 場所名稱：</a>
+                    </i>
                   </div>
                   <div class="content">
                     <span> {{ this.buildinginfo[0].getName() }}</span> 
@@ -13,7 +15,9 @@
                 </div>
                 <div class="verticalhalfdiv">
                   <div class="label">
-                    <span>下次申報時間 :</span>
+                    <i class="el-icon-edit">
+                        <a @click="openWindows('sys-Setting')" style="color:#66b1ff"> 下次申報時間：</a>
+                    </i>
                   </div>
                   <div class="content">
                     <span class="report"> {{ TimeOptions("InspectionTimeOptions") }} </span> 
@@ -26,7 +30,9 @@
                 <el-col :xs="24" :sm="24" :md="24" :lg="12">
                   <div class="horizontalhalfdiv">
                     <div class="label">
-                      <span>管理權人 :</span>
+                      <i class="el-icon-edit">
+                          <a @click="openWindows('basic')" style="color:#66b1ff"> 管理權人：</a>
+                      </i>
                     </div>
                     <div class="content">
                       <div
@@ -45,7 +51,9 @@
                 <el-col :xs="24" :sm="24" :md="24" :lg="12">
                   <div class="horizontalhalfdiv">
                     <div class="label">
-                      <span>防火管理人 :</span>
+                      <i class="el-icon-edit">
+                          <a @click="openWindows('basic')" style="color:#66b1ff"> 防火管理人：</a>
+                      </i>
                     </div>
                     <div class="content">
                       <div
@@ -103,11 +111,11 @@ export default {
             lackFileId:'', //缺失檔案id
             files:[],
             formtableData:[],
-            formtableconfig:InspectionLacks.getConfig(),
+            formtableconfig:InspectionLacks.getTableConfig(),
             lacklistQueryParams:{
-                page: 1,
-                limit: 10,
-                total: 0
+              pageIndex: 1,
+              pageSize: 10,
+              total:0
             }
         }
     },
@@ -123,6 +131,7 @@ export default {
   methods: {
     async init(){
       this.title = 'reportInspectio'
+      this.tableConfig = Inspection.getTableConfig()
       await this.getBuildingMaintenanceReport()
       this.buttonsName = [
         { name:'刪除',icon:'el-icon-delete',status:'delete'},
@@ -205,6 +214,7 @@ export default {
         this.innerVisible = true
         this.dialogStatus = 'exportExcel'
       }else if(index === 'uploadExcel'){
+        this.dialogConfig = this.tableConfig
         this.innerVisible = true
         this.dialogStatus = 'uploadExcel'
       }
@@ -285,11 +295,25 @@ export default {
           this.innerVisible = true
           this.dialogStatus = 'create'
         }else if(index === 'open'){
-          this.dialogConfig = this.formtableconfig    
+          this.dialogConfig = this.formtableconfig   
           this.dialogData.push(content)
           this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'updatelack'},
           { name:'取消',type:'info',status:'cancellack'}]
+          this.innerVisible = true
+          this.dialogStatus = 'update'
+        }else if(index === 'openother'){
+          this.dialogConfig = this.formtableconfig   
+          if(content.length !== undefined){ //代表不是外傳近來的
+            content.forEach(item=>{
+              this.dialogData.push(item)
+            })
+          }else{
+              this.dialogData.push(content)
+          } 
+          this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'updatelack'},
+          { name:'取消',type:'info',status:'cancel'}]
           this.innerVisible = true
           this.dialogStatus = 'update'
         }else if(index === 'delete'){
@@ -327,6 +351,7 @@ export default {
           this.innerVisible = true
           this.dialogStatus = 'exportExcel'
         }else if(index === 'uploadExcel'){
+          this.dialogConfig = this.formtableconfig  
           this.innerVisible = true
           this.dialogStatus = 'uploadExcel'
         }else if(index === 'uploadExcelSave'){
@@ -339,9 +364,12 @@ export default {
     },
     async changeTable(value){
       this.isTable = value
-      value == true ?  this.tableConfig = Inspection.getTableConfig() : 
-      this.tableConfig = Inspection.getConfig()
-      await this.getFilterItems()
+      if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+        if(typeof this.$route.params.target == 'object'){
+          console.log(JSON.stringify(this.$route.params.target))
+          await this.handleLackDialog('','openother',this.$route.params.target)
+        }
+      }
     }
   }
 }

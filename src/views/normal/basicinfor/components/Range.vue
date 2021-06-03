@@ -67,15 +67,12 @@ export default {
   watch:{
     buildingfloors:{
       handler:async function(newValue,oldValue){
-        console.log(JSON.stringify(this.buildingfloors))
         var array = this.buildingfloors
         if(this.buildingfloors.length>0 && oldValue == undefined ){ //第一次建立
           this.upFloors = array.filter((item,index) => 
           item.getName().includes("地下") == false)
           this.downFloors = array.filter((item,index) => 
           item.getName().includes("地下") == true)
-          console.log(this.upFloors)
-          console.log(this.downFloors)
           this.setRange()
         }else{ //修改平面圖
           this.upFloors = array.filter((item,index) => 
@@ -94,14 +91,18 @@ export default {
       if(this.upFloors.length >0){
         var _count = Math.ceil(this.upFloors.length / 10)
         for(var i=1;i<=_count;i++){
+          var start = this.upFloors[i*10-10].getName()
+          var end = i == _count ? this.upFloors[this.upFloors.length-1].getName() : 
+          this.upFloors[i*10-1].getName()
+          
           var _temp = {
               id:i,
-              name:i*10-9+'F~'+i*10+'F'
+              name:start + '~'+ end
           }
           this.rangeOptions.push(_temp)
         }
       }
-        if(this.downFloors.length >0){
+      if(this.downFloors.length >0){
           var _temp = {
             id:0,
             name:'地下樓層'

@@ -65,17 +65,9 @@ class UsageOfFloor extends Parent {
     getName(){
         return this.houseNumber
     }
+    //管委會使用
     getlinkUsers(){
         return this.linkUsers
-    }
-    getUsers(){
-        return this.linkUsers.map(item=>{return item.getName()}).toString()
-    }
-    getOwners(){
-        return this.linkOwners.map(item=>{return item.getName()}).toString()
-    }
-    getInfo(){
-        return this
     }
     static empty(){
         return new UsageOfFloor({
@@ -88,32 +80,32 @@ class UsageOfFloor extends Parent {
             linkOwners :[]
         })
     }
-    static getConfig(){
-       return [
-            { label:'戶號' , prop:'houseNumber', mandatory:true, message:'請輸入戶號',isSelect:false,isSort:true,isHidden:false,maxlength:'20'},
-            { label:'場所名稱' , prop:'placeName', mandatory:true, message:'請輸入場所名稱',isSelect:false,isSort:true,isHidden:false,maxlength:'100'},
-            { label:'收容人數' , prop:'capacity',format:'inputnumber',type:'number',typemessage:'',mandatory:true,message:'請輸入收容人數',
-            isSelect:false,isSort:false,isHidden:false},
-            { label:'所有人' , prop:'linkOwners',format:'userInfo', mandatory:true, message:'請選擇所有人',
-            isSelect:false,isSort:false,type:'array',typemessage:'',isHidden:false},
-            { label:'使用人' , prop:'linkUsers',format:'userInfo', mandatory:true, message:'請選擇使用人',
-            isSelect:false,isSort:false,type:'array',typemessage:'',isHidden:false},
-            { label:'檢附文件' , prop: 'file',format:'openfiles',isSelect:false,isSort:false,isHidden:false}, 
-            { label:'備註' , prop:'note',format:'textarea',mandatory:false,isSelect:false,isSort:false,isHidden:true,maxlength:'200'},
-        ]
-    }
     static getTableConfig(){
         return [
-             { label:'戶號' , prop:'houseNumber', mandatory:true, message:'請輸入戶號',isHidden:false,maxlength:'20',isSearch:false},
-             { label:'場所名稱' , prop:'placeName', mandatory:true, message:'請輸入場所名稱',isHidden:false,maxlength:'100',isSearch:true},
-             { label:'收容人數' , prop:'capacity',format:'inputnumber',type:'number',typemessage:'',mandatory:true,message:'請輸入收容人數',
-             isHidden:false,isSearch:false},
-             { label:'所有人' , prop:'linkOwners',format:'userInfo', mandatory:true, message:'請選擇所有人',
-             type:'array',typemessage:'',isHidden:false,isSearch:false},
-             { label:'使用人' , prop:'linkUsers',format:'userInfo', mandatory:true, message:'請選擇使用人',
-             type:'array',typemessage:'',isHidden:false,isSearch:false},
-             { label:'檢附文件' , prop: 'file',format:'openfiles',isHidden:true,isSearch:false}, 
-             { label:'備註' , prop:'note',format:'textarea',mandatory:false,isHidden:false,maxlength:'200',isSearch:true},
+             { label:'戶號' , prop:'houseNumber', mandatory:true, message:'請輸入戶號',
+             isHidden:false,maxlength:'20',isSearch:true,placeholder:'請輸入戶號',
+             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+             { label:'場所名稱' , prop:'placeName', mandatory:true, message:'請輸入場所名稱',
+             isHidden:false,maxlength:'100',isSearch:true,placeholder:'請輸入場所名稱',
+             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+             { label:'收容人數' , prop:'capacity',format:'inputnumber',
+             type:'number',typemessage:'',mandatory:false,
+             pattern:/^[1-9]*[1-9][0-9]*$/,errorMsg:'格式錯誤，請重新輸入',isPattern: true,
+             isHidden:false,isSearch:false,
+             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+             { label:'所有人' , prop:'linkOwners',format:'userInfo', 
+             mandatory:true, message:'請選擇所有人',
+             type:'array',typemessage:'',
+             isHidden:false,isSearch:false,
+             isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+             { label:'使用人' , prop:'linkUsers',format:'userInfo', 
+             mandatory:true, message:'請選擇使用人',
+             type:'array',typemessage:'',
+             isHidden:false,isSearch:false,
+             isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+             { label:'備註' , prop:'note',format:'textarea',mandatory:false,
+             isHidden:false,maxlength:'200',isSearch:true,placeholder:'請輸入備註',
+             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
          ]
      }
     static async getAll(){

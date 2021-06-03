@@ -40,6 +40,7 @@ export default {
     methods: {
         async init(){
             this.title = 'devicetype'
+            this.tableConfig = DeviceType.getTableConfig()
             await this.getBuildingDevicesType()
         },
         async resetlistQueryParams(){
@@ -102,7 +103,9 @@ export default {
                 await content.create()
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                    this.$store.dispatch('building/setbuildingdevices',await Device.get())
+                    if(index === 'update'){
+                        this.$store.dispatch('building/setbuildingdevices',await Device.get())
+                    }
                     await this.getBuildingDevicesType()
                 }
             }else if(index === 'uploadExcelSave'){
@@ -116,10 +119,6 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
-            this.tableConfig = DeviceType.getConfig()
-            // value == true ?  this.tableConfig = DeviceType.getTableConfig() : 
-            // this.tableConfig = DeviceType.getConfig()
-            await this.getFilterItems()
             if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0){
                 if(typeof this.$route.params.target == 'object'){
                     await this.handleBlock('devicetype','open',this.$route.params.target[0])

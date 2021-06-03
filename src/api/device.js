@@ -48,7 +48,7 @@ const device = {
     apiPostMaintain(maintainListId,data){ return req('post','/maintainManagement/maintains/'+maintainListId+'/list',data) },
     apiPatchMaintains(data){ return req('patch','/maintainManagement/maintains/list',data) },
     apiDeleteMaintains(maintainId){ return req('delete','/maintainManagement/maintains/list/'+maintainId) },
-    apiGetMaintainAllSearchPages(data){ return req('post','/maintainManagement/'+this.getBid()+'/maintains/list/ss',data)  },
+    apiGetMaintainAllSearchPages(data){ return req('post','/index/'+this.getBid()+'/maintains/list/ss',data)  },
     apiGetMaintainSearchPages(maintainListId,data){ return req('post','/maintainManagement/maintains/'+maintainListId+'/list/ss',data)  },
     apiPostMaintains(maintainListId,data){ return req('post','/maintainManagement/maintains/'+maintainListId+'/list/s',data) },    
     

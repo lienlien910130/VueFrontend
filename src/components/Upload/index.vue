@@ -14,7 +14,7 @@
                 .doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,
                 application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,
                 application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
-                application/x-rar-compressed,application/zip,application/x-7z-compressed
+                application/x-rar-compressed,application/zip
                 "
                 :on-remove="handleRemove"
                 :on-change="handleChange"
@@ -24,11 +24,25 @@
                 list-type="picture"
                 multiple
                 :file-list="fileList">
+                
                 <el-button slot="trigger"  type="primary" icon="el-icon-folder-opened" ></el-button>
                 <el-button type="success"
                     :disabled="isDisabled" 
                     @click="onUpload"
                     icon="el-icon-upload"></el-button>
+                <el-tooltip class="item" effect="light" 
+                content="限圖片、txt、word、ppt、excel、pdf、rar、zip格式的檔案，且不超過10MB" placement="top">
+                 <el-button type="warning"
+                    icon="el-icon-warning-outline"></el-button>
+                </el-tooltip>
+                 <!-- <div slot="file" slot-scope="{file}">
+                     <img :src="file.url" alt="" 
+                     class="el-upload-list__item-thumbnail">
+                     <a class="el-upload-list__item-name" @click="handlePreview(file)">
+                        {{ file.name }}
+                    </a>
+	                <i class="el-icon-close" @click="handleRemove(file,fileList)"></i>
+                 </div> -->
             </el-upload>
         </el-form-item>
 
@@ -63,7 +77,10 @@
                 <div 
                 v-for="(item,index) in filescopy" :key="item.getID()" class="filesdiv">
                     <el-checkbox v-model="deleteItem" :label="item.getID()">【{{ index+1 }}】</el-checkbox>
-                    <i class="el-icon-view" style="font-size:18px" @click="onPreview(item)"/>
+                    <i 
+                    v-if="item.getExtName() == 'png' || item.getExtName() == 'jpg' || item.getExtName() == 'jpeg'
+                    || item.getExtName() == 'pdf' "
+                    class="el-icon-view" style="font-size:18px" @click="onPreview(item)"/>
                     <span 
                     @click="downloadfile(item)"  :style="check(item.getID())">
                         <span>
@@ -80,25 +97,29 @@
         </el-form>
 
         <el-dialog
+            top="5vh"
             :title="dialogTitle"
             :visible.sync="previewVisible"
-            width="50%"
+            width="80%"
             :modal="isneed"
             >
-            <img v-if="isImage==true" :src="previewPath" class="previewImg"/>
+            <img v-if="type =='image' " :src="previewPath" class="previewImg"/>
             <div v-else>
-                <pdf
+                <iframe :src="previewPath" frameborder="0" style="width: 100%; height:800px"></iframe>
+                <!-- <pdf
                 :src="previewPath"
                 :page="currentPage"
                 @num-pages="pageCount=$event"
                 @page-loaded="currentPage=$event"
-                @loaded="loadPdfHandler">
+                @loaded="loadPdfHandler"
+                style="height:800px"
+                >
                 </pdf>
                 <div style="text-align:center">
                     <el-button type="primary" @click="changePdfPage(0)" icon="el-icon-back">上一頁</el-button>
                     <span type="primary">{{currentPage}} / {{pageCount}}</span>
                     <el-button type="primary" @click="changePdfPage(1)" icon="el-icon-right">下一頁</el-button>
-                </div>
+                </div> -->
             </div>
         </el-dialog>
     </div>
@@ -106,11 +127,8 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import pdf from 'vue-pdf'
-
-  export default {
+export default {
     name:'Upload',
-    components: { pdf },
     computed:{
             ...mapGetters([
                 'fullscreen'
@@ -151,15 +169,15 @@ import pdf from 'vue-pdf'
             disable:[],
             deleteItem:[],
             filescopy:[],
-
-            isImage:true,
+            type:'',
+            // isImage:true,
             dialogTitle:'',
 	        previewVisible:false,
 	        previewPath:'',
-            currentPage: 0, // pdf文件页码
-	        pageCount: 0, // pdf文件总页数
-	        fileType: 'pdf', // 文件类型
-	        pdfUrl: '', // pdf文件地址
+            // currentPage: 0, // pdf文件页码
+	        // pageCount: 0, // pdf文件总页数
+	        // fileType: 'pdf', // 文件类型
+	        // pdfUrl: '', // pdf文件地址
             filesheight:''
       }
     },
@@ -192,8 +210,6 @@ import pdf from 'vue-pdf'
             }
         },
         handleChange(file, fileList) {
-            console.log(file)
-            console.log(JSON.stringify(file))
             const m = file.size / 1024 / 1024 
             const array = file.name.split('.')
             const t = array[1]
@@ -203,7 +219,7 @@ import pdf from 'vue-pdf'
                 file.name = '(X)'+ file.name + ' --- 大小:' + file.size
             }else if(t !== 'txt' && t !== 'pdf' && t !== 'png' && t !== 'jpeg' && t !== 'jpg'
             && t !== 'doc' && t !== 'docx' && t !== 'xlsx' && t !== 'xls' && t !== 'ppt' && t !== 'pptx'
-            && t !== '7z' && t !== 'zip' && t !== 'rar' ){
+            && t !== 'zip' && t !== 'rar' ){
                 this.disable.push(file)
                 this.$message.error('請勿上傳')
                 file.name = '(X)'+ file.name + ' --- 大小:' + file.size
@@ -239,35 +255,40 @@ import pdf from 'vue-pdf'
             }
         },
         handlePreview(file){
-            console.log(file.raw.type)
             var type = file.raw.type
-            this.previewVisible = true
-            this.previewPath = file.url
-            this.dialogTitle = '【圖片預覽】'+file.name
-            if(type == 'application/pdf'){
-                this.isImage = false
-            }else if(type == 'image/png' || type == 'image/jpeg'){
-                this.isImage = true
-            }
-        },
-        onPreview(file){
-            console.log(this.fileName)
-            this.previewVisible = true
-            this.previewPath = "http://192.168.88.65:59119/Public/fileDownload/" + file.getID()
-            this.dialogTitle = '【圖片預覽】'+file.fileOriginalName
-            if(file.extName == 'pdf'){
-                this.isImage = false
+            if(type !== 'application/pdf' && type !== 'image/png' && type !== 'image/jpeg'
+            && type !== 'image/jpg' ){
+                this.$message.error('該檔案類型不可預覽')
             }else{
-                this.isImage = true
+                this.previewPath = file.url
+                if(type == 'application/pdf'){
+                    this.type = 'pdf'
+                }else{
+                    this.type = 'image'
+                }
+                this.previewVisible = true
+                this.dialogTitle = '【圖片預覽】'+file.name
             }
         },
-        // handleExceed(files, fileList) {
-        //     this.$message({
-        //         message: '限制檔案上傳數為'+this.limit+'，請勿超出範圍',
-        //         type: 'warning'
-        //     })
-        // },
-        beforeRemove(file, fileList) {
+        async onPreview(file){
+            var filename = file.getExtName()
+            var fileType = this.changeFileType(filename)
+            var data 
+            if(filename == 'png' || filename == 'jpeg' 
+            || filename == 'jpg'){
+                data = await file.image()
+                this.type = 'image'
+            }else {
+                data = await file.download()
+                this.type = 'pdf'
+            }
+            let url = URL.createObjectURL(new Blob([data], { type: fileType }))
+            this.previewPath = url
+            this.dialogTitle = '【圖片預覽】'+file.getFileName()
+            this.previewVisible = true
+
+        },
+        beforeRemove(file,fileList) {
             return this.$confirm(`確定移除 ${ file.name }？`)
         },
         onUpload(file){
@@ -276,14 +297,13 @@ import pdf from 'vue-pdf'
                 this.importFiles = []
                 this.fileList = []
             }else{
-                this.$message.error('上傳檔案格式或檔案大小錯誤,請移除錯誤的檔案後重新上傳')
+                this.$message.error('檔案格式或大小錯誤,請移除錯誤的檔案後重新上傳')
             }
         },
         async downloadfile(item) {
-            console.log('download',item.getExtName())
+            var fileType = this.changeFileType(item.getExtName())
             var data = await item.download()
-            let pdfUrl = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
-            console.log(pdfUrl)
+            let pdfUrl = URL.createObjectURL(new Blob([data], { type: fileType }))
             let link = document.createElement('a')
             link.href = pdfUrl
             link.download = item.getFileName() + '.'+item.getExtName()
@@ -292,6 +312,49 @@ import pdf from 'vue-pdf'
             link.click()
             URL.revokeObjectURL(link.href)
             document.body.removeChild(link)
+        },
+        changeFileType(extName){
+            var fileType
+            switch(extName){
+                case 'txt':
+                    fileType = 'text/plain'
+                    break;
+                case 'jpg':
+                    fileType = 'image/jpeg'
+                    break;
+                case 'jpeg':
+                    fileType = 'image/jpeg'
+                    break;
+                case 'png':
+                    fileType = 'image/png'
+                    break;
+                case 'pdf':
+                    fileType = 'application/pdf'
+                    break;
+                case 'doc':
+                    fileType = 'application/msword'
+                case 'docx':
+                    fileType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                    break;
+                case 'ppt':
+                    fileType = 'application/vnd.ms-powerpoint'
+                case 'pptx':
+                    fileType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+                    break;
+                case 'xls':
+                    fileType = 'application/vnd.ms-excel'
+                    break;
+                case 'xlsx':
+                    fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    break;
+                case 'rar':
+                    fileType = 'application/x-rar-compressed'
+                    break;
+                case 'zip':
+                    fileType = 'application/zip'
+                    break;
+            }
+            return fileType
         },
         async deletefile() {
             if(this.deleteItem.length == 0){
@@ -382,17 +445,17 @@ import pdf from 'vue-pdf'
                 } 
             }
         },
-        changePdfPage (val) {
-	        if (val === 0 && this.currentPage > 1) {
-	          this.currentPage--
-	        }
-	        if (val === 1 && this.currentPage < this.pageCount) {
-	          this.currentPage++
-	        }
-	    },
-	    loadPdfHandler (e) {
-	      this.currentPage = 1 // 加载的时候先加载第一页
-	    }
+        // changePdfPage (val) {
+	    //     if (val === 0 && this.currentPage > 1) {
+	    //       this.currentPage--
+	    //     }
+	    //     if (val === 1 && this.currentPage < this.pageCount) {
+	    //       this.currentPage++
+	    //     }
+	    // },
+	    // loadPdfHandler (e) {
+	    //   this.currentPage = 1 // 加载的时候先加载第一页
+	    // }
     }
   }
 </script>

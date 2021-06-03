@@ -154,6 +154,7 @@ export default {
                 return rObj
             })
             var array = []
+            var self = this
             config.filter(item => item.prop !== undefined).forEach(element => {
                 if(element.prop.indexOf('link') !== -1){
                     var data = this.getObject(block,element.prop)
@@ -172,9 +173,15 @@ export default {
                         options:concatarray
                     })
                 }else{
+                    var list = this.getItems(block,element.prop,element.format)
+                    list = list.sort(function(str1,str2){ 
+                        var s1 = str1.value == null ? '' : str1.value
+                        var s2 = str2.value == null ? '' : str2.value
+                        return self.sortRule(s1,s2)
+                    })
                     array.push({
                         type:element.prop,
-                        options:this.getItems(block,element.prop,element.format)
+                        options:list
                     })
                 }
             })
@@ -237,6 +244,59 @@ export default {
                 return array
             })
             return list
+        },
+        sortRule(str1, str2) {
+            let res = 0
+            for (let i = 0; ;i++) {
+				if (!str1[i] || !str2[i]) {
+                    res = str1.length - str2.length
+                    if(typeof str1 == 'boolean' && typeof str2 == 'boolean'){
+                        res = str1 - str2
+                    }
+                    break
+                }
+                const char1 = str1[i]
+                const char1Type = this.getChartType(char1)
+                const char2 = str2[i]
+                const char2Type = this.getChartType(char2)
+
+                if (char1Type[0] === char2Type[0]) {
+                    if (char1 === char2) {
+                        continue
+                    } else {
+                        if (char1Type[0] === 'zh') {
+                            res = char1.localeCompare(char2)
+                        } else if (char1Type[0] === 'en') {
+                            res = char1.charCodeAt(0) - char2.charCodeAt(0)
+                        } else {
+                            res = char1 - char2
+                        }
+                        break
+                    }
+                } else {
+                    // 类型不同的，直接用返回的数字相减
+                    res = char1Type[1] - char2Type[1]
+                    break
+                }
+			}
+			return res
+		},
+		getChartType(char) {
+			// 數字(0-9)->大寫字母(A->Z)->小寫字母(a->z)->中文拼音
+			if (/^[\u4e00-\u9fa5]$/.test(char)) {
+				return ['zh', 300]
+			}
+			if (/^[a-zA-Z]$/.test(char)) {
+				return ['en', 200]
+			}
+			if (/^[0-9]$/.test(char)) {
+				return ['number', 100]
+			}
+			return ['others', 999]
+		},
+        openWindows(value){
+            var routeData = this.$router.resolve({ name: value })
+            window.open(routeData.href, '_blank')
         }
     }
 }

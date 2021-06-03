@@ -3,6 +3,7 @@ import api from '@/api'
 import Device from './device'
 import Files from './files'
 import UsageOfFloor from './usageOfFloor'
+import idb from '@/utils/indexedDB'
 
 class Floors extends Parent {
  
@@ -18,6 +19,9 @@ class Floors extends Parent {
     }
     clone(data){
         return new Floors(data)
+    }
+    setFloorPlanID(planID){
+        this.floorPlanID = planID
     }
     async update(){
         var data = await api.building.apiPatchFloors(this).then(async(response) => {
@@ -83,6 +87,10 @@ class Floors extends Parent {
     getImageID(){
         return this.floorPlanID.toString()
     }
+    async getImage(){
+       var src = await idb.loadCacheImage(this.floorPlanID)
+       return src
+    }
     static empty(){
         return new Floors({
             id:'',
@@ -92,32 +100,26 @@ class Floors extends Parent {
             linkDevices:[]
         })
     }
-    static getConfig(){
+    static getTableConfig(){
        return [
             { label:'樓層' , prop:'floor', 
                 mandatory:true, message:'請輸入樓層',maxlength:'10',
-                isHidden:false,isSearch:true},
-            { label:'平面圖檔' , prop:'floorPlanID',format:'hide',
+                isHidden:false,isSearch:true,placeholder:'請輸入樓層',
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+            { label:'平面圖檔' , prop:'floorPlanID',
                 type:'number',typemessage:'',
-                mandatory:false, isHidden:false,isSearch:false },
-            { label:'排序' , prop:'sort', format:'inputnumber',
-                type:'number',typemessage:'',
-                pattern:/^[1-9]*[1-9][0-9]*$/,errorMsg:'請輸入正整數',isPattern:true,
-                mandatory:true, message:'請輸入排序',maxlength:'3',
-                isHidden:false,isSearch:true}
+                mandatory:false, isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:false,isUpload:false,isExport:false,isBlock:false },
+            { label:'排序' , prop:'sort',format:'inputnumber', mandatory:true, message:'請輸入0~999',
+                pattern:/^[0-9]{1,3}$/,errorMsg:'請輸入0~999',isPattern:true,
+                type:'number',typemessage:'',placeholder:'請輸入0~999',
+                isHidden:false,maxlength:'3',isSearch:true,
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
        ]
-    }
-    static getDownloadConfig(){
-        return [
-             { label:'樓層' , prop:'floor',isHidden:false},
-             { label:'排序' , prop:'sort',isHidden:false}
-        ]
     }
     static async get (){
         var data = await api.building.apiGetBuildingFloors().then(response => {
-            console.log('getfloor')
-            console.log(JSON.stringify(response))
-            var result = response.result.sort((x,y) => x.id - y.id)
+            var result = response.result.sort((x,y) => x.sort - y.sort)
             .map(item=>{ return new Floors(item)})
             return result
         }).catch(error=>{
@@ -143,7 +145,6 @@ class Floors extends Parent {
         })
         return data
     }
-    
 }
 
 export default Floors

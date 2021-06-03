@@ -44,6 +44,10 @@ class Committee extends Parent {
     getName(){
         return this.name
     }
+    getUsageOfFloorsName(){
+        return this.linkUsageOfFloors.map(item=>{return item.getName()}).toString()
+    }
+    //搜門關聯門牌的所有使用者，去掉重複的
     getlinkUsageOfFloorsUser(){
         var array = []
         for(let element of this.linkUsageOfFloors){
@@ -65,22 +69,24 @@ class Committee extends Parent {
             linkUsageOfFloors :[]
         })
     }
-    static getConfig(){
+    static getTableConfig(){
        return [
             { label:'所屬單位' , prop:'linkUsageOfFloors',format:'floorOfHouseSelect',
-            mandatory:true, message:'請選擇單位',type:'array',typemessage:'',isHidden:false,isSearch:false},
-            { label:'職稱' , prop:'title', mandatory:true, message:'請輸入職稱',isHidden:false,maxlength:'50',isSearch:true},
-            { label:'姓名' , format:'floorOfHouseUsersName', mandatory:true,message:'請輸入內容',isHidden:false,isSearch:false},
-            { label:'備註' , prop:'note',format:'textarea', mandatory:false,isHidden:false,maxlength:'200',isSearch:true }
+            mandatory:true, message:'請選擇單位',type:'array',typemessage:'',
+            isHidden:false,isSearch:false,
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+            { label:'職稱' , prop:'title', mandatory:true, message:'請輸入職稱',
+            isHidden:false,maxlength:'50',isSearch:true,placeholder:'請輸入職稱',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'姓名' , format:'floorOfHouseUsersName', 
+            mandatory:false,
+            isHidden:false,isSearch:false,
+            isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true},
+            { label:'備註' , prop:'note',format:'textarea', 
+            mandatory:false,isHidden:false,
+            maxlength:'200',isSearch:true,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false }
         ]
-    }
-    static getDialogConfig(){
-        return [
-             { label:'所屬單位' , prop:'linkUsageOfFloors',format:'floorOfHouseSelect',
-             mandatory:true, message:'請選擇單位',type:'array',typemessage:'',isHidden:false},
-             { label:'職稱' , prop:'title', mandatory:true, message:'請輸入職稱',isHidden:false,maxlength:'50'},
-             { label:'備註' , prop:'note',format:'textarea', mandatory:false,isHidden:false,maxlength:'200' }
-         ]
     }
     static async get (){
         var data = await api.building.apiGetCommittee().then(response => {

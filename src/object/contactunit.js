@@ -18,11 +18,9 @@ class Contactunit extends Parent {
         this.hide = hide
         return this
     }
-
     clone(data){
         return new Contactunit(data)
     }
-    
     async update(){
         var data = await api.building.apiPatchContactUnit(this).then(async(response) => {
             return true
@@ -65,70 +63,66 @@ class Contactunit extends Parent {
             hide :false
         })
     }
-    static getConfig(){
-       return [
-        { label:'公司名稱' , prop:'name', mandatory:true, message:'請輸入公司名稱',isSelect:false,isSort:true,isHidden:false,maxlength:'20'},
-        { label:'類別' , prop:'type', format:'ContactUnitOptions', mandatory:true, message:'請選擇類別',
-        isSelect:true,options:[],selectType:'options',select:'',isSort:true,isHidden:false },
-        { label:'電話' , prop:'contactNumber',mandatory:true, message:'請輸入電話',
-        pattern:/^[0][9]\d{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,isSelect:false,isSort:false,isHidden:true,maxlength:'10'},
-        { label:'地址' , prop:'address', mandatory:true, message:'請輸入地址',isSelect:false,isSort:false,isHidden:true,maxlength:'200'},
-        { label:'備註' , prop:'note',format:'textarea', mandatory:false,isSelect:false,isSort:false,isHidden:true,maxlength:'200'},
-        { label:'狀態' , prop:'collaborate', format:'tag', mandatory:false, message:'請選擇狀態',
-        isSelect:true,options:[],selectType:'collaborateBool',select:'',isSort:true,type:'boolean',typemessage:'',isHidden:false }
-      ]
-    }
     static getTableConfig(){
         return [
         { 
             label:'公司名稱' , 
             prop:'name', 
             mandatory:true, message:'請輸入公司名稱',
-            isHidden:false,maxlength:'20',isSearch:true },
+            isHidden:false,maxlength:'20',isSearch:true,placeholder:'請輸入公司名稱',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true },
         { 
             label:'類別', 
             prop:'type', 
             format:'ContactUnitOptions', 
             mandatory:true, message:'請選擇類別',
-            isHidden:false,isSearch:false },
+            isHidden:false,isSearch:false,
+            isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true },
         { 
             label:'電話', 
             prop:'contactNumber',
             mandatory:false,
-            isHidden:false,maxlength:'15',isSearch:true },
+            isHidden:false,maxlength:'15',isSearch:true,placeholder:'請輸入電話',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false },
         { 
             label:'手機號碼', 
             prop:'cellPhoneNumber',
-            mandatory:true, message:'請輸入電話',
+            mandatory:true, message:'請輸入手機號碼',
             pattern:/^09\d{8}$/,errorMsg:'輸入格式為09xxxxxxxx',isPattern: true,
-            isHidden:false,maxlength:'10',isSearch:true },
+            isHidden:false,maxlength:'10',isSearch:true,placeholder:'請輸入手機號碼，格式為09xxxxxxxx',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true },
         { 
             label:'傳真號碼', 
             prop:'faxNumber',
             mandatory:false,
-            isHidden:false,maxlength:'15',isSearch:true },
+            isHidden:false,maxlength:'15',isSearch:true,placeholder:'請輸入傳真號碼',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false },
         { 
             label:'電子信箱', 
             prop:'email',
             mandatory:false,
             pattern:/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,
-            isHidden:false,maxlength:'100',isSearch:true },
+            isHidden:false,maxlength:'100',isSearch:true,placeholder:'請輸入電子信箱',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false },
         { 
             label:'地址', 
             prop:'address', 
             mandatory:true, message:'請輸入地址',
-            isHidden:false,maxlength:'200',isSearch:true },
+            isHidden:false,maxlength:'200',isSearch:true,placeholder:'請輸入地址',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true },
         { 
             label:'狀態' , 
-            prop:'collaborate', format:'tag', 
-            mandatory:false, message:'請選擇狀態',
+            prop:'collaborate', format:'collaborateBoolean', 
+            mandatory:false,
             type:'boolean',typemessage:'',
-            isHidden:false,isSearch:false },
+            isHidden:false,isSearch:false,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true },
         { 
             label:'備註' , 
             prop:'note',format:'textarea', 
             mandatory:false,
-            isHidden:false,maxlength:'200',isSearch:true }
+            isHidden:false,maxlength:'200',isSearch:true,placeholder:'請輸入備註',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false }
        ]
     }
     static async get (){

@@ -83,7 +83,7 @@ class Menu extends Parent {
             name :'',
             description :'',
             status :true,
-            sort :'',
+            sort :0,
             removable :false,
             code :'',
             path:'',
@@ -93,36 +93,40 @@ class Menu extends Parent {
             linkAccessAuthorities :[]
         })
     }
-    static getConfig(){
-        return [
-            { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20',isHidden:false},
-            { label:'Code' , prop:'code', mandatory:true,message:'請輸入Code',maxlength:'40',isHidden:false},
-            { label:'路徑' , prop:'path', mandatory:true,message:'請輸入路徑',maxlength:'40',isHidden:false},
-            { label:'導向' , prop:'redirect', mandatory:false,message:'請輸入導向',maxlength:'40',isHidden:false},
-            { label:'Icon' , prop:'icon', mandatory:false,message:'請輸入icon',maxlength:'40',isHidden:false},
-            { label:'描述' , prop:'description',format:'textarea', mandatory:false, message:'請輸入描述',maxlength:'200',isHidden:true},
-            { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
-            isPattern:false,errorMsg:'',type:'boolean',typemessage:'',isHidden:false},
-            { label:'排序' , prop:'sort',format:'number', 
-            mandatory:true,message:'請輸入排序',isPattern:false,errorMsg:'',type:'string',typemessage:'',isHidden:true,maxlength:'2'},
-            { label:'刪除' , prop:'removable',format:'removableSelect', mandatory:true, message:'請選擇',
-            isPattern:false,errorMsg:'',type:'boolean',typemessage:'',isHidden:true}
-        ]
-    }
     static getTableConfig(){
         return [
-            { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20',isHidden:false},
-            { label:'Code' , prop:'code', mandatory:true,message:'請輸入Code',maxlength:'40',isHidden:false},
-            { label:'路徑' , prop:'path', mandatory:true,message:'請輸入路徑',maxlength:'40',isHidden:false},
-            { label:'導向' , prop:'redirect', mandatory:false,message:'請輸入導向',maxlength:'40',isHidden:false},
-            { label:'Icon' , prop:'icon', mandatory:false,message:'請輸入icon',maxlength:'40',isHidden:false},
-            { label:'描述' , prop:'description',format:'textarea', mandatory:false, message:'請輸入描述',maxlength:'200',isHidden:false},
-            { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
-            isPattern:false,errorMsg:'',type:'boolean',typemessage:'',isHidden:false},
-            { label:'排序' , prop:'sort',format:'number', 
-            mandatory:true,message:'請輸入排序',isPattern:false,errorMsg:'',type:'string',typemessage:'',isHidden:false,maxlength:'2'},
-            { label:'刪除' , prop:'removable',format:'removableSelect', mandatory:true, message:'請選擇',
-            isPattern:false,errorMsg:'',type:'boolean',typemessage:'',isHidden:false}
+            { label:'名稱' , prop:'name', mandatory:true, message:'請輸入名稱',maxlength:'20',
+            isHidden:false,placeholder:'請輸入名稱',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'Code' , prop:'code', mandatory:true,message:'請輸入Code',maxlength:'40',
+            isHidden:true,placeholder:'請輸入Code',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:false,isBlock:false},
+            { label:'路徑' , prop:'path', mandatory:true,message:'請輸入路徑',maxlength:'40',
+            isHidden:false,placeholder:'請輸入路徑',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'導向' , prop:'redirect', mandatory:false,
+            maxlength:'40',isHidden:true,placeholder:'請輸入導向，若為子目錄，請勿輸入值',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+            { label:'圖示' , prop:'icon', mandatory:false,
+            maxlength:'40',isHidden:false,placeholder:'請輸入圖示名稱',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'描述' , prop:'description',format:'textarea', mandatory:false, 
+            maxlength:'200',isHidden:false,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+            { label:'狀態' , prop:'status',format:'accountStatusSelect', 
+            mandatory:true, message:'請選擇狀態',
+            type:'boolean',typemessage:'',isHidden:false,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'排序' , prop:'sort',format:'inputnumber', mandatory:true, message:'請輸入0~999',
+                pattern:/^[0-9]{1,3}$/,errorMsg:'請輸入0~999',isPattern:true,
+                type:'number',typemessage:'',placeholder:'請輸入0~999',
+                isHidden:false,maxlength:'3',isSearch:true,
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+            { label:'刪除' , prop:'removable',format:'removableSelect', 
+                mandatory:true, message:'請選擇是否允許刪除',
+               type:'boolean',typemessage:'',
+               isHidden:false,isSearch:false,
+               isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
         ]
     }
     static async get(){

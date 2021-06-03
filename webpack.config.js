@@ -2,6 +2,7 @@ const path = require('path')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CopyPlugin = require('copy-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const vueSrc = "./src"
 const webpack = require('webpack')
@@ -71,9 +72,14 @@ module.exports = {
       {
         test: /\.s[ac]ss$/i,
         use: [
-          MiniCssExtractPlugin.loader, 
-          'css-loader',
-          'sass-loader'
+          {
+            loader: MiniCssExtractPlugin.loader,
+            options:{
+              publicPath: '../',
+              esModule: false
+
+            } 
+          },'css-loader','sass-loader'
         ]
       }
     ]
@@ -84,6 +90,14 @@ module.exports = {
         cleanAfterEveryBuildPatterns: ['./dist']
     }),
     new MiniCssExtractPlugin(),
+    new CopyPlugin({
+      patterns: [
+        { 
+          from:path.resolve(__dirname, './static'),
+          to: path.resolve(__dirname, './dist/static')
+        }
+      ]
+    }),
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"development"',
@@ -94,6 +108,7 @@ module.exports = {
       inject: false,
       hash: true,
       template: './src/index.html',
+      favicon: './public/favicon.ico',
       filename: 'index.html',
       title: '智慧消防管理平台',
       minify: process.env.NODE_ENV == 'development' ? false : true,

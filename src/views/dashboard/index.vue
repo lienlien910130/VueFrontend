@@ -1,8 +1,5 @@
 <template>
     <div class="editor-container">
-      <!-- <div v-if="account == 'System'">
-        系統管理員
-      </div> -->
       <div v-if="buildingid == undefined">
         請選擇建築物
       </div>
@@ -33,7 +30,20 @@
       <el-row :gutter="32">
         <el-col :xs="24" :sm="24" :md="8" :lg="12">
           <div class="chart-wrapper">
-            通知(檢修/公安)
+             <el-row>
+                <div v-if="total > 0" class="pagination-container">
+                    <el-pagination
+                        background
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :current-page="page"
+                        :page-sizes="pageSizeList"
+                        :page-size="limit"
+                        :total="total"
+                        @current-change="handleCurrentChange"
+                        @size-change="handleSizeChange"
+                    ></el-pagination>
+                </div>
+            </el-row>
           </div>
         </el-col>
         <el-col :xs="24" :sm="24" :md="16" :lg="12">
@@ -75,6 +85,7 @@ import { mapGetters } from 'vuex'
 import constant from '../../../src/constant';
 import { removeDuplicates } from '@/utils/index'
 import Device from '@/object/device'
+import { MaintainManagement }  from '@/object/maintainManagement'
 
 export default {
   name: 'Dashboard',
@@ -97,13 +108,22 @@ export default {
     },
     disabled () {
       return this.loading || this.noMore
+    },
+    page: function() {
+      return this.maintainlistQueryParams.pageIndex || 1
+    },
+    limit: function() {
+     return this.maintainlistQueryParams.pageSize || 12
+    },
+    total: function() {
+      return this.maintainlistQueryParams.total || 0
     }
   },
   watch:{
     buildingid:{
       handler:async function(){
         if(this.buildingid !== undefined){
-          await this.getBuildingDevicesManage()
+          await this.init()
         }
       },
       immediate:true
@@ -117,9 +137,20 @@ export default {
       count: 9,
       viewlist: constant.INDEX_VIEW_NINE,
       currentNode: '',
+      maintainlistQueryParams:{
+        
+        pageIndex: 1,
+        pageSize: 50,
+        total:0
+      },
+      pageSizeList:[50, 150, 300, 500]
     }
   },
   methods: {
+    async init(){   
+      await this.getBuildingDevicesManage()
+      await this.getMaintain()
+    },
     loadMore() {
       this.loading = true;
       setTimeout(() => {
@@ -150,12 +181,31 @@ export default {
       }
       this.deviceGroup = _temp
     },
+    async getMaintain(){ //取得維保細項 故障日期!=null 叫修日期null
+        var data = await MaintainManagement.getAllSearchPage(this.maintainlistQueryParams)
+        console.log(data)
+        this.maintainlistQueryParams.total = data.totalPageCount
+
+    },
+    //圓餅圖
     handleChartClick(value){
       this.currentNode = value
     },
+    //樹
     handleNodeClick(data){
       console.log(data)
-    }
+    },
+    // 改變翻頁組件中每頁數據總數
+    async handleSizeChange(val) {
+      this.maintainlistQueryParams.pageSize = val
+      this.maintainlistQueryParams.pageIndex = 1 // 改變翻頁數目，將頁面=1
+      await this.getMaintain()
+    },
+    // 跳到當前是第幾頁
+    async handleCurrentChange(val) {
+      this.maintainlistQueryParams.pageIndex = val
+      await this.getMaintain()
+    },
   }
 }
 </script>

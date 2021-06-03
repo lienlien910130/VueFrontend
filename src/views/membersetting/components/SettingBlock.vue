@@ -22,7 +22,7 @@
                             placeholder="請輸入名稱" @keyup.enter.native="onSubmit"
                             maxlength="30"
                             show-word-limit></el-input>
-                            <el-button style="float: right;" type="primary"
+                            <el-button style="float: right;" type="primary" size="mini"
                             @click="onSubmit">新增</el-button>
                         </el-row>
                     </div>

@@ -54,7 +54,8 @@ const files = {
 
     //共用方法 刪除/下載
     apiDeleteFile(data){ return req('post','/public/fileDelete',data) },
-    apiGetFile(fileId){ return req('get','/Public/fileDownload/'+fileId,null,true) },
+    apiGetFile(fileId){ return req('get','/public/fileDownload/'+fileId,null,true) },
+    apiGetImage(fileId){ return req('get','/public/fileDownload/'+fileId+'/r',null,true) }
     
 }
 

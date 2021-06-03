@@ -28,8 +28,22 @@
 import XLSX from 'xlsx'
 export default {
   name: 'UploadExcel',
+  props:{
+    config: {
+      type: Array
+    }
+  },
+  watch:{
+    config:{
+      handler:async function(){
+          this.headerconfig = this.config.filter((item,index)=> item.isUpload == true)
+      },
+      immediate:true
+    }
+  },
   data() {
     return {
+      headerconfig:[],
       tableData: [],
       tableHeader: [],
       loading: false
@@ -46,10 +60,6 @@ export default {
         type: 'warning'
       })
       return false
-    },
-    generateData({ header, results }) {
-      this.tableData = results
-      this.tableHeader = header
     },
     handleDrop(e) {
       e.stopPropagation()
@@ -85,13 +95,28 @@ export default {
       this.upload(rawFile)
     },
     handleSave(){
-      console.log(JSON.stringify(this.tableData))
-      if(this.tableData.length !== 0){
-        this.$emit('handleFilesUpload','uploadExcelSave','',this.tableData)
+      var result = this.tableData.map(element=>{
+        var array = {}
+        for (const key in element) {
+            var a = this.headerconfig.filter(obj=>obj.label == key)
+            if(a.length !== 0){
+              this.$set(array,a[0].prop,element[key])
+            }
+        }
+        return array
+      })
+      var newArr = []
+      result.forEach(item => {
+        if (Object.keys(item).length) {
+          newArr.push(item)
+        }
+      })
+      if(newArr.length !== 0){
+        this.$emit('handleFilesUpload','uploadExcelSave','',newArr)
         this.tableData = []
         this.tableHeader = []
       }else{
-        this.$message.error('請先上傳檔案再儲存資料')
+        this.$message.error('請先上傳正確的檔案格式再儲存資料')
       }
     },
     upload(rawFile) {
@@ -141,6 +166,10 @@ export default {
         headers.push(hdr)
       }
       return headers
+    },
+    generateData({ header, results }) {
+      this.tableData = results
+      this.tableHeader = header
     },
     isExcel(file) {
       return /\.(xlsx|xls|csv)$/.test(file.name)

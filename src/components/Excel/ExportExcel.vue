@@ -56,10 +56,6 @@ export default {
     },
     config: {
       type: Array
-    },
-    title:{
-      type: String,
-      required: true
     }
   },
   data() {
@@ -75,7 +71,7 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        var array = this.config.filter(item=>{ return item.isHidden == false})
+        var array = this.config.filter(item=>{ return item.isExport == true})
         var index = array.findIndex(item=>item.prop == 'rangeDate')
         if(index != -1){
           array.splice(index,1)
