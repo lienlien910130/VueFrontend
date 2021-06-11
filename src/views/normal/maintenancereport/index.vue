@@ -31,7 +31,7 @@
                   <div class="horizontalhalfdiv">
                     <div class="label">
                       <i class="el-icon-edit">
-                          <a @click="openWindows('basic')" style="color:#66b1ff"> 管理權人：</a>
+                          <a @click="openWindows('user')" style="color:#66b1ff"> 管理權人：</a>
                       </i>
                     </div>
                     <div class="content">
@@ -52,7 +52,7 @@
                   <div class="horizontalhalfdiv">
                     <div class="label">
                       <i class="el-icon-edit">
-                          <a @click="openWindows('basic')" style="color:#66b1ff"> 防火管理人：</a>
+                          <a @click="openWindows('user')" style="color:#66b1ff"> 防火管理人：</a>
                       </i>
                     </div>
                     <div class="content">
@@ -133,6 +133,7 @@ export default {
       this.title = 'reportInspectio'
       this.tableConfig = Inspection.getTableConfig()
       await this.getBuildingMaintenanceReport()
+      await this.getCertificateNumber()
       this.buttonsName = [
         { name:'刪除',icon:'el-icon-delete',status:'delete'},
         { name:'編輯',icon:'el-icon-edit',status:'open'},
@@ -155,6 +156,14 @@ export default {
         total:0
       }
       await this.getInspectionLack()
+    },
+    async getCertificateNumber(){
+      var data = await Inspection.getColumn({
+              "professName": "{IsNotNull}"
+      })
+      this.dialogSelect = data.map(item=> {
+        return {value: item.professName}
+      })
     },
     async getBuildingMaintenanceReport() { //取得檢修申報
       var data = await Inspection.getSearchPage(this.listQueryParams)
@@ -263,18 +272,11 @@ export default {
              })
             index === 'changeAgain' ? str = str+'更換缺失內容' : str = str+'建立缺失內容'
             autoCreate === true ? str = str+'及同步建立維護保養中，請稍後 ...' : str = str+'中，請稍後 ...'
-            const loading = this.$loading({
-                lock: true,
-                text: str,
-                spinner: 'el-icon-loading',
-                background: 'rgba(0, 0, 0, 0.7)'
-            })
             isOk = await this.inspection.settinglackfile(autoCreate,parseInt(content),
             index === 'changeAgain' ? true : false)
             if(isOk){
               this.$message('更新成功')
               this.lackFileId = content
-              loading.close()
             }
           }else{
             this.innerVisible = false
@@ -335,6 +337,9 @@ export default {
             limit: 10,
             total: 0
           }
+          if(this.isTable == false){
+            await this.getBuildingPublicSafeReport()
+          }
         }else if(index === 'cancellack'){
           this.lacklistQueryParams = {
             page: 1,
@@ -366,9 +371,15 @@ export default {
       this.isTable = value
       if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
         if(typeof this.$route.params.target == 'object'){
-          console.log(JSON.stringify(this.$route.params.target))
-          await this.handleLackDialog('','openother',this.$route.params.target)
+          if(this.$route.params.type == 'open'){
+            await this.handleBlock('','open',this.$route.params.target)
+          }else{
+            await this.handleLackDialog('','openother',this.$route.params.target)
+          }
         }
+      }else if(this.$route.query.type !== undefined && 
+      this.$route.query.type == 'inspection'){
+        await this.handleBlock('','empty','')
       }
     }
   }

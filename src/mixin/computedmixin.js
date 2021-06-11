@@ -74,22 +74,6 @@ export default {
                   return ''
                 } 
             },
-            // changeUsageOfFloor(){ //門牌
-            //     return function (val) {
-            //         if(val !== null && val !== undefined){
-            //           return val.map(item=>{ return item.getName() }).toString()
-            //         }
-            //         return ''
-            //     } 
-            // },
-            // changeUsageOfFloorUsersName(){ //門牌底下的使用者名稱
-            //     return function (val) {
-            //         if(val !== null && val !== undefined){
-            //             return val.map(item => { return item.getName()}).toString()
-            //         }
-            //         return ''
-            //     } 
-            // },
             changeUserName(){ //住戶名稱
                 return function (val) {
                     if(val !== null){

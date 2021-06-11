@@ -40,9 +40,9 @@ class PublicSafeLack extends Parent {
         })
         return data
     }
-    // getName(){
-    //     return '【'+this.lackItem+'】'+this.lackContent
-    // }
+    getStatus(){
+        return this.status
+    }
     static empty(){
         return new PublicSafeLack({
             id:'',

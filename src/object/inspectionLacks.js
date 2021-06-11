@@ -40,7 +40,7 @@ class InspectionLacks extends Parent {
     getName(){
         return '【'+this.lackItem+'】'+this.lackContent
     }
-    getStatus(){
+    getProcessStatus(){
         return this.status
     }
     static empty(){

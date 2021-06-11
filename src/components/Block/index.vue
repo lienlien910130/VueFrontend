@@ -159,7 +159,11 @@
                                 </el-input> -->
                                 
                                 <span v-else-if="option.format == 'openmaintain' ">
-                                    <!-- {{ changeMaintain(item[option.prop]) }} -->
+                                    {{ changeMaintain(item[option.prop]) }}
+                                </span>
+
+                                <span v-else-if="option.format == 'openreportlack' ">
+                                    {{ changeLackCount(item[option.prop]) }}
                                 </span>
                                 
                                 <el-button v-else-if="option.format == 'openfiles' "
@@ -435,6 +439,7 @@ import UsageOfFloor from '@/object/usageOfFloor'
 import Role from '@/object/role'
 import Building from '@/object/building'
 import InspectionLacks from '@/object/inspectionLacks'
+import moment from 'moment'
 
 export default {
     mixins:[computedmixin],
@@ -523,7 +528,7 @@ export default {
             }else if(this.title == 'floorOfHouse'){
                 return { height : '185px'}
             }else if(this.title == 'maintainList'){
-                return { height : '100px'}
+                return { height : '130px'}
             }else if(this.title == 'equipment'){
                 return { height : '270px'}
             }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
@@ -550,7 +555,7 @@ export default {
             }else if(this.title == 'floorOfHouse'){
                 return { height : '245px'}
             }else if(this.title == 'maintainList'){
-                return { height : '160px'}
+                return { height : '190px'}
             }else if(this.title == 'equipment'){
                 return { height : '330px'}
             }else if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
@@ -569,18 +574,34 @@ export default {
                 return { height : '405px'}
             }
         },
-        // changeMaintain(){
-        //     return function (a) {
-        //         if(a !== null && a.length){
-        //             var done = a.filter(item=>{
-        //                 return item.getProcess() === "79"
-        //             })
-        //             return done.length.toString()+'/'+(a.length - done.length).toString()+'/'+a.length.toString()
-        //         }else{
-        //             return "0/0/0"
-        //         }
-        //     } 
-        // },
+        changeMaintain(){
+            return function (all) {
+                if(all !== null && all.length){
+                    var doneobj = this.buildingoptions.filter(item=>
+                    item.classType == 'MaintainProcessOptions' 
+                    && item.textName == '已保養' && item.value == 'system')
+                    var doneid = doneobj.length !== 0 ? doneobj[0].id : 0
+                    var done = all.filter(item => item.getProcessStatus() == doneid)
+                    return done.length.toString()+'/'+(all.length - done.length).toString()
+                }else{
+                    return "0/0"
+                }
+            } 
+        },
+        changeLackCount(){
+            return function (all) {
+                if(all !== null && all.length){
+                    var doneobj = this.buildingoptions.filter(item=>
+                    item.classType == 'LackStatusOptions' 
+                    && item.textName == '已改善' && item.value == 'system')
+                    var doneid = doneobj.length !== 0 ? doneobj[0].id : 0
+                    var done = all.filter(item => item.getStatus() == doneid)
+                    return done.length.toString()+'/'+(all.length - done.length).toString()
+                }else{
+                    return "0/0"
+                }
+            } 
+        },
         page: function() {
             return this.listQueryParams.pageIndex || 1
         },
@@ -592,14 +613,6 @@ export default {
         }
     },
     watch:{
-        // config:{
-        //     handler:async function(){
-        //         this.rowlabel = this.config.filter((item,index)=> item.isHidden == false)
-        //         console.log('this.config')
-        //         this.inputSelectChange()
-        //     },
-        //     immediate:true
-        // },
         isTable:{
             handler:async function(){
                this.isTable == true ? this.gutter = 0 :this.gutter =  32
@@ -688,6 +701,9 @@ export default {
                             value = data[item] == true ? '允許' : '禁止'
                         }else if(item == 'systemUsed'){
                             value = data[item] == true ? '已使用' : '未使用'
+                        }else if (item == 'birthday' || item == 'dateOfPurchase' ||
+                        item == 'dateOfWarranty'){
+                            value = moment(data[item]).format('YYYY-MM-DD')
                         }else{
                             value = data[item]
                         }
@@ -921,7 +937,7 @@ export default {
             return this.config.filter(item => item.isSearch == true)
         },
         clearInputSearch(){
-            this.pictLoading = true
+            //this.pictLoading = true
             this.inputSelect = null
             this.$emit('resetlistQueryParams')
         },
@@ -943,7 +959,7 @@ export default {
                         this.$set(this.listQueryParams,item.prop,'{LIKE}'+words[index])
                     }
                 })
-                this.pictLoading = true
+                //this.pictLoading = true
                 this.listQueryParams.pageIndex = 1
                 this.$emit('update:listQueryParams', this.listQueryParams)
                 this.$emit('clickPagination')
@@ -951,7 +967,7 @@ export default {
         },
         // 改變翻頁組件中每頁數據總數
         handleSizeChange(val) {
-            this.pictLoading = true
+            //this.pictLoading = true
             this.listQueryParams.pageSize = val
             this.listQueryParams.pageIndex = 1 // 改變翻頁數目，將頁面=1
             this.$emit('update:listQueryParams', this.listQueryParams)
@@ -959,7 +975,7 @@ export default {
         },
         // 跳到當前是第幾頁
         handleCurrentChange(val) {
-            this.pictLoading = true
+            //this.pictLoading = true
             this.listQueryParams.pageIndex = val
             this.$emit('update:listQueryParams', this.listQueryParams)
             this.$emit('clickPagination')
@@ -968,7 +984,7 @@ export default {
             this.pictLoading = false
         },
         change(){
-            this.pictLoading = true
+            //this.pictLoading = true
             this.$emit('changeTable',!this.isTable)
             
         }

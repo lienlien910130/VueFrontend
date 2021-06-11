@@ -25,8 +25,8 @@ export default {
 			request.onupgradeneeded = e => {
 				console.log('onupgradeneeded')
 				let db = e.target.result
-                var temp = db.createObjectStore("menu", { autoIncrement: true, keyPath:'id' })
-                temp.createIndex("codeIndex","code",{unique:true})
+                // var temp = db.createObjectStore("menu", { autoIncrement: true, keyPath:'id' })
+                // temp.createIndex("codeIndex","code",{unique:true})
                 // db.createObjectStore("roles", { autoIncrement: true, keyPath:'id' })
                 // db.createObjectStore("buildingInfo", { autoIncrement: true, keyPath:'id' })
                 // db.createObjectStore("buildingFloors", { autoIncrement: true, keyPath:'id' })

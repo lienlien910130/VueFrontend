@@ -6,14 +6,14 @@ class Contactunit extends Parent {
         super(data)
         const { type, name, contactNumber, cellPhoneNumber, faxNumber, email, address,
             note, collaborate, hide  } = data
-        this.name = name
-        this.type = type
-        this.contactNumber = contactNumber
+        this.name = name 
+        this.type = type 
+        this.contactNumber = contactNumber 
         this.cellPhoneNumber = cellPhoneNumber
-        this.faxNumber = faxNumber
-        this.email = email
+        this.faxNumber = faxNumber 
+        this.email = email 
         this.address = address
-        this.note = note
+        this.note = note 
         this.collaborate = collaborate
         this.hide = hide
         return this
@@ -121,7 +121,7 @@ class Contactunit extends Parent {
             label:'備註' , 
             prop:'note',format:'textarea', 
             mandatory:false,
-            isHidden:false,maxlength:'200',isSearch:true,placeholder:'請輸入備註',
+            isHidden:true,maxlength:'200',isSearch:true,placeholder:'請輸入備註',
             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false }
        ]
     }

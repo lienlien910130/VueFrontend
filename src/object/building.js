@@ -12,11 +12,11 @@ class Building extends Parent {
         var owners = linkOwners.map(item=>{ return new User(item)})
         var fireManagers = linkFireManagers.map(item=>{ return new User(item)})
         this.buildingName = buildingName
-        this.address = address
-        this.area = area
-        this.height = height
-        this.floorsOfAboveGround = floorsOfAboveGround
-        this.floorsOfUnderground = floorsOfUnderground
+        this.address = address 
+        this.area = area == undefined ? null : area
+        this.height = height == undefined ? null : height
+        this.floorsOfAboveGround = floorsOfAboveGround == undefined ? null : floorsOfAboveGround
+        this.floorsOfUnderground = floorsOfUnderground == undefined ? null : floorsOfUnderground
         this.licenseNumber = licenseNumber
         this.specialStorageItems = specialStorageItems
         this.linkOwners = owners
@@ -178,8 +178,7 @@ class Building extends Parent {
     }
     static async get (){
         var data = await api.building.apiGetBuilding().then(response => {
-            var result = response.result.sort((x,y) => x.id - y.id)
-            .map(item=>{ return new Building(item)})
+            var result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Building(item)})
             return result
         }).catch(error=>{
             return []

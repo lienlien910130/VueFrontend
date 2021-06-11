@@ -119,6 +119,9 @@ export default {
                 if(typeof this.$route.params.target == 'object'){
                     await this.handleBlock('equipment','open',this.$route.params.target)
                 }
+            }else if(this.$route.query.type !== undefined && 
+            this.$route.query.type == 'device'){
+                await this.handleBlock('','empty','')
             }
         }
     }

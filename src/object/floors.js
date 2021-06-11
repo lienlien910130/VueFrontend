@@ -11,8 +11,8 @@ class Floors extends Parent {
         super(data)
         const { floor, floorPlanID, sort, linkDevices } = data
         var devices = linkDevices.map(item=>{ return new Device(item)})
-        this.floor = floor
-        this.floorPlanID = floorPlanID
+        this.floor = floor 
+        this.floorPlanID =  floorPlanID == undefined ? null :  floorPlanID
         this.sort = sort
         this.linkDevices = devices
         return this

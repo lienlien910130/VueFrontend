@@ -89,6 +89,7 @@ export default {
         },
         async getOptions(){ //取得大樓的所有分類
             this.options = await Setting.getAllOption()
+            console.log(JSON.stringify(this.options))
             this.$store.dispatch('building/setbuildingoptions',this.options)
         },
         optionsFilter(title){

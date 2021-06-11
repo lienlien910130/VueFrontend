@@ -71,9 +71,9 @@ class Device extends Parent {
     getDateOfWarranty(){
         return moment(this.dateOfWarranty).format('YYYY-MM-DD')
     }
-    // getSystemUsed(){
-    //     return this.systemUsed == true ? '已設置' : '尚未設置'
-    // }
+    getSystemUsed(){
+        return this.systemUsed == true ? '已設置' : '尚未設置'
+    }
     // SystemUsed(){
     //     return this.systemUsed
     // }
@@ -130,7 +130,7 @@ class Device extends Parent {
                  format:'deviceTypeSelect',
                  mandatory:true, message:'請選擇種類',isHidden:false,
                  type:'array',typemessage:'',isSearch:false,
-                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
              },
              {
                  label: '購買日期',
@@ -181,15 +181,15 @@ class Device extends Parent {
              {
                  label: '設備狀況',
                  prop: 'status',
-                 format:'DeviceStatusOptions',
+                 format:'MaintainProcessOptions',
                  mandatory:true, message:'請選擇設備狀況',
                  isHidden:false,isSearch:false,
-                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
              },
              { label:'圖控使用' , prop:'systemUsed',format:'systemUsedBoolean', 
                 mandatory:false, 
                 type:'boolean',typemessage:'',isHidden:true,isSearch:false,
-                isAssociate:false,isEdit:false,isUpload:true,isExport:false,isBlock:false},
+                isAssociate:false,isEdit:false,isUpload:true,isExport:false,isBlock:false}
          ]
     }
     static getAddressConfig(){

@@ -49,7 +49,7 @@
                                         {{ item.textName }} 
                                     </span>
                                 </div>
-                                <span v-if="current == ''">
+                                <span v-if="current == '' && item.value == null ">
                                     <i class="el-icon-delete" 
                                     style="float: right;font-size: 25px;" 
                                     @click="deleteData(item.id)"></i>

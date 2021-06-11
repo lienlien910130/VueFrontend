@@ -5,7 +5,6 @@
                     <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                         <h3>基本資料</h3>
                         <Form 
-                        :buildingUsers="buildingUsers"
                         v-on:handleBuildingInfo="handleBuildingInfo"
                         />
                     </div>
@@ -186,8 +185,6 @@ export default {
       usageOfFloorSelectList:[],
       floorofhouse :'',
       building:null,
-      //Form 
-      buildingUsers:[],
       //Buildingupload
       buildingFiles:[],
       //FloorImage
@@ -212,17 +209,6 @@ export default {
     }
   },
   watch: {
-    buildingusers:{
-      handler:async function(){
-        this.buildingUsers = this.buildingusers.map(v => {
-              this.$set(v, 'value', v.id) 
-              this.$set(v, 'label', v.name) 
-              this.$set(v, 'id', v.id) 
-              return v
-        })
-      },
-      immediate:true
-    },
     buildinginfo:{
       handler:async function(){
         this.building = this.buildinginfo[0]
@@ -349,14 +335,14 @@ export default {
       this.downlistQueryParams)
       this.downData = data.result
       this.downlistQueryParams.total = data.totalPageCount
-      this.$refs.downblock.resetpictLoading()
+      if(this.$refs.downblock !== undefined)  this.$refs.downblock.resetpictLoading()
       await this.getFilterItems(this.downConfig)
     },
     async getUserList(){ //取得大樓住戶資料
       var data = await User.getSearchPage(this.downlistQueryParams)
       this.downData = data.result
       this.downlistQueryParams.total = data.totalPageCount
-      this.$refs.downblock.resetpictLoading()
+      if(this.$refs.downblock !== undefined)  this.$refs.downblock.resetpictLoading()
       await this.getFilterItems(this.downConfig)
     },
     async handleBuildingInfo(index, content){ //轉接口
@@ -442,7 +428,6 @@ export default {
           exportdata = this.blockData
           break;
         case 'floorOfHouse':
-          this.dialogSelect = this.buildingUsers
           this.dialogConfig = UsageOfFloor.getTableConfig()
           empty = UsageOfFloor.empty()
           exportdata = this.downData
@@ -574,6 +559,8 @@ export default {
           await UsageOfFloor.postMany(this.selectFloor.getID(),content)
         if(isOk){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+          this.$store.dispatch('building/setbuildingusers',await User.get())
+          this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
           this.innerVisible = false
           if(this.selectFloor !== null){
             await this.getFloorOfHouseList()
@@ -608,12 +595,13 @@ export default {
     },
     async changeTable(value){
       this.isTable = value
+      //內部轉頁面
       if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
         if(typeof this.$route.params.target == 'object' && 
         this.$route.params.type == 'user'){
           await this.handleBuildingInfo('open',this.$route.params.target)
         }else if(typeof this.$route.params.target == 'object' && 
-        this.$route.params.type == 'contactunit'){
+          this.$route.params.type == 'contactunit'){
           this.activeName = 'Vender'
           this.title = 'contactUnit'
           this.tableConfig = Contactunit.getTableConfig() 
@@ -621,6 +609,20 @@ export default {
           this.$nextTick(async()=>{
             await this.handleBlock('contactUnit','open',this.$route.params.target)
           })
+        }
+      }else if(this.$route.query.type !== undefined && this.$route.query.type !== ''){ //外部轉頁面
+        if(this.$route.query.type == 'user'){
+          await this.handleBlock(this.$route.query.type,'empty','')
+        }else if(this.$route.query.type == 'contactunit'){
+          this.activeName = 'Vender'
+          this.title = 'contactUnit'
+          this.tableConfig = Contactunit.getTableConfig() 
+          await this.resetlistQueryParams()
+          this.$nextTick(async()=>{
+            await this.handleBlock('contactUnit','empty','')
+          })
+        }else{
+          this.$message.error('請先選擇樓層再進行門牌新增')
         }
       }
     }

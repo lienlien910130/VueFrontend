@@ -167,10 +167,10 @@ import { removeDuplicates } from '@/utils/index'
               h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'設置位置 ：'),
               h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.location)
             ]),
-            h('p',{ style: 'width:100%' },[
-              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'系統-迴路-點位 ：'),
-              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getSystem())
-            ])
+            // h('p',{ style: 'width:100%' },[
+            //   h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'系統-迴路-點位 ：'),
+            //   h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getSystem())
+            // ])
           ]
           ),
           showCancelButton: true,

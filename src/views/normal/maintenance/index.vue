@@ -33,7 +33,7 @@
                     <div class="horizontalhalfdiv">
                             <div class="label">
                             <i class="el-icon-edit">
-                                <a @click="openWindows('basic')" style="color:#66b1ff"> 管理權人：</a>
+                                <a @click="openWindows('user')" style="color:#66b1ff"> 管理權人：</a>
                             </i>
                             </div>
                             <div class="content">
@@ -54,7 +54,7 @@
                   <div class="horizontalhalfdiv">
                     <div class="label">
                       <i class="el-icon-edit">
-                          <a @click="openWindows('basic')" style="color:#66b1ff"> 防火管理人：</a>
+                          <a @click="openWindows('user')" style="color:#66b1ff"> 防火管理人：</a>
                       </i>
                     </div>
                     <div class="content">
@@ -279,7 +279,15 @@ export default {
             this.dialogTitle = 'maintain'
             this.dialogButtonsName = []
             if(index === 'empty'){
-                if(content !== ''){
+                if(this.isTable == true && content == ''){
+                    this.$message.error('請選擇要關聯的維保大項')
+                    this.dialogButtonsName = [
+                    { name:'建立維保大項',type:'primary',status:'openempty'},
+                    { name:'儲存',type:'primary',status:'tablemaintain'},
+                    { name:'取消',type:'info',status:'cancel'}]
+                    return false
+                }
+                if(this.isTable == true && content !== ''){
                     this.maintainList = content
                 }
                 this.dialogConfig = this.formtableconfig
@@ -391,6 +399,11 @@ export default {
         async changeTable(value){
             this.isTable = value
             await this.resetlistQueryParams()
+            if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0){
+                if(typeof this.$route.params.target == 'object'){
+                    await this.handleMaintain('open',this.$route.params.target)
+                }
+            }
         }
     }
 }

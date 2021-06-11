@@ -33,7 +33,7 @@
                   <div class="horizontalhalfdiv">
                     <div class="label">
                       <i class="el-icon-edit">
-                          <a @click="openWindows('basic')" style="color:#66b1ff"> 管理權人：</a>
+                          <a @click="openWindows('user')" style="color:#66b1ff"> 管理權人：</a>
                       </i>
                     </div>
                     <div class="content">
@@ -54,7 +54,7 @@
                   <div class="horizontalhalfdiv">
                     <div class="label">
                       <i class="el-icon-edit">
-                          <a @click="openWindows('basic')" style="color:#66b1ff"> 防火管理人：</a>
+                          <a @click="openWindows('user')" style="color:#66b1ff"> 防火管理人：</a>
                       </i>
                     </div>
                     <div class="content">
@@ -133,6 +133,7 @@ export default {
       this.title = 'reportPublicSafe'
       this.tableConfig = PublicSafe.getTableConfig()
       await this.getBuildingPublicSafeReport()
+      await this.getCertificateNumber()
       this.buttonsName = [
         { name:'刪除',icon:'el-icon-delete',status:'delete'},
         { name:'編輯',icon:'el-icon-edit',status:'open'},
@@ -156,8 +157,17 @@ export default {
       }
       await this.getPublicSafeLack()
     },
+    async getCertificateNumber(){
+      var data = await PublicSafe.getColumn({
+              "professName": "{IsNotNull}"
+      })
+      this.dialogSelect = data.map(item=> {
+        return {value: item.professName}
+      })
+    },
     async getBuildingPublicSafeReport() { 
       var data = await PublicSafe.getSearchPage(this.listQueryParams)
+      console.log(data)
       this.blockData = data.result
       this.listQueryParams.total = data.totalPageCount
       this.$refs.block.resetpictLoading()
@@ -294,6 +304,9 @@ export default {
             pageSize: 10,
             total:0
           }
+          if(this.isTable == false){
+            await this.getBuildingPublicSafeReport()
+          }
         }else if(index === 'cancellack'){
           this.lacklistQueryParams = {
             pageIndex: 1,
@@ -323,6 +336,11 @@ export default {
     },
     async changeTable(value){
       this.isTable = value
+       if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+        if(typeof this.$route.params.target == 'object'){
+          await this.handleBlock('','open',this.$route.params.target)
+        }
+      }
     }
   }
 }

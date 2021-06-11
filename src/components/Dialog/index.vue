@@ -1,6 +1,6 @@
 <template>
-
-    <el-dialog
+    <div>
+      <el-dialog
         top="5vh"
         :width="dialogWidth"
         :title="textMap[dialogStatus]"
@@ -52,7 +52,7 @@
                 <!-- label -->
                 <span v-if="item.isAssociate == false" slot="label">{{ item.label }}</span>
                 <i v-else slot="label" class="el-icon-edit">
-                    <a @click="openWindows(item.prop)" style="color:#66b1ff"> {{ item.label }} </a>
+                    <a @click="openWindows(item.format)" style="color:#66b1ff"> {{ item.label }} </a>
                 </i>
                 <!-- 年度&日期 -->
                 <el-date-picker 
@@ -255,22 +255,14 @@
                     </template>
                 </el-input>
 
-                <!-- <el-input-number 
-                v-else-if="item.format =='inputnumber'"
-                v-model="temp[item.prop]"  
-                controls-position="right" 
-                :min="0"
-                :precision="0"
-                style="width:100%"
-                ></el-input-number> -->
-
-                <!-- <el-input 
-                v-else-if="item.format =='number' "
+                <el-autocomplete
+                v-else-if="item.format =='searchColumn'"
+                class="inline-input"
                 v-model="temp[item.prop]"
-                :maxlength="item.maxlength"
-                show-word-limit
-                @input="temp[item.prop] = temp[item.prop].replace(/[^\d]/g,'').replace(/\s*/g,'')">
-                </el-input> -->
+                :fetch-suggestions="querySearch"
+                :placeholder="item.placeholder"
+                style="width:100%"
+                ></el-autocomplete>   
 
                 <el-input v-else-if="item.format =='textarea'"
                 v-model="temp[item.prop]" 
@@ -394,7 +386,8 @@
             </el-button>
             </span>
         </div>
-    </el-dialog>
+    </el-dialog>  
+    </div>
 </template>
 
 <script>
@@ -441,7 +434,7 @@ export default {
         exportExcelData: {
             type: Array
         },
-        //auth
+        //auth-menu&該角色所有權限id
         accessAuthoritiesData: {
             type: Array
         },
@@ -491,7 +484,14 @@ export default {
                     this.treeSelection()
                 })
             }
-        }
+        },
+        // buildingdevices:{
+        //     handler:function(){
+        //         console.log('changeDevices')
+        //         console.log(JSON.stringify(this.buildingdevices))
+        //     },
+        //     immediate:true
+        // }
     },
     computed:{
         label() {
@@ -565,12 +565,16 @@ export default {
                         case 'floorOfHouseSelect':
                             return this.selectData
                         case 'userInfo':
-                            return this.buildingusers.map(v => {
-                                this.$set(v, 'value', v.getID()) 
-                                this.$set(v, 'label', v.getName()) 
-                                this.$set(v, 'id', v.getID()) 
-                                return v
-                            })
+                            if(this.title == 'building'){
+                                return this.selectData
+                            }else{
+                                return this.buildingusers.map(v => {
+                                    this.$set(v, 'value', v.getID()) 
+                                    this.$set(v, 'label', v.getNameOfHouse()) 
+                                    this.$set(v, 'id', v.getID()) 
+                                    return v
+                                })
+                            }
                         case 'roleSelect' :
                             return this.buildingroles.map(v => {
                                 this.$set(v, 'value', v.getID()) 
@@ -611,11 +615,11 @@ export default {
             fulltypevalue:[],
             addressvalue:[],
             pictLoading:false,
-            isSelectAll:false,
             accessArray:[],
             createOption:[],
             prop:[],
-            maintainListID:''
+            maintainListID:'',
+            
         }
     },
     methods: {
@@ -645,7 +649,7 @@ export default {
                 })
             }
         },
-        treeSelection(){
+        treeSelection(){ //初始化控制表格checkbox&row是否勾選狀態
             this.pictLoading = true
             var _temp = this.accessAuthoritiesData
             for(var i =0;i<_temp.length;i++){
@@ -678,45 +682,63 @@ export default {
                 return ""
             }
         },
+        querySearch(queryString, cb) {
+            var restaurants = this.selectData
+            var results = queryString ? restaurants.filter(this.createFilter(queryString)) : this.selectData
+            cb(results);
+        },
+        createFilter(queryString) {
+            return (restaurant) => {
+                console.log(restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()))
+                return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
+            }
+        },
         //打開新視窗
-        openWindows(prop){
+        openWindows(format){
             var routeData
-            switch(prop){
-                case 'linkRoles':
-                    routeData = this.$router.resolve({ name: 'roleSetting' })
+            switch (format) {
+                case 'userInfo':
+                    if(this.buildingid == undefined){
+                        this.$message.error('請選擇建築物後才可對所有權人&防火管理人進行新增')
+                    }else{
+                        routeData = this.$router.resolve(
+                            { path: '/normal/basic',query:{ type:'user' } })
+                    }
                     break;
-                case 'linkOwners':
-                    routeData = this.$router.resolve({ name: 'basic' })
+                case 'deviceTypeSelect':
+                    routeData = this.$router.resolve(
+                            { path: '/equipment/type',query:{ type:'devicetype' } })
                     break;
-                case 'linkFireManagers':
-                    routeData = this.$router.resolve({ name: 'basic' })
+                case 'contactunitSelect':
+                    routeData = this.$router.resolve(
+                            { path: '/normal/basic',query:{ type:'contactunit' } })
                     break;
-                case 'linkKeeperUnits':
-                    routeData = this.$router.resolve({ name: 'basic' })
+                case 'floorOfHouseSelect':
+                    routeData = this.$router.resolve(
+                            { path: '/normal/basic',query:{ type:'floorOfHouse' } })
                     break;
-                case 'linkMaintainVendors':
-                    routeData = this.$router.resolve({ name: 'basic' })
+                case 'inspectionSelect':
+                    routeData = this.$router.resolve(
+                            { path: '/normal/maintenancereport',query:{ type:'inspection' } })
                     break;
-                case 'linkContactUnits':
-                    routeData = this.$router.resolve({ name: 'basic' })
+                case 'deviceSelect':
+                    routeData = this.$router.resolve(
+                            { path: '/equipment/index',query:{ type:'device' } })
                     break;
-                case 'linkUsageOfFloors':
-                    routeData = this.$router.resolve({ name: 'basic' })
+                case 'roleSelect':
+                    routeData = this.$router.resolve(
+                            { path: '/authority/roles',query:{ type:'role' } })
                     break;
-                case 'linkInspectionLacks':
-                    routeData = this.$router.resolve({ name: 'ReportInspection' })
+                case 'MaintainProcessOptions':
+                   routeData = this.$router.resolve({ name: 'sys-Setting' })
                     break;
-                case 'linkDevices':
-                    routeData = this.$router.resolve({ name: 'devicesManagement' })
+                case 'MaintainContentOptions':
+                   routeData = this.$router.resolve({ name: 'sys-Setting' })
                     break;
-                case 'status':
-                    routeData = this.$router.resolve({ name: 'sys-Setting' })
+                case 'LackStatusOptions':
+                   routeData = this.$router.resolve({ name: 'sys-Setting' })
                     break;
-                case 'processStatus':
-                    routeData = this.$router.resolve({ name: 'sys-Setting' })
-                    break;
-                case 'processContent':
-                    routeData = this.$router.resolve({ name: 'sys-Setting' })
+                default:
                     break;
             }
             window.open(routeData.href, '_blank')
@@ -758,12 +780,6 @@ export default {
              this.dialogStatus !== 'authority'){
                 this.$refs.dataForm.validate(async(valid) => {
                     if (valid) {
-                        const loading = this.$loading({
-                            lock: true,
-                            text: '更新資料中，請稍後...',
-                            spinner: 'el-icon-loading',
-                            background: 'rgba(0, 0, 0, 0.7)'
-                        })
                         if(this.createOption.length !== 0){ //有動態新增選項
                             for(var i =0;i<this.createOption.length;i++){
                                 var isOk = await Setting.postOption(this.createOption[i])
@@ -776,7 +792,7 @@ export default {
                             await this.getOptions()
                         }
                         this.$emit('handleDialog',this.title, status , this.temp)   
-                        loading.close()  
+                        
                     } else {
                         this.$message.error('請輸入完整資訊')
                         return false
@@ -881,27 +897,26 @@ export default {
                 this.$refs.authorityTable.toggleRowSelection(row,false)
             }
         },
-        async handleSelectionAll(val){
-            console.log(JSON.stringify(val))
-            // if(!this.isSelectAll){
-            //     val.forEach(async(item) => {
-            //         await this.handleSelectionChange(val,item)
-            //         item.children.forEach(async(children)=>{
-            //             this.$refs.authorityTable.toggleRowSelection(children,true)
-            //             await this.handleSelectionChange(val,children)   
-            //         })
-            //     })
-            //     this.isSelectAll = true
-            //  }else{
-            //     this.$refs.authorityTable.clearSelection()
-            //     this.treeData.forEach(obj=>{
-            //         obj.accessAuthorities = []
-            //         obj.children.forEach(ele=>{
-            //             ele.accessAuthorities = []
-            //         })
-            //     })
-            //     this.isSelectAll = false
-            // }
+        async handleSelectionAll(val){ //全選
+            var array = val.filter(item => item.linkMainMenus.length !== 0)
+            this.accessArray = []
+            if(array.length == 0){ //代表取消全選
+                this.$refs.authorityTable.clearSelection()
+            }else{
+                var _temp = this.accessAuthoritiesData
+                for(var i =0;i<_temp.length;i++){
+                    _temp[i].getAccessAuthorities().forEach(item=>{
+                        this.accessArray.push(item.getID())
+                    })
+                    var _below = _temp[i].getLink()
+                    for(var x=0;x<_below.length;x++){
+                        this.$refs.authorityTable.toggleRowSelection(_below[x],true)    
+                        _below[x].getAccessAuthorities().forEach(item=>{
+                            this.accessArray.push(item.getID())
+                        })
+                    }
+                }
+            }
         }
     }
 }

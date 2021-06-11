@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="manifest"  href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="智慧消防">
+    <link rel="apple-touch-icon" sizes="76x76" href="./manifestimg//76.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="./manifestimg/152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./manifestimg/180.png" />
+    <title><%= webpackConfig.name %></title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/service-worker.js', {scope: '/'})
+      .then(function (registration) {
+        console.log('註冊成功')
+        const publicKey = 'BIeLIMiIXA-V3MPD9zid-9kL1959CLyTx7YgxyMcsvSjBOCNl9O6FTQiuF-uaKK1S4FGfVtg42NxsZ9GFIJj7k0'// 和后台保持一致
+        registration.pushManager.getSubscription().then(subscription => {
+          if (!subscription ) {
+            const subscription = registration.pushManager.subscribe({
+              userVisibleOnly: true, // 表明该推送是否需要显性地展示给用户，即推送时是否会有消息提醒。如果没有消息提醒就表明是进行“静默”推送。在Chrome中，必须要将其设置为true，否则浏览器就会在控制台报错
+              applicationServerKey: urlBase64ToUint8Array(publicKey)// web-push定义的客户端的公钥，用来和后端的web-push对应，需要进行一次转换
+            })
+
+            // 用户同意
+              .then(function (subscription) {
+                console.log('用戶同意訂閱:'+JSON.stringify(subscription))
+                if (subscription && subscription.endpoint) {
+                  // 存入数据库
+                }
+              })
+
+            // 用户不同意或者生成失败
+              .catch(function (err) {
+                console.log('用戶不同意訂閱：'+err)
+              })
+          } else { // 用户已经订阅过
+            console.log('已訂閱過')
+          }
+        })
+      })
+      .catch(function (err) {
+        console.log('註冊失敗:'+err)
+      })
+  })
+}
+
+// function urlBase64ToUint8Array (base64String) {
+//   const padding = '='.repeat((4 - base64String.length % 4) % 4)
+//   const base64 = (base64String + padding)
+//     .replace(/\-/g, '+')
+//     .replace(/_/g, '/')
+
+//   const rawData = window.atob(base64)
+//   const outputArray = new Uint8Array(rawData.length)
+
+//   for (let i = 0; i < rawData.length; ++i) {
+//     outputArray[i] = rawData.charCodeAt(i)
+//   }
+//   return outputArray
+// }
+// var enableNotifications = document.querySelectorAll('.enable-notifications');
+// if ('Notification' in window) {
+//     for (var i= 0; i < enableNotifications.length; i++) {
+//         enableNotifications[i].style.display = 'inline-block';
+//         enableNotifications[i].addEventListener('click', askForNotificationPermission);
+//     }
+// }
+</script>

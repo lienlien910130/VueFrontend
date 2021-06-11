@@ -38,6 +38,7 @@ import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
 import Building from '@/object/building'
 import Floors from '@/object/floors'
+import User from '@/object/user'
 
 export default {
   mixins:[sharemixin,blockmixin,dialogmixin],
@@ -50,10 +51,8 @@ export default {
       }
     }
   },
-  async mounted(){
-    if(this.buildingid == '' || this.buildingid == null || this.buildingid == undefined){
-      await this.init()
-    }
+  async created(){
+    await this.initBuilding()
   },
   data() {
     return {
@@ -79,16 +78,17 @@ export default {
     }
   },
   methods: {
-    async init(){
-      this.tableConfig = Building.getTableConfig()
+    async init(){},
+    async initBuilding(){
       this.title = 'building'
+      this.tableConfig = Building.getTableConfig()
+      await this.getAllBuilding()  
       this.buttonsName = [
         { name:'刪除',icon:'el-icon-delete',status:'delete'},
         { name:'編輯',icon:'el-icon-edit',status:'open'},
         { name:'樓層',icon:'el-icon-position',status:'openfloors'},
         { name:'檔案',icon:'el-icon-folder-opened',status:'openfiles'}
       ]
-      await this.getAllBuilding()
     },
     async resetlistQueryParams(){
       this.listQueryParams = {
@@ -139,8 +139,16 @@ export default {
         this.dialogData = []
         this.dialogTitle = this.title
         this.dialogButtonsName = []
+        this.dialogSelect = []
         if(index === 'open'){
+          var userlist = await User.getOfBuildingID(content.getID())
           this.dialogConfig = Building.getUpdateConfig()
+          this.dialogSelect = userlist.map(v => {
+                this.$set(v, 'value', v.getID()) 
+                this.$set(v, 'label', v.getNameOfHouse()) 
+                this.$set(v, 'id', v.getID()) 
+                return v
+            })
           this.dialogData.push(content)
           this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'update'},

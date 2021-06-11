@@ -97,6 +97,7 @@ function addRouter(routerlist) {
 const state = {
   menuId:'',
   menu:[],
+  menuNoLevel:[],
   routes: [],
   addRoutes: []
 }
@@ -107,6 +108,9 @@ const mutations = {
   },
   SET_MENU: (state, menu) => {
     state.menu = menu
+  },
+  SET_MENU_NOLEVEL: (state, menuNoLevel) => {
+    state.menuNoLevel = menuNoLevel
   },
   SET_ROUTES: (state, routes) => {
     state.addRoutes = routes
@@ -134,8 +138,7 @@ const actions = {
               return a.concat(b)
           },[]
       )
-      idb.deleteData('menu')
-      idb.saveValue('menu',concatarray)
+      commit('SET_MENU_NOLEVEL', concatarray)
       resolve()
     })
   },
@@ -148,7 +151,7 @@ const actions = {
     commit('SET_ROUTES', accessedRoutes)
     return accessedRoutes
   },
-  async setRoutes({ commit }) {
+  async setRoutes({ commit }) { //設定側邊選單
     resetRouter()
     var data = await Menu.get()
     store.dispatch('permission/setmenu',data)
@@ -157,20 +160,6 @@ const actions = {
     getRouter = getRouter.filter(item => { 
       return item.path !== '/' 
     }).concat(notfound)
-    // let accessedRoutes = []
-    // var newArray = []
-    // data.forEach(item=>{
-    //   var router = checktemplate(item.code)
-    //   accessedRoutes = accessedRoutes.length == 0 ? router : accessedRoutes.concat(router)
-    // })
-    // for (let item of accessedRoutes) {
-    //   if (item) {
-    //     newArray.push(item)
-    //   }
-    // }
-    // if(store.getters.id == '1'){
-    //   newArray = newArray.concat(mercuryfireRoutes)
-    // }
     commit('SET_ROUTES', getRouter)
     router.addRoutes(getRouter)
   }

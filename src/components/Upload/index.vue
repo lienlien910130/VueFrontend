@@ -29,7 +29,8 @@
                 <el-button type="success"
                     :disabled="isDisabled" 
                     @click="onUpload"
-                    icon="el-icon-upload"></el-button>
+                    icon="el-icon-upload">
+                </el-button>
                 <el-tooltip class="item" effect="light" 
                 content="限圖片、txt、word、ppt、excel、pdf、rar、zip格式的檔案，且不超過10MB" placement="top">
                  <el-button type="warning"

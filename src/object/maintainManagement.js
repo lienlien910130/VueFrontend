@@ -89,7 +89,7 @@ class MaintainManagementList extends Parent {
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
               },
               {
-                label: '細項',
+                label: '已保養/未保養',
                 prop: 'linkMaintains',
                 format:'openmaintain',
                 mandatory:false, type:'array',typemessage:'',
@@ -229,14 +229,20 @@ class MaintainManagement extends Parent {
         })
         return data
     }
-    // getProcess(){
-    //     return this.processStatus
-    // }
+    getDateOfFailure(){
+        return moment(this.dateOfFailure).format('YYYY-MM-DD')
+    }
     getDevicesName(){
         return this.linkDevices.map(item => item.getName()).toString()
     }
     getInspectionLackName(){
         return this.linkInspectionLacks.map(item => item.getName()).toString()
+    }
+    getContactUnitsName(){
+        return this.linkContactUnits.map(item => item.getName()).toString()
+    }
+    getProcessStatus(){
+        return this.processStatus
     }
     // getInspectionLacks(){
     //     return this.linkInspectionLacks

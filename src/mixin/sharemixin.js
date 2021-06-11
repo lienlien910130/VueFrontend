@@ -147,7 +147,7 @@ export default {
         async getFilterItems(otherConfig = null){
             var arr = otherConfig == null ? this.tableConfig : otherConfig
             var block = otherConfig == null ? this.blockData : this.downData
-            var config = arr.map(function(obj) {
+            var config = arr.filter(item=>item.isHidden == false).map(function(obj) {
                 var rObj = {}
                 rObj.prop = obj.prop
                 rObj.format = obj.format
@@ -192,7 +192,7 @@ export default {
             var list = Object.values(block).map(item => {
                 if(format == 'YYYY' || format == 'YYYY-MM-DD'){ //日期
                     var str = item[prop] !== null && item[prop] !== undefined ?
-                    moment(item[prop]).format('YYYY-MM-DD') : '尚未設定值'
+                    moment(item[prop]).format(format) : '尚未設定值'
                     return { text: str, value: item[prop] }
                 }else if(format == 'range'){ //檢測日期
                     var str 
@@ -295,7 +295,13 @@ export default {
 			return ['others', 999]
 		},
         openWindows(value){
-            var routeData = this.$router.resolve({ name: value })
+            var routeData
+            if(value == 'user'){
+                routeData = this.$router.resolve(
+                    { path: '/normal/basic',query:{ type:'user' } })
+            }else{
+                routeData = this.$router.resolve({ name: value })
+            }
             window.open(routeData.href, '_blank')
         }
     }

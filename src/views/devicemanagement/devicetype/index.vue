@@ -119,11 +119,15 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
-            if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0){
+            if(this.$route.params.target !== undefined && 
+            this.$route.params.target.length !== 0){
                 if(typeof this.$route.params.target == 'object'){
                     await this.handleBlock('devicetype','open',this.$route.params.target[0])
                 }
-            } 
+            }else if(this.$route.query.type !== undefined && 
+            this.$route.query.type == 'devicetype'){
+                await this.handleBlock('devicetype','empty','')
+            }
         }
     }
 }

@@ -2,30 +2,36 @@ import Parent from './parent'
 import api from '@/api'
 import moment from 'moment'
 import Files  from './files'
+import PublicSafeLack from './publicSafeLack'
 
 class PublicSafe extends Parent {
     constructor (data) {
         super(data)
         const { declareYear, declareDeadline, declareDate, declareResult, declarationImproveDate,
             checkStartDate, checkEndDate, professName, certificateNumber, isImproved, imported, nextInspectionDate,
-            note} = data
+            note,linkReportPublicSafeLacks } = data
+        var publicSafeLack = linkReportPublicSafeLacks.map(item=>{ return new PublicSafeLack(item)})    
         this.declareYear = declareYear
         this.declareDeadline = declareDeadline
         this.declareDate = declareDate
         this.declareResult = declareResult
         this.declarationImproveDate = declarationImproveDate
-        this.checkStartDate = checkStartDate
-        this.checkEndDate = checkEndDate
+        this.checkStartDate = checkStartDate == undefined ? null : checkStartDate
+        this.checkEndDate = checkEndDate == undefined ? null : checkEndDate
         this.professName = professName
         this.certificateNumber = certificateNumber
         this.isImproved = isImproved
         this.imported = imported
         this.nextInspectionDate = nextInspectionDate
         this.note = note
+        this.linkReportInspectionLacks = publicSafeLack
         return this
     }
     clone(data){
         return new PublicSafe(data)
+    }
+    getNextInspectionDate(){
+        return moment(this.nextInspectionDate).format('YYYY-MM-DD')
     }
     async update(){
         var data = await api.report.apiPatchPublicSafe(this).then(async(response) => {
@@ -117,7 +123,7 @@ class PublicSafe extends Parent {
              },
              {
                  label: '專技人員',
-                 prop: 'professName',mandatory:false,
+                 prop: 'professName',mandatory:false,format:'searchColumn',
                  isHidden:false,maxlength:'10',isSearch:true,
                  isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false
              },
@@ -157,6 +163,14 @@ class PublicSafe extends Parent {
                  mandatory:false, isHidden:false,isSearch:true,
                  isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false
              },
+            {
+                label: '已改善/未改善',
+                prop: 'linkReportInspectionLacks',
+                format:'openreportlack',
+                mandatory:false, type:'array',typemessage:'',
+                isHidden:true,isSearch:false,
+                isAssociate:false,isEdit:false,isUpload:false,isExport:false,isBlock:true
+            }
             //  {
             //      label: '檢附文件',
             //      prop: 'file', mandatory:false,
@@ -184,6 +198,14 @@ class PublicSafe extends Parent {
         var data = await api.report.apiGetPublicSafeSearchPages(data).then(response => {
             response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new PublicSafe(item)})
             return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async getColumn(data){
+        var data = await api.report.apiGetPublicSafeColumn(data).then(response => {
+            return response.result
         }).catch(error=>{
             return []
         })

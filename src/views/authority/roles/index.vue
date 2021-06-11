@@ -129,7 +129,7 @@ export default {
                 this.dialogStatus = 'create'
             }else if(index === 'distribution'){
                 this.selectRoleId = content.getID()
-                this.roleAccessAuthority = await content.getAccess('role')
+                this.roleAccessAuthority = await content.getAccess('role') //取得角色所有權限的id
                 this.originalRoleAccessAuthority =  JSON.parse(JSON.stringify(this.roleAccessAuthority))
                 this.treeData = this.menu.map(item=>{ return new Menu(item)})
                 this.dialogButtonsName = [
@@ -158,12 +158,12 @@ export default {
                     await this.getAllRole()
                 }
             }else if(index === 'authoritycreate'){
-                const loading = this.$loading({
-                    lock: true,
-                    text: '更新權限中，請稍後...',
-                    spinner: 'el-icon-loading',
-                    background: 'rgba(0, 0, 0, 0.7)'
-                })
+                // const loading = this.$loading({
+                //     lock: true,
+                //     text: '更新權限中，請稍後...',
+                //     spinner: 'el-icon-loading',
+                //     background: 'rgba(0, 0, 0, 0.7)'
+                // })
                 var array = this.originalRoleAccessAuthority
                 var array2 = content
                 var remove = []
@@ -222,7 +222,7 @@ export default {
                 }
                 isOk = await Role.updateAccessAuthority(updateArray)
                 if(isOk){
-                    loading.close()
+                    //loading.close()
                     this.$message('更新成功')
                     this.$store.dispatch('permission/setmenu',await Menu.get())
                     await this.getAllRole()
@@ -236,6 +236,9 @@ export default {
                 if(typeof this.$route.params.target == 'object'){
                     await this.handleBlock('roles','open',this.$route.params.target)
                 }
+            }else if(this.$route.query.type !== undefined && 
+            this.$route.query.type == 'role'){
+                await this.handleBlock('role','empty','')
             }
         }
     }

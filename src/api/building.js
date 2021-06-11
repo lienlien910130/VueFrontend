@@ -53,6 +53,7 @@ const building = {
     
     //使用者資料
     apiGetAllBuildingOfUser(){ return req('get','/index/'+this.getBid()+'/a/house-holders') },
+    apiGetBuildingOfUser(buildingId){ return req('get','/index/'+buildingId+'/a/house-holders') },
     apiGetUser(userId){ return req('get','/basic/house-holders/'+userId) },
     apiPostUser(data){ return req('post','/basic/'+this.getBid()+'/house-holders',data) },
     apiPatchUser(data){ return req('patch','/basic/house-holders',data) },

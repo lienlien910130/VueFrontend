@@ -5,6 +5,7 @@ const getters = {
   token: state => state.user.token,
   menuId: state => state.permission.menuId,
   menu: state => state.permission.menu,
+  menuNoLevel: state => state.permission.menuNoLevel,
   level: state => state.user.level,
   account: state => state.user.account,
   roles: state => state.user.roles,

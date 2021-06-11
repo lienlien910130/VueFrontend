@@ -9,7 +9,6 @@ export default {
   name: 'App',
   async created(){
     //this.initsocket()
-    this.register()
   },
   methods: {
     initsocket(){
@@ -19,29 +18,6 @@ export default {
       }else{
         console.log("您的瀏覽器不支援 WebSocket!")
       }
-    },
-    register(){
-      if('serviceWorker' in navigator){
-          navigator.serviceWorker
-                .register('service-worker.js')
-                .then(function(){
-                    console.log('Service Worker 註冊成功')
-                }).catch(function(error) {
-                    console.log('Service worker 註冊失敗:', error)
-                });
-        } else {
-          console.log('瀏覽器不支援 serviceWorker')
-        }
-        window.addEventListener('beforeinstallprompt', function(e) {
-            e.userChoice.then(function(choiceResult) {
-                if(choiceResult.outcome == 'dismissed') {
-                    console.log('user取消安裝至桌面')
-                }
-                else {
-                    console.log('user接受安裝至桌面')
-                }
-            })
-        })
     }
   }
     

@@ -11,9 +11,9 @@ class Account extends Parent {
         var buildings = linkBuildings.map(item=>{ return new Building(item)})
         this.account = account
         this.password = password
-        this.name = name
+        this.name = name 
         this.description = description
-        this.status = status
+        this.status = status 
         this.removable = removable
         this.linkRoles = roles
         this.linkBuildings = buildings
@@ -76,12 +76,14 @@ class Account extends Parent {
     static getTableConfig(){
         return [
             { label:'帳號' , prop:'account', mandatory:true, message:'請輸入帳號',maxlength:'10',
-                pattern:/[\w]{6,10}$/,errorMsg:'請輸入6~10位數英文+數字',isPattern: true,
-                isHidden:false,isSearch:true,placeholder:'請輸入6~10位數英文+數字',
+                pattern:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/,
+                errorMsg:'請輸入至少6個字元，含大小寫字母、至少1個數字',isPattern: true,
+                isHidden:false,isSearch:true,placeholder:'請輸入至少6個字元，含大小寫字母、至少1個數字',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
             { label:'密碼' , prop:'password', mandatory:true, message:'請輸入密碼',maxlength:'15',
-                pattern:/[\w]{7,15}$/,errorMsg:'請輸入7~15位數英文+數字',isPattern: true,
-                isHidden:true,isSearch:true,placeholder:'請輸入7~15位數英文+數字',
+                pattern:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+                errorMsg:'請輸入至少8個字元，含大小寫字母、至少1個數字',isPattern: true,
+                isHidden:true,isSearch:true,placeholder:'請輸入至少8個字元，含大小寫字母、至少1個數字',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:false,isBlock:false},
             { label:'用戶名' , prop:'name', mandatory:true,message:'請輸入用戶名',maxlength:'20',
                 isHidden:false,isSearch:true,isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},

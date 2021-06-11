@@ -4,7 +4,6 @@ import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken,getBuildingid } from '@/utils/auth' // get token from cookie
-import idb from '@/utils/indexedDB'
 import User from './object/user'
 import Role from './object/role'
 import Building from './object/building'
@@ -33,10 +32,10 @@ router.beforeEach(async(to, from, next) => {
         NProgress.done()
       } else {
         if(to.name !== null){ 
-          var menuId = await idb.getValueByIndex(to.name) //檢查有無ID
-          console.log('menuId',menuId)
-          if(menuId !== undefined){
-            await store.dispatch('permission/setmenuId', await idb.getValueByIndex(to.name)) //儲存要進入的頁面ID
+          var menuarray = store.getters.menuNoLevel.filter(item=> item.code == to.name)
+          if(menuarray.length !== 0){
+            await store.dispatch('permission/setmenuId', menuarray[0].id) //儲存要進入的頁面ID
+            console.log('setMenuId',menuarray[0].id)
           }
         }
         
@@ -58,9 +57,6 @@ router.beforeEach(async(to, from, next) => {
               await store.dispatch('building/setbuildingid', buildingID)
               if(!isSystem) await store.dispatch('building/setbuildingarray',
               await Building.get()) 
-              // await store.dispatch('building/getbuildingusers')
-              // await store.dispatch('building/getbuildinginfo')
-              
               await store.dispatch('permission/setRoutes') //設定選單資料庫&側邊選單欄
               await store.dispatch('building/setbuildinginfo',await Building.getInfo())
               await store.dispatch('building/setbuildingusers',await User.get())
@@ -68,11 +64,6 @@ router.beforeEach(async(to, from, next) => {
               await store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
               await store.dispatch('building/setbuildingdevices',await Device.get())
               await store.dispatch('building/setbuildingfloors',await Floors.get())
-
-              // await store.dispatch('building/getbuildingoptions')
-              // await store.dispatch('building/getbuildingfloors')
-              // await store.dispatch('building/getbuildingcontactunit')
-              // await store.dispatch('building/getbuildingdevices')
             }else{ //第一次登入 選單初始化
               const accessRoutes = await store.dispatch('permission/generateRoutes', isSystem) //設定選單
               router.addRoutes(accessRoutes)

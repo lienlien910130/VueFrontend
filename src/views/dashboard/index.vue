@@ -23,30 +23,34 @@
         </el-col>
         <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
-            通知(檢修/公安)
+            <ListDiv
+            :list-query-params.sync="maintainlistQueryParams"
+            v-bind="maintainAttrs"
+            v-on="maintainEvent"
+            ></ListDiv>
           </div>
         </el-col>
       </el-row>
       <el-row :gutter="32">
-        <el-col :xs="24" :sm="24" :md="8" :lg="12">
+        <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
-             <el-row>
-                <div v-if="total > 0" class="pagination-container">
-                    <el-pagination
-                        background
-                        layout="total, sizes, prev, pager, next, jumper"
-                        :current-page="page"
-                        :page-sizes="pageSizeList"
-                        :page-size="limit"
-                        :total="total"
-                        @current-change="handleCurrentChange"
-                        @size-change="handleSizeChange"
-                    ></el-pagination>
-                </div>
-            </el-row>
+            <ListDiv
+            :list-query-params.sync="inspectionlistQueryParams"
+            v-bind="inspectionAttrs"
+            v-on="inspectionEvent"
+            ></ListDiv>
           </div>
         </el-col>
-        <el-col :xs="24" :sm="24" :md="16" :lg="12">
+        <el-col :xs="24" :sm="24" :md="8" :lg="8">
+          <div class="chart-wrapper">
+            <ListDiv
+            :list-query-params.sync="publicSafelistQueryParams"
+            v-bind="publicSafeAttrs"
+            v-on="publicSafeEvent"
+            ></ListDiv>
+          </div>
+        </el-col>
+        <el-col :xs="24" :sm="24" :md="16" :lg="8">
           <div class="chart-wrapper">
             設備即時狀況
           </div>
@@ -86,6 +90,9 @@ import constant from '../../../src/constant';
 import { removeDuplicates } from '@/utils/index'
 import Device from '@/object/device'
 import { MaintainManagement }  from '@/object/maintainManagement'
+import Inspection from '@/object/inspection'
+import PublicSafe from '@/object/publicSafe'
+import moment from 'moment'
 
 export default {
   name: 'Dashboard',
@@ -95,7 +102,8 @@ export default {
     Dialog: () => import('./components/Dialog'),
     Pump: () => import('./components/Pump'),
     Waterlevel: () =>  import('./components/Waterlevel'),
-    Elevator: () =>  import('./components/Elevator')
+    Elevator: () =>  import('./components/Elevator'),
+    ListDiv: () => import('./components/ListDiv')
   },
   computed: {
     ...mapGetters([
@@ -109,14 +117,41 @@ export default {
     disabled () {
       return this.loading || this.noMore
     },
-    page: function() {
-      return this.maintainlistQueryParams.pageIndex || 1
+    maintainAttrs(){
+      return {
+        title:'maintain',
+        list:this.maintainlist
+      }
     },
-    limit: function() {
-     return this.maintainlistQueryParams.pageSize || 12
+    maintainEvent(){
+      return {
+        clickPagination:this.getMaintain,
+        handleList:this.handleList
+      }
     },
-    total: function() {
-      return this.maintainlistQueryParams.total || 0
+    inspectionAttrs(){
+      return {
+        title:'inspection',
+        list:this.inspectionlist
+      }
+    },
+    inspectionEvent(){
+      return {
+        clickPagination:this.getInspection,
+        handleList:this.handleList
+      }
+    },
+    publicSafeAttrs(){
+      return {
+        title:'publicSafe',
+        list:this.publicSafelist
+      }
+    },
+    publicSafeEvent(){
+      return {
+        clickPagination:this.getPublicSafe,
+        handleList:this.handleList
+      }
     }
   },
   watch:{
@@ -137,19 +172,38 @@ export default {
       count: 9,
       viewlist: constant.INDEX_VIEW_NINE,
       currentNode: '',
-      maintainlistQueryParams:{
-        
+      maintainlist:[],
+      maintainlistQueryParams:{ //故障日期不是null 叫修日期null
+        dateOfFailure:'{IsNotNull}',
+        dateOfCallRepair:'{IsNull}',
         pageIndex: 1,
-        pageSize: 50,
+        pageSize: 10,
         total:0
       },
-      pageSizeList:[50, 150, 300, 500]
+      inspectionlist:[],
+      inspectionlistQueryParams:{ //下次檢查日期&未改善
+        nextInspectionDate:'{IsNotNull}',
+        isImproved:false,
+        pageIndex: 1,
+        pageSize: 10,
+        total:0
+      },
+      publicSafelist:[],
+      publicSafelistQueryParams:{ //下次檢查日期&未改善
+        nextInspectionDate:'{IsNotNull}',
+        isImproved:false,
+        pageIndex: 1,
+        pageSize: 10,
+        total:0
+      }
     }
   },
   methods: {
     async init(){   
       await this.getBuildingDevicesManage()
       await this.getMaintain()
+      await this.getInspection()
+      await this.getPublicSafe()
     },
     loadMore() {
       this.loading = true;
@@ -182,10 +236,102 @@ export default {
       this.deviceGroup = _temp
     },
     async getMaintain(){ //取得維保細項 故障日期!=null 叫修日期null
-        var data = await MaintainManagement.getAllSearchPage(this.maintainlistQueryParams)
-        console.log(data)
-        this.maintainlistQueryParams.total = data.totalPageCount
-
+      this.maintainlist = []
+      var data = await MaintainManagement.getAllSearchPage(this.maintainlistQueryParams)
+      this.maintainlist = data.result
+      this.maintainlistQueryParams.total = data.totalPageCount
+    },
+    async getInspection(){ //取得檢修申報 下次檢查日期
+      this.inspectionlist = []
+      var data = await Inspection.getSearchPage(this.inspectionlistQueryParams)
+      this.inspectionlist = data.result.sort(function(x,y){
+        var _data1 = new Date(x.nextInspectionDate)
+        var _data2 = new Date(y.nextInspectionDate)
+        return  _data2 - _data1
+      })
+      this.inspectionlistQueryParams.total = data.totalPageCount
+    },
+    async getPublicSafe(){ //取得公安申報 下次檢查日期
+      this.publicSafelist = []
+      var data = await PublicSafe.getSearchPage(this.publicSafelistQueryParams)
+      this.publicSafelist = data.result.sort(function(x,y){
+        var _data1 = new Date(x.nextInspectionDate)
+        var _data2 = new Date(y.nextInspectionDate)
+        return  _data2 - _data1
+      })
+      this.publicSafelistQueryParams.total = data.totalPageCount
+    },
+    async handleList(title,item){
+      console.log(title,JSON.stringify(item))
+      var config = title == 'maintain' ? MaintainManagement.getTableConfig() :
+          title == 'inspection' ? Inspection.getTableConfig() : PublicSafe.getTableConfig()
+      var titlename =  title == 'maintain' ? '維護保養' : 
+          title == 'inspection' ? '檢修申報': '公安申報'
+      var keys = Object.keys(item)
+      var array = []
+      var newDatas = []
+      const h = this.$createElement
+      const bigData = []
+      keys.forEach(key=>{
+        var i = config.filter((obj)=>{ return obj.prop == key })
+        if(i.length !== 0){
+          var value = item[key]
+          if(i[0].format == 'YYYY-MM-DD' || i[0].format == 'YYYY'){
+            value = moment(item[key]).format(i[0].format)
+          }else if(i[0].format == 'deviceSelect'){
+            value = item.getDevicesName()
+          }else if(i[0].format == 'inspectionSelect'){
+            value = item.getInspectionLackName()
+          }else if(i[0].format == 'contactunitSelect'){
+            value = item.getContactUnitsName()  
+          }else if(i[0].format == 'MaintainProcessOptions' || 
+          i[0].format == 'MaintainContentOptions'){
+            let _array = this.buildingoptions.filter((item, index) => 
+              item.id == item[key] 
+            )
+            value = _array.length !== 0 ? _array[0].textName : ''
+          }
+          array.push({
+            label:i[0].label,
+            value:value
+          })
+        }
+      })
+      array.forEach(obj=>{
+        newDatas.push(
+          h('p',{ style: 'width:100%' },[
+          h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },obj.label),
+          h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },obj.value)
+        ]))
+      })
+      bigData.push( h('div', {style:'border:1px solid;padding:10px;margin-bottom:5px'},newDatas))
+      this.$msgbox({
+        title: titlename,
+        message:  h('div', {style:'max-height:500px;overflow-x:hidden;overflow-y:auto;'}, bigData) ,
+        showCancelButton: true,
+        distinguishCancelAndClose: true,
+        confirmButtonText: '編輯',
+        cancelButtonText: '取消',
+        beforeClose: (action, instance, done) => {
+          if (action === 'confirm') {
+            done()
+            switch(title){
+              case 'maintain':
+                this.$router.push({ name: 'maintainManagement', params: { target: item }})
+                break;
+              case 'inspection':
+                this.$router.push({ name: 'ReportInspection', params: { type:'open', target: item }})
+                break;
+              case 'publicSafe':
+                this.$router.push({ name: 'ReportPublicSafe', params: { target: item }})
+                break;
+            }
+          } else {
+            done()
+          }
+        }}).then(action => {
+          done()
+        }).catch(()=>{})
     },
     //圓餅圖
     handleChartClick(value){
@@ -194,18 +340,8 @@ export default {
     //樹
     handleNodeClick(data){
       console.log(data)
-    },
-    // 改變翻頁組件中每頁數據總數
-    async handleSizeChange(val) {
-      this.maintainlistQueryParams.pageSize = val
-      this.maintainlistQueryParams.pageIndex = 1 // 改變翻頁數目，將頁面=1
-      await this.getMaintain()
-    },
-    // 跳到當前是第幾頁
-    async handleCurrentChange(val) {
-      this.maintainlistQueryParams.pageIndex = val
-      await this.getMaintain()
-    },
+    }
+    
   }
 }
 </script>
@@ -241,6 +377,14 @@ export default {
     height:1000px; // 1. 指定高度
 	  overflow: auto; // 2. 内容超过指定高度 出现滚动条
 	  width: 100%;
+}
+
+.list {
+    width: 100%;
+    height: 300px;
+    padding-top: 10px;
+    overflow-x:hidden;
+    overflow-y:auto;
 }
 
 @media (max-width:1024px) {

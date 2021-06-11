@@ -1,11 +1,13 @@
 import Parent from './parent'
 import api from '@/api'
+import moment from 'moment'
 
 class User extends Parent {
  
     constructor (data) {
         super(data)
-        const { name,identityCard, birthday, callNumber,cellPhoneNumber, emergencyNumber, email, note } = data
+        const { name,identityCard, birthday, callNumber,cellPhoneNumber, 
+            emergencyNumber, email, note, linkUsageOfFloors } = data
         this.name = name
         this.identityCard = identityCard
         this.birthday = birthday
@@ -14,6 +16,7 @@ class User extends Parent {
         this.emergencyNumber = emergencyNumber
         this.email = email
         this.note = note
+        this.linkUsageOfFloors = linkUsageOfFloors
         return this
     }
     clone(data){
@@ -46,6 +49,17 @@ class User extends Parent {
     getName(){
         return this.name
     }
+    getNameOfYear(){
+        var year = moment(this.birthday).format('YYYY')
+        var y = year - 1911
+        return this.name +'-'+y.toString()+'年次'
+    }
+    getNameOfHouse(){
+        var house = this.linkUsageOfFloors!== undefined && 
+        this.linkUsageOfFloors.length !== 0 ? '-'+
+            this.linkUsageOfFloors[0].houseNumber : ''
+         return this.name + house
+    }
     static empty(){
         return new User({
             id:'',
@@ -55,7 +69,8 @@ class User extends Parent {
             callNumber :'',
             cellPhoneNumber :'',
             emergencyNumber :'',
-            email :''
+            email :'',
+            linkUsageOfFloors:[]
         })
     }
     static getTableConfig(){
@@ -92,6 +107,16 @@ class User extends Parent {
     }
     static async get (){
         var data = await api.building.apiGetAllBuildingOfUser().then(response => {
+            var result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new User(item) })
+            return result
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async getOfBuildingID (buildingId){
+        var data = await api.building.apiGetBuildingOfUser(buildingId).then(response => {
             var result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new User(item) })
             return result

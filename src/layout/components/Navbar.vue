@@ -44,7 +44,7 @@
                 首頁
               </el-dropdown-item>
             </router-link>
-            <router-link to="/membersetting">
+            <router-link v-if="buildingid !== undefined" to="/membersetting">
               <el-dropdown-item>
                 設定
               </el-dropdown-item>
@@ -227,12 +227,12 @@ export default {
     },
     async handleSelect(content){
        if(content !== undefined){
-          const loading = this.$loading({
-              lock: true,
-              text: '設定建築物中，請稍後...',
-              spinner: 'el-icon-loading',
-              background: 'rgba(0, 0, 0, 0.7)'
-          })
+          // const loading = this.$loading({
+          //     lock: true,
+          //     text: '設定建築物中，請稍後...',
+          //     spinner: 'el-icon-loading',
+          //     background: 'rgba(0, 0, 0, 0.7)'
+          // })
           this.$store.dispatch('building/setbuildingid',content.id)
           this.$store.dispatch('permission/setRoutes')
           this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
@@ -243,7 +243,7 @@ export default {
           this.$store.dispatch('building/setbuildingfloors',await Floors.get())
           this.$router.push('/')
           console.log('Navbardone')
-          loading.close()
+          //loading.close()
           this.$store.dispatch('app/openSideBar')
        }
     }

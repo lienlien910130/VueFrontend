@@ -9,8 +9,8 @@ class Committee extends Parent {
         super(data)
         const { title, note, linkUsageOfFloors } = data
         var usageOfFloor = linkUsageOfFloors.map(item=>{ return new UsageOfFloor(item)})
-        this.title = title
-        this.note = note
+        this.title = title 
+        this.note = note 
         this.linkUsageOfFloors = usageOfFloor
         return this
     }

@@ -116,12 +116,12 @@ export default {
                 this.innerVisible = true
                 this.dialogStatus = 'create'
             }else if(index === 'distribution'){
-                const mask = this.$loading({
-                    lock: true,
-                    text: '查詢中，請稍後...',
-                    spinner: 'el-icon-loading',
-                    background: 'rgba(0, 0, 0, 0.7)'
-                })
+                // const mask = this.$loading({
+                //     lock: true,
+                //     text: '查詢中，請稍後...',
+                //     spinner: 'el-icon-loading',
+                //     background: 'rgba(0, 0, 0, 0.7)'
+                // })
                 var roles = content.getRoles()  
                 var array = []
                 for(let element in roles){
@@ -138,7 +138,7 @@ export default {
                 this.treeData = this.menu.map(item=>{ return new Menu(item)})
                 this.dialogButtonsName = [
                 { name:'取消',type:'info',status:'cancel'}]
-                mask.close()
+                // mask.close()
                 this.innerVisible = true
                 this.dialogStatus = 'authority'
             }else if(index === 'exportExcel'){
