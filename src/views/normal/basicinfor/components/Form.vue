@@ -135,7 +135,7 @@ export default {
     changeUserName(){ //住戶名稱
       return function (val) {
         if(val !== null){
-          return val.map(item=>{ return item.getNameOfHouse() }).toString()
+          return val.map(item=>{ return item.getName() }).toString()
         }
         return ''
       } 
@@ -215,7 +215,7 @@ export default {
       handler:async function(){
         this.buildingUsers = this.buildingusers.map(v => {
               this.$set(v, 'value', v.getID()) 
-              this.$set(v, 'label', v.getNameOfHouse()) 
+              this.$set(v, 'label', v.getName()) 
               this.$set(v, 'id', v.getID())
               return v
         })

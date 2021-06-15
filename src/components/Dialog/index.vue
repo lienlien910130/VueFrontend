@@ -391,7 +391,7 @@
 </template>
 
 <script>
-import computedmixin  from '@/mixin/computedmixin'
+import computedmixin from '@/mixin/computedmixin'
 import Setting from '@/object/setting'
 import { changeDeviceFullType } from '@/utils/index'
 import constant from '@/constant/index'
@@ -570,7 +570,7 @@ export default {
                             }else{
                                 return this.buildingusers.map(v => {
                                     this.$set(v, 'value', v.getID()) 
-                                    this.$set(v, 'label', v.getNameOfHouse()) 
+                                    this.$set(v, 'label', v.getName()) 
                                     this.$set(v, 'id', v.getID()) 
                                     return v
                                 })

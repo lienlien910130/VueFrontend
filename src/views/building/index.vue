@@ -145,7 +145,7 @@ export default {
           this.dialogConfig = Building.getUpdateConfig()
           this.dialogSelect = userlist.map(v => {
                 this.$set(v, 'value', v.getID()) 
-                this.$set(v, 'label', v.getNameOfHouse()) 
+                this.$set(v, 'label', v.getName()) 
                 this.$set(v, 'id', v.getID()) 
                 return v
             })

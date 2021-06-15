@@ -21,7 +21,6 @@ import socket from './utils/socket'
 import indexedDB from './utils/indexedDB'
 import api from './api'
 
-
 import '@/icons' // icon
 import '@/permission' // permission control
 import '@/registerServiceWorker.js'
@@ -35,11 +34,10 @@ import '@/registerServiceWorker.js'
  * please remove it before going online ! ! !
  */
 
-Vue.use(ElementUI, {locale})
+Vue.use(ElementUI, { locale })
 Vue.use(SIdentify)
 Vue.use(fabric)
 Vue.use(vcolorpicker)
-
 
 Vue.config.productionTip = false
 Vue.config.debug = false

@@ -53,14 +53,9 @@ module.exports = {
       'after': true
     }],
     'handle-callback-err': [2, '^(err|error)$'],
-    'indent': [2, 2, {
-      'SwitchCase': 1
-    }],
+    'indent': ["off",2],
     'jsx-quotes': [2, 'prefer-single'],
-    'key-spacing': [2, {
-      'beforeColon': false,
-      'afterColon': true
-    }],
+    'key-spacing': 0,
     'keyword-spacing': [2, {
       'before': true,
       'after': true
@@ -132,7 +127,7 @@ module.exports = {
     'no-sparse-arrays': 2,
     'no-this-before-super': 2,
     'no-throw-literal': 2,
-    'no-trailing-spaces': 2,
+    'no-trailing-spaces': 0,
     'no-undef': 2,
     'no-undef-init': 2,
     'no-unexpected-multiline': 2,
@@ -163,13 +158,13 @@ module.exports = {
       'avoidEscape': true,
       'allowTemplateLiterals': true
     }],
-    'semi': [2, 'never'],
-    'semi-spacing': [2, {
+    'semi': [0],
+    'semi-spacing': [0, {
       'before': false,
       'after': true
     }],
-    'space-before-blocks': [2, 'always'],
-    'space-before-function-paren': [2, 'never'],
+    'space-before-blocks': 0,
+    'space-before-function-paren': 0,
     'space-in-parens': [2, 'never'],
     'space-infix-ops': 2,
     'space-unary-ops': [2, {
