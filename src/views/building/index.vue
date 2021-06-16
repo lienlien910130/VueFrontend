@@ -140,8 +140,10 @@ export default {
         this.dialogTitle = this.title
         this.dialogButtonsName = []
         this.dialogSelect = []
+        this.building = null
         if(index === 'open'){
-          var userlist = await User.getOfBuildingID(content.getID())
+          this.building = content
+          var userlist = await User.getOfBuildingID(this.building.getID())
           this.dialogConfig = Building.getUpdateConfig()
           this.dialogSelect = userlist.map(v => {
                 this.$set(v, 'value', v.getID()) 
@@ -207,6 +209,7 @@ export default {
             this.$message('新增成功')
             this.$store.dispatch('building/setbuildingarray',await Building.get())
             await this.getAllBuilding()
+            this.innerVisible = false
           }
         }else if(index === 'update'){
           var isOk = await content.update()
@@ -217,6 +220,7 @@ export default {
               this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
             }
             await this.getAllBuilding()
+            this.innerVisible = false
           }
         }else if(index === 'uploadExcelSave'){
           var buildingarray = await Building.postMany(content)
@@ -231,11 +235,23 @@ export default {
             this.$message('新增成功')
             this.$store.dispatch('building/setbuildingarray',await Building.get())
             await this.getAllBuilding()
+            this.innerVisible = false
           }
         }else if(index === 'createfile' || index === 'deletefile'){
           await this.handleUpload(this.building,index,content)
+        }else if(index === 'selectData'){
+          if(this.innerVisible == true && this.building !== null){
+            var userlist = await User.getOfBuildingID(this.building.getID())
+            this.dialogSelect = userlist.map(v => {
+                  this.$set(v, 'value', v.getID()) 
+                  this.$set(v, 'label', v.getName()) 
+                  this.$set(v, 'id', v.getID()) 
+                  return v
+            })
+          }
+        }else{
+          this.innerVisible = false
         }
-        this.innerVisible = false
       }else{
         await this.handleFloor(index,content)
       }

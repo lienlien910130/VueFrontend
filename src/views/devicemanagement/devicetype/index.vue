@@ -12,6 +12,7 @@
             </el-col>
         </el-row>
         <Dialog 
+        ref="dialog"
         v-if="innerVisible === true"
         v-bind="dialogAttrs" 
         v-on:handleDialog="handleDialog"></Dialog>
@@ -107,6 +108,9 @@ export default {
                         this.$store.dispatch('building/setbuildingdevices',await Device.get())
                     }
                     await this.getBuildingDevicesType()
+                    if(index == 'create'){
+                        this.$refs.dialog.insertSuccess('deviceTypeSelect')
+                    }
                 }
             }else if(index === 'uploadExcelSave'){
                 var isOk = await DeviceType.postMany(content)

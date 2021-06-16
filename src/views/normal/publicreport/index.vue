@@ -102,6 +102,7 @@ import PublicSafeLack from '@/object/publicSafeLack'
 import blockmixin from '@/mixin/blockmixin'
 import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
+import Setting from '@/object/setting'
 
 export default {
     mixins:[sharemixin,blockmixin,dialogmixin],
@@ -167,7 +168,6 @@ export default {
     },
     async getBuildingPublicSafeReport() { 
       var data = await PublicSafe.getSearchPage(this.listQueryParams)
-      console.log(data)
       this.blockData = data.result
       this.listQueryParams.total = data.totalPageCount
       this.$refs.block.resetpictLoading()
@@ -332,6 +332,8 @@ export default {
               this.$message('新增成功')
               await this.handleBlock('lack','openlacks',this.publicSafe)
           }
+        }else if(index === 'selectData'){
+          this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
         }
     },
     async changeTable(value){

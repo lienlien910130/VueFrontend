@@ -12,6 +12,7 @@
             </el-col>
         </el-row>
         <Dialog 
+        ref="dialog"
         v-if="innerVisible === true"
         v-bind="dialogAttrs" 
         v-on:handleDialog="handleDialog"></Dialog>
@@ -23,6 +24,8 @@ import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
 import Device  from '@/object/device'
 import DeviceType  from '@/object/deviceType'
+import Contactunit from '@/object/contactunit'
+import Setting from '@/object/setting'
 
 export default {
     name:'Device',
@@ -102,16 +105,34 @@ export default {
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,JSON.stringify(content))
-            if(index !== 'cancel'){
+            if(index !== 'cancel' && index !== 'selectData'){
                 var isOk = index === 'update' ? await content.update() : 
-                index === 'create' ? await content.create() : await Device.postMany(content)
+                index === 'create' ? await content.create() : 
+                await Device.postMany(content)
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('building/setbuildingdevices',await Device.get())
                     await this.getBuildingDevicesManage()
+                    this.innerVisible = false
+                    if(index == 'create'){
+                        this.$refs.dialog.insertSuccess('deviceSelect')
+                    }
                 }
+            }else if(index == 'selectData'){
+                switch (content) {
+                    case 'deviceTypeSelect':
+                        this.dialogSelect = await DeviceType.get('devicesManagement')    
+                        break;
+                    case 'contactunitSelect':
+                        this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())    
+                        break;
+                    case 'setting':
+                        this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
+                        break;
+                }
+            }else{
+                this.innerVisible = false
             }
-            this.innerVisible = false
         },
         async changeTable(value){
             this.isTable = value

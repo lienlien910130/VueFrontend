@@ -77,7 +77,7 @@ class Contactunit extends Parent {
             format:'ContactUnitOptions', 
             mandatory:true, message:'請選擇類別',
             isHidden:false,isSearch:false,
-            isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true },
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true },
         { 
             label:'電話', 
             prop:'contactNumber',

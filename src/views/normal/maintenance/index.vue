@@ -102,6 +102,9 @@ import blockmixin from '@/mixin/blockmixin'
 import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
 import moment from 'moment'
+import Device from '@/object/device'
+import Contactunit from '@/object/contactunit'
+import Setting from '@/object/setting'
 
 export default {
     mixins:[sharemixin,blockmixin,dialogmixin],
@@ -277,7 +280,6 @@ export default {
         async handleMaintain(index, content){
             this.dialogData = []
             this.dialogTitle = 'maintain'
-            this.dialogButtonsName = []
             if(index === 'empty'){
                 if(this.isTable == true && content == ''){
                     this.$message.error('請選擇要關聯的維保大項')
@@ -376,11 +378,13 @@ export default {
                     this.maintainFiles = await this.maintain.files()
                 }
             }else if(index === 'exportExcel'){
+                this.dialogButtonsName = []
                 this.exportExcelData = this.blockData
                 this.dialogConfig = this.formtableconfig 
                 this.innerVisible = true
                 this.dialogStatus = 'exportExcel'
             }else if(index === 'uploadExcel'){
+                this.dialogButtonsName = []
                 this.dialogConfig = this.formtableconfig 
                 this.innerVisible = true
                 this.dialogStatus = 'uploadExcel'
@@ -393,6 +397,21 @@ export default {
                     this.$message('新增成功')
                     await this.getMaintainAll()
                     this.innerVisible = false
+                }
+            }else if(index === 'selectData'){
+                switch (content) {
+                    case 'deviceSelect':
+                        this.$store.dispatch('building/setbuildingdevices',await Device.get())   
+                        break;
+                    case 'contactunitSelect':
+                        this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())    
+                        break;
+                    case 'inspectionSelect':
+                        this.dialogSelect = await MaintainManagementList.getAllLack()
+                        break;
+                    case 'setting':
+                        this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
+                        break;
                 }
             }
         },

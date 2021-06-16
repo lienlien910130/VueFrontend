@@ -144,6 +144,9 @@ export default {
                 if(isOk){
                     this.$message("新增成功")
                     await this.getOptions()
+                    if(window.opener !== undefined && window.opener !== null){
+                        window.opener.postMessage('setting', window.location)
+                    }
                 }
             }
         },

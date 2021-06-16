@@ -1348,8 +1348,6 @@ export default {
         this.isEditChange(true)
       })
     },
-    
-
     //動畫
     stopAnim(){
       this.hasAnimationStarted = false

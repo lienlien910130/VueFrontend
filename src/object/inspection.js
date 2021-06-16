@@ -106,7 +106,8 @@ class Inspection extends Parent {
             imported :0,
             nextInspectionDate :null,
             note :'',
-            lack:''
+            lack:'',
+            linkReportInspectionLacks:[]
         })
     }
     static getTableConfig(){

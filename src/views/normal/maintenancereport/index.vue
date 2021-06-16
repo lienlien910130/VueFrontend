@@ -84,6 +84,7 @@
               </el-col>
           </el-row>
           <Dialog 
+            ref="dialog"
             v-if="innerVisible === true"
             v-bind="dialogAttrs" 
             :specialId="lackFileId"
@@ -259,7 +260,6 @@ export default {
             }
           }else if(index !== 'cancel'){ //更換缺失內容檔案
             var autoCreate = false
-            var str = ''
             await  this.$confirm('是否要同步建立維保資料?',
               '提示', {
                 confirmButtonText: '確定',
@@ -270,13 +270,12 @@ export default {
                }).catch(()=>{
                 autoCreate = false        
              })
-            index === 'changeAgain' ? str = str+'更換缺失內容' : str = str+'建立缺失內容'
-            autoCreate === true ? str = str+'及同步建立維護保養中，請稍後 ...' : str = str+'中，請稍後 ...'
             isOk = await this.inspection.settinglackfile(autoCreate,parseInt(content),
             index === 'changeAgain' ? true : false)
             if(isOk){
               this.$message('更新成功')
               this.lackFileId = content
+              this.$refs.dialog.insertSuccess('inspectionSelect')
             }
           }else{
             this.innerVisible = false
@@ -380,6 +379,7 @@ export default {
       }else if(this.$route.query.type !== undefined && 
       this.$route.query.type == 'inspection'){
         await this.handleBlock('','empty','')
+        this.$message('請先建立新的檢修申報後進行缺失項目的檔案設定')
       }
     }
   }

@@ -90,7 +90,7 @@ class UsageOfFloor extends Parent {
              isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
              { label:'收容人數' , prop:'capacity',format:'inputnumber',
              type:'number',typemessage:'',mandatory:false,
-             pattern:/^[1-9]*[1-9][0-9]*$/,errorMsg:'格式錯誤，請重新輸入',isPattern: true,
+             pattern:/^[0-9]{1,10}$/,errorMsg:'格式錯誤，請重新輸入',isPattern: true,
              isHidden:false,isSearch:false,
              isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
              { label:'所有人' , prop:'linkOwners',format:'userInfo', 

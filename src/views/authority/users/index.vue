@@ -22,6 +22,7 @@ import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
 import Account from '@/object/account'
 import Menu from '@/object/menu'
+import Role from '@/object/role'
 
 export default {
     mixins:[sharemixin,blockmixin,dialogmixin],
@@ -116,12 +117,6 @@ export default {
                 this.innerVisible = true
                 this.dialogStatus = 'create'
             }else if(index === 'distribution'){
-                // const mask = this.$loading({
-                //     lock: true,
-                //     text: '查詢中，請稍後...',
-                //     spinner: 'el-icon-loading',
-                //     background: 'rgba(0, 0, 0, 0.7)'
-                // })
                 var roles = content.getRoles()  
                 var array = []
                 for(let element in roles){
@@ -138,7 +133,6 @@ export default {
                 this.treeData = this.menu.map(item=>{ return new Menu(item)})
                 this.dialogButtonsName = [
                 { name:'取消',type:'info',status:'cancel'}]
-                // mask.close()
                 this.innerVisible = true
                 this.dialogStatus = 'authority'
             }else if(index === 'exportExcel'){
@@ -152,15 +146,19 @@ export default {
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,content)
-            if(index !== 'cancel'){
+            if(index !== 'cancel' && index !== 'selectData'){
                 var isOk = index === 'update' ? await content.update() : 
                 index === 'create' ? await content.create() : await Account.postMany(content)
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     await this.getAllAccount()
+                    this.innerVisible = false
                 }
+            }else if(index == 'selectData'){
+                this.$store.dispatch('building/setroles',await Role.get())
+            }else{
+                this.innerVisible = false
             }
-            this.innerVisible = false
         },
         async changeTable(value){
             this.isTable = value

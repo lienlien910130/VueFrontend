@@ -30,6 +30,7 @@ import dialogmixin from '@/mixin/dialogmixin'
 import sharemixin  from '@/mixin/sharemixin'
 import AccessAuthority from '@/object/accessAuthority'
 import Menu from '@/object/menu'
+import Role from '@/object/role'
 
 export default {
     mixins:[sharemixin,blockmixin,dialogmixin],
@@ -158,7 +159,7 @@ export default {
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,JSON.stringify(content))
-            if(index !== 'cancel'){
+            if(index !== 'cancel' && index !== 'selectData'){
                 if(index === 'create'){
                     content.setlinkMainMenus([{id : this.selectId}])
                 }else if(index === 'uploadExcelSave'){
@@ -171,9 +172,13 @@ export default {
                 if(isOk){
                     index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('permission/setmenu',await  Menu.get())
+                    this.innerVisible = false
                 }
+            }else if(index == 'selectData'){
+                this.$store.dispatch('building/setroles',await Role.get())
+            }else{
+                this.innerVisible = false
             }
-            this.innerVisible = false
         },
         async changeTable(value){
             this.isTable = value

@@ -10,7 +10,8 @@ class PublicSafe extends Parent {
         const { declareYear, declareDeadline, declareDate, declareResult, declarationImproveDate,
             checkStartDate, checkEndDate, professName, certificateNumber, isImproved, imported, nextInspectionDate,
             note,linkReportPublicSafeLacks } = data
-        var publicSafeLack = linkReportPublicSafeLacks.map(item=>{ return new PublicSafeLack(item)})    
+        var publicSafeLack = linkReportPublicSafeLacks
+        .map(item=>{ return new PublicSafeLack(item)})    
         this.declareYear = declareYear
         this.declareDeadline = declareDeadline
         this.declareDate = declareDate
@@ -24,7 +25,7 @@ class PublicSafe extends Parent {
         this.imported = imported
         this.nextInspectionDate = nextInspectionDate
         this.note = note
-        this.linkReportInspectionLacks = publicSafeLack
+        this.linkReportPublicSafeLacks = publicSafeLack
         return this
     }
     clone(data){
@@ -89,7 +90,8 @@ class PublicSafe extends Parent {
             isImproved :false,
             imported :0,
             nextInspectionDate :null,
-            note :''
+            note :'',
+            linkReportPublicSafeLacks:[]
         })
     }
     static getTableConfig(){
@@ -196,7 +198,8 @@ class PublicSafe extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.report.apiGetPublicSafeSearchPages(data).then(response => {
-            response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new PublicSafe(item)})
+            response.result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new PublicSafe(item)})
             return response
         }).catch(error=>{
             return []

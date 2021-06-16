@@ -484,14 +484,7 @@ export default {
                     this.treeSelection()
                 })
             }
-        },
-        // buildingdevices:{
-        //     handler:function(){
-        //         console.log('changeDevices')
-        //         console.log(JSON.stringify(this.buildingdevices))
-        //     },
-        //     immediate:true
-        // }
+        }
     },
     computed:{
         label() {
@@ -624,6 +617,7 @@ export default {
     },
     methods: {
         init(){
+            window.addEventListener("message", this.receiveMessage, false)
             if(this.dialogData.length){
                 this.activeName = this.dialogData[0].getID()
                 this.temp = this.dialogData[0].clone(this.dialogData[0])
@@ -693,6 +687,22 @@ export default {
                 return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
             }
         },
+        insertSuccess(type){
+            console.log('insertSuccess',type,window.opener)
+            if(window.opener !== undefined && window.opener !== null){
+                window.opener.postMessage(type, window.location)
+            }
+        },
+        receiveMessage(event) { //子視窗傳來的
+            //event.origin是指發送的消息源，一定要進行驗證！！！
+            if (event.origin !== "http://localhost:9528")return
+            if(event.data == 'userInfo' || event.data == 'deviceTypeSelect' || 
+            event.data == 'contactunitSelect' ||  event.data == 'floorOfHouseSelect' ||
+            event.data == 'inspectionSelect' || event.data == 'deviceSelect' ||
+            event.data == 'roleSelect' || event.data == 'setting' ){
+                this.$emit('handleDialog',this.title, 'selectData' , event.data)
+            }
+        },
         //打開新視窗
         openWindows(format){
             var routeData
@@ -729,6 +739,9 @@ export default {
                     routeData = this.$router.resolve(
                             { path: '/authority/roles',query:{ type:'role' } })
                     break;
+                case 'ContactUnitOptions':
+                    routeData = this.$router.resolve({ name: 'sys-Setting' })
+                    break;
                 case 'MaintainProcessOptions':
                    routeData = this.$router.resolve({ name: 'sys-Setting' })
                     break;
@@ -741,7 +754,12 @@ export default {
                 default:
                     break;
             }
-            window.open(routeData.href, '_blank')
+            if(window.child && window.child.open && !window.child.closed){
+                window.child.close()
+            }
+            window.child = window.open(routeData.href, '_blank')
+            //window.child = window.open(routeData.href, '_blank', 'toolbar=no, width=400, height=600,location=no')
+            
         },
         //動態新增選項
         changeValue(event,format,prop){

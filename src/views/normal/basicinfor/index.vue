@@ -79,6 +79,7 @@
                     </div>
                 </el-col>
                 <Dialog 
+                ref="dialog"
                 v-bind="dialogAttrs"
                 :files="floorFiles" 
                 v-on:handleDialog="handleDialog"></Dialog>
@@ -98,7 +99,7 @@ import User from '@/object/user'
 import Building from '@/object/building'
 import Files  from '@/object/files'
 import Floors from '@/object/floors'
-
+import Setting from '@/object/setting'
 
 export default {
   name: 'Tab',
@@ -529,27 +530,40 @@ export default {
       }
     },
     async onCommitteeActions(index, content){
-      if(index !== 'cancel'){
+      if(index !== 'cancel' && index !== 'selectData'){
         var isOk = index === 'update' ? await content.update() : 
         index === 'create' ? await content.create() : await Committee.postMany(content)
         if(isOk){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           await this.getManagementList()
+          this.innerVisible = false
         }
+      }else if(index == 'selectData'){
+        await this.getFloorOfHouse()
+        this.dialogSelect = this.usageOfFloorSelectList
+      }else{
+        this.innerVisible = false
       }
-      this.innerVisible = false
+      
     },
     async onContactUnitActions(index, content){
-       if(index !== 'cancel'){
+       if(index !== 'cancel' && index !== 'selectData'){
         var isOk = index === 'update' ? await content.update() : 
         index === 'create' ? await content.create() : await Contactunit.postMany(content)
         if(isOk){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
           await this.getContactunitList()
+          if(index == 'create'){
+            this.$refs.dialog.insertSuccess('contactunitSelect')
+          }
+          this.innerVisible = false
         }
+      }else if(index == 'selectData'){
+        this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
+      }else{
+        this.innerVisible = false
       }
-      this.innerVisible = false
     },
     async onFloorOfHouseActions(index, content){
       if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
@@ -569,9 +583,14 @@ export default {
             await this.getFloorOfHouse()
             if(index === 'update') await this.getManagementList()
           }
+          if(index == 'create'){
+            this.$refs.dialog.insertSuccess('floorOfHouseSelect')
+          }
         }
       }else if(index === 'createfile'){
-          await this.handleFilesUpload('createfile','floorOfHouse',content)
+        await this.handleFilesUpload('createfile','floorOfHouse',content)
+      }else if(index == 'selectData'){
+        this.$store.dispatch('building/setbuildingusers',await User.get())
       }else{
         await this.handleFilesUpload('deletefile','floorOfHouse',content)
       }
@@ -588,6 +607,9 @@ export default {
           if(this.activeName == 'MC'){ //重整管委會
             await this.getFloorOfHouse()
             await this.getManagementList()
+          }
+          if(index == 'create'){
+            this.$refs.dialog.insertSuccess('userInfo')
           }
         }
       }

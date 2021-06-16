@@ -10,6 +10,7 @@
                 </div>
             </el-col>
             <Dialog 
+                ref="dialog"
                 v-bind="dialogAttrs" 
                 :accessAuthoritiesData="treeData"
                 :accessAuthorities="roleAccessAuthority"
@@ -156,14 +157,11 @@ export default {
                     this.$store.dispatch('permission/setmenu',await  Menu.get())
                     this.$store.dispatch('building/setroles',await Role.get())
                     await this.getAllRole()
+                    if(index == 'create'){
+                        this.$refs.dialog.insertSuccess('roleSelect')
+                    }
                 }
             }else if(index === 'authoritycreate'){
-                // const loading = this.$loading({
-                //     lock: true,
-                //     text: '更新權限中，請稍後...',
-                //     spinner: 'el-icon-loading',
-                //     background: 'rgba(0, 0, 0, 0.7)'
-                // })
                 var array = this.originalRoleAccessAuthority
                 var array2 = content
                 var remove = []
@@ -222,7 +220,6 @@ export default {
                 }
                 isOk = await Role.updateAccessAuthority(updateArray)
                 if(isOk){
-                    //loading.close()
                     this.$message('更新成功')
                     this.$store.dispatch('permission/setmenu',await Menu.get())
                     await this.getAllRole()
