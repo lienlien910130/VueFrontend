@@ -596,9 +596,30 @@ export default {
       }
     },
     async onUserActions(index, content){
-      if(index !== 'cancel'){
+      if(index == 'create'){
+        var data = await User.getSearchPage({
+          identityCard:'{LIKE}'+content.identityCard,
+          pageIndex: 1,
+          pageSize: 12,
+          total:0
+        })
+        if(data.totalPageCount == 0){
+          var isOk = await content.create()
+          if(isOk){
+            this.$message('新增成功')
+            this.$store.dispatch('building/setbuildingusers',await User.get())
+            await this.getUserList()
+            this.$refs.dialog.insertSuccess('userInfo')
+            this.innerVisible = false
+          }else{
+            this.$message.error('該姓名已存在，請重新輸入')
+          }
+        }else{
+          this.$message.error('該身份證已存在，請重新輸入')
+        }
+      }else if(index !== 'cancel'){
         var isOk = index === 'update' ? await content.update() : 
-        index === 'create' ? await content.create() : await User.postMany(content)
+        await User.postMany(content)
         if(isOk){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           this.$store.dispatch('building/setbuildingusers',await User.get())
@@ -608,12 +629,11 @@ export default {
             await this.getFloorOfHouse()
             await this.getManagementList()
           }
-          if(index == 'create'){
-            this.$refs.dialog.insertSuccess('userInfo')
-          }
+          this.innerVisible = false
         }
+      }else{
+        this.innerVisible = false
       }
-      this.innerVisible = false
     },
     async changeTable(value){
       this.isTable = value
@@ -670,7 +690,7 @@ export default {
 //   }
 .block-wrapper {
     background: #fff;
-    padding: 30px 15px;
+    padding: 15px 15px;
     margin-bottom: 20px;
     height: 720px;
 }

@@ -89,7 +89,6 @@ export default {
         },
         async getOptions(){ //取得大樓的所有分類
             this.options = await Setting.getAllOption()
-            console.log(JSON.stringify(this.options))
             this.$store.dispatch('building/setbuildingoptions',this.options)
         },
         optionsFilter(title){
@@ -133,21 +132,18 @@ export default {
         },
         async PostData(index,content){
             var temp = {
-                    classType:index,
-                    textName:content
+                'classType' : '{Check}'+index,
+                'textName':'{Check}'+content
             }
-            var originalDate = await Setting.searchOption(temp)
-            if(originalDate.length){
-                this.$message.error("不可重複新增")
-            }else{
-                var isOk = await Setting.postOption(JSON.stringify(temp))
-                if(isOk){
-                    this.$message("新增成功")
-                    await this.getOptions()
-                    if(window.opener !== undefined && window.opener !== null){
-                        window.opener.postMessage('setting', window.location)
-                    }
+            var isOk = await Setting.checkOption(temp)
+            if(isOk){
+                this.$message("新增成功")
+                await this.getOptions()
+                if(window.opener !== undefined && window.opener !== null){
+                    window.opener.postMessage('setting', window.location)
                 }
+            }else{
+                this.$message.error('不可重複新增')
             }
         },
         async UpdateData(content){

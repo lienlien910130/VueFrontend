@@ -53,14 +53,14 @@ export default {
         },
         fullscreen:{
             handler:async function(){
-               this.fullscreen == false ? this.blockwrapperheight = '750px' : 
-               this.blockwrapperheight = '890px'
+                this.blockwrapperheight = this.fullscreen == false ? '720px' : '850px'
             },
             immediate:true
         },
         device:{
             handler:async function(){
                 this.device == 'desktop' ? this.changeTable(true) : this.changeTable(false)
+                this.blockwrapperheight = this.device == 'desktop' ? '720px' : '790px'
             }
         }
     },
@@ -149,6 +149,7 @@ export default {
             var block = otherConfig == null ? this.blockData : this.downData
             var config = arr.filter(item=>item.isHidden == false).map(function(obj) {
                 var rObj = {}
+                rObj.label = obj.label
                 rObj.prop = obj.prop
                 rObj.format = obj.format
                 return rObj
@@ -169,8 +170,10 @@ export default {
                     )
                     concatarray = removeDuplicates(concatarray,'value')
                     array.push({
-                        type:element.prop,
-                        options:concatarray
+                        label:element.label,
+                        text:element.label,
+                        value:element.prop,
+                        children:concatarray
                     })
                 }else{
                     var list = this.getItems(block,element.prop,element.format)
@@ -180,8 +183,10 @@ export default {
                         return self.sortRule(s1,s2)
                     })
                     array.push({
-                        type:element.prop,
-                        options:list
+                        label:element.label,
+                        text:element.label,
+                        value:element.prop,
+                        children:list
                     })
                 }
             })
@@ -193,7 +198,7 @@ export default {
                 if(format == 'YYYY' || format == 'YYYY-MM-DD'){ //日期
                     var str = item[prop] !== null && item[prop] !== undefined ?
                     moment(item[prop]).format(format) : '尚未設定值'
-                    return { text: str, value: item[prop] }
+                    return { label: str,text: str, value: item[prop] }
                 }else if(format == 'range'){ //檢測日期
                     var str 
                     if(item['checkStartDate'] !== null && item['checkStartDate'] !== undefined){
@@ -201,20 +206,20 @@ export default {
                     }else{
                         str = '尚未設定值'
                     }
-                    return { text: str, value: item['checkStartDate'] }
+                    return { label: str,text: str, value: item['checkStartDate'] }
                 }else if(typeof item[prop] == 'boolean'){
                     if(prop == 'status'){
                         var str = item[prop] == true ? '啟用' : '禁用'
-                        return { text: str, value: item[prop] }
+                        return { label: str,text: str, value: item[prop] }
                     }else if(prop == 'isImproved'){
                         var str = item[prop] == true ? '已改善' : '未改善'
-                        return { text: str, value: item[prop] }
+                        return { label: str,text: str, value: item[prop] }
                     }else if(prop == 'collaborate'){
                         var str = item[prop] == true ? '配合中' : '未配合'
-                        return { text: str, value: item[prop] }
+                        return { label: str,text: str, value: item[prop] }
                     }else{
                         var str = item[prop] == true ? '允許' : '禁止'
-                        return { text: str, value: item[prop] }
+                        return { label: str,text: str, value: item[prop] }
                     }
                 }else if(format =='DeviceStatusOptions' || 
                 format == 'ContactUnitOptions' || format == 'MaintainContentOptions' || 
@@ -223,12 +228,12 @@ export default {
                         obj.id == item[prop]
                     )
                     var str = _array.length !== 0 ? _array[0].textName : '尚未設定值'
-                    return { text: str, value: item[prop] }
+                    return { label: str,text: str, value: item[prop] }
                 }else {
                     if(item[prop] == '' || item[prop] == null ){
-                        return { text: '尚未設定值', value: null }
+                        return { label: '尚未設定值', text: '尚未設定值', value: null }
                     }else{
-                        return { text: item[prop], value: item[prop] }
+                        return { label: item[prop],text: item[prop], value: item[prop] }
                     }
                 } 
             })
@@ -239,7 +244,7 @@ export default {
             var list = Object.values(block).map(item => {
                 var array = []
                 for(let element of item[prop]){
-                    array.push({ text: element.getName(), value: element.getID() })
+                    array.push({ label: element.getName(),text: element.getName(), value: element.getID() })
                 }
                 return array
             })

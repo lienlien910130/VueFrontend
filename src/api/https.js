@@ -50,10 +50,14 @@ const service = axios.create({
       'Content-Type': 'application/json; charset=utf-8;' }
 })
 
-const errorHandle = (status,msg) =>{
+const errorHandle = (status,error) =>{
     switch (status) {
         case 400:
             //tip('帳號密碼輸入錯誤，請重新輸入')
+            // if(error.response.data.errorMessage !== undefined && 
+            //     error.response.data.errorMessage == '0x06E0'){
+            //         tip('不可重複新增') 
+            // }
             break;
         case 401:
             tip('登入過期，請重新登入')
@@ -67,11 +71,12 @@ const errorHandle = (status,msg) =>{
             tip('請勿刪除正在使用之設定')
             break;
         case 404:
-            tip(msg)
+            tip(error.response.data.error)
             break;
         default:
-          console.log('resq未攔截到的錯誤:'+msg)
+          console.log('resq未攔截到的錯誤:'+error.response.data.error)
     }
+    tryHideLoading()
 }
 
 // request interceptor
@@ -108,8 +113,8 @@ service.interceptors.response.use(
       if(error) {
           //成功發出請求且收到resp，但有error
           //alert(error)
-          console.log(error.response.status,error.response.data.error)
-          errorHandle(error.response.status,error.response.data.error)
+          console.log(error.response.status,error.response.data.errorMessage)
+          errorHandle(error.response.status,error)
           return Promise.reject(error)
       } else {
         if(!window.navigator.onLine) {

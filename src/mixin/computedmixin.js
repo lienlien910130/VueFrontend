@@ -95,14 +95,13 @@ export default {
                     if(this.fullscreen == true){
                         this.title == 'committee' || this.title == 'contactUnit' || 
                         this.title == 'floorOfHouse' || this.title == 'user' ? 
-                        this.infiniteheight = 710 : this.infiniteheight = 800
+                        this.infiniteheight = 710 : this.infiniteheight= 780
                     }else{
                         this.title == 'committee' || this.title == 'contactUnit' || 
                         this.title == 'floorOfHouse' || this.title == 'user'   ? 
-                        this.infiniteheight = 580 : this.infiniteheight = 680
+                        this.infiniteheight = 510 : this.infiniteheight = 640
                     }
-                    this.height = (this.infiniteheight -50).toString() + 'px'
-                    this.tableheight = '500px'
+                    this.height = (this.infiniteheight -10).toString() + 'px'
                 },
                 immediate:true
             }
@@ -137,8 +136,7 @@ export default {
         data() {
             return {
                 height:'',
-                infiniteheight:'',
-                tableheight:''
+                infiniteheight:''
             }
         }
 }

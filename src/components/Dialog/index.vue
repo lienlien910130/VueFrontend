@@ -763,13 +763,12 @@ export default {
         },
         //動態新增選項
         changeValue(event,format,prop){
-            console.log(format)
             var array = this.optionfilter(format)
             var data = array.filter(item=> item.id == event)
             if(data.length == 0){
                 var item = {
-                    classType:format,
-                    textName:event
+                    'classType':'{Check}'+format,
+                    'textName':'{Check}'+event
                 }
                 this.prop.push(prop)
                 this.createOption.push(item)
@@ -822,7 +821,6 @@ export default {
                 var data = status == 'authoritycreate' ? this.accessArray : ''
                 this.$emit('handleDialog',this.title, status , data)
             }else if (status == 'openempty'){
-                console.log('tablemaintainlist')
                 this.$emit('handleDialog','maintainList', status , '')
             }else if (status == 'tablemaintain'){
                 this.$emit('handleDialog',this.title, 'empty' , this.maintainListID)

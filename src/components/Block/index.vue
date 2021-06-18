@@ -1,9 +1,10 @@
 <template>
 <div>
     <el-row  :gutter="gutter">
-        <div class="infinite-list-wrapper" :style="{ height: infiniteheight+'px' }">
-            <div style="margin-bottom:50px">
-                <el-col :xs="24" :sm="24" :md="24" :lg="24">
+        <div style="margin-bottom:50px;">
+            <el-col 
+                v-if="isTable == true"
+                :xs="24" :sm="24" :md="24" :lg="24">
                     <el-input 
                     v-if="hasSearch == true"
                     placeholder="請輸入內容，多條件搜尋請依左側'勾選條件'依序輸入值並以'逗號'區隔" 
@@ -36,21 +37,126 @@
                         class="filter-item" 
                         type="primary" 
                         @click="change">
-                            <span> {{ isTable == false ? '檢視所有細項' : '檢視大項'}} </span>                  
+                            <span> 檢視大項 </span>                  
                     </el-button>
+            </el-col>
+            <el-col v-else
+                :xs="24" :sm="24" :md="24" :lg="24">
+                <el-collapse v-model="activeNames">
+                    <!-- <el-collapse-item title="關鍵字搜尋" name="1">
+                        <el-select
+                        v-if="hasSearch == true"
+                        v-model="inputSelect"
+                        filterable
+                        multiple
+                        value-key="id"
+                        placeholder="請選擇關鍵字查詢欄位"
+                        style="width:100%"
+                        collapse-tags
+                        clearable 
+                        >
+                            <el-option
+                            v-for="(item,index) in inputSelectChange()"
+                            :key="index"
+                            :label="item.label"
+                            :value="item.prop"
+                            >
+                            </el-option>  
+                        </el-select>
+                        <el-input 
+                        v-if="hasSearch == true"
+                        placeholder="請輸入關鍵字，多條件搜尋請依上方'勾選條件'依序輸入值並以'逗號'區隔" 
+                        v-model="inputSearch" class="input-with-select" style="width:100%" clearable
+                        @clear="clearInputSearch" @keyup.enter.native="handleSearchWord"
+                        >
+                        </el-input>
+                    </el-collapse-item> -->
+                    <el-collapse-item title="篩選條件搜尋" name="1">
+                        <el-cascader
+                        v-model="filterSearch"
+                        :options="selectSetting"
+                        :props="{ multiple: true }"
+                        filterable
+                        collapse-tags
+                        size="mini"
+                        placeholder="請選擇篩選條件"
+                        clearable
+                        style="width:100%"
+                        >
+                        </el-cascader>
+                        <!-- <el-button icon="el-icon-search" 
+                        circle
+                        @click="handleFilterSearch"
+                        ></el-button> -->
+                    </el-collapse-item>
+                    <el-collapse-item title="資料排序" name="3">
+                        <el-select 
+                        v-model="sortValue" 
+                        placeholder="請選擇排序欄位"
+                        style="width:100%"
+                        clearable
+                        >
+                            <el-option
+                            v-for="item in selectSetting"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                            </el-option>
+                        </el-select>
+                        <el-select 
+                        v-model="sortOrder" 
+                        placeholder="請選擇排序欄位"
+                        style="width:100%"
+                        clearable
+                        >
+                            <el-option  key="1" value="ascending">
+                                <i icon="el-icon-caret-top" ></i>
+                            </el-option>
+                             <el-option  key="2" value="descending">
+                                <i icon="el-icon-caret-bottom" ></i>
+                            </el-option>
+                        </el-select>
+                         <!-- <el-button icon="el-icon-caret-top" 
+                         circle
+                         @click="sortChange({prop:sortValue,order:'ascending'})"
+                         ></el-button>
+                          <el-button icon="el-icon-caret-bottom" 
+                          circle
+                          @click="sortChange({prop:sortValue,order:'descending'})"
+                          ></el-button> -->
+                    </el-collapse-item>
+                </el-collapse>
+                    <el-button
+                        v-if="title == 'maintain' || title == 'maintainList'"
+                        class="filter-item" 
+                        type="primary" 
+                        size="mini"
+                        @click="change">
+                            <span> 檢視細項 </span>                  
+                    </el-button>
+                    <!-- <el-button
+                        v-if="isTable == false"
+                        class="filter-item" 
+                        size="mini"
+                        type="primary" 
+                        >
+                        搜尋
+                    </el-button> -->
                     <el-button
                         v-if="isTable == false"
                         class="filter-item" 
+                        size="mini"
                         type="primary" 
                         @click="handleClickOption('empty','')">
                         新增
                     </el-button>
-                </el-col>
-            </div>
+            </el-col>
+        </div>
+        <div class="infinite-list-wrapper" :style="{ height: infiniteheight+'px' }">
             <div v-if="isTable == false" 
             >
               <div 
-              v-for="(item,index) in blockData" 
+              v-for="(item,index) in table" 
               :key="index"
               >
               <el-col :xs="24" :sm="12" :md="6" :lg="6">
@@ -166,7 +272,7 @@
                                     {{ changeLackCount(item[option.prop]) }}
                                 </span>
                                 
-                                <el-button v-else-if="option.format == 'openfiles' "
+                                <!-- <el-button v-else-if="option.format == 'openfiles' "
                                 type="text" @click="handleClickOption('openfiles',item)" 
                                 style="padding-top:0px;padding-bottom:0px">查看</el-button>
 
@@ -174,7 +280,7 @@
                                 type="text" @click="handleClickOption('openlacks',item)" 
                                 style="padding-top:0px;padding-bottom:0px">
                                    查看
-                                </el-button>
+                                </el-button> -->
 
                                 <span v-else>{{ item[option.prop] }}</span>
                             </div>
@@ -410,8 +516,8 @@
             </div>
         </div>
     </el-row>
-    <el-row>
-        <div v-if="total > 0" class="pagination-container">
+    <el-row v-if="total > 0 && isTable == true">
+        <div  class="pagination-container">
             <el-pagination
                 background
                 layout="total, sizes, prev, pager, next, jumper"
@@ -424,7 +530,20 @@
             ></el-pagination>
         </div>
     </el-row>
-
+    <el-row v-else-if="total > 0 && isTable == false"
+        style="margin-left:-10px">
+        <div  class="pagination-container">
+            <el-pagination
+                small
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :current-page.sync="page"
+                :page-size="limit"
+                layout="total, prev, pager, next"
+                :total="total">
+            </el-pagination>
+        </div>
+    </el-row>
 </div>
     
 </template>
@@ -506,6 +625,39 @@ export default {
         }
     },
     computed: {
+        table(){
+            var array = []
+            if(this.filterSearch.length){
+                for(let obj of this.filterSearch){
+                    var i = this.blockData.filter(item => {
+                        return item[obj[0]].indexOf(obj[1]) > -1
+                    })
+                    if(i.length){
+                        array.push(i[0])
+                    }
+                }
+            }
+            var temp = array.length !== 0 ? array : this.blockData
+
+            if(this.sortValue !== '' && this.sortOrder !== ''){
+                var self = this
+                var sortvalue = this.sortValue
+                if(this.sortOrder == 'descending'){
+                    temp = temp.sort(function(str1,str2){
+                        var s1 = str1[sortvalue] == null ? '' : str1[sortvalue]
+                        var s2 = str2[sortvalue] == null ? '' : str2[sortvalue]
+                        return self.sortRule(s2,s1)
+                    })
+                }else{
+                    temp = temp.sort(function(str1,str2){
+                        var s1 = str1[sortvalue] == null ? '' : str1[sortvalue]
+                        var s2 = str2[sortvalue] == null ? '' : str2[sortvalue]
+                        return self.sortRule(s1,s2)
+                    })
+                }
+            }
+            return temp
+        },
         labelstyle(){
             if (this.$store.state.app.device === 'mobile') {
                 return '40%'
@@ -639,7 +791,11 @@ export default {
             orderArray:[],
             inputSelect:null,
             inputSearch:'',
-            pictLoading:false
+            pictLoading:false,
+            activeNames: ['1'],
+            filterSearch:[],
+            sortValue:'',
+            sortOrder:''
         }
     },
     methods: {
@@ -855,8 +1011,8 @@ export default {
         },
         getFilterItems(prop){
             var data = this.selectSetting.filter(item=>{ 
-                return item.type == prop })
-            return data.length !== 0 ? data[0].options : null
+                return item.value == prop })
+            return data.length !== 0 ? data[0].children : null
         },
         //排序
         handleHeaderCellClass({row, column, rowIndex, columnIndex}){
@@ -992,14 +1148,48 @@ export default {
 }
 </script>
 
-<style scoped>
-.el-row {
-    margin-left: 0px;
-    margin-right: 0px;
-}
-
+<style>
+    .el-row {
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+  .el-cascader-menu {
+    min-width: 150px; 
+    max-width: 150px;
+    box-sizing: border-box;
+    color: #606266;
+    border-right: solid 1px #E4E7ED;
+    height: 204px;
+    overflow-x: scroll;
+    overflow-y: scroll;
+  }
+  .el-cascader__suggestion-panel{
+      min-width: 150px; 
+    max-width: 150px;
+    box-sizing: border-box;
+    color: #606266;
+    border-right: solid 1px #E4E7ED;
+    height: 204px;
+    overflow-x: scroll;
+    overflow-y: scroll;
+  }
+  /* .el-scrollbar__wrap {
+    height: 250px;
+    width: 150px;
+    overflow-y: auto;   
+    overflow-x: auto;
+    
+  } */
+  .el-cascader-node__label {
+    padding: 0 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .el-cascader-node__postfix {
+    right: 10px;
+  }
 </style>
-
 <style lang="scss" scoped>
 .infinite-list-wrapper {
     width: 100%;

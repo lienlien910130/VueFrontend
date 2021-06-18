@@ -19,7 +19,7 @@ let Setting = {
         return data
     },
     postOption: async function(data){
-        var data = await api.setting.apiPostOption(data).then(response => {
+        var data = await api.setting.apiCheckOption(data).then(response => {
             return response.result
         }).catch(error=>{
             return null
@@ -42,11 +42,11 @@ let Setting = {
         })
         return data
     },
-    searchOption:async function(data){
-        var data = await api.setting.apiSearchOption(data).then(response => {
-            return response.result
+    checkOption:async function(data){
+        var data = await api.setting.apiCheckOption(data).then(response => {
+            return true
         }).catch(error=>{
-            return response.result
+            return false
         })
         return data
     }

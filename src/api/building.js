@@ -55,7 +55,7 @@ const building = {
     apiGetAllBuildingOfUser(){ return req('get','/index/'+this.getBid()+'/a/house-holders') },
     apiGetBuildingOfUser(buildingId){ return req('get','/index/'+buildingId+'/a/house-holders') },
     apiGetUser(userId){ return req('get','/basic/house-holders/'+userId) },
-    apiPostUser(data){ return req('post','/basic/'+this.getBid()+'/house-holders',data) },
+    apiPostUser(data){ return req('post','/basic/'+this.getBid()+'/house-holders/check',data) },
     apiPatchUser(data){ return req('patch','/basic/house-holders',data) },
     apiDeleteUser(userId){ return req('delete','/basic/'+userId+'/house-holders') },
     apiGetUserSearchPages(data){ return req('post','/basic/'+this.getBid()+'/house-holders/ss',data)  },

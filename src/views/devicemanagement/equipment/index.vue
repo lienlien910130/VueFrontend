@@ -151,7 +151,7 @@ export default {
 <style lang="scss" scoped>
 .block-wrapper {
     background: #fff;
-    padding: 30px 15px;
+    padding: 15px 15px;
     height: 720px;
 }
 </style>

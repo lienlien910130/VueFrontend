@@ -1,7 +1,8 @@
 <template>
     <div class="footer">
-        <p class="fl">智慧科技 專業管理</p>
-        <p class="fp">版權所有 : 水星工程科技有限公司</p>
+        <!-- <p class="fl">智慧科技 專業管理</p>
+        <p class="fp">版權所有 : 水星工程科技有限公司</p> -->
+        <p class="fp">© 2021 水星工程科技有限公司 版權所有</p>
     </div>
 </template>
 

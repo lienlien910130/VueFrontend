@@ -31,7 +31,9 @@ class User extends Parent {
         return data
     }
     async create(){
-        var data = await api.building.apiPostUser(this).then(async(response) => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.name = '{Check}'+temp.name
+        var data = await api.building.apiPostUser(temp).then(async(response) => {
             return true
         }).catch(error=>{
             return false
