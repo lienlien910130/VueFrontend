@@ -1024,9 +1024,11 @@ export default {
         },
         //表格排序
         sortChange(column){
+            console.log(column)
             var self = this
             if (column.order === "descending") {
                 this.blockData = this.blockData.sort(function(str1,str2){
+                    console.log(str1[column.prop],str2[column.prop])
                     var s1 = str1[column.prop] == null ? '' : str1[column.prop]
                     var s2 = str2[column.prop] == null ? '' : str2[column.prop]
                     return self.sortRule(s2,s1)
@@ -1161,7 +1163,7 @@ export default {
     border-right: solid 1px #E4E7ED;
     height: 204px;
     overflow-x: scroll;
-    overflow-y: scroll;
+    overflow-y: hidden;
   }
   .el-cascader__suggestion-panel{
       min-width: 150px; 
