@@ -216,12 +216,20 @@ export default {
       }, 2000)
     },
     async getBuildingDevicesManage() { //取得設備
+      console.log('getBuildingDevicesManage')
       var _temp = []
       this.deviceData = await Device.get()
+      console.log('deviceData')
+      console.log(this.deviceData)
       var statusArray = removeDuplicates(this.deviceData,'status')
+      console.log('statusArray')
+      console.log(statusArray)
       for(let obj of statusArray) {
         var statusObj = this.buildingoptions.filter((item,index)=>item.id == obj.status)[0]
+        console.log('statusObj')
+        console.log(statusObj)
         if(statusObj !== undefined){
+          console.log('push')
           _temp.push({
           value: obj.status,
           name: statusObj.textName,
@@ -233,6 +241,8 @@ export default {
           })
         }
       }
+      console.log('_temp')
+      console.log(_temp)
       this.deviceGroup = _temp
     },
     async getMaintain(){ //取得維保細項 故障日期!=null 叫修日期null
@@ -262,9 +272,9 @@ export default {
       this.publicSafelistQueryParams.total = data.totalPageCount
     },
     async handleList(title,item){
-      console.log(title,JSON.stringify(item))
       var config = title == 'maintain' ? MaintainManagement.getTableConfig() :
-          title == 'inspection' ? Inspection.getTableConfig() : PublicSafe.getTableConfig()
+          title == 'inspection' ? Inspection.getTableConfig() : 
+          PublicSafe.getTableConfig()
       var titlename =  title == 'maintain' ? '維護保養' : 
           title == 'inspection' ? '檢修申報': '公安申報'
       var keys = Object.keys(item)
@@ -290,6 +300,30 @@ export default {
               item.id == item[key] 
             )
             value = _array.length !== 0 ? _array[0].textName : ''
+          }else if(i[0].format =='improvedBoolean'){
+            value = item[key] == true ? '已改善' : '未改善'
+          }else if(i[0].format == 'openreportlack' ){
+            if(value !== null && value.length){
+              var doneobj = this.buildingoptions.filter(item=>
+              item.classType == 'LackStatusOptions' 
+              && item.textName == '已改善' && item.value == 'system')
+              var doneid = doneobj.length !== 0 ? doneobj[0].id : 0
+              var done = value.filter(item => item.getStatus() == doneid)
+              value =  done.length.toString()+'/'+(value.length - done.length).toString()
+            }else{
+              value = "0/0"
+            }
+          }else if(i[0].format == 'openmaintain'){
+            if(value !== null && value.length){
+              var doneobj = this.buildingoptions.filter(item=>
+              item.classType == 'MaintainProcessOptions' 
+              && item.textName == '已保養' && item.value == 'system')
+              var doneid = doneobj.length !== 0 ? doneobj[0].id : 0
+              var done = value.filter(item => item.getProcessStatus() == doneid)
+              value =  done.length.toString()+'/'+(value.length - done.length).toString()
+            }else{
+              value = "0/0"
+            }
           }
           array.push({
             label:i[0].label,

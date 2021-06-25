@@ -209,6 +209,8 @@ class Device extends Parent {
     }
     static async get (){
         var data = await api.device.apiGetBuildingDevicesManagement().then(response => {
+            console.log('device-get')
+            console.log(response)
             var array = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Device(item) })
             return array
         }).catch(error=>{

@@ -1,6 +1,6 @@
 'use strict'
 const path = require('path')
-
+const fs = require("fs")
 
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -25,6 +25,10 @@ module.exports = {
       warnings: false,
       errors: true
     },
+    // https: {
+    //   key: fs.readFileSync(`${__dirname}/src/assets/https/localhost-key.pem`),
+    //   cert: fs.readFileSync(`${__dirname}/src/assets/https/localhost.pem`)
+    // },
     proxy: {
       // change xxx-api/login => mock/login
       // detail: https://cli.vuejs.org/config/#devserver-proxy

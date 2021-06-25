@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="upload-drag-wrap">
         <el-form
             label-position="left" 
             label-width="auto" 
@@ -24,7 +24,6 @@
                 list-type="picture"
                 multiple
                 :file-list="fileList">
-                
                 <el-button slot="trigger"  type="primary" icon="el-icon-folder-opened" ></el-button>
                 <el-button type="success"
                     :disabled="isDisabled" 
@@ -36,14 +35,6 @@
                  <el-button type="warning"
                     icon="el-icon-warning-outline"></el-button>
                 </el-tooltip>
-                 <!-- <div slot="file" slot-scope="{file}">
-                     <img :src="file.url" alt="" 
-                     class="el-upload-list__item-thumbnail">
-                     <a class="el-upload-list__item-name" @click="handlePreview(file)">
-                        {{ file.name }}
-                    </a>
-	                <i class="el-icon-close" @click="handleRemove(file,fileList)"></i>
-                 </div> -->
             </el-upload>
         </el-form-item>
 
@@ -73,7 +64,6 @@
                     </div>
                 </div>
             </div>
-            
             <div class="files" :style="{ height: filesheight }">
                 <div 
                 v-for="(item,index) in filescopy" :key="item.getID()" class="filesdiv">
@@ -107,20 +97,6 @@
             <img v-if="type =='image' " :src="previewPath" class="previewImg"/>
             <div v-else>
                 <iframe :src="previewPath" frameborder="0" style="width: 100%; height:800px"></iframe>
-                <!-- <pdf
-                :src="previewPath"
-                :page="currentPage"
-                @num-pages="pageCount=$event"
-                @page-loaded="currentPage=$event"
-                @loaded="loadPdfHandler"
-                style="height:800px"
-                >
-                </pdf>
-                <div style="text-align:center">
-                    <el-button type="primary" @click="changePdfPage(0)" icon="el-icon-back">上一頁</el-button>
-                    <span type="primary">{{currentPage}} / {{pageCount}}</span>
-                    <el-button type="primary" @click="changePdfPage(1)" icon="el-icon-right">下一頁</el-button>
-                </div> -->
             </div>
         </el-dialog>
     </div>
@@ -171,14 +147,9 @@ export default {
             deleteItem:[],
             filescopy:[],
             type:'',
-            // isImage:true,
             dialogTitle:'',
 	        previewVisible:false,
 	        previewPath:'',
-            // currentPage: 0, // pdf文件页码
-	        // pageCount: 0, // pdf文件总页数
-	        // fileType: 'pdf', // 文件类型
-	        // pdfUrl: '', // pdf文件地址
             filesheight:''
       }
     },
@@ -236,13 +207,14 @@ export default {
             }
         },
         handleRemove(file, fileList) {
+            console.log('handleRemove',file,fileList)
             const obj = this.disable.findIndex((item, index) =>
                 item.uid == file.uid
             )
             this.disable.splice(obj,1)
-            if(fileList.length == 0){
-                this.isDisabled = true
-            }
+            // if(fileList.length == 0){
+            //     this.isDisabled = true
+            // }
         },
         search(){
             if(this.input !== ''){
@@ -445,18 +417,7 @@ export default {
                     }
                 } 
             }
-        },
-        // changePdfPage (val) {
-	    //     if (val === 0 && this.currentPage > 1) {
-	    //       this.currentPage--
-	    //     }
-	    //     if (val === 1 && this.currentPage < this.pageCount) {
-	    //       this.currentPage++
-	    //     }
-	    // },
-	    // loadPdfHandler (e) {
-	    //   this.currentPage = 1 // 加载的时候先加载第一页
-	    // }
+        }
     }
   }
 </script>

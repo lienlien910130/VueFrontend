@@ -167,7 +167,7 @@ class PublicSafe extends Parent {
              },
             {
                 label: '已改善/未改善',
-                prop: 'linkReportInspectionLacks',
+                prop: 'linkReportPublicSafeLacks',
                 format:'openreportlack',
                 mandatory:false, type:'array',typemessage:'',
                 isHidden:true,isSearch:false,

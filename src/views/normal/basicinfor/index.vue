@@ -1,7 +1,7 @@
 <template>
         <div class="editor-container">
             <el-row :gutter="32">
-                <el-col :xs="24" :sm="24" :md="24" :lg="7">
+                <el-col :xs="24" :sm="24" :md="24" :lg="6">
                     <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                         <h3>基本資料</h3>
                         <Form 
@@ -9,7 +9,7 @@
                         />
                     </div>
                 </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="17">
+                <el-col :xs="24" :sm="24" :md="24" :lg="18">
                     <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                         <el-tabs v-model="activeName" type="border-card" 
                         >
@@ -40,13 +40,13 @@
                         </el-tabs>
                     </div>
                 </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="7">
+                <el-col :xs="24" :sm="24" :md="24" :lg="6">
                     <div :class="floorwrapper" :style="{ height: blockwrapperheight }">
                         <h3>大樓樓層</h3>
                         <Range v-on:handleBuildingFloorSelect="handleBuildingFloorSelect"></Range>
                     </div>
                 </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="17">
+                <el-col :xs="24" :sm="24" :md="24" :lg="18">
                     <div class="block-wrapper" :style="{ height: blockwrapperheight }">
                         <el-tabs v-model="activeFloor" type="border-card">
                             <el-tab-pane label="大樓住戶資料" name="US" >
@@ -83,7 +83,6 @@
                 v-bind="dialogAttrs"
                 :files="floorFiles" 
                 v-on:handleDialog="handleDialog"></Dialog>
-                
             </el-row>
         </div>
 </template>
@@ -348,10 +347,18 @@ export default {
     },
     async handleBuildingInfo(index, content){ //轉接口
       console.log('handleBuildingInfo',index,content)
-      if (index == 'empty'){
-        await this.handleBlock('user','empty','')
-      }else if (index == 'open') {
+      if (index == 'openUser'){
         await this.handleBlock('user','open',content)
+      }else if (index == 'open') {
+        this.dialogData = []
+        this.dialogTitle = 'buildingInfo'
+        this.dialogConfig = Building.getUpdateConfig()
+        this.dialogData.push(content)
+        this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'update'},
+          { name:'取消',type:'info',status:'cancel'}]
+        this.innerVisible = true
+        this.dialogStatus = 'update'
       }else if(index == 'openfloorofhouse'){
         await this.handleBlock('floorOfHouse','open',content)
       }
@@ -525,7 +532,10 @@ export default {
             break;  
           case 'floorOfHouse':
             this.onFloorOfHouseActions(index, content)
-            break;  
+            break; 
+          case 'buildingInfo':
+            this.onBuildingActions(index, content)
+            break; 
         }
       }
     },
@@ -596,20 +606,33 @@ export default {
       }
     },
     async onUserActions(index, content){
-      if(index == 'create'){
+      if(index == 'create' || index == 'update'){
         var data = await User.getSearchPage({
           identityCard:'{LIKE}'+content.identityCard,
           pageIndex: 1,
           pageSize: 12,
           total:0
         })
-        if(data.totalPageCount == 0){
-          var isOk = await content.create()
+        var canSave = data.totalPageCount == 0 ? true : 
+        data.totalPageCount !==0 && data.result[0].getID() == content.id ?
+        true : false
+        if(canSave){
+          console.log('canSave',canSave)
+          var isOk = index === 'update' ? await content.update() : await content.create()
           if(isOk){
-            this.$message('新增成功')
             this.$store.dispatch('building/setbuildingusers',await User.get())
             await this.getUserList()
-            this.$refs.dialog.insertSuccess('userInfo')
+            if(index === 'update'){
+              this.$message('更新成功')
+              this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+              if(this.activeName == 'MC'){ //重整管委會
+                await this.getFloorOfHouse()
+                await this.getManagementList()
+              }
+            }else{
+              this.$message('新增成功')
+              this.$refs.dialog.insertSuccess('userInfo')
+            }
             this.innerVisible = false
           }else{
             this.$message.error('該姓名已存在，請重新輸入')
@@ -617,20 +640,31 @@ export default {
         }else{
           this.$message.error('該身份證已存在，請重新輸入')
         }
-      }else if(index !== 'cancel'){
-        var isOk = index === 'update' ? await content.update() : 
-        await User.postMany(content)
+      }else if(index === 'uploadExcelSave'){
+        var isOk = await User.postMany(content)
         if(isOk){
-          index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+          this.$message('新增成功')
           this.$store.dispatch('building/setbuildingusers',await User.get())
-          this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
           await this.getUserList()
-          if(this.activeName == 'MC'){ //重整管委會
-            await this.getFloorOfHouse()
-            await this.getManagementList()
+          this.innerVisible = false
+        }
+      }else{
+        this.innerVisible = false
+      }
+    },
+    async onBuildingActions(index, content){
+      if(index == 'update'){
+        var isOk = await content.update()
+        if(isOk){
+          this.$message('更新成功')
+          if(this.buildingid == content.getID()){
+            this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
           }
           this.innerVisible = false
         }
+      }else if(index == 'selectData'){
+        console.log('selectDataselectDataselectData')
+        this.$store.dispatch('building/setbuildingusers',await User.get())
       }else{
         this.innerVisible = false
       }
@@ -678,16 +712,19 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
 }
-
+.el-form-item{
+  margin-bottom: 18px;
+}
+.el-form-item__label{
+  font-size: 18px;
+}
+.el-form-item__content{
+  font-size: 18px;
+}
 </style>
 
 <style lang="scss" scoped>
-// .block-wrapper {
-//     background: #fff;
-//     padding: 10px;
-//     margin-bottom: 32px;
-//     height: 750px;
-//   }
+
 .block-wrapper {
     background: #fff;
     padding: 15px 15px;

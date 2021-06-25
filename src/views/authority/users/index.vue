@@ -153,6 +153,8 @@ export default {
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     await this.getAllAccount()
                     this.innerVisible = false
+                }else{
+                    this.$message.error('該帳號已存在，請重新輸入')
                 }
             }else if(index == 'selectData'){
                 this.$store.dispatch('building/setroles',await Role.get())

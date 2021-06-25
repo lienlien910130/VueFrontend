@@ -99,8 +99,10 @@
                   style="cursor: pointer;float:right"></i>
                 </el-button>
                 <el-button 
-                @click="handleTableClick('open',scope.row)" type="primary" size="small">編輯</el-button>
-                <el-button type="info" size="small" 
+                  @click="handleTableClick('open',scope.row)" type="primary" size="small">編輯
+                </el-button>
+                <el-button 
+                type="info" size="small" 
                 @click="handleTableClick('delete',scope.row)">刪除</el-button> 
             </template>
             </el-table-column>

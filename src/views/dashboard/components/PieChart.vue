@@ -32,6 +32,8 @@ export default {
   watch: {
     percentage:{
       handler:async function(){
+        console.log('this.percentage')
+        console.log(this.percentage)
         if(this.percentage.length > 0){
           this.init()
         }

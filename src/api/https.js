@@ -44,6 +44,7 @@ const tip = msg => {
 const service = axios.create({
 //   baseURL: process.env.VUE_APP_BASE_API2, // url = base url + request url
     baseURL: 'http://192.168.88.65:59119', // url = base url + request url
+    // baseURL: 'https://192.168.88.65:59110',
   // withCredentials: true, // send cookies when cross-domain requests
   timeout: 20000, 
   headers: { 

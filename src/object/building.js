@@ -7,8 +7,10 @@ class Building extends Parent {
  
     constructor (data) {
         super(data)
-        const { buildingName,address, area, height, floorsOfAboveGround, floorsOfUnderground, licenseNumber,
-            specialStorageItems,linkOwners,linkFireManagers } = data
+        const { buildingName,address, area, height, 
+            floorsOfAboveGround, floorsOfUnderground, licenseNumber,
+            specialStorageItems,contactPhone,useful,
+            linkOwners,linkFireManagers } = data
         var owners = linkOwners.map(item=>{ return new User(item)})
         var fireManagers = linkFireManagers.map(item=>{ return new User(item)})
         this.buildingName = buildingName
@@ -19,6 +21,8 @@ class Building extends Parent {
         this.floorsOfUnderground = floorsOfUnderground == undefined ? null : floorsOfUnderground
         this.licenseNumber = licenseNumber
         this.specialStorageItems = specialStorageItems
+        this.contactPhone = contactPhone
+        this.useful = useful
         this.linkOwners = owners
         this.linkFireManagers = fireManagers
         return this
@@ -107,6 +111,14 @@ class Building extends Parent {
             mandatory:true, message:'請輸入使用執照',maxlength:'30',
             isHidden:false,isSearch:true,placeholder:'請輸入使用執照',
             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'場所電話' , prop:'contactPhone',
+            mandatory:true, message:'請輸入場所電話',maxlength:'15',
+            isHidden:false,isSearch:true,placeholder:'請輸入場所電話',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'場所用途' , prop:'useful',
+            mandatory:true, message:'請輸入場所用途',maxlength:'50',
+            isHidden:false,isSearch:true,placeholder:'請輸入場所用途',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
             { label:'管理權人' , prop:'linkOwners',format:'userInfo',
             type:'array',typemessage:'',
             mandatory:false,isHidden:false,isSearch:false,
@@ -151,6 +163,14 @@ class Building extends Parent {
             mandatory:true, message:'請輸入使用執照',maxlength:'30',
             isHidden:false,isSearch:true,placeholder:'請輸入使用執照',
             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'場所電話' , prop:'contactPhone',
+            mandatory:true, message:'請輸入場所電話',maxlength:'15',
+            isHidden:false,isSearch:true,placeholder:'請輸入場所電話',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'場所用途' , prop:'useful',
+            mandatory:true, message:'請輸入場所用途',maxlength:'50',
+            isHidden:false,isSearch:true,placeholder:'請輸入場所用途',
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
             { label:'管理權人' , prop:'linkOwners',format:'userInfo',
             type:'array',typemessage:'',
             mandatory:false,isHidden:false,isSearch:false,
@@ -172,6 +192,8 @@ class Building extends Parent {
             floorsOfUnderground :null,
             licenseNumber :'',
             specialStorageItems :'',
+            contactPhone:'',
+            useful:'',
             linkOwners :[],
             linkFireManagers :[]
         })

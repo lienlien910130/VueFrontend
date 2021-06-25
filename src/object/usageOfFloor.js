@@ -7,12 +7,16 @@ class UsageOfFloor extends Parent {
  
     constructor (data) {
         super(data)
-        const { houseNumber,placeName, capacity, note,linkUsers, linkOwners } = data
+        const { houseNumber,placeName, capacity, note,
+            spatialCharacteristics,businessHours,
+            linkUsers, linkOwners } = data
         var owners = linkUsers.map(item=>{ return new User(item)})
         var users = linkOwners.map(item=>{ return new User(item)})
         this.houseNumber = houseNumber
         this.placeName = placeName
         this.capacity = capacity
+        this.spatialCharacteristics = spatialCharacteristics
+        this.businessHours = businessHours
         this.note = note
         this.linkUsers = users
         this.linkOwners = owners
@@ -76,6 +80,8 @@ class UsageOfFloor extends Parent {
             placeName :'',
             capacity :0,
             note :'',
+            spatialCharacteristics:'',
+            businessHours:'',
             linkUsers :[],
             linkOwners :[]
         })
@@ -93,6 +99,14 @@ class UsageOfFloor extends Parent {
              pattern:/^[0-9]{1,10}$/,errorMsg:'格式錯誤，請重新輸入',isPattern: true,
              isHidden:false,isSearch:false,
              isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+             { label:'空間特性' , prop:'spatialCharacteristics', format:'textarea',
+             mandatory:true, message:'請輸入空間特性',
+             isHidden:false,maxlength:'200',isSearch:true,placeholder:'請輸入空間特性',
+             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+             { label:'營業時間' , prop:'businessHours', 
+             mandatory:false, message:'請輸入營業時間',
+             isHidden:false,maxlength:'50',isSearch:true,placeholder:'請輸入營業時間',
+             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
              { label:'所有人' , prop:'linkOwners',format:'userInfo', 
              mandatory:true, message:'請選擇所有人',
              type:'array',typemessage:'',
@@ -104,10 +118,10 @@ class UsageOfFloor extends Parent {
              isHidden:false,isSearch:false,
              isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
              { label:'備註' , prop:'note',format:'textarea',mandatory:false,
-             isHidden:false,maxlength:'200',isSearch:true,placeholder:'請輸入備註',
+             isHidden:true,maxlength:'200',isSearch:true,placeholder:'請輸入備註',
              isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
          ]
-     }
+    }
     static async getAll(){
         var data = await api.building.apiGetBuildingOfHouse().then(response => {
             var result = response.result.sort((x,y) => x.id - y.id)

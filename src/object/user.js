@@ -23,7 +23,9 @@ class User extends Parent {
         return new User(data)
     }
     async update(){
-        var data = await api.building.apiPatchUser(this).then(async(response) => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.name = '{Check}'+temp.name
+        var data = await api.building.apiPatchUser(temp).then(async(response) => {
             return true
         }).catch(error=>{
             return false
