@@ -10,11 +10,11 @@ class MaintainManagementList extends Parent {
  
     constructor (data) {
         super(data)
-        const { name, createdDate, linkMaintains  } = data
-        var array = linkMaintains.map(item=>{ return new MaintainManagement(item) })
+        const { name, createdDate, completedCount, allCount  } = data
         this.name = name
         this.createdDate = createdDate
-        this.linkMaintains = array
+        this.completedCount = completedCount
+        this.allCount = allCount
         return this
     }
     clone(data){
@@ -68,7 +68,8 @@ class MaintainManagementList extends Parent {
             id:'',
             name:'',
             createdDate: moment().format('YYYY-MM-DD'),
-            linkMaintains:[]
+            completedCount:0,
+            allCount:0
         })
     }
     static getTableConfig(){
@@ -80,22 +81,34 @@ class MaintainManagementList extends Parent {
                 isHidden:false,isSearch:true,placeholder:'請輸入名稱',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-              {
+            {
                 label: '建立時間',
                 prop: 'createdDate',
                 format:'YYYY-MM-DD',
                 mandatory:true, message:'請選擇建立時間',
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-              },
-              {
-                label: '已保養/未保養',
-                prop: 'linkMaintains',
-                format:'openmaintain',
-                mandatory:false, type:'array',typemessage:'',
-                isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
-              }
+            },
+            {
+                label: '已保養細項',
+                prop: 'completedCount',
+                mandatory:false, isHidden:true,isSearch:false,type:'number',typemessage:'',
+                isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true
+            },
+            {
+                label: '保養細項總數',
+                prop: 'allCount',format:'openmaintain',
+                mandatory:false, isHidden:true,isSearch:false,type:'number',typemessage:'',
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+            },
+            //   {
+            //     label: '已保養/未保養',
+            //     prop: 'linkMaintains',
+            //     format:'openmaintain',
+            //     mandatory:false, type:'array',typemessage:'',
+            //     isHidden:false,isSearch:false,
+            //     isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
+            //   }
         ]
     }
     static getCreateConfig(){
@@ -130,6 +143,16 @@ class MaintainManagementList extends Parent {
             var array = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new MaintainManagementList(item) })
             return array
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async getOfID (id){
+        var data = await api.device.apiGetMaintainsList(id).then(response => {
+            console.log('getOfID')
+            console.log(JSON.stringify(response))
+            return []
         }).catch(error=>{
             return []
         })

@@ -8,6 +8,7 @@ const CopyPlugin = require('copy-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const vueSrc = "./src"
 const webpack = require('webpack')
+const ASSET_PATH = process.env.ASSET_PATH || '../';
 
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -49,7 +50,7 @@ module.exports = {
         exclude: [resolve('src/icons')],
         loader: 'file-loader',
         options: {
-          name: 'img/[name].[ext]',
+          name: 'image/[name].[ext]'
         }
       },
       {
@@ -74,14 +75,17 @@ module.exports = {
       {
         test: /\.s[ac]ss$/i,
         use: [
+          'style-loader',
           {
             loader: MiniCssExtractPlugin.loader,
             options:{
-              publicPath: '../',
+              publicPath: ASSET_PATH,
               esModule: false
 
             } 
-          },'css-loader','sass-loader'
+          },
+          'css-loader',
+          'sass-loader'
         ]
       }
     ]
@@ -126,6 +130,10 @@ module.exports = {
         {
           from: 'public/manifest.json',
           to: 'manifest.json'
+        },
+        {
+          from: 'web.config',
+          to: 'web.config'
         },
         {
           from:path.resolve(__dirname, './public/manifestimg'),

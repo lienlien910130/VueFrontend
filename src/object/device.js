@@ -4,18 +4,20 @@ import api from '@/api'
 import Contactunit from './contactunit'
 import Floors from './floors'
 import moment from 'moment'
-
+import { MaintainManagement } from '@/object/maintainManagement'
 
 class Device extends Parent {
  
     constructor (data) {
         super(data)
         const { name,dateOfPurchase, dateOfWarranty, location,groupID, 
-            systemUsed,linkKeeperUnits,linkMaintainVendors, linkFloors, linkDeviceTypes, status  } = data
+            systemUsed,linkKeeperUnits,linkMaintainVendors, linkFloors, linkDeviceTypes, status,
+            linkMaintain} = data
         var deviceType = linkDeviceTypes.map(item=>{ return new DeviceType(item) })
         var keeperUnits = linkKeeperUnits.map(item=>{ return new Contactunit(item) }) 
         var maintainVendors = linkMaintainVendors.map(item=>{ return new Contactunit(item) }) 
         var floors = linkFloors.map(item=>{ return new Floors(item) }) 
+        
         this.name = name
         this.dateOfPurchase = dateOfPurchase
         this.dateOfWarranty = dateOfWarranty
@@ -27,6 +29,7 @@ class Device extends Parent {
         this.linkMaintainVendors = maintainVendors
         this.linkFloors = floors
         this.linkDeviceTypes = deviceType
+        this.linkMaintain = linkMaintain
         return this
     }
     clone(data){
@@ -74,6 +77,10 @@ class Device extends Parent {
     getSystemUsed(){
         return this.systemUsed == true ? '已設置' : '尚未設置'
     }
+    getMaintains(){
+        console.log(this.linkMaintain)
+        return this.linkMaintain.map(item => { return new MaintainManagement(item)})
+    }
     // SystemUsed(){
     //     return this.systemUsed
     // }
@@ -112,7 +119,8 @@ class Device extends Parent {
             linkKeeperUnits : [],
             linkMaintainVendors :[],
             linkFloors :[],
-            linkDeviceTypes: []
+            linkDeviceTypes: [],
+            linkMaintain:[]
         })
     }
     static getTableConfig(){
@@ -209,8 +217,6 @@ class Device extends Parent {
     }
     static async get (){
         var data = await api.device.apiGetBuildingDevicesManagement().then(response => {
-            console.log('device-get')
-            console.log(response)
             var array = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Device(item) })
             return array
         }).catch(error=>{
@@ -220,6 +226,7 @@ class Device extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.device.apiGetDevicesManagementSearchPages(data).then(response => {
+            console.log(JSON.stringify(response))
             response.result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new Device(item)})
             return response

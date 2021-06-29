@@ -127,6 +127,7 @@ class DeviceType extends Parent {
         var data
         if(type == 'devicesManagement'){
             data = await api.device.apiGetDevicesTypeByDevicesManagement().then(response => {
+                
                 return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
             }).catch(error=>{
                 return []

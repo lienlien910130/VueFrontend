@@ -4,10 +4,10 @@
       <el-menu
         :default-active="activeMenu"
         :collapse="isCollapse"
-        :background-color="variables.menuBg"
-        :text-color="variables.menuText"
+        background-color="rgb(0,117,169)"
+        text-color="rgb(184, 184, 184)"
         :unique-opened="false"
-        :active-text-color="variables.menuActiveText"
+        active-text-color="white"
         :collapse-transition="false"
         mode="vertical"
       >
@@ -27,7 +27,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import variables from '@/styles/variables.scss'
+// import variables from '@/styles/variables.scss'
 
 export default {
   components: { 
@@ -50,9 +50,9 @@ export default {
       }
       return path
     },
-    variables() {
-      return variables
-    },
+    // variables() {
+    //   return variables
+    // },
     isCollapse() {
       return !this.sidebar.opened
     }

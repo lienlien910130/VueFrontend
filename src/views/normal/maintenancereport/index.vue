@@ -108,6 +108,7 @@ export default {
     data(){
         return{
             inspection:'',
+            isUpdate:false,
             //dialog額外的參數
             lackFileId:'', //缺失檔案id
             files:[],
@@ -322,12 +323,14 @@ export default {
           if(isDelete){
               this.$message('刪除成功')
               await this.resetlacklistQueryParams()
+              this.isUpdate = true
           }
         }else if(index === 'createlack' || index === 'updatelack'){
           var isOk = index === 'createlack' ? await content.create(this.inspection.getID()) : await content.update()
           if(isOk){
               index === 'updatelack' ? this.$message('更新成功') : this.$message('新增成功')
               await this.handleBlock('lack','openlacks',this.inspection)
+              this.isUpdate = true
           }
         }else if(index === 'cancel'){
           this.innerVisible = false
@@ -336,8 +339,9 @@ export default {
             limit: 10,
             total: 0
           }
-          if(this.isTable == false){
-            await this.getBuildingPublicSafeReport()
+          if(this.isUpdate){
+            await this.getBuildingMaintenanceReport()
+            this.isUpdate = false
           }
         }else if(index === 'cancellack'){
           this.lacklistQueryParams = {
@@ -377,7 +381,7 @@ export default {
           }
         }
       }else if(this.$route.query.type !== undefined && 
-      this.$route.query.type == 'inspection'){
+          this.$route.query.type == 'inspection'){
         await this.handleBlock('','empty','')
         this.$message('請先建立新的檢修申報後進行缺失項目的檔案設定')
       }

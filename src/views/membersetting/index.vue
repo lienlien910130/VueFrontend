@@ -133,7 +133,8 @@ export default {
         async PostData(index,content){
             var temp = {
                 'classType' : '{Check}'+index,
-                'textName':'{Check}'+content
+                'textName':'{Check}'+content,
+                'sort':99
             }
             var isOk = await Setting.checkOption(temp)
             if(isOk){
@@ -147,12 +148,14 @@ export default {
             }
         },
         async UpdateData(content){
-            var isOk = await Setting.updateOption(JSON.stringify(content))
+            var isOk = await Setting.updateOption(content)
             if(isOk){
                 this.$message("更新成功")
                 this.type = 'view'
                 this.current = ''
                 await this.getOptions()
+            }else{
+                this.$message.error('不可重複新增')
             }
         },
         async DeleteData(content){

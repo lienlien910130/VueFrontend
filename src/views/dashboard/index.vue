@@ -163,6 +163,14 @@ export default {
       },
       immediate:true
     },
+    buildingoptions:{
+      handler:async function(){
+        if(this.buildingoptions.length !== 0){
+          await this.getBuildingDevicesManage()
+        }
+      },
+      immediate:true
+    }
   },
   data() {
     return {
@@ -200,7 +208,6 @@ export default {
   },
   methods: {
     async init(){   
-      await this.getBuildingDevicesManage()
       await this.getMaintain()
       await this.getInspection()
       await this.getPublicSafe()
@@ -216,20 +223,12 @@ export default {
       }, 2000)
     },
     async getBuildingDevicesManage() { //取得設備
-      console.log('getBuildingDevicesManage')
       var _temp = []
       this.deviceData = await Device.get()
-      console.log('deviceData')
-      console.log(this.deviceData)
       var statusArray = removeDuplicates(this.deviceData,'status')
-      console.log('statusArray')
-      console.log(statusArray)
       for(let obj of statusArray) {
         var statusObj = this.buildingoptions.filter((item,index)=>item.id == obj.status)[0]
-        console.log('statusObj')
-        console.log(statusObj)
         if(statusObj !== undefined){
-          console.log('push')
           _temp.push({
           value: obj.status,
           name: statusObj.textName,
@@ -241,8 +240,6 @@ export default {
           })
         }
       }
-      console.log('_temp')
-      console.log(_temp)
       this.deviceGroup = _temp
     },
     async getMaintain(){ //取得維保細項 故障日期!=null 叫修日期null

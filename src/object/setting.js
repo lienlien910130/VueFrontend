@@ -27,7 +27,10 @@ let Setting = {
         return data
     },
     updateOption: async function(data){
-        var data = await api.setting.apiPatchOption(data).then(async(response) => {
+        var temp = JSON.parse(JSON.stringify(data))
+        temp.textName = '{Check}'+temp.textName
+        temp.classType = '{Check}'+temp.classType
+        var data = await api.setting.apiPatchOption(temp).then(async(response) => {
             return true
         }).catch(error=>{
             return false

@@ -13,7 +13,7 @@ const setting = {
   apiGetOptionById(optionId){ return req('get','/settings/'+optionId) },
   apiGetOptions(optionName){ return req('get','/settings/'+this.getBid()+'/'+optionName) },
   apiPostOption(data){ return req('post','/settings/'+this.getBid(),data) },
-  apiPatchOption(data){ return req('patch','/settings',data) },
+  apiPatchOption(data){ return req('patch','/settings/check',data) },
   apiDeleteOption(optionId){ return req('delete','/settings/'+optionId) },
   //查詢是否有重複值
   // apiSearchOption(data){ return req('post','/settings/'+this.getBid()+'/ss',data)},

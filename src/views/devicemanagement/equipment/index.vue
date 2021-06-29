@@ -26,6 +26,7 @@ import Device  from '@/object/device'
 import DeviceType  from '@/object/deviceType'
 import Contactunit from '@/object/contactunit'
 import Setting from '@/object/setting'
+import { MaintainManagement } from '@/object/maintainManagement'
 
 export default {
     name:'Device',
@@ -39,9 +40,25 @@ export default {
             }
         }
     },
+    data(){
+        return{
+            formtableData:[],
+            formtableconfig: MaintainManagement.getTableConfig(),
+            maintainlistQueryParams:{
+                pageIndex: 1,
+                pageSize: 10,
+                total:0
+            }
+        }
+    },
     methods: {
         async init(){
             this.title = 'equipment'
+            this.buttonsName = [
+                { name:'刪除',icon:'el-icon-delete',status:'delete'},
+                { name:'編輯',icon:'el-icon-edit',status:'open'},
+                { name:'維保紀錄',icon:'el-icon-document',status:'openmaintain'}
+            ]
             this.tableConfig = Device.getTableConfig()
             this.dialogSelect = await DeviceType.get('devicesManagement')
             await this.getBuildingDevicesManage()
@@ -53,6 +70,14 @@ export default {
                 total:0
             }
             await this.getBuildingDevicesManage()
+        },
+        async resetmaintainlistQueryParams(){
+            this.maintainlistQueryParams = {
+                pageIndex: 1,
+                pageSize: 10,
+                total:0
+            }
+            //await this.getPublicSafeLack()
         },
         async getBuildingDevicesManage(){
             var data = await Device.getSearchPage(this.listQueryParams)
@@ -94,6 +119,12 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'create'
+            }else if(index === 'openmaintain'){
+                console.log(content.getMaintains())
+                // this.dialogTitle = 'lack'
+                // await this.resetmaintainlistQueryParams()
+                // this.dialogStatus = 'lack'
+                // this.innerVisible = true
             }else if(index === 'exportExcel'){
                 this.exportExcelData = this.blockData
                 this.innerVisible = true

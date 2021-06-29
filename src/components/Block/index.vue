@@ -264,24 +264,6 @@
                                 item[option.prop].replace(/[^\d]/g,'').replace(/\s*/g,'')">
                                 </el-input> -->
                                 
-                                <span v-else-if="option.format == 'openmaintain' ">
-                                    {{ changeMaintain(item[option.prop]) }}
-                                </span>
-
-                                <span v-else-if="option.format == 'openreportlack' ">
-                                    {{ changeLackCount(item[option.prop]) }}
-                                </span>
-                                
-                                <!-- <el-button v-else-if="option.format == 'openfiles' "
-                                type="text" @click="handleClickOption('openfiles',item)" 
-                                style="padding-top:0px;padding-bottom:0px">查看</el-button>
-
-                                <el-button v-else-if="option.format == 'openlacks' "
-                                type="text" @click="handleClickOption('openlacks',item)" 
-                                style="padding-top:0px;padding-bottom:0px">
-                                   查看
-                                </el-button> -->
-
                                 <span v-else>{{ item[option.prop] }}</span>
                             </div>
                         </div>
@@ -725,34 +707,6 @@ export default {
             }else if(this.title == 'building'){
                 return { height : '405px'}
             }
-        },
-        changeMaintain(){
-            return function (all) {
-                if(all !== null && all.length){
-                    var doneobj = this.buildingoptions.filter(item=>
-                    item.classType == 'MaintainProcessOptions' 
-                    && item.textName == '已保養' && item.value == 'system')
-                    var doneid = doneobj.length !== 0 ? doneobj[0].id : 0
-                    var done = all.filter(item => item.getProcessStatus() == doneid)
-                    return done.length.toString()+'/'+(all.length - done.length).toString()
-                }else{
-                    return "0/0"
-                }
-            } 
-        },
-        changeLackCount(){
-            return function (all) {
-                if(all !== null && all.length){
-                    var doneobj = this.buildingoptions.filter(item=>
-                    item.classType == 'LackStatusOptions' 
-                    && item.textName == '已改善' && item.value == 'system')
-                    var doneid = doneobj.length !== 0 ? doneobj[0].id : 0
-                    var done = all.filter(item => item.getStatus() == doneid)
-                    return done.length.toString()+'/'+(all.length - done.length).toString()
-                }else{
-                    return "0/0"
-                }
-            } 
         },
         page: function() {
             return this.listQueryParams.pageIndex || 1

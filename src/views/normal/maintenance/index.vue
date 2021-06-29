@@ -113,6 +113,7 @@ export default {
             maintainList:'',
             maintain:'',
             maintainArray:[], //存放linkmaintain
+            isUpdate:false,
             //dialog額外的參數
             maintainFiles:[],
             formtableData:[],
@@ -246,8 +247,7 @@ export default {
                       await content.update() : await content.create()
                     if(isOk){
                         this.innerVisible = false
-                        index === 'update' ? this.$message('更新成功') : 
-                        this.$message('新增成功')
+                        index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                         await this.resetlistQueryParams()
                     }
                 }else if(index === 'createfile'){
@@ -268,6 +268,10 @@ export default {
                         this.maintainFiles = await this.maintainList.files()
                     }
                 }else if(index === 'cancel'){
+                    if(this.isUpdate){
+                        await this.getBuildingMaintainList()
+                        this.isUpdate = false
+                    }
                     this.innerVisible = false
                 }else if(index === 'clickPagination'){
                     this.maintainlistQueryParams = content
@@ -321,10 +325,12 @@ export default {
                 var isDelete = await content.delete()
                 if(isDelete){
                     this.$message('刪除成功')
-                    await this.resetlistQueryParams()
                     if(this.isTable == false){
-                        var data = this.blockData.filter((item,index)=> item.id == this.maintainList.getID())[0]
-                        await this.handleBlock('maintainList','open',data)
+                        this.isUpdate = true
+                        await this.resetmaintainlistQueryParams()
+                        this.dialogTitle = 'maintainList'
+                    }else{
+                        await this.resetlistQueryParams()
                     }
                 }
             }else if(index === 'createmaintain' || index === 'updatemaintain'){
@@ -334,25 +340,25 @@ export default {
                     index === 'updatemaintain' ? this.$message('更新成功') : this.$message('新增成功')
                 }
                 if(this.isTable == false){
-                    await this.getBuildingMaintainList()
                     var data = this.blockData.filter((item,index)=> item.id == this.maintainList.getID())[0]
                     await this.handleBlock('maintainList','open',data)
+                    this.isUpdate = true
                 }else{
                     await this.getMaintainAll()
                     this.innerVisible = false
                 }
             }else if(index === 'cancel'){
-                    if(this.isTable == false){
-                        this.maintainlistQueryParams = {
+                if(this.isTable == false){
+                    this.maintainlistQueryParams = {
                             pageIndex: 1,
                             pageSize: 10,
                             total:0
-                        }
-                        var data = this.blockData.filter((item,index)=> item.id == this.maintainList.getID())[0]
-                        await this.handleBlock('maintainList','open',data)
-                    }else{
-                        this.innerVisible = false
                     }
+                    var data = this.blockData.filter((item,index)=> item.id == this.maintainList.getID())[0]
+                    await this.handleBlock('maintainList','open',data)
+                }else{
+                    this.innerVisible = false
+                }
             }else if(index === 'openfiles'){
                     this.dialogTitle = 'maintain'
                     this.maintain = content

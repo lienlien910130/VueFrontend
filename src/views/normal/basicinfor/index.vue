@@ -32,6 +32,7 @@
                             </Block>
                           </el-tab-pane>
                           <el-tab-pane label="大樓相關資料" name="BOT" >
+                            
                             <Upload 
                             v-if="activeName == 'BOT'"
                             v-bind="buildingUploadAttrs"
@@ -617,7 +618,6 @@ export default {
         data.totalPageCount !==0 && data.result[0].getID() == content.id ?
         true : false
         if(canSave){
-          console.log('canSave',canSave)
           var isOk = index === 'update' ? await content.update() : await content.create()
           if(isOk){
             this.$store.dispatch('building/setbuildingusers',await User.get())

@@ -1452,27 +1452,27 @@ input {
       padding-right: 5px;
     }
     .icon-polygon {
-      background-image: url("../../assets/icons/draw/polygon.png");
+      background-image: url("../../assets/image/polygon.png");
       background-size: 80%;
     }
     .icon-rectangle {
-      background-image: url("../../assets/icons/draw/rectangle.png");
+      background-image: url("../../assets/image/rectangle.png");
       background-size: 80%;
     }
     .icon-text {
-      background-image: url("../../assets/icons/draw/text.png");
+      background-image: url("../../assets/image/text.png");
       background-size: 80%;
     }
     .icon-delete {
-      background-image: url("../../assets/icons/draw/delete.png");
+      background-image: url("../../assets/image/delete.png");
       background-size: 80%;
     }
     .icon-save {
-      background-image: url("../../assets/icons/draw/save.png");
+      background-image: url("../../assets/image/save.png");
       background-size: 80%;
     }
     .icon-mouse {
-      background-image: url("../../assets/icons/draw/mouse.png");
+      background-image: url("../../assets/image/mouse.png");
       background-size: 60%;
     }
   }

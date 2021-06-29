@@ -2,16 +2,14 @@ import Parent from './parent'
 import api from '@/api'
 import moment from 'moment'
 import Files  from './files'
-import PublicSafeLack from './publicSafeLack'
 
 class PublicSafe extends Parent {
     constructor (data) {
         super(data)
         const { declareYear, declareDeadline, declareDate, declareResult, declarationImproveDate,
             checkStartDate, checkEndDate, professName, certificateNumber, isImproved, imported, nextInspectionDate,
-            note,linkReportPublicSafeLacks } = data
-        var publicSafeLack = linkReportPublicSafeLacks
-        .map(item=>{ return new PublicSafeLack(item)})    
+            note,completedCount,allCount } = data
+          
         this.declareYear = declareYear
         this.declareDeadline = declareDeadline
         this.declareDate = declareDate
@@ -25,7 +23,8 @@ class PublicSafe extends Parent {
         this.imported = imported
         this.nextInspectionDate = nextInspectionDate
         this.note = note
-        this.linkReportPublicSafeLacks = publicSafeLack
+        this.completedCount = completedCount
+        this.allCount = allCount
         return this
     }
     clone(data){
@@ -91,7 +90,8 @@ class PublicSafe extends Parent {
             imported :0,
             nextInspectionDate :null,
             note :'',
-            linkReportPublicSafeLacks:[]
+            completedCount:0,
+            allCount:0
         })
     }
     static getTableConfig(){
@@ -165,26 +165,26 @@ class PublicSafe extends Parent {
                  mandatory:false, isHidden:false,isSearch:true,
                  isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false
              },
+             {
+                label: '已改善缺失',
+                prop: 'completedCount',
+                mandatory:false, isHidden:true,isSearch:false,type:'number',typemessage:'',
+                isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true
+            },
             {
-                label: '已改善/未改善',
-                prop: 'linkReportPublicSafeLacks',
-                format:'openreportlack',
-                mandatory:false, type:'array',typemessage:'',
-                isHidden:true,isSearch:false,
-                isAssociate:false,isEdit:false,isUpload:false,isExport:false,isBlock:true
-            }
-            //  {
-            //      label: '檢附文件',
-            //      prop: 'file', mandatory:false,
-            //      format:'openfiles',isHidden:true,isSearch:false,
-            //      isAssociate:false,isEdit:false,isUpload:false,isExport:false,isBlock:false
-            //  },
-            //  {
-            //      label: '缺失項目',
-            //      prop: 'missingContent',mandatory:false,
-            //      format:'openlacks',isHidden:true,isSearch:false,
-            //      isAssociate:false,isEdit:false,isUpload:false,isExport:false,isBlock:false
-            //  }
+                label: '缺失項目總數',
+                prop: 'allCount',
+                mandatory:false, isHidden:true,isSearch:false,type:'number',typemessage:'',
+                isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true
+            },
+            // {
+            //     label: '已改善/未改善',
+            //     prop: 'linkReportPublicSafeLacks',
+            //     format:'openreportlack',
+            //     mandatory:false, type:'array',typemessage:'',
+            //     isHidden:true,isSearch:false,
+            //     isAssociate:false,isEdit:false,isUpload:false,isExport:false,isBlock:true
+            // }
          ]  
     }
     static async get (){

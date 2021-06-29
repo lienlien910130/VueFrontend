@@ -109,6 +109,7 @@ export default {
     data(){
         return{
             publicSafe:'',
+            isUpdate:false,
             //dialog額外的參數
             files:[],
             formtableData:[],
@@ -288,6 +289,7 @@ export default {
           if(isDelete){
               this.$message('刪除成功')
               await this.resetlacklistQueryParams()
+              this.isUpdate = true
           }
         }else if(index === 'createlack' || index === 'updatelack'){
           var isOk = index === 'createlack' ? 
@@ -296,6 +298,7 @@ export default {
           if(isOk){
               index === 'updatelack' ? this.$message('更新成功') : this.$message('新增成功')
               await this.handleBlock('lack','openlacks',this.publicSafe)
+              this.isUpdate = true
           }
         }else if(index === 'cancel'){
           this.innerVisible = false
@@ -304,8 +307,9 @@ export default {
             pageSize: 10,
             total:0
           }
-          if(this.isTable == false){
+          if(this.isUpdate){
             await this.getBuildingPublicSafeReport()
+            this.isUpdate = false
           }
         }else if(index === 'cancellack'){
           this.lacklistQueryParams = {

@@ -4,10 +4,14 @@
     accept=".xlsx, .xls" @change="handleClick">
     <div class="drop" @drop="handleDrop" @dragover="handleDragover" @dragenter="handleDragover">
       拖曳檔案至此
+      
       <el-button :loading="loading" style="margin-left:16px;" size="mini" type="primary" @click="handleUpload">
         開啟資料夾
       </el-button>
-      <el-button type="primary" size="mini" @click="handleSave" >
+      <el-button type="info" size="mini" @click="handleDownload" >
+        下載範例檔案
+      </el-button>
+      <el-button type="danger" size="mini" @click="handleSave" >
         <span>儲存資料</span>
       </el-button>
     </div>
@@ -118,6 +122,15 @@ export default {
       }else{
         this.$message.error('請先上傳正確的檔案格式再儲存資料')
       }
+    },
+    handleDownload(){
+      let a = document.createElement('a')
+      a.href = '/static/excel.rar'
+      a.download = '範例檔案.rar'
+      a.style.display = 'none'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
     },
     upload(rawFile) {
       this.$refs['excel-upload-input'].value = null // fix can't select the same excel

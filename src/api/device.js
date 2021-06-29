@@ -32,7 +32,7 @@ const device = {
     
     //維護保養大項
     apiGetBuildingMaintainsList(){ return req('get','/maintainManagement/buildings/'+this.getBid()+'/maintains') },
-    apiGetMaintainsList(maintainListId){ return req('get','/maintainManagement/maintains/'+maintainListId) },
+    apiGetMaintainsList(maintainListId){ return req('get','/maintainManagement/'+maintainListId) },
     apiPostMaintainsList(data){ return req('post','/maintainManagement/buildings/'+this.getBid()+'/maintains',data) },
     apiPatchMaintainsList(data){ return req('patch','/maintainManagement',data) },
     apiDeleteMaintainsList(maintainListId){ return req('delete','/maintainManagement/'+maintainListId) },
