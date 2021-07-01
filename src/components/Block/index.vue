@@ -381,6 +381,12 @@
                                              {{ scope.row.getDevicesName() }}
                                         </span>
 
+                                        <span v-else-if="item.format == 'equipmentDeviceSelect' " 
+                                        @click="clickMessageBox('設備資料',item.format,scope.row[item.prop])"
+                                        style="color:#66b1ff;cursor:pointer">
+                                             {{ scope.row.getDevicesName() }}
+                                        </span>
+
                                         <span v-else-if="item.format == 'contactunitSelect' " 
                                         @click="clickMessageBox('廠商資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
@@ -517,7 +523,6 @@
         <div  class="pagination-container">
             <el-pagination
                 small
-                @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
                 :current-page.sync="page"
                 :page-size="limit"

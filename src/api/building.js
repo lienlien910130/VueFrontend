@@ -59,7 +59,7 @@ const building = {
     apiPatchUser(data){ return req('patch','/basic/house-holders/check',data) },
     apiDeleteUser(userId){ return req('delete','/basic/'+userId+'/house-holders') },
     apiGetUserSearchPages(data){ return req('post','/basic/'+this.getBid()+'/house-holders/ss',data)  },
-    apiPostUsers(data){ return req('post','/basic/'+this.getBid()+'/house-holders/s',data) },    
+    apiPostUsers(data){ return req('post','/basic/'+this.getBid()+'/house-holders/check/s',data) },    
     
 }
 

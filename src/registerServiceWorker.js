@@ -13,7 +13,7 @@ OfflinePluginRuntime.install({
     // 弹一个确认框
     MessageBox({        
         title: '更新',        
-        message: '新版本内容下载完成，点击确定按钮立即使用新版',        
+        message: '新版本內容下載完成，點擊確定按鈕立即使用新版',        
         confirmButtonText: '确定',        
         showClose: false,        
         showCancelButton: false,        

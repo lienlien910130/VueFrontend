@@ -32,11 +32,7 @@
         :model="temp"  
         :label-position="label" 
         label-width="auto" 
-        
             >
-            <!-- v-show="item.format !== 'hide' &&  item.format !== 'Options' &&  
-            item.format !== 'openfiles' 
-            &&  item.format !== 'openlacks' && item.format !== 'deviceName' " -->
             <el-form-item 
             v-for="(item, index) in config"
             :key="index"
@@ -118,6 +114,25 @@
                         >
                         </el-option>  
                 </el-select>
+
+                <!-- <el-select
+                    v-else-if="item.format == 'equipmentDeviceSelect' "
+                    v-model="temp[item.prop]"
+                    value-key="id"
+                    filterable
+                    multiple 
+                    placeholder="請選擇"
+                    style="width:100%"
+                    :disabled="true"
+                    >
+                        <el-option
+                        v-for="item in selectfilter(item.format)"
+                        :key="item.id"
+                        :label="item.label"
+                        :value="item"
+                        >
+                        </el-option>  
+                </el-select> -->
                 <!-- 檢修申報下拉選單(多)-->
                 <el-select
                     v-else-if="item.format == 'inspectionSelect' "
@@ -272,6 +287,10 @@
                 show-word-limit>
                 </el-input>
 
+                <span v-else-if="item.format =='inspectionLackStatus'">
+                    請至維護保養修改進度
+                </span>
+
                 <div v-else-if="item.format =='openmaintain' ">
                     <Table 
                         :list-query-params.sync="listQueryParams"
@@ -293,7 +312,9 @@
 
         </keep-alive>
         <!-- 檔案 -->
-        <Upload v-if="dialogStatus === 'upload'"
+        <Upload 
+        v-if="dialogStatus === 'upload'"
+        ref="Upload"
         v-bind="uploadAttrs" 
         v-on:handleFilesUpload="handleFilesUpload">
         </Upload>   
@@ -347,11 +368,15 @@
             </el-table-column>
         </el-table>
         <!-- 下載檔案 -->
-        <ExportExcel  v-if="dialogStatus === 'exportExcel'"
+        <ExportExcel  
+        v-if="dialogStatus === 'exportExcel'"
+        ref="ExportExcel"
             v-bind="exportExcelAttrs">
         </ExportExcel>
         <!-- 上傳檔案 -->
-        <UploadExcel  v-if="dialogStatus === 'uploadExcel'"
+        <UploadExcel  
+        v-if="dialogStatus === 'uploadExcel'"
+        ref="UploadExcel"
         :config="config"
         v-on:handleFilesUpload="handleFilesUpload">
         </UploadExcel>
@@ -372,7 +397,7 @@
                 >
                 </el-option>  
         </el-select>
-        
+
         <div v-if="isHasButtons" slot="footer" class="dialog-footer">
             <span
             v-for="(button, index) in buttonsName"
@@ -780,7 +805,7 @@ export default {
         },
         //fulltype選單變動
         changeFullType(){
-             this.temp['fullType'] = this.fulltypevalue[1]
+            this.temp['fullType'] = this.fulltypevalue[1]
         },
         //子傳父窗口
         handleClickOption(status){
@@ -815,6 +840,21 @@ export default {
                         return false
                     }
                 })
+            }
+            if(status == 'cancel'){
+                switch (this.dialogStatus) {
+                    case 'upload':
+                        this.$refs.Upload.resetFileList()
+                        break;
+                    case 'uploadExcel':
+                        this.$refs.UploadExcel.resetTableData()
+                        break;
+                    case 'exportExcel':
+                        this.$refs.ExportExcel.resetData()
+                        break;
+                    default:
+                        break;
+                }
             }
             if(status == 'cancel' || status == 'cancellack' || status == 'cancelfloor' ||
             status == 'empty' || status == 'authoritycreate' ){

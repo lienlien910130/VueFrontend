@@ -69,9 +69,9 @@ class InspectionLacks extends Parent {
             },
             {
                 label: '處理進度',
-                prop: 'status',format:'MaintainProcessOptions',
+                prop: 'status',format:'inspectionLackStatus',
                 mandatory:false, isHidden:false,
-                isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             }
         ]
     }

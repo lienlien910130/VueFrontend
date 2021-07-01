@@ -277,6 +277,8 @@ export default {
               this.$message('更新成功')
               this.lackFileId = content
               this.$refs.dialog.insertSuccess('inspectionSelect')
+            }else{
+              this.$message.error('檔案格式有誤，請重新設定')
             }
           }else{
             this.innerVisible = false

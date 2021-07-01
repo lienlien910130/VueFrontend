@@ -54,11 +54,11 @@ export default {
     methods: {
         async init(){
             this.title = 'equipment'
-            this.buttonsName = [
-                { name:'刪除',icon:'el-icon-delete',status:'delete'},
-                { name:'編輯',icon:'el-icon-edit',status:'open'},
-                { name:'維保紀錄',icon:'el-icon-document',status:'openmaintain'}
-            ]
+            // this.buttonsName = [
+            //     { name:'刪除',icon:'el-icon-delete',status:'delete'},
+            //     { name:'編輯',icon:'el-icon-edit',status:'open'},
+            //     { name:'維保紀錄',icon:'el-icon-document',status:'openmaintain'}
+            // ]
             this.tableConfig = Device.getTableConfig()
             this.dialogSelect = await DeviceType.get('devicesManagement')
             await this.getBuildingDevicesManage()

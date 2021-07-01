@@ -6,18 +6,24 @@ import Floors from './floors'
 import moment from 'moment'
 import { MaintainManagement } from '@/object/maintainManagement'
 
+
 class Device extends Parent {
  
     constructor (data) {
         super(data)
         const { name,dateOfPurchase, dateOfWarranty, location,groupID, 
             systemUsed,linkKeeperUnits,linkMaintainVendors, linkFloors, linkDeviceTypes, status,
-            linkMaintain} = data
-        var deviceType = linkDeviceTypes.map(item=>{ return new DeviceType(item) })
-        var keeperUnits = linkKeeperUnits.map(item=>{ return new Contactunit(item) }) 
-        var maintainVendors = linkMaintainVendors.map(item=>{ return new Contactunit(item) }) 
-        var floors = linkFloors.map(item=>{ return new Floors(item) }) 
-        
+            linkMaintain,linkDevices} = data
+        var deviceType = linkDeviceTypes !== undefined ?
+         linkDeviceTypes.map(item=>{ return new DeviceType(item) }) : []
+        var keeperUnits = linkDeviceTypes !== undefined ?
+         linkKeeperUnits.map(item=>{ return new Contactunit(item) }) : []
+        var maintainVendors = linkDeviceTypes !== undefined ?
+         linkMaintainVendors.map(item=>{ return new Contactunit(item) }) : []
+        var floors = linkDeviceTypes !== undefined ?
+         linkFloors.map(item=>{ return new Floors(item) }) :[]
+        var devices = linkDeviceTypes !== undefined ?
+         linkDevices.map(item=>{ return new Device(item) }) :[]
         this.name = name
         this.dateOfPurchase = dateOfPurchase
         this.dateOfWarranty = dateOfWarranty
@@ -30,6 +36,7 @@ class Device extends Parent {
         this.linkFloors = floors
         this.linkDeviceTypes = deviceType
         this.linkMaintain = linkMaintain
+        this.linkDevices = devices
         return this
     }
     clone(data){
@@ -100,6 +107,9 @@ class Device extends Parent {
     getMaintainVendorsName(){
         return this.linkMaintainVendors.map(item=>{return item.getName()}).toString()
     }
+    getDevicesName(){
+        return this.linkDevices.map(item => item.getName()).toString()
+    }
     getLinkType(){
         return this.linkDeviceTypes.length !== 0 ? this.linkDeviceTypes[0] : DeviceType.empty()
     }
@@ -120,7 +130,8 @@ class Device extends Parent {
             linkMaintainVendors :[],
             linkFloors :[],
             linkDeviceTypes: [],
-            linkMaintain:[]
+            linkMaintain:[],
+            linkDevices:[]
         })
     }
     static getTableConfig(){
@@ -185,8 +196,16 @@ class Device extends Parent {
                  mandatory:true,trigger: 'change', message:'請選擇維護廠商',type:'array',typemessage:'',
                  isHidden:false,isSearch:false,
                  isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
-             },
-             {
+            },
+            { 
+                label:'設備' , 
+                prop:'linkDevices',
+                format:'deviceSelect', 
+                mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+            },
+            {
                  label: '設備狀況',
                  prop: 'status',
                  format:'MaintainProcessOptions',
@@ -226,6 +245,7 @@ class Device extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.device.apiGetDevicesManagementSearchPages(data).then(response => {
+            console.log('getSearchPage')
             console.log(JSON.stringify(response))
             response.result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new Device(item)})

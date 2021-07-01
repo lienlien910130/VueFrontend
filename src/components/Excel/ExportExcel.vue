@@ -68,6 +68,11 @@ export default {
     }
   },
   methods: {
+    resetData(){
+      this.filename = ''
+      this.bookType = 'xlsx'
+      this.autoWidth = true
+    },
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {

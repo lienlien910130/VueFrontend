@@ -13,13 +13,14 @@ import Device from './object/device'
 import Floors from './object/floors'
 import Setting from './object/setting'
 
+
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['/login'] // no redirect whitelist
 
 router.beforeEach(async(to, from, next) => {
-  //logForTranslate.logtoLocal('router=>'+to.name,from.name)
-  console.log(to.name,from.name)
+  // logForTranslate.logtoLocal('router=>'+to.name,from.name)
+  console.log(to.name,from.name,to.meta.title)
   NProgress.start()
   document.title = `${to.meta.title} - 智慧消防管理平台`
   const hasToken = getToken()

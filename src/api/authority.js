@@ -44,7 +44,7 @@ const authority = {
     apiPutAccountAuthority(data){ return req('put','/accountSetting/check',data) },
     apiDeleteAccountAuthority(accountId){ return req('delete','/accountSetting/'+accountId) },
     apiGetAccountAuthoritySearchPages(data){ return req('post','/accountSetting/ss',data)  },
-    apiPostAccountAuthorities(data){ return req('post','/accountSetting/s',data) },
+    apiPostAccountAuthorities(data){ return req('post','/accountSetting/check/s',data) },
     //帳號取得權限管理
     apiGetAccountAuthorityByAccount(roleId){ return req('get','/accountSetting/'+this.getBid()+'/accessAuthorities/'+roleId) },
     

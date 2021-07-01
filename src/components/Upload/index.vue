@@ -1,169 +1,86 @@
 <template>
     <div class="upload-drag-wrap">
-        <el-col :xs="24" :sm="24" :md="24" :lg="6" >
-            <el-upload
-                ref="upload"
-                action="upload"
-                accept="text/plain,image/jpeg,image/png,application/pdf,
-                .doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,
-                application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,
-                application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
-                application/x-rar-compressed,application/zip
-                "
-                :on-remove="handleRemove"
-                :on-change="handleChange"
-                :before-remove="beforeRemove"
-                :auto-upload="false"
-                :on-preview="handlePreview"
-                list-type="picture"
-                multiple
-                :file-list="fileList">
-                <el-button slot="trigger"  type="primary" icon="el-icon-folder-opened" style="margin:0px 5px"></el-button>
-                <el-button type="success"
-                    :disabled="isDisabled" 
-                    @click="onUpload"
-                    icon="el-icon-upload" style="margin:0px 5px">
-                </el-button>
-                <el-tooltip class="item" effect="light" 
-                content="限圖片、txt、word、ppt、excel、pdf、rar、zip格式的檔案，且不超過10MB" placement="top">
-                 <el-button type="warning"
-                    icon="el-icon-warning-outline" style="margin:0px 5px"></el-button>
-                </el-tooltip>
-            </el-upload>
-        </el-col>
-        <el-col :xs="24" :sm="24" :md="24" :lg="18" style="padding:0px">
-            <el-col :xs="24" :sm="24" :md="24" :lg="24" style="padding:0px">
-                <el-col :xs="24" :sm="24" :md="24" :lg="18" style="padding:0px">
-                    <el-input v-model="input" 
-                        placeholder="請輸入關鍵字" 
-                        style="margin-bottom:10px;width:100%"
-                        @input="search"
-                        >
-                        <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                    </el-input>
-                </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="6" style="padding:0px">
-                    <el-button  
-                    type="info" icon="el-icon-delete" @click="deletefile"
-                    style="margin:0px 5px">
+        <el-row>
+            <el-col :xs="24" :sm="24" :md="24" :lg="7" >
+                <el-upload
+                    ref="upload"
+                    action="upload"
+                    accept="text/plain,image/jpeg,image/png,application/pdf,
+                    .doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+                    application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,
+                    application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+                    application/x-rar-compressed,application/zip
+                    "
+                    :on-remove="handleRemove"
+                    :on-change="handleChange"
+                    :before-remove="beforeRemove"
+                    :auto-upload="false"
+                    :on-preview="handlePreview"
+                    list-type="picture"
+                    multiple
+                    :file-list="fileList">
+                    <el-button slot="trigger"  type="primary" icon="el-icon-folder-opened" style="margin:0px 5px"></el-button>
+                    <el-button type="success"
+                        :disabled="isDisabled" 
+                        @click="onUpload"
+                        icon="el-icon-upload" style="margin:0px 5px">
                     </el-button>
-                    <el-button 
-                        v-if="title === 'reportInspectio' || title === 'floorFiles'  " 
-                        type="danger" @click="onChange" style="margin:0px 5px">
-                        {{ title === 'floorFiles' ? '平面圖' : '缺失內容'}}
-                    </el-button>
-                </el-col>
+                    <el-tooltip class="item" effect="light" 
+                    content="限圖片、txt、word、ppt、excel、pdf、rar、zip格式的檔案，且不超過10MB" placement="top">
+                    <el-button type="warning"
+                        icon="el-icon-warning-outline" style="margin:0px 5px"></el-button>
+                    </el-tooltip>
+                </el-upload>
             </el-col>
-            <el-col :xs="24" :sm="24" :md="24" :lg="24" style="padding:0px">
-                <div class="files" :style="{ height: filesheight }">
-                    <div 
-                    v-for="(item,index) in filescopy" :key="item.getID()" class="filesdiv">
-                        <el-checkbox v-model="deleteItem" :label="item.getID()">【{{ index+1 }}】</el-checkbox>
-                        <i 
-                        v-if="item.getExtName() == 'png' || item.getExtName() == 'jpg' || item.getExtName() == 'jpeg'
-                        || item.getExtName() == 'pdf' "
-                        class="el-icon-view" style="font-size:18px" @click="onPreview(item)"/>
-                        <span 
-                        @click="downloadfile(item)"  :style="check(item.getID())">
-                            <span>
-                                {{ item.getFileName() }}.{{ item.getExtName() }} 
+            <el-col :xs="24" :sm="24" :md="24" :lg="17" style="padding:0px">
+                <el-row>
+                    <el-col :xs="24" :sm="24" :md="24" :lg="17" style="padding:0px">
+                        <el-input v-model="input" 
+                            placeholder="請輸入關鍵字" 
+                            style="margin-bottom:10px;width:100%"
+                            @input="search"
+                            >
+                            <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                        </el-input>
+                    </el-col>
+                    <el-col :xs="24" :sm="24" :md="24" :lg="7" style="padding:0px">
+                        <el-button  
+                        type="info" icon="el-icon-delete" @click="deletefile"
+                        style="margin:0px 5px">
+                        </el-button>
+                        <el-button 
+                            v-if="title === 'reportInspectio' || title === 'floorFiles'  " 
+                            type="danger" @click="onChange" style="margin:0px 5px">
+                            {{ title === 'floorFiles' ? '平面圖' : '缺失內容'}}
+                        </el-button>
+                    </el-col>
+                </el-row>
+                <el-row >
+                    <div class="files" :style="{ height: filesheight }">
+                        <div 
+                        v-for="(item,index) in filescopy" :key="item.getID()" class="filesdiv">
+                            <el-checkbox v-model="deleteItem" :label="item.getID()">【{{ index+1 }}】</el-checkbox>
+                            <i 
+                            v-if="item.getExtName() == 'png' || item.getExtName() == 'jpg' || item.getExtName() == 'jpeg'
+                            || item.getExtName() == 'pdf' "
+                            class="el-icon-view" style="font-size:18px" @click="onPreview(item)"/>
+                            <span 
+                            @click="downloadfile(item)"  :style="check(item.getID())">
+                                <span>
+                                    {{ item.getFileName() }}.{{ item.getExtName() }} 
+                                </span>
+                                <span style="float:right">
+                                    {{ item.getExtName() }}  
+                                    {{ ' / 上傳時間：'+item.getUploadTime() }}
+                                </span>
                             </span>
-                            <span style="float:right">
-                                {{ item.getExtName() }}  
-                                {{ ' / 上傳時間：'+item.getUploadTime() }}
-                            </span>
-                        </span>
-                    </div>
-                </div>
-            </el-col>
-        </el-col>
-        <!-- <el-form
-            label-position="left" 
-            label-width="auto" 
-            :inline="true"
-        >
-        txt,jpg,png,jpeg,pdf,word,excel,ppt,zip,7z,rar
-        <el-form-item style="width:30%">
-            <el-upload
-                ref="upload"
-                action="upload"
-                accept="text/plain,image/jpeg,image/png,application/pdf,
-                .doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,
-                application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,
-                application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
-                application/x-rar-compressed,application/zip
-                "
-                :on-remove="handleRemove"
-                :on-change="handleChange"
-                :before-remove="beforeRemove"
-                :auto-upload="false"
-                :on-preview="handlePreview"
-                list-type="picture"
-                multiple
-                :file-list="fileList">
-                <el-button slot="trigger"  type="primary" icon="el-icon-folder-opened" ></el-button>
-                <el-button type="success"
-                    :disabled="isDisabled" 
-                    @click="onUpload"
-                    icon="el-icon-upload">
-                </el-button>
-                <el-tooltip class="item" effect="light" 
-                content="限圖片、txt、word、ppt、excel、pdf、rar、zip格式的檔案，且不超過10MB" placement="top">
-                 <el-button type="warning"
-                    icon="el-icon-warning-outline"></el-button>
-                </el-tooltip>
-            </el-upload>
-        </el-form-item>
-
-        <el-form-item  style="width:70%;padding-left:8px">
-            <div style="display:table;width:100%">
-                 <div style="display:table-cell;width:80%">
-                    <el-input v-model="input" 
-                    placeholder="請輸入關鍵字" 
-                    style="margin-bottom:10px;width:100%"
-                    @input="search"
-                    >
-                    <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                    </el-input>
-                </div> 
-                <div style="display:table-cell;width:20%">
-                    <div style="display:table;width:100%">
-                        <div style="display:table-cell;width:20%">
-                            <el-button  type="info" icon="el-icon-delete" @click="deletefile"></el-button>
-                        </div>
-                        <div style="display:table-cell;width:80%">
-                            <el-button 
-                                v-if="title === 'reportInspectio' || title === 'floorFiles'  " 
-                                type="danger" @click="onChange">
-                                {{ title === 'floorFiles' ? '平面圖' : '缺失內容'}}
-                            </el-button>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="files" :style="{ height: filesheight }">
-                <div 
-                v-for="(item,index) in filescopy" :key="item.getID()" class="filesdiv">
-                    <el-checkbox v-model="deleteItem" :label="item.getID()">【{{ index+1 }}】</el-checkbox>
-                    <i 
-                    v-if="item.getExtName() == 'png' || item.getExtName() == 'jpg' || item.getExtName() == 'jpeg'
-                    || item.getExtName() == 'pdf' "
-                    class="el-icon-view" style="font-size:18px" @click="onPreview(item)"/>
-                    <span 
-                    @click="downloadfile(item)"  :style="check(item.getID())">
-                        <span>
-                            {{ item.getFileName() }}.{{ item.getExtName() }} 
-                        </span>
-                        <span style="float:right">
-                            {{ item.getExtName() }}  
-                            {{ ' / 上傳時間：'+item.getUploadTime() }}
-                        </span>
-                    </span>
-                </div>
-            </div>
-        </el-form-item>
-        </el-form>  -->
-
+                </el-row>
+            </el-col>
+        </el-row>
+        
+        
         <el-dialog
             top="5vh"
             :title="dialogTitle"
@@ -189,10 +106,6 @@ export default {
             ])
     },
     props:{
-        limit:{ 
-            type: Number,
-            default:5 
-        },
         lackfileid: { 
             type: Number,
             default:0 
@@ -251,6 +164,9 @@ export default {
         }
     },
     methods: {
+        resetFileList(){
+            this.fileList = []
+        },
         check(val){
             if(val == this.choose){
                 return {color:'red',cursor:'pointer'}
@@ -284,14 +200,13 @@ export default {
             }
         },
         handleRemove(file, fileList) {
-            console.log('handleRemove',file,fileList)
             const obj = this.disable.findIndex((item, index) =>
                 item.uid == file.uid
             )
             this.disable.splice(obj,1)
-            // if(fileList.length == 0){
-            //     this.isDisabled = true
-            // }
+            if(fileList.length == 0){
+                this.isDisabled = true
+            }
         },
         search(){
             if(this.input !== ''){
@@ -504,6 +419,9 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
+.upload-drag-wrap{
+    min-height: 600px;
+}
 .previewImg{
     width: 100%;
     height: auto;

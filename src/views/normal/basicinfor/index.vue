@@ -32,7 +32,6 @@
                             </Block>
                           </el-tab-pane>
                           <el-tab-pane label="大樓相關資料" name="BOT" >
-                            
                             <Upload 
                             v-if="activeName == 'BOT'"
                             v-bind="buildingUploadAttrs"
@@ -72,6 +71,7 @@
                             </el-tab-pane>
                             <el-tab-pane  label="樓層相關資料" name="OT" :disabled="!isChoose">
                               <Upload 
+                              ref="floorsupload"
                               v-if="activeFloor == 'OT' && isChoose"
                               v-bind="floorUploadAttrs" 
                               v-on:handleFilesUpload="handleFilesUpload"></Upload>

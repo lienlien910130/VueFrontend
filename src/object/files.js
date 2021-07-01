@@ -5,16 +5,20 @@ import Parent from './parent'
 class Files extends Parent {
     constructor (data) {
         super(data)
-        const {  fileOriginalName, uploadTime, extName  } = data
+        const {  fileOriginalName, uploadTime, extName, uploadUserID,targetModule,targetID   } = data
         this.fileOriginalName = fileOriginalName
         this.uploadTime = uploadTime
         this.extName = extName
+        this.uploadUserID = uploadUserID
+        this.targetModule = targetModule
+        this.targetID = targetID
         return this
     }
 
     getID(){ return this.id }
     getFileName(){ return this.fileOriginalName }
     getExtName(){ return this.extName }
+    getModule(){ return this.targetModule }
     getUploadTime(){ 
         return moment(this.uploadTime ).format('YYYY-MM-DD HH:mm')
     }
@@ -54,14 +58,17 @@ class Files extends Parent {
         })
         return data        
     }
-    // static async download(fileId){
-    //     var data = await api.files.apiGetFile(fileId).then(response => {
-    //         return response
-    //     }).catch(error=>{
-    //         return []
-    //     })
-    //     return data
-    // }
+    static async getSearchPage(data){
+        var data = await api.files.apiGetAllFiles(data).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new Files(item)})
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+
 }
 
 export default Files

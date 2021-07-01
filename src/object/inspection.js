@@ -83,7 +83,8 @@ class Inspection extends Parent {
     }
     async settinglackfile(autoCreateMaintain,fileId,cover){
         var data = await api.report.apiPostInspectionLackFiles(autoCreateMaintain,this.id,fileId,cover).then(response => {
-            return true
+            var result = response.result !== undefined ? true : false
+            return result
         }).catch(error=>{
             return false
         })
