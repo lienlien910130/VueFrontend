@@ -93,6 +93,18 @@
                 </el-row>
             </div>
         </el-col>
+        <el-dialog
+            top="5vh"
+            :title="dialogTitle"
+            :visible.sync="previewVisible"
+            width="80%"
+            :modal="false"
+            >
+            <img v-if="type =='image' " :src="previewPath" class="previewImg"/>
+            <div v-else>
+                <iframe :src="previewPath" frameborder="0" style="width: 100%; height:800px"></iframe>
+            </div>
+        </el-dialog>
     </div>
 </template>
 <script>
@@ -146,6 +158,10 @@ export default {
     },
     data(){
         return{
+            type:'',
+            dialogTitle:'',
+	        previewVisible:false,
+	        previewPath:'',
             files:[],
             filescopy:[],
             deleteItem:[],
@@ -222,6 +238,7 @@ export default {
             }
             if(reset){
                 this.resetlistQueryParams()
+                this.listQueryParams.total = this.filescopy.length
             }
         },
         sort(c,s){ //排序
@@ -314,6 +331,79 @@ export default {
                 })
             }
         },
+        async onPreview(file){
+            var filename = file.getExtName()
+            var fileType = this.changeFileType(filename)
+            var data 
+            if(filename == 'png' || filename == 'jpeg' 
+            || filename == 'jpg'){
+                data = await file.image()
+                this.type = 'image'
+            }else {
+                data = await file.download()
+                this.type = 'pdf'
+            }
+            let url = URL.createObjectURL(new Blob([data], { type: fileType }))
+            this.previewPath = url
+            this.dialogTitle = '【圖片預覽】'+file.getFileName()
+            this.previewVisible = true
+        },
+        async downloadfile(item) {
+            var fileType = this.changeFileType(item.getExtName())
+            var data = await item.download()
+            let pdfUrl = URL.createObjectURL(new Blob([data], { type: fileType }))
+            let link = document.createElement('a')
+            link.href = pdfUrl
+            link.download = item.getFileName() + '.'+item.getExtName()
+            link.style.display = 'none'
+            document.body.appendChild(link)
+            link.click()
+            URL.revokeObjectURL(link.href)
+            document.body.removeChild(link)
+        },
+        changeFileType(extName){
+            var fileType
+            switch(extName){
+                case 'txt':
+                    fileType = 'text/plain'
+                    break;
+                case 'jpg':
+                    fileType = 'image/jpeg'
+                    break;
+                case 'jpeg':
+                    fileType = 'image/jpeg'
+                    break;
+                case 'png':
+                    fileType = 'image/png'
+                    break;
+                case 'pdf':
+                    fileType = 'application/pdf'
+                    break;
+                case 'doc':
+                    fileType = 'application/msword'
+                case 'docx':
+                    fileType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                    break;
+                case 'ppt':
+                    fileType = 'application/vnd.ms-powerpoint'
+                case 'pptx':
+                    fileType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+                    break;
+                case 'xls':
+                    fileType = 'application/vnd.ms-excel'
+                    break;
+                case 'xlsx':
+                    fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    break;
+                case 'rar':
+                    fileType = 'application/x-rar-compressed'
+                    break;
+                case 'zip':
+                    fileType = 'application/zip'
+                    break;
+            }
+            return fileType
+        },
         async handleCurrentChange(val) {
             this.listQueryParams.pageIndex = val
             await this.init()
@@ -334,6 +424,10 @@ export default {
         color:#409EFF;
     }
 }
+.previewImg{
+    width: 100%;
+    height: auto;
+}
 .files {
     width: 100%;
     height: 600px;
@@ -342,6 +436,11 @@ export default {
 
     .filesdiv{
         padding:8px;
+    }
+
+    i{
+        cursor: pointer;
+        padding-right: 10px;
     }
 }
 </style>

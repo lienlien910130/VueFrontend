@@ -251,7 +251,6 @@ export default {
             this.previewPath = url
             this.dialogTitle = '【圖片預覽】'+file.getFileName()
             this.previewVisible = true
-
         },
         beforeRemove(file,fileList) {
             return this.$confirm(`確定移除 ${ file.name }？`)

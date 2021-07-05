@@ -201,7 +201,7 @@ class Device extends Parent {
                 label:'設備' , 
                 prop:'linkDevices',
                 format:'deviceSelect', 
-                mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
+                mandatory:false,message:'請選擇設備',type:'array',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
