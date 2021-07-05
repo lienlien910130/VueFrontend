@@ -123,7 +123,6 @@ export const notfound = [
 ]
 
 // export const DrawingControl = [
-  
 //   {
 //     path: '/graphic',
 //     component: Layout,

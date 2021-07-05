@@ -9,7 +9,7 @@
                             type="info" icon="el-icon-delete" @click="deletefile"
                             style="margin:0px 5px">
                         </el-button>
-                        <el-radio-group v-model="type" @change="searchType">
+                        <el-radio-group v-model="type" @change="searchType(true)">
                             <el-radio-button label="總覽"></el-radio-button>
                             <el-radio-button label="大樓"></el-radio-button>
                             <el-radio-button label="樓層"></el-radio-button>
@@ -84,8 +84,8 @@
                     <div  class="pagination-container">
                         <el-pagination
                             @current-change="handleCurrentChange"
-                            :current-page.sync="page"
-                            :page-size="10"
+                            :current-page="page"
+                            :page-size="limit"
                             layout="total, prev, pager, next"
                             :total="total">
                         </el-pagination>
@@ -104,12 +104,11 @@ export default {
     mixins:[sharemixin],
     computed:{
         page: function() {
-            console.log(this.listQueryParams.pageIndex)
             return this.listQueryParams.pageIndex || 1
         },
-        // limit: function() {
-        //     return this.listQueryParams.pageSize || 10
-        // },
+        limit: function() {
+            return this.listQueryParams.pageSize || 100
+        },
         total: function() {
             return this.listQueryParams.total || 0
         }
@@ -158,7 +157,7 @@ export default {
             currentPage:'1',
             listQueryParams:{
                 pageIndex: 1,
-                pageSize: 10,
+                pageSize: 100,
                 total:0
             }
         }
@@ -175,13 +174,13 @@ export default {
         async init(){
             var data = await Files.getSearchPage(this.listQueryParams)
             this.files = data.result
-            this.searchType()
+            this.searchType(false)
             this.listQueryParams.total = data.totalPageCount
         },
         resetlistQueryParams(){
             this.listQueryParams = {
                 pageIndex: 1,
-                pageSize: 10,
+                pageSize: 100,
                 total:0
             }
         },
@@ -194,10 +193,10 @@ export default {
                 })
             }else{
                 this.filescopy = this.files
-                this.searchType()
+                this.searchType(true)
             }
         },
-        searchType(){ //檔案來源分類
+        searchType(reset){ //檔案來源分類
             switch (this.type) {
                 case '總覽':
                     this.filescopy = this.files
@@ -221,7 +220,9 @@ export default {
                     this.filescopy = this.files.filter(item => item.targetModule == 'ReportPublicSafeList')
                     break;
             }
-            this.resetlistQueryParams()
+            if(reset){
+                this.resetlistQueryParams()
+            }
         },
         sort(c,s){ //排序
             this.clickType = c
@@ -307,13 +308,13 @@ export default {
                    var isOk = await Files.delete(data)
                    if(isOk){
                        this.$message('刪除成功')
+                       this.resetlistQueryParams()
                         await this.init()
                    }
                 })
             }
         },
         async handleCurrentChange(val) {
-            console.log(val)
             this.listQueryParams.pageIndex = val
             await this.init()
         }
