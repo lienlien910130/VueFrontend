@@ -15,6 +15,9 @@
         ref="dialog"
         v-if="innerVisible === true"
         v-bind="dialogAttrs" 
+        :formtableData="formtableData"
+        :formtableconfig="formtableconfig"
+        :listQueryParams="maintainlistQueryParams"
         v-on:handleDialog="handleDialog"></Dialog>
     </div>
 </template>
@@ -42,8 +45,9 @@ export default {
     },
     data(){
         return{
+            selectdevice:null,
             formtableData:[],
-            formtableconfig: MaintainManagement.getTableConfig(),
+            formtableconfig: MaintainManagement.getDeviceOfMaintainTableConfig(),
             maintainlistQueryParams:{
                 pageIndex: 1,
                 pageSize: 10,
@@ -54,11 +58,11 @@ export default {
     methods: {
         async init(){
             this.title = 'equipment'
-            // this.buttonsName = [
-            //     { name:'刪除',icon:'el-icon-delete',status:'delete'},
-            //     { name:'編輯',icon:'el-icon-edit',status:'open'},
-            //     { name:'維保紀錄',icon:'el-icon-document',status:'openmaintain'}
-            // ]
+            this.buttonsName = [
+                { name:'刪除',icon:'el-icon-delete',status:'delete'},
+                { name:'編輯',icon:'el-icon-edit',status:'open'},
+                { name:'維保紀錄',icon:'el-icon-document',status:'openmaintain'}
+            ]
             this.tableConfig = Device.getTableConfig()
             this.dialogSelect = await DeviceType.get('devicesManagement')
             await this.getBuildingDevicesManage()
@@ -74,17 +78,22 @@ export default {
         async resetmaintainlistQueryParams(){
             this.maintainlistQueryParams = {
                 pageIndex: 1,
-                pageSize: 10,
+                pageSize: 12,
                 total:0
             }
-            //await this.getPublicSafeLack()
+            await this.getDevicesManageMaintain()
         },
         async getBuildingDevicesManage(){
             var data = await Device.getSearchPage(this.listQueryParams)
             this.blockData = data.result
             this.listQueryParams.total = data.totalPageCount
-            this.$refs.block.resetpictLoading()
-            await this.getFilterItems()
+        },
+        async getDevicesManageMaintain(){
+            var data =  await this.selectdevice.getMaintain(
+            this.maintainlistQueryParams)
+            console.log(JSON.stringify(data))
+            this.formtableData = data.result
+            this.maintainlistQueryParams.total = data.totalPageCount
         },
         async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
@@ -120,11 +129,11 @@ export default {
                 this.innerVisible = true
                 this.dialogStatus = 'create'
             }else if(index === 'openmaintain'){
-                console.log(content.getMaintains())
-                // this.dialogTitle = 'lack'
-                // await this.resetmaintainlistQueryParams()
-                // this.dialogStatus = 'lack'
-                // this.innerVisible = true
+                this.selectdevice = content
+                this.dialogTitle = 'devicemaintain'
+                await this.resetmaintainlistQueryParams()
+                this.dialogStatus = 'devicemaintain'
+                this.innerVisible = true
             }else if(index === 'exportExcel'){
                 this.exportExcelData = this.blockData
                 this.innerVisible = true

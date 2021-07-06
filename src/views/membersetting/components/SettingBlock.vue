@@ -8,7 +8,7 @@
                         >
                             <el-date-picker
                             v-if="title === 'PublicSafeTimeOptions' || 
-                                title === 'InspectionTimeOptions'"
+                                title === 'InspectionTimeOptions' "
                             :style="{float: 'left', margin: '5px',width:inputstyle}"
                             v-model="input"
                             type="date"
@@ -24,6 +24,10 @@
                             show-word-limit></el-input>
                             <el-button style="float: right;" type="primary" size="mini"
                             @click="onSubmit">新增</el-button>
+                            <el-button 
+                            v-if="title == 'MaintainTimeOptions'"
+                            style="float: right;" type="info" size="mini"
+                            @click="onSave">儲存</el-button>
                         </el-row>
                     </div>
                 </div>
@@ -44,7 +48,16 @@
                             </div>
                             <div v-else >
                                 <div :style="{display:'inline-block',width:labelstyle}">
-                                    <span>
+                                    <el-radio 
+                                    v-if="title == 'MaintainTimeOptions'"
+                                    v-model="radio" :label="item.id">
+                                        <span style="color:#303133;font-size:18px">
+                                            {{ index+1 }}. 
+                                            {{ item.textName }} 
+                                        </span>
+                                    </el-radio>
+                                    <span
+                                    v-else>
                                         {{ index+1 }}. 
                                         {{ item.textName }} 
                                     </span>
@@ -55,7 +68,7 @@
                                     @click="deleteData(item.id)"></i>
                                     <i 
                                     v-if="title !== 'PublicSafeTimeOptions' && 
-                                    title !== 'InspectionTimeOptions' "
+                                    title !== 'InspectionTimeOptions' && title !== 'MaintainTimeOptions' "
                                     class="el-icon-edit" 
                                     style="float: right;font-size: 25px;" 
                                     @click="changeEdit(item)"></i>
@@ -81,6 +94,9 @@ export default {
         },
         current:{
             type:String
+        },
+        radio:{
+            type:String
         }
     },
     data(){
@@ -95,25 +111,18 @@ export default {
             switch(this.title){
                 case 'ContactUnitOptions':
                     return '廠商類別'
-                    break;
                 case 'MaintainContentOptions':
                     return '維護保養內容'
-                    break;
                 case 'LackStatusOptions':
                     return '公安申報缺失內容改善狀況'
-                    break;
                 case 'MaintainProcessOptions':
                     return '維護保養處理狀況'
-                    break;
                 case 'PublicSafeTimeOptions':
                     return '公安申報提醒設定'
-                    break;
                 case 'InspectionTimeOptions':
                     return '檢修申報提醒設定'
-                    break;
                 case 'MaintainTimeOptions':
                     return '維護保養提醒設定'
-                    break;
             }
         },
         inputstyle(){
@@ -148,6 +157,9 @@ export default {
             }else{
                 this.$emit('handleButton', this.title, 'create' , this.input)
             }
+        },
+        onSave(){
+            this.$emit('handleButton', this.title, 'maintainTimeOptions' , this.radio)
         },
         onCancel(){
             this.$emit('handleButton', this.title, 'cancelEdit' , '')

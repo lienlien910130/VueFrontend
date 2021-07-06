@@ -13,16 +13,15 @@ const device = {
     apiDeleteDevicesManagement(deviceId){ return req('delete','/devicesManagement/'+deviceId) },
     apiGetDevicesManagementSearchPages(data){ return req('post','/devicesManagement/'+this.getBid()+'/ss',data)  },
     apiPostDevicesManagements(data){ return req('post','/devicesManagement/'+this.getBid()+'/s',data) },    
+    //取得維護保養
+    apiGetDevicesManagementMaintain(deviceId,data){ return req('post','/devicesManagement/maintains/'+deviceId+'/ss',data) },
     //設備清單-取得設備種類
     apiGetDevicesTypeByDevicesManagement(){ return req('get','/devicesManagement/devicesType/a') },
     //圖控更新設備-多筆更新
-    apiPatchGraphicDevices(data){ return req('patch','/drawingControl/devices',data) },
-    //點位設定-多筆更新
-    apiPatchDevicesAddress(data){ return req('patch','/deviceAddressManagement/s',data) },
+    // apiPatchGraphicDevices(data){ return req('patch','/drawingControl/devices',data) },
+    
     //設備種類
     apiGetDefaultFullType(){ return req('get','/index/deviceTypes/fta') },
-    //點位設定-取得設備種類
-    apiGetDevicesTypeByDevicesAddress(){ return req('get','/deviceAddressManagement/deviceType/a') },
     apiGetDevicesType(){ return req('get','/deviceTypesManagement/a') },
     apiPostDevicesType(data){ return req('post','/deviceTypesManagement',data) },
     apiPatchDevicesType(data){ return req('patch','/deviceTypesManagement',data) },
@@ -30,6 +29,18 @@ const device = {
     apiGetDevicesTypeSearchPages(data){ return req('post','/deviceTypesManagement/ss',data)  },
     apiPostDevicesTypes(data){ return req('post','/deviceTypesManagement/s',data) },    
     
+    //點位設定
+    apiGetDevicesAddress(){ return req('get','/deviceAddressManagement/a') },
+    apiPostDevicesAddress(data){ return req('post','/deviceAddressManagement/'+this.getBid(),data) },
+    apiPatchDevicesAddress(data){ return req('patch','/deviceAddressManagement',data) },
+    apiDeleteDevicesAddress(deviceAddressId){ return req('delete','/deviceAddressManagement/'+deviceAddressId) },
+    apiGetDevicesAddressSearchPages(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/ss',data)  },
+    apiPostDevicesAddresses(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/s',data) }, 
+    //點位設定-取得設備種類
+    apiGetDevicesTypeByDevicesAddress(){ return req('get','/deviceAddressManagement/deviceType/a') },
+    //點位設定-多筆更新
+    apiPatchDevicesAddresses(data){ return req('patch','/deviceAddressManagement/s',data) },
+
     //維護保養大項
     apiGetBuildingMaintainsList(){ return req('get','/maintainManagement/buildings/'+this.getBid()+'/maintains') },
     apiGetMaintainsList(maintainListId){ return req('get','/maintainManagement/'+maintainListId) },

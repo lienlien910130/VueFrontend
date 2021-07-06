@@ -25,6 +25,12 @@
                             v-on:handleButton="handleButton"
                             ></SettingBlock>
                         </el-col>
+                        <el-col :xs="24" :sm="24" :md="24" :lg="8">
+                            <SettingBlock
+                            v-bind="settingMaintainTimeOptions('MaintainTimeOptions')"
+                            v-on:handleButton="handleButton"
+                            ></SettingBlock>
+                        </el-col>
                     </el-row>
                 </el-tab-pane>
                 <el-tab-pane label="檢修及公安申報">
@@ -87,6 +93,18 @@ export default {
                 current:this.current
             }
         },
+        settingMaintainTimeOptions(data){
+            let array = this.options.filter((item, index) => 
+                item.classType == 'MaintainTimeOptions'  && item.value == 'current'
+            )
+            return{
+                title:data,
+                option:this.optionsFilter(data),
+                type:this.type,
+                current:this.current,
+                radio:array[0] !== undefined ? array[0].id : ''
+            }
+        },
         async getOptions(){ //取得大樓的所有分類
             this.options = await Setting.getAllOption()
             this.$store.dispatch('building/setbuildingoptions',this.options)
@@ -115,6 +133,9 @@ export default {
                     break;
                 case 'delete':
                     await this.DeleteData(content)
+                    break;
+                case 'maintainTimeOptions' :
+
                     break;
                 case 'cancelEdit':
                     this.type='view'

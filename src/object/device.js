@@ -12,17 +12,17 @@ class Device extends Parent {
     constructor (data) {
         super(data)
         const { name,dateOfPurchase, dateOfWarranty, location,groupID, 
-            systemUsed,linkKeeperUnits,linkMaintainVendors, linkFloors, linkDeviceTypes, status,
-            linkMaintain,linkDevices} = data
+            status,lastMaintainTime,nextMaintainTime,
+            linkKeeperUnits,linkMaintainVendors, linkFloors, linkDeviceTypes, linkDevices } = data
         var deviceType = linkDeviceTypes !== undefined ?
          linkDeviceTypes.map(item=>{ return new DeviceType(item) }) : []
-        var keeperUnits = linkDeviceTypes !== undefined ?
+        var keeperUnits = linkKeeperUnits !== undefined ?
          linkKeeperUnits.map(item=>{ return new Contactunit(item) }) : []
-        var maintainVendors = linkDeviceTypes !== undefined ?
+        var maintainVendors = linkMaintainVendors !== undefined ?
          linkMaintainVendors.map(item=>{ return new Contactunit(item) }) : []
-        var floors = linkDeviceTypes !== undefined ?
+        var floors = linkFloors !== undefined ?
          linkFloors.map(item=>{ return new Floors(item) }) :[]
-        var devices = linkDeviceTypes !== undefined ?
+        var devices = linkDevices !== undefined ?
          linkDevices.map(item=>{ return new Device(item) }) :[]
         this.name = name
         this.dateOfPurchase = dateOfPurchase
@@ -30,12 +30,12 @@ class Device extends Parent {
         this.location = location
         this.groupID = groupID
         this.status = status
-        this.systemUsed = systemUsed
+        this.lastMaintainTime = lastMaintainTime
+        this.nextMaintainTime = nextMaintainTime
         this.linkKeeperUnits = keeperUnits
         this.linkMaintainVendors = maintainVendors
         this.linkFloors = floors
         this.linkDeviceTypes = deviceType
-        this.linkMaintain = linkMaintain
         this.linkDevices = devices
         return this
     }
@@ -66,6 +66,16 @@ class Device extends Parent {
         })
         return data
     }
+    async getMaintain(data){
+        var data = await api.device.apiGetDevicesManagementMaintain(this.id,data).then(response => {
+            console.log(JSON.stringify(response))
+            response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new MaintainManagement(item) })
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
     getOnlyName(){ //設備名稱
         return this.name
     }
@@ -81,25 +91,6 @@ class Device extends Parent {
     getDateOfWarranty(){
         return moment(this.dateOfWarranty).format('YYYY-MM-DD')
     }
-    getSystemUsed(){
-        return this.systemUsed == true ? '已設置' : '尚未設置'
-    }
-    getMaintains(){
-        console.log(this.linkMaintain)
-        return this.linkMaintain.map(item => { return new MaintainManagement(item)})
-    }
-    // SystemUsed(){
-    //     return this.systemUsed
-    // }
-    // setSystemUsed(systemUsed){
-    //     this.systemUsed = systemUsed
-    // }
-    // getSystem(){
-    //     var one = this.systemNumber == null ? '尚未設定' :  this.systemNumber
-    //     var two = this.circuitNumber == null ? '尚未設定' :  this.circuitNumber
-    //     var three = this.address == null ? '尚未設定' :  this.address
-    //     return one+'-'+two+'-'+three
-    // }
     //首頁tree使用
     getKeeperUnitsName(){
         return this.linkKeeperUnits.map(item=>{return item.getName()}).toString()
@@ -125,12 +116,12 @@ class Device extends Parent {
             dateOfPurchase : null,
             dateOfWarranty : null,
             location :'',
-            systemUsed:false,
+            lastMaintainTime:null,
+            nextMaintainTime:null,
             linkKeeperUnits : [],
             linkMaintainVendors :[],
             linkFloors :[],
             linkDeviceTypes: [],
-            linkMaintain:[],
             linkDevices:[]
         })
     }
@@ -213,10 +204,22 @@ class Device extends Parent {
                  isHidden:false,isSearch:false,
                  isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
              },
-             { label:'圖控使用' , prop:'systemUsed',format:'systemUsedBoolean', 
-                mandatory:false, 
-                type:'boolean',typemessage:'',isHidden:true,isSearch:false,
-                isAssociate:false,isEdit:false,isUpload:true,isExport:false,isBlock:false}
+             {
+                label: '下次保養時間',
+                prop: 'nextMaintainTime',
+                format:'YYYY-MM-DD',
+                mandatory:false, message:'請輸入保養時間',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '最後保養時間',
+                prop: 'lastMaintainTime',
+                format:'YYYY-MM-DD',
+                mandatory:false,
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            }
          ]
     }
     static getAddressConfig(){
@@ -245,8 +248,6 @@ class Device extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.device.apiGetDevicesManagementSearchPages(data).then(response => {
-            console.log('getSearchPage')
-            console.log(JSON.stringify(response))
             response.result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new Device(item)})
             return response

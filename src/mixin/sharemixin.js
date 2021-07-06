@@ -45,6 +45,7 @@ export default {
         buildingid:{
           handler:async function(){
               if(this.buildingid !== undefined){
+                  console.log(this.buildingid)
                   await this.init()
                   this.device == 'desktop' ? this.changeTable(true) : this.changeTable(false)
               }

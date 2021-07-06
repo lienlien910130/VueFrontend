@@ -195,9 +195,12 @@ class MaintainManagement extends Parent {
         super(data)
         const { dateOfFailure, dateOfCallRepair,completedTime,processStatus,processContent,note,
             linkDevices,linkInspectionLacks,linkContactUnits  } = data
-        var devices = linkDevices.map(item=>{ return new Device(item) })
-        var contactUnits = linkContactUnits.map(item=>{ return new Contactunit(item) })
-        var inspectionLacks = linkInspectionLacks.map(item=>{ return new InspectionLacks(item) })
+        var devices = linkDevices !== undefined ?
+        linkDevices.map(item=>{ return new Device(item) }) :[]
+        var contactUnits = linkContactUnits !== undefined ?
+        linkContactUnits.map(item=>{ return new Contactunit(item) }) : []
+        var inspectionLacks = linkInspectionLacks !== undefined ?
+        linkInspectionLacks.map(item=>{ return new InspectionLacks(item) }) : []
         this.dateOfFailure = dateOfFailure
         this.dateOfCallRepair = dateOfCallRepair
         this.completedTime = completedTime
@@ -318,6 +321,43 @@ class MaintainManagement extends Parent {
             isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
             { label:'設備' , prop:'linkDevices',format:'deviceSelect', 
             mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
+            isHidden:false,isSearch:false,
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+            { label:'備註' , prop:'note',format:'textarea', mandatory:false,
+            maxlength:'200',isHidden:false,isSearch:true,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true}
+        ]
+    }
+    static getDeviceOfMaintainTableConfig(){
+        return [
+            { label:'系統' , prop:'processContent',format:'MaintainContentOptions', 
+            mandatory:true, message:'請選擇系統',
+            isHidden:false,type:'string',typemessage:'',isSearch:false,
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+            { label:'故障日期' , prop:'dateOfFailure',format:'YYYY-MM-DD', 
+            mandatory:false,
+            isHidden:false,isSearch:false,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'叫修日期' , prop:'dateOfCallRepair',format:'YYYY-MM-DD',  
+            mandatory:false,
+            isHidden:false,isSearch:false,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'完成時間' , prop:'completedTime',format:'YYYY-MM-DD', 
+            mandatory:false, 
+            isHidden:false,isSearch:false,
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            { label:'處理進度' , prop:'processStatus',format:'MaintainProcessOptions', 
+            mandatory:false,
+            isHidden:false,isSearch:false,
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+            { label:'改善廠商' , prop:'linkContactUnits',format:'contactunitSelect', 
+            mandatory:false,
+            type:'array',typemessage:'',
+            isHidden:false,isSearch:false,
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+            { label:'檢修申報' , prop:'linkInspectionLacks',format:'inspectionSelect', 
+            mandatory:false,
+            type:'array',typemessage:'',
             isHidden:false,isSearch:false,
             isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
             { label:'備註' , prop:'note',format:'textarea', mandatory:false,

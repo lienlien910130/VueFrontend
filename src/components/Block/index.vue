@@ -195,7 +195,7 @@
 
                                  <span v-else-if="option.format == 'accountStatusSelect' ||
                                 option.format == 'removableSelect' || option.format == 'improvedBoolean'
-                                || option.format == 'collaborateBoolean' ">
+                                || option.format == 'collaborateBoolean' || option.format == 'systemUsedBoolean' ">
                                     {{ item[option.prop] | changeBoolean(option.format) }}
                                 </span>
 
@@ -219,7 +219,7 @@
                                     {{ changeUserName(item.getlinkUsageOfFloorsUser()) }}
                                 </span>
 
-                                <span v-else-if="option.format == 'deviceSelect' " 
+                                <span v-else-if="option.format == 'deviceSelect' || option.format == 'addressdeviceSelect' " 
                                 @click="clickMessageBox('設備資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ item.getDevicesName() }}
@@ -350,7 +350,7 @@
                                         <span v-else-if="item.format == 'accountStatusSelect' ||
                                         item.format == 'removableSelect' || 
                                         item.format == 'improvedBoolean'
-                                        || item.format == 'collaborateBoolean' ">
+                                        || item.format == 'collaborateBoolean' || item.format == 'systemUsedBoolean' ">
                                             {{ scope.row[item.prop] | changeBoolean(item.format) }}
                                         </span>
 
@@ -375,7 +375,7 @@
                                             scope.row[scope.column.property].replace(/[^\d]/g,'').replace(/\s*/g,'')">
                                         </el-input> -->
 
-                                        <span v-else-if="item.format == 'deviceSelect' " 
+                                        <span v-else-if="item.format == 'deviceSelect' || item.format == 'addressdeviceSelect' " 
                                         @click="clickMessageBox('設備資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                              {{ scope.row.getDevicesName() }}

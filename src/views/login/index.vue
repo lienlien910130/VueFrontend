@@ -73,7 +73,6 @@
 
 <script>
 import SIdentify from "./components/identify"
-
 export default {
   name: 'Login',
   components: { SIdentify },
@@ -177,6 +176,9 @@ export default {
     //取得版本解析
     getVersion() {
       this.src = require('../../assets/image/login_logo.png')
+    },
+    result(res) {
+      console.log('linelogin=>'+res)
     }
   }
 }

@@ -118,6 +118,8 @@ export default {
                             return '允許'
                         case 'improvedBoolean':
                             return '已改善'
+                        case 'systemUsedBoolean':
+                            return '已設置'
                     }
                 }else{  
                     switch(format){
@@ -129,6 +131,8 @@ export default {
                             return '禁止'
                         case 'improvedBoolean':
                             return '未改善'
+                        case 'systemUsedBoolean':
+                            return '未設置'
                     }
                 }
             }

@@ -27,7 +27,7 @@
         <el-form v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' 
         && dialogStatus !== 'authority'
          && dialogStatus !== 'exportExcel' && dialogStatus !== 'uploadExcel' 
-         && dialogStatus !== 'selectMaintain' && dialogStatus !== 'floor' "
+         && dialogStatus !== 'selectMaintain' && dialogStatus !== 'floor' && dialogStatus !== 'devicemaintain' "
         ref="dataForm"  
         :model="temp"  
         :label-position="label" 
@@ -72,9 +72,9 @@
                         value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </span>
-                <!-- 設備種類下拉選單(多-1) -->
+                <!-- 設備種類 / 點位選取設備 下拉選單(多-1) -->
                 <el-select
-                    v-else-if="item.format =='deviceTypeSelect'"
+                    v-else-if="item.format =='deviceTypeSelect' || item.format == 'addressdeviceSelect' "
                     v-model="temp[item.prop]"
                     filterable
                     multiple
@@ -84,10 +84,10 @@
                     style="width:100%"
                     >
                         <el-option
-                        v-for="(item,index) in selectfilter(item.format)"
+                        v-for="(obj,index) in selectfilter(item.format == 'deviceTypeSelect' ? item.format : 'deviceSelect')"
                         :key="index"
-                        :label="item.getSelectName()"
-                        :value="item"
+                        :label="item.format == 'deviceTypeSelect' ? obj.getSelectName() : obj.label"
+                        :value="obj"
                         >
                         </el-option>  
                 </el-select>
@@ -114,25 +114,6 @@
                         >
                         </el-option>  
                 </el-select>
-
-                <!-- <el-select
-                    v-else-if="item.format == 'equipmentDeviceSelect' "
-                    v-model="temp[item.prop]"
-                    value-key="id"
-                    filterable
-                    multiple 
-                    placeholder="請選擇"
-                    style="width:100%"
-                    :disabled="true"
-                    >
-                        <el-option
-                        v-for="item in selectfilter(item.format)"
-                        :key="item.id"
-                        :label="item.label"
-                        :value="item"
-                        >
-                        </el-option>  
-                </el-select> -->
                 <!-- 檢修申報下拉選單(多)-->
                 <el-select
                     v-else-if="item.format == 'inspectionSelect' "
@@ -319,7 +300,7 @@
         v-on:handleFilesUpload="handleFilesUpload">
         </Upload>   
         <!-- 缺失內容 -->
-        <Table v-if="dialogStatus === 'lack' || dialogStatus === 'floor'"
+        <Table v-if="dialogStatus === 'lack' || dialogStatus === 'floor' || dialogStatus === 'devicemaintain'"
         :list-query-params.sync="listQueryParams"
         v-bind="tableAttrs" 
         v-on="tableEvent">
@@ -527,7 +508,7 @@ export default {
                     return "500px"
                 }
                 if(this.title == 'maintainList' || 
-                this.title == 'lack'){
+                this.title == 'lack' || this.title == 'devicemaintain'){
                     return "1400px"
                 }
                 return "1000px"
@@ -660,7 +641,7 @@ export default {
             }
             if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' 
                 && this.dialogStatus !== 'authority' && this.dialogStatus !== 'exportExcel' 
-                && this.dialogStatus !== 'uploadExcel' && this.dialogStatus !== 'selectMaintain'){
+                && this.dialogStatus !== 'uploadExcel' && this.dialogStatus !== 'selectMaintain' && this.dialogStatus !== 'devicemaintain'){
                 this.$nextTick(() => {
                     if(this.$refs.dataForm !== undefined){
                         this.$refs.dataForm.clearValidate()
@@ -756,7 +737,7 @@ export default {
                     routeData = this.$router.resolve(
                             { path: '/normal/maintenancereport',query:{ type:'inspection' } })
                     break;
-                case 'deviceSelect':
+                case 'deviceSelect': case 'addressdeviceSelect':
                     routeData = this.$router.resolve(
                             { path: '/equipment/index',query:{ type:'device' } })
                     break;
@@ -764,17 +745,8 @@ export default {
                     routeData = this.$router.resolve(
                             { path: '/authority/roles',query:{ type:'role' } })
                     break;
-                case 'ContactUnitOptions':
+                case 'ContactUnitOptions': case 'MaintainProcessOptions': case 'MaintainContentOptions': case 'LackStatusOptions':
                     routeData = this.$router.resolve({ name: 'sys-Setting' })
-                    break;
-                case 'MaintainProcessOptions':
-                   routeData = this.$router.resolve({ name: 'sys-Setting' })
-                    break;
-                case 'MaintainContentOptions':
-                   routeData = this.$router.resolve({ name: 'sys-Setting' })
-                    break;
-                case 'LackStatusOptions':
-                   routeData = this.$router.resolve({ name: 'sys-Setting' })
                     break;
                 default:
                     break;
@@ -784,7 +756,6 @@ export default {
             }
             window.child = window.open(routeData.href, '_blank')
             //window.child = window.open(routeData.href, '_blank', 'toolbar=no, width=400, height=600,location=no')
-            
         },
         //動態新增選項
         changeValue(event,format,prop){
@@ -819,7 +790,7 @@ export default {
             this.dialogStatus !== 'uploadExcel' && this.dialogStatus !== 'selectMaintain' 
             &&
             this.dialogStatus !== 'lack' && this.dialogStatus !== 'floor' &&
-             this.dialogStatus !== 'authority'){
+             this.dialogStatus !== 'authority' && this.dialogStatus !== 'devicemaintain'){
                 this.$refs.dataForm.validate(async(valid) => {
                     if (valid) {
                         if(this.createOption.length !== 0){ //有動態新增選項

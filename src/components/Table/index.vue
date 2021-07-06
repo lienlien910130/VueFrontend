@@ -65,7 +65,7 @@
             <el-table-column
             fixed="right"
             label="操作">
-            <template slot="header" >
+            <template v-if="title !== 'devicemaintain'" slot="header" >
                 <el-tooltip 
                   class="item" effect="dark" content="新增" 
                   placement="top">
@@ -92,18 +92,21 @@
                 </el-tooltip>
             </template>
             <template slot-scope="scope">
-                <el-button v-if="title !== 'lack'" 
+                <el-button v-if="title !== 'lack' && title !== 'devicemaintain'" 
                 @click="handleTableClick('openfiles',scope.row)" 
                 type="primary" size="small">
                   <i class="el-icon-folder-opened"  
                   style="cursor: pointer;float:right"></i>
                 </el-button>
-                <el-button 
+                <el-button v-if="title !== 'devicemaintain'"
                   @click="handleTableClick('open',scope.row)" type="primary" size="small">編輯
                 </el-button>
-                <el-button 
+                <el-button v-if="title !== 'devicemaintain'"
                 type="info" size="small" 
                 @click="handleTableClick('delete',scope.row)">刪除</el-button> 
+                <el-button v-if="title == 'devicemaintain'"
+                type="primary" size="small" 
+                @click="handleTableClick('openmaintain',scope.row)">檢視</el-button> 
             </template>
             </el-table-column>
     </el-table>
@@ -247,7 +250,7 @@ export default {
         type: 'warning',
         center: true
         }).then(() => {
-        this.$emit('handleTableClick',title, index , row)
+          this.$emit('handleTableClick',title, index , row)
         }).catch(() => {})
       }else{
         this.$emit('handleTableClick',title, index , row)

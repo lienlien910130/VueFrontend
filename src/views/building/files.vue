@@ -66,7 +66,7 @@
                                 || item.getExtName() == 'pdf' "
                                 class="el-icon-view" style="font-size:18px" @click="onPreview(item)"/>
                                 <span 
-                                @click="downloadfile(item)"  style="color:'#606266';cursor:'pointer'">
+                                @click="downloadfile(item)" class="downloadspn">
                                     <span>
                                         {{ item.getFileName() }}.{{ item.getExtName() }} 
                                     </span>
@@ -436,6 +436,11 @@ export default {
 
     .filesdiv{
         padding:8px;
+
+        .downloadspn{
+            cursor: pointer;
+            color: #606266;
+        }
     }
 
     i{
