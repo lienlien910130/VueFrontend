@@ -167,7 +167,7 @@ export default {
       return this.listQueryParams.pageIndex || 1
     },
     limit: function() {
-      return this.listQueryParams.pageSize || 12
+      return this.listQueryParams.pageSize || 10
     },
     total: function() {
       return this.listQueryParams.total || 0

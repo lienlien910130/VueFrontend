@@ -78,7 +78,7 @@ export default {
         async resetmaintainlistQueryParams(){
             this.maintainlistQueryParams = {
                 pageIndex: 1,
-                pageSize: 12,
+                pageSize: 10,
                 total:0
             }
             await this.getDevicesManageMaintain()
@@ -91,7 +91,6 @@ export default {
         async getDevicesManageMaintain(){
             var data =  await this.selectdevice.getMaintain(
             this.maintainlistQueryParams)
-            console.log(JSON.stringify(data))
             this.formtableData = data.result
             this.maintainlistQueryParams.total = data.totalPageCount
         },
@@ -145,7 +144,7 @@ export default {
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,JSON.stringify(content))
-            if(index !== 'cancel' && index !== 'selectData'){
+            if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
                 var isOk = index === 'update' ? await content.update() : 
                 index === 'create' ? await content.create() : 
                 await Device.postMany(content)
@@ -158,7 +157,7 @@ export default {
                         this.$refs.dialog.insertSuccess('deviceSelect')
                     }
                 }
-            }else if(index == 'selectData'){
+            }else if(index === 'selectData'){
                 switch (content) {
                     case 'deviceTypeSelect':
                         this.dialogSelect = await DeviceType.get('devicesManagement')    
@@ -170,6 +169,12 @@ export default {
                         this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
                         break;
                 }
+            }else if(index === 'clickPagination'){
+                this.lacklistQueryParams = content
+                await this.getDevicesManageMaintain()
+            }else if(index === 'openmaintain'){
+                var routeData = this.$router.resolve({ path: '/normal/maintenance',query:{ type:'maintain',obj:content.getID() } })
+                window.open(routeData.href, '_blank')
             }else{
                 this.innerVisible = false
             }

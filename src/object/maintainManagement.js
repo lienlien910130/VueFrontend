@@ -375,6 +375,16 @@ class MaintainManagement extends Parent {
         })
         return data
     }
+    static async getOfID (maintainId){
+        var data = await api.device.apiGetMaintains(maintainId).then(response => {
+            var array = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new MaintainManagement(item) })
+            return array[0]
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
     static async getAllSearchPage (data){
         var data = await api.device.apiGetMaintainAllSearchPages(data).then(response => {
             response.result = response.result.sort((x,y) => x.id - y.id)

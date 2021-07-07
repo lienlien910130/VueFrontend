@@ -14,7 +14,8 @@ const device = {
     apiGetDevicesManagementSearchPages(data){ return req('post','/devicesManagement/'+this.getBid()+'/ss',data)  },
     apiPostDevicesManagements(data){ return req('post','/devicesManagement/'+this.getBid()+'/s',data) },    
     //取得維護保養
-    apiGetDevicesManagementMaintain(deviceId,data){ return req('post','/devicesManagement/maintains/'+deviceId+'/ss',data) },
+    //apiGetDevicesManagementMaintain(deviceId,data){ return req('post','/devicesManagement/maintains/'+deviceId+'/ss',data) },
+    apiGetDevicesManagementMaintain(data){ return req('post','/devicesManagement/maintains/ss',data) },
     //設備清單-取得設備種類
     apiGetDevicesTypeByDevicesManagement(){ return req('get','/devicesManagement/devicesType/a') },
     //圖控更新設備-多筆更新

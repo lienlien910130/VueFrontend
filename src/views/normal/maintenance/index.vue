@@ -282,6 +282,7 @@ export default {
             }
         },
         async handleMaintain(index, content){
+            console.log(index,JSON.stringify(content))
             this.dialogData = []
             this.dialogTitle = 'maintain'
             if(index === 'empty'){
@@ -428,6 +429,10 @@ export default {
                 if(typeof this.$route.params.target == 'object'){
                     await this.handleMaintain('open',this.$route.params.target)
                 }
+            }else if(this.$route.query.type !== undefined && 
+                    this.$route.query.type == 'maintain' && this.$route.query.obj !== '' ){
+                var data = await MaintainManagement.getOfID(this.$route.query.obj )
+                await this.handleMaintain('open',data)
             }
         }
     }

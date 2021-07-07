@@ -67,8 +67,8 @@ class Device extends Parent {
         return data
     }
     async getMaintain(data){
-        var data = await api.device.apiGetDevicesManagementMaintain(this.id,data).then(response => {
-            console.log(JSON.stringify(response))
+        data.id = this.id
+        var data = await api.device.apiGetDevicesManagementMaintain(data).then(response => {
             response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new MaintainManagement(item) })
             return response
         }).catch(error=>{
