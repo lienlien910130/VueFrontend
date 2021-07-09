@@ -5,12 +5,13 @@ import { changeDeviceFullType } from '@/utils/index'
 class DeviceType extends Parent {
     constructor (data) {
         super(data)
-        const { name, fullType, brand, productId, certificationNumber  } = data
+        const { name, fullType, brand, productId, certificationNumber ,protocolMode  } = data
         this.name = name
         this.fullType = fullType
         this.brand = brand
         this.productId = productId
         this.certificationNumber = certificationNumber
+        this.protocolMode = protocolMode
         return this
     }
     clone(data){
@@ -44,10 +45,6 @@ class DeviceType extends Parent {
     setTypeName(typeName){
         this.name = typeName
     }
-    // getTypeName(){ //設備名稱
-    //     var label = changeDeviceFullType(this.fullType,false,true)
-    //     return label
-    // }
     getType(){ //設備種類轉化
         var label = changeDeviceFullType(this.fullType,true,true)
         return label
@@ -64,9 +61,12 @@ class DeviceType extends Parent {
     getCertificationNumber(){
         return this.certificationNumber
     }
-    // getTypeName(){
-    //     return '【'+this.getType()+'】'+this.name
-    // }
+    getFullType(){
+        return this.fullType
+    }
+    getProtocolMode(){
+        return this.protocolMode
+    }
     //設備清單使用
     getSelectName(){
         return this.getType() !== '' ? 
@@ -80,7 +80,8 @@ class DeviceType extends Parent {
             fullType :'',
             brand :'',
             productId :'',
-            certificationNumber :''
+            certificationNumber :'',
+            protocolMode:0
         })
     }
     static getTableConfig(){
@@ -120,6 +121,14 @@ class DeviceType extends Parent {
                 mandatory:false,isHidden:false,maxlength:'20',
                 isSearch:true,placeholder:'請輸入國家認證編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '控制模式',
+                prop: 'protocolMode',format:'protocolMode',
+                type:'number',typemessage:'',
+                mandatory:true,message:'請選擇控制模式',isHidden:false,
+                isSearch:false,placeholder:'請選擇控制模式',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             }
         ]   
     }
@@ -127,14 +136,12 @@ class DeviceType extends Parent {
         var data
         if(type == 'devicesManagement'){
             data = await api.device.apiGetDevicesTypeByDevicesManagement().then(response => {
-                
                 return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
             }).catch(error=>{
                 return []
             })
         }else if(type == 'deviceTypesManagement'){
             data = await api.device.apiGetDevicesType().then(response => {
-                console.log(JSON.stringify(response.result))
                 return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
             }).catch(error=>{
                 return []
@@ -158,6 +165,7 @@ class DeviceType extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.device.apiGetDevicesTypeSearchPages(data).then(response => {
+            console.log(JSON.stringify(response))
             response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item)})
             return response
         }).catch(error=>{

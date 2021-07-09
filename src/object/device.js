@@ -12,7 +12,7 @@ class Device extends Parent {
     constructor (data) {
         super(data)
         const { name,dateOfPurchase, dateOfWarranty, location,groupID, 
-            status,lastMaintainTime,nextMaintainTime,
+            status,lastMaintainTime,nextMaintainTime, protocolMode,
             linkKeeperUnits,linkMaintainVendors, linkFloors, linkDeviceTypes, linkDevices } = data
         var deviceType = linkDeviceTypes !== undefined ?
          linkDeviceTypes.map(item=>{ return new DeviceType(item) }) : []
@@ -32,6 +32,7 @@ class Device extends Parent {
         this.status = status
         this.lastMaintainTime = lastMaintainTime
         this.nextMaintainTime = nextMaintainTime
+        this.protocolMode = protocolMode
         this.linkKeeperUnits = keeperUnits
         this.linkMaintainVendors = maintainVendors
         this.linkFloors = floors
@@ -118,6 +119,7 @@ class Device extends Parent {
             location :'',
             lastMaintainTime:null,
             nextMaintainTime:null,
+            protocolMode:0,
             linkKeeperUnits : [],
             linkMaintainVendors :[],
             linkFloors :[],
@@ -191,7 +193,7 @@ class Device extends Parent {
             { 
                 label:'設備' , 
                 prop:'linkDevices',
-                format:'deviceSelect', 
+                format:'assignDeviceSelect', 
                 mandatory:false,message:'請選擇設備',type:'array',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
@@ -218,6 +220,14 @@ class Device extends Parent {
                 format:'YYYY-MM-DD',
                 mandatory:false,
                 isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '控制模式',
+                prop: 'protocolMode',format:'protocolMode',
+                type:'number',typemessage:'',
+                mandatory:true,message:'請選擇控制模式',isHidden:false,
+                isSearch:false,placeholder:'請選擇控制模式',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             }
          ]

@@ -9,7 +9,14 @@
               v-bind="floorselectAttrs" 
               v-on:handleSelect="handleSelect">
             </Select>
-
+            <el-button-group>
+              <el-button v-if="type =='view'" type="primary" @click="changeType('edit')" :disabled="disabled">編輯</el-button>
+              <el-button v-else type="primary" @click="changeType('view')">關閉編輯</el-button>
+              <el-button type="primary" @click="resetCanvas()" :disabled="disabled">復原位置</el-button>
+              <el-button type="primary" @click="saveCanvasToImage()" :disabled="disabled">匯出圖片</el-button>
+              <el-button type="primary" :disabled="disabled">歷史紀錄</el-button>
+              <el-button type="primary" :disabled="disabled" @click="redirect('address')">點位設定</el-button>
+            </el-button-group>
             <el-popover
               placement="left-start"
               title="快捷鍵"
@@ -30,32 +37,18 @@
                 <p class="tipck">11.【Ctrl】+【Y】：下一步</p>
                 <p class="tipck">12.【Delete】：刪除</p>
                 <p class="tipck">13.【Insert】：下載圖片</p>
-                <el-button slot="reference" type="primary" :disabled="disabled">快捷鍵</el-button>
+                <!-- <el-button slot="reference" type="primary" :disabled="disabled">快捷鍵</el-button> -->
+                <i class="el-icon-warning" slot="reference" :disabled="disabled" style="font-size:30px"></i>
             </el-popover>
-
-            <el-button v-if="type =='view'" type="primary" @click="changeType('edit')" :disabled="disabled">編輯圖控</el-button>
-            <el-button v-else type="primary" @click="changeType('view')">關閉編輯</el-button>
-            <el-button type="primary" @click="resetCanvas()" :disabled="disabled">復原位置</el-button>
-            <el-button type="primary" @click="saveCanvasToImage()" :disabled="disabled">匯出圖片</el-button>
-            <el-button type="primary" :disabled="disabled">歷史紀錄</el-button>
-            <el-button type="primary" :disabled="disabled">點位設定</el-button>
             <el-checkbox-group 
-            v-model="checkList" 
-            style="display:inline;margin-left:20px;" @change="changeViewBlock">
+            v-model="checkList" :disabled="disabled"
+            style="display:inline-block" @change="changeViewBlock">
               <el-checkbox label="未分類" border></el-checkbox>
               <el-checkbox label="警戒區" border></el-checkbox>
               <el-checkbox label="防護區" border></el-checkbox>
               <el-checkbox label="放射區" border></el-checkbox>
               <el-checkbox label="撒水區" border></el-checkbox>
             </el-checkbox-group>
-            <!-- <el-alert
-              v-if="isSelect"
-              title="尚未存檔，請先存檔後再離開畫面"
-              type="warning"
-              center
-              :closable="false"
-              show-icon>
-            </el-alert> -->
           </el-col>
           <el-col :xs="24" :sm="24" :md="24" :lg="12">
             <div class="collapse-wrapper" >
@@ -193,59 +186,59 @@ export default {
         },
         immediate:true
       },
-      wsmsg:{
-        handler:async function(){
-            var data = JSON.parse(this.wsmsg.data)
-            console.log(data)
-            var uid = data.id
-            var type = data.type
-            var content = data.content
-            if(uid !== this.id){
-              switch (type){
-                case 'enterGraphic':
-                  if(this.type == 'edit' && content == this.floor.getID()){
-                    this.$socket.sendMag(this.id,'openEdit',this.floor.getID())
-                  }
-                  break;
-                case 'openEdit':
-                  if(content == this.floor.getID()){
-                    this.isEdit = true
-                  }
-                  break;
-                case 'closeEdit':
-                  if(content == this.floor.getID()){
-                    this.isEdit = false
-                  }
-                  break;
-                default:
-                  var cons = JSON.parse(content)
-                  console.log(cons)
-                  var index = this.buildingfloors.findIndex(f=>f.id === cons.LinkDevice.FloorId)
-                  var index2 = this.buildingdevices.findIndex(d=>d.id === cons.LinkDevice.DeviceId)
-                  if(cons.LinkDevice.FloorId !== this.floor.getID()){
-                    this.handleSelect(this.buildingfloors[index],cons)
-                  }else{
-                    this.actionObj = cons
-                  }
-                  var data = {
-                    date:formatTime(new Date(), '{y}-{m}-{d} {h}:{i}:{s}'),
-                    floor:this.buildingfloors[index].label,
-                    action:cons.Action,
-                    name:this.buildingdevices[index2].name,
-                    point:cons.SystemNumber+'-'+cons.CircuitNumber+'-'+cons.Address
-                  }
-                  this.origindata.push(data)
-                  this.listQueryParams.total = this.origindata.length
-                  this.origindata = this.origindata.sort( (a, b) => {
-                      return new Date(b.date) - new Date(a.date)
-                    })
-                  this.clickPagination()
-                  break;
-              }
-            }
-        },
-        immediate:true
-      },
+      // wsmsg:{
+      //   handler:async function(){
+      //       var data = JSON.parse(this.wsmsg.data)
+      //       console.log(data)
+      //       var uid = data.id
+      //       var type = data.type
+      //       var content = data.content
+      //       if(uid !== this.id){
+      //         switch (type){
+      //           case 'enterGraphic':
+      //             if(this.type == 'edit' && content == this.floor.getID()){
+      //               this.$socket.sendMag(this.id,'openEdit',this.floor.getID())
+      //             }
+      //             break;
+      //           case 'openEdit':
+      //             if(content == this.floor.getID()){
+      //               this.isEdit = true
+      //             }
+      //             break;
+      //           case 'closeEdit':
+      //             if(content == this.floor.getID()){
+      //               this.isEdit = false
+      //             }
+      //             break;
+      //           default:
+      //             var cons = JSON.parse(content)
+      //             console.log(cons)
+      //             var index = this.buildingfloors.findIndex(f=>f.id === cons.LinkDevice.FloorId)
+      //             var index2 = this.buildingdevices.findIndex(d=>d.id === cons.LinkDevice.DeviceId)
+      //             if(cons.LinkDevice.FloorId !== this.floor.getID()){
+      //               this.handleSelect(this.buildingfloors[index],cons)
+      //             }else{
+      //               this.actionObj = cons
+      //             }
+      //             var data = {
+      //               date:formatTime(new Date(), '{y}-{m}-{d} {h}:{i}:{s}'),
+      //               floor:this.buildingfloors[index].label,
+      //               action:cons.Action,
+      //               name:this.buildingdevices[index2].name,
+      //               point:cons.SystemNumber+'-'+cons.CircuitNumber+'-'+cons.Address
+      //             }
+      //             this.origindata.push(data)
+      //             this.listQueryParams.total = this.origindata.length
+      //             this.origindata = this.origindata.sort( (a, b) => {
+      //                 return new Date(b.date) - new Date(a.date)
+      //               })
+      //             this.clickPagination()
+      //             break;
+      //         }
+      //       }
+      //   },
+      //   immediate:true
+      // },
     },
     created(){
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
@@ -266,15 +259,25 @@ export default {
       saveCanvasToImage(){ //匯出圖片
         this.$refs.graphic.saveImg()
       },
-      changeType(type){
+      redirect(name){ //點位設定&歷史紀錄--另開新頁
+        var routeData
+        switch (name) {
+          case 'address':
+            routeData = this.$router.resolve(
+                            { path: '/equipment/address' })
+            break;
+        }
+        window.open(routeData.href, '_blank')
+      },
+      changeType(type){ //編輯/檢視
         if(!this.isEdit){
           this.type = type
           if(type == 'edit'){
             this.checkList = ['未分類','警戒區','防護區','放射區','撒水區']
-            this.$socket.sendMsg(this.id,'openEdit',this.floor.getID())
+            //this.$socket.sendMsg(this.id,'openEdit',this.floor.getID())
           }else{
             this.checkList = []
-            this.$socket.sendMsg(this.id,'closeEdit',this.floor.getID())
+            //this.$socket.sendMsg(this.id,'closeEdit',this.floor.getID())
           }
           this.$refs.graphic.searchBlockType(this.checkList)
         }else{
@@ -286,14 +289,14 @@ export default {
       },
       //樓層事件
       async handleSelect(content, device = null){
+        console.log('handleSelect',device)
         if(this.type == 'edit'){
-          this.$socket.sendMsg(this.id,'closeEdit',this.floor.getID())
+          //this.$socket.sendMsg(this.id,'closeEdit',this.floor.getID())
         }
         this.type = 'view'
         this.floor = content
-        //this.$refs.objectList.init() //圖層重製
-        //this.$refs.graphic.loadObjects(await this.floor.getGraphicFiles()) //載入初始化物件
         var obj = await this.floor.getGraphicFiles()
+        console.log(obj)
         if(content.getImageID() == null){
             this.disabled = true
             this.changeType('view')
@@ -303,7 +306,7 @@ export default {
             var data = await idb.loadCacheImage((content.getImageID()))
             this.$refs.graphic.loadBackgroundImage(obj,data)
         }
-        this.$socket.sendMsg(this.id,'enterGraphic',this.floor.getID())
+        //this.$socket.sendMsg(this.id,'enterGraphic',this.floor.getID())
         if(device !== null){
           this.actionObj = device
         }
@@ -346,10 +349,10 @@ export default {
         formData.append('file', fileContent)
         var isOk = await this.floor.postGraphicFiles(formData)
         if(isOk){
-          if(array.length !==0 ){
-            await Device.updatefromGraphic(array)
-            this.$store.dispatch('building/setbuildingdevices',await Device.get())
-          }
+          // if(array.length !==0 ){
+          //   await Device.updatefromGraphic(array)
+          //   this.$store.dispatch('building/setbuildingdevices',await Device.get())
+          // }
           this.$message('儲存成功')
         }
       },

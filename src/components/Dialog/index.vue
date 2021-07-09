@@ -72,7 +72,7 @@
                         value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </span>
-                <!-- 設備種類 / 點位選取設備 下拉選單(多-1) -->
+                <!-- 設備清單-設備種類 / 點位選取設備 下拉選單(多-1) -->
                 <el-select
                     v-else-if="item.format =='deviceTypeSelect' || item.format == 'addressdeviceSelect' "
                     v-model="temp[item.prop]"
@@ -82,11 +82,32 @@
                     value-key="id"
                     placeholder="請選擇"
                     style="width:100%"
+                    @change="checkMode"
                     >
                         <el-option
-                        v-for="(obj,index) in selectfilter(item.format == 'deviceTypeSelect' ? item.format : 'deviceSelect')"
+                        v-for="(obj,index) in selectfilter(item.format == 'addressdeviceSelect' ? 'deviceSelect': item.format )"
                         :key="index"
                         :label="item.format == 'deviceTypeSelect' ? obj.getSelectName() : obj.label"
+                        :value="obj"
+                        >
+                        </el-option>  
+                </el-select>
+                <!-- 設備清單關聯設備 -->
+                <el-select
+                    v-else-if="item.format == 'assignDeviceSelect' "
+                    v-model="temp[item.prop]"
+                    filterable
+                    multiple
+                    :multiple-limit="1"
+                    value-key="id"
+                    placeholder="請選擇"
+                    style="width:100%"
+                    :disabled="disable"
+                    >
+                        <el-option
+                        v-for="(obj,index) in selectfilter(item.format)"
+                        :key="index"
+                        :label="obj.label"
                         :value="obj"
                         >
                         </el-option>  
@@ -114,6 +135,15 @@
                         >
                         </el-option>  
                 </el-select>
+                <!-- 控制模式 -->
+                <el-radio-group 
+                v-else-if="item.format == 'protocolMode'"
+                v-model="temp[item.prop]" @change="protocolModeChange">
+                    <el-radio :label="0">皆無</el-radio>
+                    <el-radio :label="1">監視</el-radio>
+                    <el-radio :label="2">控制</el-radio>
+                    <el-radio :label="4">兩者皆可</el-radio>
+                </el-radio-group>
                 <!-- 檢修申報下拉選單(多)-->
                 <el-select
                     v-else-if="item.format == 'inspectionSelect' "
@@ -552,6 +582,14 @@ export default {
                                 this.$set(v, 'id', v.getID()) 
                                 return v
                             })
+                        case 'assignDeviceSelect':
+                            return this.buildingdevices.filter(item => item.getLinkType().getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
+                            item.getLinkType().getFullType() == 'nDeviceTypeList.PLC.PLC_ProgrammableLogicController').map(v => {
+                                this.$set(v, 'value', v.getID()) 
+                                this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
+                                this.$set(v, 'id', v.getID()) 
+                                return v
+                            })
                         case 'contactunitSelect':
                             return this.buildingcontactunit.map(v => {
                                 this.$set(v, 'value', v.getID()) 
@@ -618,7 +656,7 @@ export default {
             createOption:[],
             prop:[],
             maintainListID:'',
-            
+            disable:true
         }
     },
     methods: {
@@ -637,6 +675,10 @@ export default {
                     var fullType = this.dialogData[0]['fullType']
                     var value = changeDeviceFullType(fullType,true,false)
                     this.fulltypevalue = [value,fullType]
+                }
+                if(this.title == 'equipment'){
+                    var mode = this.dialogData[0]['protocolMode']
+                    if(mode > 0) this.disable = false
                 }
             }
             if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' 
@@ -680,6 +722,26 @@ export default {
                 return _array
             }else{
                 return ""
+            }
+        },
+        //設備清單裡面--設備種類異動時須預設種類的控制欄位同步到設備的控制欄位
+        checkMode(value){
+            console.log(this.title)
+            if(value.length && this.title == 'equipment'){
+               this.temp['protocolMode'] = value[0].getProtocolMode()
+               if(value[0].getProtocolMode() > 0){
+                   this.disable = false
+               }
+            }else if(value.length == 0 && this.title == 'equipment'){
+                this.disable = true
+                this.temp['protocolMode'] = 0
+            }
+        },
+        protocolModeChange(value){
+            if(value > 0){
+                this.disable = false
+            }else{
+                this.disable = true
             }
         },
         querySearch(queryString, cb) {

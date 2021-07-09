@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import constant from '@/constant';
+import constant from '@/constant'
 
 export default {
     name:'',
@@ -68,19 +68,7 @@ export default {
     mounted(){
         this.temp = Object.assign({}, this.viewlist)
     },
-    computed:{
-        changeToImage(obj){
-            console.log(obj.viewlist[0].imgSrc)
-            var str = "../../../assets/equipment/"+obj.viewlist[0].imgSrc
-            return  require(`${str}`)
-        }
-    },
     methods:{
-        // changeToImage(name){
-        //     var str = "../../../assets/equipment/"+name
-        //     console.log(str)
-        //     return require(str)
-        // },
         handleChange(type){
             this.type = type
         },

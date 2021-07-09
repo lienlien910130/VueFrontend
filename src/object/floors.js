@@ -85,7 +85,7 @@ class Floors extends Parent {
         return this.floor
     }
     getImageID(){
-        return this.floorPlanID.toString()
+        return this.floorPlanID !== null ? this.floorPlanID.toString() : null
     }
     async getImage(){
        var src = await idb.loadCacheImage(this.floorPlanID)

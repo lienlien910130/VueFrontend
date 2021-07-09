@@ -219,7 +219,8 @@
                                     {{ changeUserName(item.getlinkUsageOfFloorsUser()) }}
                                 </span>
 
-                                <span v-else-if="option.format == 'deviceSelect' || option.format == 'addressdeviceSelect' " 
+                                <span v-else-if="option.format == 'deviceSelect' || option.format == 'addressdeviceSelect' ||
+                                option.format == 'assignDeviceSelect' " 
                                 @click="clickMessageBox('設備資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ item.getDevicesName() }}
@@ -375,7 +376,8 @@
                                             scope.row[scope.column.property].replace(/[^\d]/g,'').replace(/\s*/g,'')">
                                         </el-input> -->
 
-                                        <span v-else-if="item.format == 'deviceSelect' || item.format == 'addressdeviceSelect' " 
+                                        <span v-else-if="item.format == 'deviceSelect' || item.format == 'addressdeviceSelect'
+                                        || item.format == 'assignDeviceSelect' " 
                                         @click="clickMessageBox('設備資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                              {{ scope.row.getDevicesName() }}

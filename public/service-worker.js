@@ -37,20 +37,20 @@ self.addEventListener('activate', function (e) {
   return self.clients.claim()
 })
 //攔截取求-暫無儲存至cache
-self.addEventListener('fetch', function (e) {
-  console.log('event.request:', e.request.method , '// e.request.url:',e.request.url)
-  e.respondWith(
-    // 判断当前请求是否需要缓存
-    caches.match(e.request).then(function (cache) {
-      // 有缓存就用缓存，没有就从新发请求获取
-      return cache || fetch(e.request)
-    }).catch(function (err) {
-      console.log(err)
-      // 缓存报错还直接从新发请求获取
-      return fetch(e.request)
-    })
-  )
-})
+// self.addEventListener('fetch', function (e) {
+//   console.log('event.request:', e.request.method , '// e.request.url:',e.request.url)
+//   e.respondWith(
+//     // 判断当前请求是否需要缓存
+//     caches.match(e.request).then(function (cache) {
+//       // 有缓存就用缓存，没有就从新发请求获取
+//       return cache || fetch(e.request)
+//     }).catch(function (err) {
+//       console.log(err)
+//       // 缓存报错还直接从新发请求获取
+//       return fetch(e.request)
+//     })
+//   )
+// })
 // // 添加service worker对push的监听
 self.addEventListener('push', function (e) {
   var body;
