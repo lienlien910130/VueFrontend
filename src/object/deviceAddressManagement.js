@@ -5,7 +5,7 @@ import Device from './device'
 class DeviceAddressManagement extends Parent {
     constructor (data) {
         super(data)
-        const { internet, system, address, number, status, systemUsed, linkDevices  } = data
+        const { internet, system, address, number, status, systemUsed, protocolMode, linkDevices  } = data
         var devices = linkDevices !== undefined ?
         linkDevices.map(item=>{ return new Device(item) }) :[]
         this.internet = internet
@@ -14,6 +14,7 @@ class DeviceAddressManagement extends Parent {
         this.number = number
         this.status = status
         this.systemUsed = systemUsed
+        this.protocolMode = protocolMode
         this.linkDevices = devices
         return this
     }
@@ -56,6 +57,7 @@ class DeviceAddressManagement extends Parent {
             number :'',
             status:'',
             systemUsed:false,
+            protocolMode:1,
             linkDevices:[]
         })
     }
@@ -101,6 +103,14 @@ class DeviceAddressManagement extends Parent {
                 mandatory:false, 
                 type:'boolean',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '控制模式',
+                prop: 'protocolMode',format:'protocolMode',
+                type:'number',typemessage:'',
+                mandatory:true,message:'請選擇控制模式',isHidden:false,
+                isSearch:false,placeholder:'請選擇控制模式',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             { 
                 label:'設備' , 

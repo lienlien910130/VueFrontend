@@ -12,7 +12,7 @@ class Device extends Parent {
     constructor (data) {
         super(data)
         const { name,dateOfPurchase, dateOfWarranty, location,groupID, 
-            status,lastMaintainTime,nextMaintainTime, protocolMode,
+            status,lastMaintainTime,nextMaintainTime, protocolMode, systemUnUseMode,
             linkKeeperUnits,linkMaintainVendors, linkFloors, linkDeviceTypes, linkDevices } = data
         var deviceType = linkDeviceTypes !== undefined ?
          linkDeviceTypes.map(item=>{ return new DeviceType(item) }) : []
@@ -33,6 +33,7 @@ class Device extends Parent {
         this.lastMaintainTime = lastMaintainTime
         this.nextMaintainTime = nextMaintainTime
         this.protocolMode = protocolMode
+        this.systemUnUseMode = systemUnUseMode
         this.linkKeeperUnits = keeperUnits
         this.linkMaintainVendors = maintainVendors
         this.linkFloors = floors
@@ -120,6 +121,7 @@ class Device extends Parent {
             lastMaintainTime:null,
             nextMaintainTime:null,
             protocolMode:0,
+            systemUnUseMode:0,
             linkKeeperUnits : [],
             linkMaintainVendors :[],
             linkFloors :[],
@@ -229,6 +231,14 @@ class Device extends Parent {
                 mandatory:true,message:'請選擇控制模式',isHidden:false,
                 isSearch:false,placeholder:'請選擇控制模式',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '尚未被使用',
+                prop: 'systemUnUseMode',
+                type:'number',typemessage:'',
+                mandatory:false,isHidden:false,
+                isSearch:false,
+                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
             }
          ]
     }

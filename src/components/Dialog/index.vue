@@ -139,10 +139,10 @@
                 <el-radio-group 
                 v-else-if="item.format == 'protocolMode'"
                 v-model="temp[item.prop]" @change="protocolModeChange">
-                    <el-radio :label="0">皆無</el-radio>
+                    <el-radio v-if="title !== 'deviceAddressManagement'" :label="0">皆無</el-radio>
                     <el-radio :label="1">監視</el-radio>
                     <el-radio :label="2">控制</el-radio>
-                    <el-radio :label="4">兩者皆可</el-radio>
+                    <el-radio :label="3">皆有</el-radio>
                 </el-radio-group>
                 <!-- 檢修申報下拉選單(多)-->
                 <el-select
@@ -729,12 +729,15 @@ export default {
             console.log(this.title)
             if(value.length && this.title == 'equipment'){
                this.temp['protocolMode'] = value[0].getProtocolMode()
+               this.temp['systemUnUseMode'] = value[0].getProtocolMode()
                if(value[0].getProtocolMode() > 0){
                    this.disable = false
                }
             }else if(value.length == 0 && this.title == 'equipment'){
                 this.disable = true
                 this.temp['protocolMode'] = 0
+                this.temp['systemUnUseMode'] = 0
+                this.temp['linkDevices'] = []
             }
         },
         protocolModeChange(value){
@@ -742,6 +745,9 @@ export default {
                 this.disable = false
             }else{
                 this.disable = true
+            }
+            if(this.title == 'equipment'){
+                this.temp['systemUnUseMode'] = value
             }
         },
         querySearch(queryString, cb) {
