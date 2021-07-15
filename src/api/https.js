@@ -16,12 +16,6 @@ function showLoading() {
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       })
-    //   loading = this.$loading({
-    //     lock: true,
-    //     text: '更新資料中，請稍後...',
-    //     spinner: 'el-icon-loading',
-    //     background: 'rgba(0, 0, 0, 0.7)'
-    //   })
     }
     requestCount++
 }
@@ -35,6 +29,10 @@ function tryHideLoading() {
         clearTimeout(timer)
       }
     })
+}
+function resetLoading(){
+    requestCount = 0
+    loading.close()
 }
 
 const tip = msg => {
@@ -77,7 +75,6 @@ const errorHandle = (status,error) =>{
         default:
           console.log('resq未攔截到的錯誤:'+error.response.data.error)
     }
-    tryHideLoading()
 }
 
 // request interceptor
@@ -111,7 +108,7 @@ service.interceptors.response.use(
     return res
   },
   error => {
-    tryHideLoading()
+    resetLoading()
       if(error) {
           //成功發出請求且收到resp，但有error
           //alert(error)

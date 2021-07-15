@@ -1,20 +1,29 @@
 <template>
   <div class="navbar">
-    <div class="left-menu">
+    <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+   
+    <!-- <div class="left-menu">
       <router-link to="/">
          <svg-icon  icon-class="indexlogo"
           style="width:200px;height:90px" />       
       </router-link>
-    </div>
+    </div> -->
 
     <div class="right-menu">
-      <el-row style="height:45px">
-        <template v-if="device!=='mobile'">
-        <el-dropdown 
+      <div class="avatar-container right-menu-item" style="margin-right:0px">
+        <div class="avatar-wrapper">
+          <svg-icon v-if="id == '1'" icon-class="edit" @click="handleTo" style="cursor:pointer"/>
+        </div>
+      </div>
+
+      <Screenfull v-if="device!=='mobile'" id="screenfull" class="right-menu-item hover-effect" />
+
+      <el-dropdown 
           class="avatar-container right-menu-item" trigger="click">
             <div class="avatar-wrapper">
               <i class="el-icon-office-building icon" />
-              <span style="margin-left:3px">{{  buildingName  }}</span>
+              <span  v-if="device!=='mobile'" style="margin-left:3px">{{  buildingName  }}</span>
+               <i class="el-icon-caret-bottom" />
             </div>
             <el-dropdown-menu 
             slot="dropdown" 
@@ -28,15 +37,13 @@
               </el-dropdown-item>
             </el-dropdown-menu>
         </el-dropdown>
-        <i v-if="id == '1'" class="el-icon-circle-plus-outline icon" @click="handleTo"></i>
-        <Screenfull id="screenfull" class="right-menu-item hover-effect" />
-      </template>
 
       <el-dropdown 
         class="avatar-container right-menu-item" trigger="click">
           <div class="avatar-wrapper">
             <svg-icon icon-class="user" style="font-size:25px"/>
-            <span style="margin-left:3px">{{ name }}</span>
+            <span v-if="device!=='mobile'" style="margin-left:3px">{{ name }}</span>
+            <i class="el-icon-caret-bottom" />
           </div>
           <el-dropdown-menu slot="dropdown" class="user-dropdown">
             <router-link to="/">
@@ -59,8 +66,13 @@
             </el-dropdown-item>
           </el-dropdown-menu>
       </el-dropdown>
-      </el-row>
-        <span class="timer">{{ date | formatDate }}</span>
+
+      <div v-if="device!=='mobile'" class="avatar-container right-menu-item" style="margin-right:0px">
+          <div class="avatar-wrapper">
+            <span class="timer">{{ date | formatDate }}</span>
+          </div>
+      </div>
+      
     </div>
   </div>
 </template>
@@ -75,11 +87,13 @@ import Building from '@/object/building'
 import Floors from '@/object/floors'
 import Setting from '@/object/setting'
 import User from '@/object/user'
+import Hamburger from '@/components/Hamburger'
 
 export default {
   components: {
     Select: () => import('@/components/Select/index.vue'),
-    Screenfull: () => import('@/components/Screenfull')
+    Screenfull: () => import('@/components/Screenfull'),
+    Hamburger
   },
   computed: {
     ...mapGetters([
@@ -89,7 +103,6 @@ export default {
       'id',
       'device',
       'buildingarray',
-      'permission_routes',
       'roles',
       'buildinginfo',
       'buildingid'
@@ -152,6 +165,9 @@ export default {
     handleTo(){
       this.$router.push('/building')
     },
+    toggleSideBar() {
+      this.$store.dispatch('app/toggleSideBar')
+    },
     async logout() {
       console.log('logout')
       await this.$store.dispatch('user/logout')
@@ -174,45 +190,46 @@ export default {
     }
   }
 }
+// background-image:url("../../assets/image/navbarimg.png");
 </script>
 
 <style lang="scss" scoped>
 .navbar {
-  height: 90px;
+  height: 50px;
   overflow: hidden;
   position: relative;
+  background: #fff;
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
-  background-image:url("../../assets/image/navbarimg.png");
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
 
-  .breadcrumb-container {
-    float: left;
-  }
-  .left-menu {
-    
+  .hamburger-container {
     line-height: 46px;
     height: 100%;
     float: left;
     cursor: pointer;
-    
+    transition: background .3s;
+    -webkit-tap-highlight-color:transparent;
+
+    &:hover {
+      background: rgba(0, 0, 0, .025)
+    }
   }
+
+  .breadcrumb-container {
+    float: left;
+  }
+
+  .errLog-container {
+    display: inline-block;
+    vertical-align: top;
+  }
+
   .right-menu {
     float: right;
     height: 100%;
-    line-height: 70px;
-    
+    line-height: 50px;
+
     &:focus {
       outline: none;
-    }
-    .select { 
-      width: 180px;
-      margin-right: 10px;
-    }
-    .icon{
-      font-size:25px;
-      padding:0px 8px;
-      cursor: pointer;
     }
 
     .right-menu-item {
@@ -220,6 +237,7 @@ export default {
       padding: 0 8px;
       height: 100%;
       font-size: 18px;
+      color: #5a5e66;
       vertical-align: text-bottom;
 
       &.hover-effect {
@@ -233,37 +251,27 @@ export default {
     }
 
     .avatar-container {
-      margin-right: 15px;
+      margin-right: 30px;
 
       .avatar-wrapper {
         position: relative;
+
+        .user-avatar {
+          cursor: pointer;
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+        }
+
+        .el-icon-caret-bottom {
+          cursor: pointer;
+          position: absolute;
+          right: -20px;
+          top: 25px;
+          font-size: 12px;
+        }
       }
-    }
-
-    .el-dropdown{
-      font-size: 18px;
-      color: black;
-    }
-
-    .timer{
-      float: right;
-      margin-right: 15px;
     }
   }
 }
-
-  .el-row {
-    //margin-bottom: 20px;
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-  .grid-content {
-    width: 100%;
-    height: 100%;
-  }
-  .row-bg {
-    padding: 10px 0;
-    background-color: #f9fafc;
-  }
 </style>

@@ -40,6 +40,12 @@ export default {
     methods:{
         async init(){
             this.title = 'deviceAddressManagement'
+            this.headerButtonsName = [
+                { name:'多筆資料新增',icon:'el-icon-document',status:'manyempty'},
+                { name:'單筆資料新增',icon:'el-icon-circle-plus-outline',status:'empty'},
+                { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
+                { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}
+            ]
             this.tableConfig = DeviceAddressManagement.getTableConfig()
             await this.getBuildingDeviceAddressManagement()
         },
@@ -95,6 +101,14 @@ export default {
             }else if(index === 'uploadExcel'){
                 this.innerVisible = true
                 this.dialogStatus = 'uploadExcel'
+            }else if(index === 'manyempty'){
+                this.dialogConfig = DeviceAddressManagement.getManyEmptyTableConfig()
+                this.dialogData.push( DeviceAddressManagement.manyEmpty() )
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'create'},
+                { name:'取消',type:'info',status:'cancel'}]
+                this.innerVisible = true
+                this.dialogStatus = 'create'
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作

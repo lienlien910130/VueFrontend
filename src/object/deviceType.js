@@ -165,7 +165,6 @@ class DeviceType extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.device.apiGetDevicesTypeSearchPages(data).then(response => {
-            console.log(JSON.stringify(response))
             response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item)})
             return response
         }).catch(error=>{

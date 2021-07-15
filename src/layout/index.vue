@@ -3,29 +3,30 @@
     <div v-if="device==='mobile'&& sidebar.opened" class="drawer-bg" 
     @click="handleClickOutside" />
     <div>
-      <navbar />
+      <sidebar class="sidebar-container" />
     </div>
     
     <div class="main-container">
-      <sidebar class="sidebar-container" />
+      <div class="fixed-header">
+        <navbar />
+      </div>
       
-      <div class="hamburger-container" >
+      <!-- <div class="hamburger-container" >
         <hamburger :is-active="sidebar.opened" 
         style="padding:0px" @toggleClick="toggleSideBar" />
-      </div>
-      <!-- <hamburger :is-active="sidebar.opened" class="hamburger-container" 
-      style="padding:0px" @toggleClick="toggleSideBar" :class="{close:!sidebar.opened}" /> -->
+      </div> -->
+      
       <app-main />
     </div>
-
+<!-- 
     <div>
       <Footer/>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script>
-import { Navbar, Sidebar, AppMain, Footer } from './components'
+import { Navbar, Sidebar, AppMain } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
 
 export default {
@@ -33,9 +34,7 @@ export default {
   components: {
     Navbar,
     Sidebar,
-    AppMain,
-    Footer,
-    Hamburger: () => import('@/components/Hamburger'), 
+    AppMain
   },
   mixins: [ResizeMixin],
   computed: {
@@ -64,7 +63,6 @@ export default {
   }
 }
 </script>
-
 <style lang="scss" scoped>
   @import "~@/styles/mixin.scss";
   @import "~@/styles/variables.scss";
@@ -74,11 +72,13 @@ export default {
     position: relative;
     height: 100%;
     width: 100%;
-    &.mobile.openSidebar{
+
+    &.mobile.openSidebar {
       position: fixed;
       top: 0;
     }
   }
+
   .drawer-bg {
     background: #000;
     opacity: 0.3;
@@ -105,16 +105,4 @@ export default {
   .mobile .fixed-header {
     width: 100%;
   }
-
-  .hamburger-container{
-    height: 30px;
-    margin-left: 0px;
-    position: relative;
-    background-color: #d1e2ec;
-  }
-
-  .openSidebar .hamburger-container{
-    margin-left: 180px;
-  }
-
 </style>

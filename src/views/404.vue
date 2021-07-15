@@ -1,34 +1,40 @@
 <template>
-  <div class="wscn-http404-container">
+  <div v-if="device == 'desktop'" class="wscn-http404-container">
     <div class="wscn-http404">
       <div class="pic-404">
-        <img class="pic-404__parent" src="@/assets/image/404.png" alt="404">
-        <img class="pic-404__child left" src="@/assets/image/404_cloud.png" alt="404">
-        <img class="pic-404__child mid" src="@/assets/image/404_cloud.png" alt="404">
-        <img class="pic-404__child right" src="@/assets/image/404_cloud.png" alt="404">
+        <img  class="pic-404__parent" src="@/assets/image/404-d.png" alt="404">
       </div>
       <div class="bullshit">
-        <div class="bullshit__oops">OOPS!</div>
-        <div class="bullshit__info">All rights reserved
-          <a style="color:#20a0ff" href="https://wallstreetcn.com" target="_blank">wallstreetcn</a>
-        </div>
-        <div class="bullshit__headline">{{ message }}</div>
-        <div class="bullshit__info">Please check that the URL you entered is correct, or click the button below to return to the homepage.</div>
-        <a href="" class="bullshit__return-home">Back to home</a>
+        <div class="bullshit__oops">糟糕！</div>
+        <div class="bullshit__headline"></div>
+        <div class="bullshit__info">請檢查您輸入的網址是否正確，或點擊下面的按鈕返回首頁。</div>
+        <a href="/" class="bullshit__return-home">返回首頁</a>
       </div>
     </div>
   </div>
+  <!-- <div v-else>
+    <img  class="phone" src="@/assets/image/404-p.png" alt="404">
+  </div> -->
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'Page404',
+  watch: {
+    device:{
+            handler:async function(){
+                console.log(this.device)
+            },
+            immediate:true
+        },
+  },
   computed: {
-    message() {
-      return 'The webmaster said that you can not enter this page...'
-    }
-  }
+      ...mapGetters([
+        'device'
+      ]),
+  },
 }
 </script>
 
@@ -159,7 +165,7 @@ export default {
     position: relative;
     float: left;
     width: 300px;
-    padding: 30px 0;
+    padding: 50px 0;
     overflow: hidden;
     &__oops {
       font-size: 32px;
@@ -175,6 +181,7 @@ export default {
     &__headline {
       font-size: 20px;
       line-height: 24px;
+      height: 24px;
       color: #222;
       font-weight: bold;
       opacity: 0;
@@ -185,9 +192,9 @@ export default {
       animation-fill-mode: forwards;
     }
     &__info {
-      font-size: 13px;
+      font-size: 16px;
       line-height: 21px;
-      color: grey;
+      color: black;
       opacity: 0;
       margin-bottom: 30px;
       animation-name: slideUp;

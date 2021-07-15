@@ -99,7 +99,7 @@ export default {
                     }else{
                         this.title == 'committee' || this.title == 'contactUnit' || 
                         this.title == 'floorOfHouse' || this.title == 'user'   ? 
-                        this.infiniteheight = 510 : this.infiniteheight = 640
+                        this.infiniteheight = 510 : this.infiniteheight = 720
                     }
                     this.height = (this.infiniteheight -10).toString() + 'px'
                 },

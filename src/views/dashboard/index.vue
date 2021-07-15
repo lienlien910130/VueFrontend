@@ -21,7 +21,7 @@
             v-on:handleNodeClick="handleNodeClick"/> 
           </div>
         </el-col>
-        <el-col :xs="24" :sm="24" :md="8" :lg="8">
+        <!-- <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
             <ListDiv
             :list-query-params.sync="maintainlistQueryParams"
@@ -29,10 +29,12 @@
             v-on="maintainEvent"
             ></ListDiv>
           </div>
-        </el-col>
+        </el-col> -->
       </el-row>
+      <PanelGroup></PanelGroup>
       <el-row :gutter="32">
-        <el-col :xs="24" :sm="24" :md="8" :lg="8">
+
+        <!-- <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
             <ListDiv
             :list-query-params.sync="inspectionlistQueryParams"
@@ -54,7 +56,7 @@
           <div class="chart-wrapper">
             設備即時狀況
           </div>
-        </el-col>
+        </el-col> -->
       </el-row>
         <!-- <el-row  :gutter="32">
           <div class="infinite-list-wrapper">
@@ -103,7 +105,8 @@ export default {
     Pump: () => import('./components/Pump'),
     Waterlevel: () =>  import('./components/Waterlevel'),
     Elevator: () =>  import('./components/Elevator'),
-    ListDiv: () => import('./components/ListDiv')
+    ListDiv: () => import('./components/ListDiv'),
+    PanelGroup: () => import('./components/PanelGroup')
   },
   computed: {
     ...mapGetters([

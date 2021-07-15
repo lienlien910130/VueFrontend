@@ -13,17 +13,17 @@ class Device extends Parent {
         super(data)
         const { name,dateOfPurchase, dateOfWarranty, location,groupID, 
             status,lastMaintainTime,nextMaintainTime, protocolMode, systemUnUseMode,
-            linkKeeperUnits,linkMaintainVendors, linkFloors, linkDeviceTypes, linkDevices } = data
+            linkKeeperUnits,linkMaintainVendors, linkDeviceTypes } = data
         var deviceType = linkDeviceTypes !== undefined ?
          linkDeviceTypes.map(item=>{ return new DeviceType(item) }) : []
         var keeperUnits = linkKeeperUnits !== undefined ?
          linkKeeperUnits.map(item=>{ return new Contactunit(item) }) : []
         var maintainVendors = linkMaintainVendors !== undefined ?
          linkMaintainVendors.map(item=>{ return new Contactunit(item) }) : []
-        var floors = linkFloors !== undefined ?
-         linkFloors.map(item=>{ return new Floors(item) }) :[]
-        var devices = linkDevices !== undefined ?
-         linkDevices.map(item=>{ return new Device(item) }) :[]
+        // var floors = linkFloors !== undefined ?
+        //  linkFloors.map(item=>{ return new Floors(item) }) :[]
+        // var devices = linkDevices !== undefined ?
+        //  linkDevices.map(item=>{ return new Device(item) }) :[]
         this.name = name
         this.dateOfPurchase = dateOfPurchase
         this.dateOfWarranty = dateOfWarranty
@@ -36,9 +36,9 @@ class Device extends Parent {
         this.systemUnUseMode = systemUnUseMode
         this.linkKeeperUnits = keeperUnits
         this.linkMaintainVendors = maintainVendors
-        this.linkFloors = floors
+        // this.linkFloors = floors
         this.linkDeviceTypes = deviceType
-        this.linkDevices = devices
+        // this.linkDevices = devices
         return this
     }
     clone(data){
@@ -100,8 +100,8 @@ class Device extends Parent {
     getMaintainVendorsName(){
         return this.linkMaintainVendors.map(item=>{return item.getName()}).toString()
     }
-    getDevicesName(){
-        return this.linkDevices.map(item => item.getName()).toString()
+    getSystemUnUseMode(){
+        return this.systemUnUseMode
     }
     getLinkType(){
         return this.linkDeviceTypes.length !== 0 ? this.linkDeviceTypes[0] : DeviceType.empty()
@@ -124,9 +124,9 @@ class Device extends Parent {
             systemUnUseMode:0,
             linkKeeperUnits : [],
             linkMaintainVendors :[],
-            linkFloors :[],
+            // linkFloors :[],
             linkDeviceTypes: [],
-            linkDevices:[]
+            // linkDevices:[]
         })
     }
     static getTableConfig(){
@@ -192,14 +192,14 @@ class Device extends Parent {
                  isHidden:false,isSearch:false,
                  isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            { 
-                label:'設備' , 
-                prop:'linkDevices',
-                format:'assignDeviceSelect', 
-                mandatory:false,message:'請選擇設備',type:'array',typemessage:'',
-                isHidden:false,isSearch:false,
-                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
-            },
+            // { 
+            //     label:'設備' , 
+            //     prop:'linkDevices',
+            //     format:'assignDeviceSelect', 
+            //     mandatory:false,message:'請選擇設備',type:'array',typemessage:'',
+            //     isHidden:false,isSearch:false,
+            //     isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+            // },
             {
                  label: '設備狀況',
                  prop: 'status',

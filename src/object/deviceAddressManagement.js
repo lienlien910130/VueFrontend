@@ -61,6 +61,56 @@ class DeviceAddressManagement extends Parent {
             linkDevices:[]
         })
     }
+    static manyEmpty(){
+        return {
+            id:'',
+            linkDevices:[],
+            addressStart:'001',
+            addressEnd:'250',
+            numberStart:'001',
+            numberEnd:'250'
+        }
+    }
+    static getManyEmptyTableConfig(){
+        return [
+            { 
+                label:'設備' , 
+                prop:'linkDevices',
+                format:'assignDeviceSelect', 
+                mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:true,isEdit:true,isUpload:false,isExport:false,isBlock:true
+            },
+            { 
+                label:'位址編號起始' , 
+                prop:'addressStart',
+                mandatory:true,message:'請輸入位址編號起始',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
+            },
+            { 
+                label:'位址編號結束' , 
+                prop:'addressEnd',
+                mandatory:true,message:'請輸入位址編號結束',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
+            },
+            { 
+                label:'編號起始' , 
+                prop:'numberStart',
+                mandatory:true,message:'請輸入編號起始',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
+            },
+            { 
+                label:'編號結束' , 
+                prop:'numberEnd',
+                mandatory:true,message:'請輸入編號結束',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
+            }
+        ]
+    }
     static getTableConfig(){
         return [
              {

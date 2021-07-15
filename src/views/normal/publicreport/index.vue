@@ -76,7 +76,7 @@
           </el-row>
           <el-row :gutter="32">
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                <div class="block-wrapper" >
                   <Block 
                     ref="block"
                     :list-query-params.sync="listQueryParams"
@@ -413,23 +413,5 @@ export default {
             color: red;
         }
     }
-    .block-wrapper {
-        background: #fff;
-        padding: 15px 15px;
-        height: 720px;
-    }
-    // .wrapper{
-    //   background: #fff;
-    //   padding: 10px;
-    //   height: 720px;
-      
-    //   .block-wrapper {
-    //     margin-bottom: 32px;
-    //     height: 700px;
-    //     width: 100%;
-    //     overflow-x: hidden;
-    //     overflow-y: auto;
-    //   }
-    // }
     
 </style>

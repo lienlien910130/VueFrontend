@@ -569,6 +569,8 @@ export default {
             this.$refs.dialog.insertSuccess('contactunitSelect')
           }
           this.innerVisible = false
+        }else{
+          this.$message.error('該公司名稱已存在，請重新輸入')
         }
       }else if(index == 'selectData'){
         this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())

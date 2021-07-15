@@ -33,7 +33,7 @@ width: 0 !important;height: 0;
 
 </style>
 
-<style>
+<style lang="scss">
 .el-button--primary{
   background:rgb(0,140,214);
   color:white;
@@ -62,10 +62,13 @@ width: 0 !important;height: 0;
   padding: 15px;
   background-color: rgb(209, 226, 236);
   position: relative;
-  min-height: calc(100vh - 155px);
-  max-height: calc(100vh - 155px);
-  overflow-y: auto;
-  overflow-x: hidden;
+  min-height: calc(100vh - 50px);
+
+  .block-wrapper{
+    background: #fff;
+    padding: 15px 15px;
+    height: 100%;
+  }
 }
 .el-table .cell{
   font-size: 18px;

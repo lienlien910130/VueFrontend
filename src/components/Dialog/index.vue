@@ -72,66 +72,32 @@
                         value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </span>
-                <!-- 設備清單-設備種類 / 點位選取設備 下拉選單(多-1) -->
+                <!-- 設備清單-設備種類 / 設備(火警總機/PLC)關聯點位 / 點位選取設備 (limit-1) 
+                設備 / 廠商 / 角色 / 建築物 / 門牌 / 住戶 下拉選單 (多)-->
                 <el-select
-                    v-else-if="item.format =='deviceTypeSelect' || item.format == 'addressdeviceSelect' "
+                    v-else-if="item.format =='deviceTypeSelect' || item.format == 'assignDeviceSelect' 
+                    || item.format == 'addressdeviceSelect' || item.format == 'deviceSelect' || 
+                    item.format =='contactunitSelect' || 
+                    item.format =='roleSelect' ||  
+                    item.format =='buildingSelect' || 
+                    item.format == 'floorOfHouseSelect'
+                    || item.format =='userInfo'    "
                     v-model="temp[item.prop]"
                     filterable
                     multiple
-                    :multiple-limit="1"
+                    :multiple-limit=" item.format =='deviceTypeSelect' || item.format == 'assignDeviceSelect' 
+                    || item.format == 'addressdeviceSelect' ? 1 : 0"
                     value-key="id"
                     placeholder="請選擇"
                     style="width:100%"
                     @change="checkMode"
                     >
                         <el-option
-                        v-for="(obj,index) in selectfilter(item.format == 'addressdeviceSelect' ? 'deviceSelect': item.format )"
-                        :key="index"
-                        :label="item.format == 'deviceTypeSelect' ? obj.getSelectName() : obj.label"
-                        :value="obj"
-                        >
-                        </el-option>  
-                </el-select>
-                <!-- 設備清單關聯設備 -->
-                <el-select
-                    v-else-if="item.format == 'assignDeviceSelect' "
-                    v-model="temp[item.prop]"
-                    filterable
-                    multiple
-                    :multiple-limit="1"
-                    value-key="id"
-                    placeholder="請選擇"
-                    style="width:100%"
-                    :disabled="disable"
-                    >
-                        <el-option
                         v-for="(obj,index) in selectfilter(item.format)"
                         :key="index"
-                        :label="obj.label"
+                        :label="item.format =='deviceTypeSelect' ? obj.getSelectName() : obj.label"
                         :value="obj"
-                        >
-                        </el-option>  
-                </el-select>
-                <!-- 設備 / 廠商 / 角色 / 建築物 下拉選單(多) -->
-                <el-select
-                    v-else-if="item.format == 'deviceSelect' || 
-                    item.format =='contactunitSelect' || 
-                    item.format =='roleSelect' ||  
-                    item.format =='buildingSelect' || 
-                    item.format == 'floorOfHouseSelect'
-                    || item.format =='userInfo'  "
-                    v-model="temp[item.prop]"
-                    value-key="id"
-                    filterable
-                    multiple 
-                    placeholder="請選擇"
-                    style="width:100%"
-                    >
-                        <el-option
-                        v-for="item in selectfilter(item.format)"
-                        :key="item.id"
-                        :label="item.label"
-                        :value="item"
+                        :disabled="item.format =='addressdeviceSelect' ? obj.disabled : false "
                         >
                         </el-option>  
                 </el-select>
@@ -140,9 +106,9 @@
                 v-else-if="item.format == 'protocolMode'"
                 v-model="temp[item.prop]" @change="protocolModeChange">
                     <el-radio v-if="title !== 'deviceAddressManagement'" :label="0">皆無</el-radio>
-                    <el-radio :label="1">監視</el-radio>
+                    <el-radio :label="1">{{ title !== 'deviceAddressManagement' ? '監視' : '接收' }}</el-radio>
                     <el-radio :label="2">控制</el-radio>
-                    <el-radio :label="3">皆有</el-radio>
+                    <el-radio v-if="title !== 'deviceAddressManagement'" :label="3">皆有</el-radio>
                 </el-radio-group>
                 <!-- 檢修申報下拉選單(多)-->
                 <el-select
@@ -218,24 +184,6 @@
                     <el-input ref="address" name="address" v-model="temp[item.prop]"  
                       show-word-limit maxlength="100"/> 
                 </span>
-                <!-- <el-select
-                    v-else-if="item.format =='menuSelect'"
-                    v-model="temp[item.prop]"
-                    placeholder="請選擇"
-                    style="width:100%"
-                    >
-                    <el-option label="首頁" key="1" value="index"></el-option>
-                    <el-option label="基本資料" key="2" value="basic"></el-option>
-                    <el-option label="圖控" key="3" value="drawingControl"></el-option>
-                    <el-option label="檢修&公安申報" key="4" value="report"></el-option>
-                    <el-option label="設備管理" key="5" value="devicesManagement"></el-option>
-                    <el-option label="維護保養" key="6" value="maintainManagement"></el-option>
-                    <el-option label="菜單管理" key="7" value="mainMenuSetting"></el-option>
-                    <el-option label="權限管理" key="8" value="accessAuthoritySetting"></el-option>
-                    <el-option label="角色管理" key="9" value="roleSetting"></el-option>
-                    <el-option label="帳號管理" key="10" value="accountSetting"></el-option>
-                    <el-option label="設定" key="11" value="settings"></el-option>
-                </el-select> -->
                 <!-- 權限設定 -->
                 <el-select
                     v-else-if="item.format =='actionSelect'"
@@ -583,11 +531,26 @@ export default {
                                 return v
                             })
                         case 'assignDeviceSelect':
-                            return this.buildingdevices.filter(item => item.getLinkType().getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
+                            return this.buildingdevices.filter(item => 
+                            item.getLinkType().getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
                             item.getLinkType().getFullType() == 'nDeviceTypeList.PLC.PLC_ProgrammableLogicController').map(v => {
                                 this.$set(v, 'value', v.getID()) 
                                 this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
                                 this.$set(v, 'id', v.getID()) 
+                                return v
+                            })
+                        case 'addressdeviceSelect':
+                            return this.buildingdevices.map(v => {
+                                var protocolMode = this.temp['protocolMode']
+                                var unUseMode = v.getSystemUnUseMode()
+                                var d = true
+                                if(unUseMode == 3 || unUseMode == protocolMode){
+                                    d = false
+                                }
+                                this.$set(v, 'value', v.getID()) 
+                                this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
+                                this.$set(v, 'id', v.getID()) 
+                                this.$set(v, 'disabled',d)
                                 return v
                             })
                         case 'contactunitSelect':
@@ -730,22 +693,21 @@ export default {
             if(value.length && this.title == 'equipment'){
                this.temp['protocolMode'] = value[0].getProtocolMode()
                this.temp['systemUnUseMode'] = value[0].getProtocolMode()
-               if(value[0].getProtocolMode() > 0){
-                   this.disable = false
-               }
+            //    if(value[0].getProtocolMode() > 0){
+            //        this.disable = false
+            //    }
             }else if(value.length == 0 && this.title == 'equipment'){
-                this.disable = true
+                // this.disable = true
                 this.temp['protocolMode'] = 0
                 this.temp['systemUnUseMode'] = 0
-                this.temp['linkDevices'] = []
             }
         },
         protocolModeChange(value){
-            if(value > 0){
-                this.disable = false
-            }else{
-                this.disable = true
-            }
+            // if(value > 0){
+            //     this.disable = false
+            // }else{
+            //     this.disable = true
+            // }
             if(this.title == 'equipment'){
                 this.temp['systemUnUseMode'] = value
             }

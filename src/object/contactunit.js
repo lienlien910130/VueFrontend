@@ -22,7 +22,9 @@ class Contactunit extends Parent {
         return new Contactunit(data)
     }
     async update(){
-        var data = await api.building.apiPatchContactUnit(this).then(async(response) => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.name = '{Check}'+temp.name
+        var data = await api.building.apiPatchContactUnit(temp).then(async(response) => {
             return true
         }).catch(error=>{
             return false
@@ -30,7 +32,9 @@ class Contactunit extends Parent {
         return data
     }
     async create(){
-        var data = await api.building.apiPostContactUnit(this).then(response => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.name = '{Check}'+temp.name
+        var data = await api.building.apiPostContactUnit(temp).then(response => {
             return true
         }).catch(error=>{
             return false

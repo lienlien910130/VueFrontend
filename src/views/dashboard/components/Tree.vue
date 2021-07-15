@@ -112,6 +112,7 @@ import { removeDuplicates } from '@/utils/index'
       },
       handleNodeClick(node,data) {
         const h = this.$createElement
+        console.log(data)
         this.$msgbox({
           title: data.getName(),
           message: h('div', null, [
@@ -159,10 +160,10 @@ import { removeDuplicates } from '@/utils/index'
               h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'分類群組 ：'),
               h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.groupID)
             ]),
-            h('p',{ style: 'width:100%' },[
-              h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'圖控設置樓層 ：'),
-              h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getSystemUsed())
-            ]),
+            // h('p',{ style: 'width:100%' },[
+            //   h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'圖控設置樓層 ：'),
+            //   h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getSystemUsed())
+            // ]),
             h('p',{ style: 'width:100%' },[
               h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'設置位置 ：'),
               h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.location)

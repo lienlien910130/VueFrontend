@@ -1,22 +1,20 @@
 #app {
 
   .main-container {
-    min-height: calc(100vh - 125px); // 90+35-30
-    transition: margin-left .28s;
-    //margin-left: $sideBarWidth;
+    min-height: 100%;
+    transition: margin-left .1s;
+    margin-left: $sideBarWidth;
     position: relative;
   }
-  
 
   .sidebar-container {
     transition: width 0.1s;
     width: $sideBarWidth !important;
     background-color: $menuBg;
-    //min-height: calc(100vh - 90px);
     height: 100%;
-    position: absolute;
+    position: fixed;
     font-size: 0px;
-    top: 0px;
+    top: 0;
     bottom: 0;
     left: 0;
     z-index: 1001;
@@ -44,14 +42,7 @@
         height: calc(100% - 50px);
       }
     }
-    
-    .el-menu-item{
-      font-size: 18px;
-    }
-    .el-submenu__title{
-      font-size: 18px;
-    }
-    
+
     .is-horizontal {
       display: none;
     }
@@ -64,7 +55,7 @@
 
     .svg-icon {
       margin-right: 16px;
-      font-size: 22px;
+      font-size:22px;
     }
 
     .sub-el-icon {
@@ -81,6 +72,7 @@
     // menu hover
     .submenu-title-noDropdown,
     .el-submenu__title {
+      font-size:18px;
       &:hover {
         background-color: $menuHover !important;
       }
@@ -88,13 +80,14 @@
 
     .is-active>.el-submenu__title {
       color: $subMenuActiveText !important;
+      font-size:18px;
     }
 
     & .nest-menu .el-submenu>.el-submenu__title,
     & .el-submenu .el-menu-item {
       min-width: $sideBarWidth !important;
       background-color: $subMenuBg !important;
-
+      font-size:18px;
       &:hover {
         background-color: $subMenuHover !important;
       }
@@ -103,11 +96,11 @@
 
   .hideSidebar {
     .sidebar-container {
-      width: 0px !important;
+      width: 54px !important;
     }
-    
+
     .main-container {
-      margin-left: 0px;
+      margin-left: 54px;
     }
 
     .submenu-title-noDropdown {
@@ -132,7 +125,7 @@
 
       &>.el-submenu__title {
         padding: 0 !important;
-
+        
         .svg-icon {
           margin-left: 20px;
         }
@@ -171,15 +164,6 @@
     .main-container {
       margin-left: 0px;
     }
-    
-    .app-main{
-      margin-left: 0px;
-    }
-
-    .hamburger-container{
-      margin-left: 0px;
-      min-width: calc(100vw - 0px);
-    }
 
     .sidebar-container {
       transition: transform .28s;
@@ -209,7 +193,6 @@
   &>.el-menu {
     .svg-icon {
       margin-right: 16px;
-      
     }
     .sub-el-icon {
       margin-right: 12px;

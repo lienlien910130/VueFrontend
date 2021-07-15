@@ -2,7 +2,7 @@
     <div class="editor-container">
         <el-row  :gutter="32">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                <div class="block-wrapper">
                     <Block 
                     ref="block"
                     :list-query-params.sync="listQueryParams"
@@ -193,10 +193,3 @@ export default {
     }
 }
 </script>
-<style lang="scss" scoped>
-.block-wrapper {
-    background: #fff;
-    padding: 15px 15px;
-    height: 720px;
-}
-</style>
