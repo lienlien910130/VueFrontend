@@ -28,7 +28,7 @@ const building = {
     apiPatchContactUnit(data){ return req('patch','/basic/contact-unit',data) },
     apiDeleteContactUnit(contactunitId){ return req('delete','/basic/'+contactunitId+'/contact-unit') },
     apiGetContactUnitSearchPages(data){ return req('post','/basic/'+this.getBid()+'/contact-unit/ss',data)  },
-    apiPostContactUnits(data){ return req('post','/basic/'+this.getBid()+'/contact-unit/s',data) },    
+    apiPostContactUnits(data){ return req('post','/basic/'+this.getBid()+'/contact-unit/check/s',data) },    
     
     //樓層
     apiGetBuildingFloors(){ return req('get','/index/building/'+this.getBid()+'/a/floors') },

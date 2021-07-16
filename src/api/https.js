@@ -3,6 +3,7 @@ import { Message } from 'element-ui'
 import { Loading } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
+import router from '@/router'
 
 let requestCount = 0;
 let loading;
@@ -52,16 +53,10 @@ const service = axios.create({
 const errorHandle = (status,error) =>{
     switch (status) {
         case 400:
-            //tip('帳號密碼輸入錯誤，請重新輸入')
-            // if(error.response.data.errorMessage !== undefined && 
-            //     error.response.data.errorMessage == '0x06E0'){
-            //         tip('不可重複新增') 
-            // }
             break;
         case 401:
             tip('登入過期，請重新登入')
             store.dispatch('user/resetToken')
-            //location.reload()
             break;
         case 403:
             tip('權限不足')
@@ -77,7 +72,6 @@ const errorHandle = (status,error) =>{
     }
 }
 
-// request interceptor
 service.interceptors.request.use(
   config => {
     showLoading()
@@ -95,12 +89,7 @@ service.interceptors.request.use(
     return Promise.reject(error)
   }
 )
-//200	OK	請求已成功。
-//201	Created	請求已成功，而且有一個新的資源被建立。
-//400	Bad Request	由於明顯的客戶端錯誤（例如，格式錯誤的請求語法、無效的請求訊息、或欺騙性路由請求），伺服器不能或不會處理該請求。
-//401	Unauthorized	當前的請求需要使用者驗證。
-//500	Internal Server Error	通用錯誤訊息，伺服器遇到了一個未曾預料的狀況，導致了它無法完成對請求的處理。
-// response interceptor
+
 service.interceptors.response.use(
   response => {
     tryHideLoading()
@@ -125,7 +114,6 @@ service.interceptors.response.use(
   }
 )
 
-// export default service
 export default function(method,url,data = null,isHeader = false) {
     console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data)+' || isHeader:'+isHeader)
     method = method.toLowerCase()

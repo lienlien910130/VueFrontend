@@ -21,6 +21,11 @@
             v-on:handleNodeClick="handleNodeClick"/> 
           </div>
         </el-col>
+        <el-col :xs="24" :sm="24" :md="8" :lg="8">
+          <div class="chart-wrapper">
+            設備即時訊息
+          </div>
+        </el-col>
         <!-- <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
             <ListDiv

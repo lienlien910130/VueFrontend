@@ -1,5 +1,4 @@
 import { notfound,mercuryfireRoutes, constantRoutes  } from '@/router'
-import idb from '@/utils/indexedDB'
 import store from '@/store'
 import router from '@/router'
 import { resetRouter } from '@/router'
