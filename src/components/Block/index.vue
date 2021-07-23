@@ -5,6 +5,11 @@
             <el-col 
                 v-if="isTable == true"
                 :xs="24" :sm="24" :md="24" :lg="24">
+                <!-- <div class="searchdiv">
+                    <el-col :xs="24" :sm="3" :md="3" :lg="3" class="text">
+                        <span>查詢條件</span>
+                    </el-col>
+                </div> -->
                     <el-input 
                     v-if="hasSearch == true"
                     placeholder="請輸入內容，多條件搜尋請依左側'勾選條件'依序輸入值並以'逗號'區隔" 
@@ -297,11 +302,13 @@
                     class="table"
                     :key="itemkey"
                     :data="blockData"
+                    row-key="id"
                     border
                     highlight-current-row
                     style="width: 100%;margin-top:10px"
                     empty-text="暫無資料"
                     @sort-change="sortChange"
+                    @selection-change="handleSelectionChange"
                     :header-cell-class-name="handleHeaderCellClass"
                     :max-height="height"
                     v-loading="pictLoading"
@@ -309,6 +316,12 @@
                     element-loading-text = "資料載入中，請稍後..."
                     element-loading-spinner = "el-icon-loading"
                     >
+                        <el-table-column
+                        reserve-selection
+                        type="selection"
+                        width="40">
+                        </el-table-column>
+
                         <el-table-column
                             fixed
                             type="index">
@@ -323,9 +336,9 @@
                             header-align="center"
                             :column-key="item.prop"
                             sortable="custom"
-                            :filters="getFilterItems(item.prop)" 
-                            :filter-method="filterHandler"
                         >
+                        <!-- :filters="getFilterItems(item.prop)" 
+                            :filter-method="filterHandler" -->
                                 <template slot-scope="scope">
 
                                         <span v-if="item.format== 'YYYY-MM-DD' || 
@@ -366,15 +379,6 @@
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ scope.row.getLinkType().getSelectName()  }}
                                         </span>
-
-                                        <!-- <el-input v-else-if="item.format == 'address' "
-                                            v-model="scope.row[scope.column.property]"
-                                            :maxlength="item.maxlength"
-                                            show-word-limit
-                                            @change="checkUpdate(scope.row)"
-                                            @input="scope.row[scope.column.property] = 
-                                            scope.row[scope.column.property].replace(/[^\d]/g,'').replace(/\s*/g,'')">
-                                        </el-input> -->
 
                                         <span v-else-if="item.format == 'deviceSelect' || item.format == 'addressdeviceSelect'
                                         || item.format == 'assignDeviceSelect' " 
@@ -437,6 +441,7 @@
                             fixed="right"
                             label="操作"
                             v-if="title !== 'address'"
+                            width="150px"
                             >
                                 <template slot="header">
                                     <!-- 建立維保大項&檔案上傳&檔案下載&新增資料 -->
@@ -467,6 +472,21 @@
                                                 <i 
                                                 :class="button.icon" 
                                                 @click="handleClickOption(button.status,scope.row)" 
+                                                style="cursor: pointer;font-size:25px;float:right"
+                                                >
+                                                </i>
+                                            </el-tooltip>
+                                        </span>
+                                        <span v-if="title == 'equipment' ">
+                                            <el-tooltip
+                                            v-if="
+                                            scope.row.getLinkType().getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' ||
+                                            scope.row.getLinkType().getFullType() == 'nDeviceTypeList.PLC.PLC_ProgrammableLogicController' "
+                                            class="item" effect="dark" content="點位" 
+                                            placement="top">
+                                                <i 
+                                                class="el-icon-setting" 
+                                                @click="handleClickOption('address',scope.row)" 
                                                 style="cursor: pointer;font-size:25px;float:right"
                                                 >
                                                 </i>
@@ -506,7 +526,7 @@
             </div>
         </div>
     </el-row>
-    <el-row v-if="total > 0 && isTable == true">
+    <el-row v-if=" isTable == true && title !== 'mainMenu' && title !== 'accessAuthority'">
         <div  class="pagination-container">
             <el-pagination
                 background
@@ -520,7 +540,7 @@
             ></el-pagination>
         </div>
     </el-row>
-    <el-row v-else-if="total > 0 && isTable == false"
+    <el-row v-else-if="isTable == false"
         style="margin-left:-10px">
         <div  class="pagination-container">
             <el-pagination
@@ -538,15 +558,9 @@
 </template>
 
 <script>
-import computedmixin  from '@/mixin/computedmixin'
-import DeviceType from '@/object/deviceType'
-import Device from '@/object/device'
-import User from '@/object/user'
-import Contactunit from '@/object/contactunit'
-import UsageOfFloor from '@/object/usageOfFloor'
-import Role from '@/object/role'
-import Building from '@/object/building'
-import InspectionLacks from '@/object/inspectionLacks'
+
+import { computedmixin } from '@/mixin/index'
+import { Device, DeviceType, Contactunit, User, UsageOfFloor, Role, Building, InspectionLacks } from '@/object/index'
 import moment from 'moment'
 
 export default {
@@ -569,9 +583,12 @@ export default {
             type: Array,
             default: function() {
                 return [
-                { name:'新增資料',icon:'el-icon-circle-plus-outline',status:'empty'},
-                { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
-                { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}]
+                    { name:'多筆刪除',icon:'el-icon-delete',status:'deleteMany'},
+                    { name:'多筆更新',icon:'el-icon-edit',status:'updateMany'},
+                    { name:'新增資料',icon:'el-icon-circle-plus-outline',status:'empty'},
+                    { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
+                    { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}
+                ]
             }
         },
         isHasButtons: {
@@ -753,6 +770,9 @@ export default {
             inputSelect:null,
             inputSearch:'',
             pictLoading:false,
+            //更新多筆&刪除多筆使用
+            selectArray:[],
+            //電腦版搜尋
             activeNames: ['1'],
             filterSearch:[],
             sortValue:'',
@@ -848,8 +868,8 @@ export default {
                     changetext.forEach(obj=>{
                         newDatas.push(
                             h('p',{ style: 'width:100%' },[
-                                h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },obj.label),
-                                h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },obj.value)
+                                h('span',{ style: 'width:40%;display:inline-block;vertical-align:top;word-break:break-all' },obj.label),
+                                h('span',{ style: 'width:60%;display:inline-block;vertical-align:top;word-break:break-all' },obj.value)
                             ])
                         )
                     })
@@ -879,7 +899,7 @@ export default {
                                     }
                                     break;
                                 case 'deviceTypeSelect': //設備種類>設備管理-設備種類
-                                    this.$router.push({ name: 'deviceTypesManagement', params: { target: data }})
+                                    this.$router.push({ name: 'deviceTypesManagement', params: { target: data, type:'open' }})
                                     break;
                                 case 'deviceSelect': //設備>設備管理-設備清單
                                     this.$router.push({ name: 'devicesManagement', params: { target: data }})
@@ -894,10 +914,10 @@ export default {
                                     this.handleClickOption('openuser',data)
                                     break;
                                 case 'roleSelect': //角色資料>權限設定-角色管理
-                                    this.$router.push({ name: 'roleSetting', params: { target: data }})
+                                    this.$router.push({ name: 'roleSetting', params: { target: data, type:'open' }})
                                     break;
                                 case 'inspectionSelect': //缺失內容>檢修申報
-                                    this.$router.push({ name: 'ReportInspection', params: { target: data }})
+                                    this.$router.push({ name: 'ReportInspection', params: { target: data, type:'open' }})
                                     break;
                                 case 'buildingSelect':
                                     break;
@@ -949,7 +969,27 @@ export default {
                     }).catch(() => {
                     })
                 }
-            } else {
+            } else if(status === 'updateMany'){
+                if(this.selectArray.length == 0){
+                    this.$message.error('請勾選要更新的資料列')
+                }else{
+                    this.$emit('handleBlock', this.title , status , this.selectArray)
+                }
+            } else if(status === 'deleteMany'){
+                if(this.selectArray.length == 0){
+                    this.$message.error('請勾選要刪除的資料列')
+                }else{
+                    this.$confirm('是否確定刪除所勾選的資料?', '提示', {
+                    confirmButtonText: '確定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                    }).then(() => {
+                        this.$emit('handleBlock', this.title , status , this.selectArray)
+                    }).catch(() => {
+                    })
+                }
+            }else {
                 if(this.title == 'maintain'){
                     this.$emit('handleDialog', this.title , status , row)
                 }else{
@@ -958,23 +998,23 @@ export default {
             } 
         },
         //篩選
-        filterHandler(value, row, column) {
-            const property = column['property']
-            if(property.indexOf('link') !== -1){
-                return row[property].findIndex(item => item.id == value) !== -1 
-            }else if(property == 'rangeDate'){
-                return row['checkStartDate'] == value
-            }else if(value == null){
-                return row[property] === value || row[property] === ''
-            }else{
-                return row[property] === value
-            }
-        },
-        getFilterItems(prop){
-            var data = this.selectSetting.filter(item=>{ 
-                return item.value == prop })
-            return data.length !== 0 ? data[0].children : null
-        },
+        // filterHandler(value, row, column) {
+        //     const property = column['property']
+        //     if(property.indexOf('link') !== -1){
+        //         return row[property].findIndex(item => item.id == value) !== -1 
+        //     }else if(property == 'rangeDate'){
+        //         return row['checkStartDate'] == value
+        //     }else if(value == null){
+        //         return row[property] === value || row[property] === ''
+        //     }else{
+        //         return row[property] === value
+        //     }
+        // },
+        // getFilterItems(prop){
+        //     var data = this.selectSetting.filter(item=>{ 
+        //         return item.value == prop })
+        //     return data.length !== 0 ? data[0].children : null
+        // },
         //排序
         handleHeaderCellClass({row, column, rowIndex, columnIndex}){
             this.orderArray.forEach(element => {
@@ -1084,6 +1124,10 @@ export default {
                 this.$emit('clickPagination')
             }
         },
+        //選取列
+        handleSelectionChange(val){
+            this.selectArray = val
+        },
         // 改變翻頁組件中每頁數據總數
         handleSizeChange(val) {
             //this.pictLoading = true
@@ -1103,9 +1147,7 @@ export default {
             this.pictLoading = false
         },
         change(){
-            //this.pictLoading = true
             this.$emit('changeTable',!this.isTable)
-            
         }
     }
 }
@@ -1212,11 +1254,20 @@ export default {
   margin-top: 20px;
   margin-bottom: 10px;
 }
-
 .icon{
     font-size:20px;
     padding:0px 8px;
     cursor: pointer;
 }
+.searchdiv{
+    height: 100px;
+    line-height: 100px;
+    vertical-align: middle;
+    background-color: rgb(197,197,197);
+    .text{
+        text-align: center;
+        font-size: 24px;
+    }
 
+}
 </style>

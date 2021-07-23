@@ -2,7 +2,7 @@
 
 import api from '@/api'
 import store from '@/store'
-
+import { Message } from 'element-ui';
 
 /**
  * Parse the time to string

@@ -1,7 +1,7 @@
 <template>
         <div class="editor-container">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                <div class="block-wrapper">
                     <Block 
                         ref="block"
                         :list-query-params.sync="listQueryParams"
@@ -9,29 +9,51 @@
                         v-on="blockEvent"></Block>
                 </div>
             </el-col>
-            <Dialog 
+            <!-- <Dialog 
                 v-bind="dialogAttrs" 
                 :accessAuthoritiesData="treeData"
                 :accessAuthorities="roleAccessAuthority"
-                v-on:handleDialog="handleDialog"></Dialog>
+                v-on:handleDialog="handleDialog"></Dialog> -->
+            <DialogForm 
+            ref="dialogform"
+            v-if="innerVisible === true"
+            v-bind="dialogAttrs"
+            v-on:handleDialog="handleDialog"></DialogForm>
+
+            <DialogExcel 
+            ref="dialogexcel"
+            v-if="excelVisible === true"
+            v-bind="excelAttrs"
+            v-on:handleDialog="handleDialog"></DialogExcel>
+
+            <DialogAuthority 
+            ref="dialogauthority"
+            v-if="authorityVisible === true"
+            v-bind="authorityAttrs"
+            v-on:handleDialog="handleDialog"></DialogAuthority>
         </div>
 </template>
 <script>
-import blockmixin from '@/mixin/blockmixin'
-import dialogmixin from '@/mixin/dialogmixin'
-import sharemixin  from '@/mixin/sharemixin'
-import Account from '@/object/account'
-import Menu from '@/object/menu'
-import Role from '@/object/role'
+import { blockmixin, dialogmixin, sharemixin, excelmixin } from '@/mixin/index'
+import { Menu, Role, Account } from '@/object/index'
 
 export default {
-    mixins:[sharemixin,blockmixin,dialogmixin],
+    mixins:[sharemixin,blockmixin,dialogmixin,excelmixin],
     computed: {
         blockEvent(){
             return{
                 handleBlock:this.handleBlock,
                 clickPagination:this.getAllAccount,
                 resetlistQueryParams:this.resetlistQueryParams
+            }
+        },
+        authorityAttrs(){
+            return{
+                visible:this.authorityVisible,
+                isHasButtons:false,
+                title:this.title,
+                accessAuthoritiesData:this.treeData,
+                accessAuthorities:this.roleAccessAuthority
             }
         }
     },
@@ -47,7 +69,8 @@ export default {
         return{
             roleAccessAuthority:[],
             treeData:[],
-            accessAuthority:[]
+            accessAuthority:[],
+            authorityVisible:false
         }
     },
     methods:{
@@ -86,8 +109,6 @@ export default {
             var data = await Account.getSearchPage(this.listQueryParams)
             this.blockData = data.result
             this.listQueryParams.total = data.totalPageCount
-            this.$refs.block.resetpictLoading()
-            await this.getFilterItems()
         },
         async handleBlock(title,index, content){
             console.log(title ,index,JSON.stringify(content))
@@ -108,6 +129,8 @@ export default {
                 if(isOk){
                     this.$message('刪除成功')
                     await this.resetlistQueryParams()
+                }else{
+                    this.$message.error('系統錯誤')
                 }
             }else if(index === 'empty'){
                 this.dialogData.push( Account.empty() )
@@ -131,17 +154,14 @@ export default {
                 })
                 this.roleAccessAuthority = concatarray
                 this.treeData = this.menu.map(item=>{ return new Menu(item)})
-                this.dialogButtonsName = [
-                { name:'取消',type:'info',status:'cancel'}]
-                this.innerVisible = true
-                this.dialogStatus = 'authority'
+                this.authorityVisible = true
             }else if(index === 'exportExcel'){
                 this.exportExcelData = this.blockData
-                this.innerVisible = true
-                this.dialogStatus = 'exportExcel'
+                this.excelVisible = true
+                this.excelType = 'exportExcel'
             }else if(index === 'uploadExcel'){
-                this.innerVisible = true
-                this.dialogStatus = 'uploadExcel'
+                this.excelVisible = true
+                this.excelType = 'uploadExcel'
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
@@ -153,6 +173,7 @@ export default {
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     await this.getAllAccount()
                     this.innerVisible = false
+                    this.excelVisible = false
                 }else{
                     this.$message.error('該帳號已存在，請重新輸入')
                 }
@@ -160,6 +181,8 @@ export default {
                 this.$store.dispatch('building/setroles',await Role.get())
             }else{
                 this.innerVisible = false
+                this.excelVisible = false
+                this.authorityVisible = false
             }
         },
         async changeTable(value){
@@ -168,10 +191,3 @@ export default {
     }
 }
 </script>
-<style lang="scss" scoped>
-.block-wrapper {
-    background: #fff;
-    padding: 15px 15px;
-    height: 720px;
-}
-</style>

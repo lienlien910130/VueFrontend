@@ -1,7 +1,7 @@
 <template>
         <div class="editor-container">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                <div class="block-wrapper">
                     <Block 
                         ref="block"
                         :list-query-params.sync="listQueryParams"
@@ -9,30 +9,47 @@
                         v-on="blockEvent"></Block>
                 </div>
             </el-col>
-            <Dialog 
+            <!-- <Dialog 
                 ref="dialog"
                 v-bind="dialogAttrs" 
                 :accessAuthoritiesData="treeData"
                 :accessAuthorities="roleAccessAuthority"
-                v-on:handleDialog="handleDialog"></Dialog>
+                v-on:handleDialog="handleDialog"></Dialog> -->
+            
+            <DialogForm 
+            ref="dialogform"
+            v-if="innerVisible === true"
+            v-bind="dialogAttrs"
+            v-on:handleDialog="handleDialog"></DialogForm>
+
+            <DialogExcel 
+            ref="dialogexcel"
+            v-if="excelVisible === true"
+            v-bind="excelAttrs"
+            v-on:handleDialog="handleDialog"></DialogExcel>
+
+            <DialogAuthority 
+            ref="dialogauthority"
+            v-if="authorityVisible === true"
+            v-bind="authorityAttrs"
+            v-on:handleDialog="handleDialog"></DialogAuthority>
+
         </div>
 </template>
 <script>
-import blockmixin from '@/mixin/blockmixin'
-import dialogmixin from '@/mixin/dialogmixin'
-import sharemixin  from '@/mixin/sharemixin'
-import Role from '@/object/role'
-import Menu from '@/object/menu'
+import { blockmixin, dialogmixin, sharemixin, excelmixin } from '@/mixin/index'
+import { Menu, Role } from '@/object/index'
 
 export default {
-    mixins:[sharemixin,blockmixin,dialogmixin],
+    mixins:[sharemixin,blockmixin,dialogmixin,excelmixin],
     data(){
         return{
             roleAccessAuthority:[],
             originalRoleAccessAuthority:[],
             selectRoleId:'',
             accessAuthority:[],
-            treeData:[]
+            treeData:[],
+            authorityVisible:false
         }
     },
     computed: {
@@ -41,6 +58,17 @@ export default {
                 handleBlock:this.handleBlock,
                 clickPagination:this.getAllRole,
                 resetlistQueryParams:this.resetlistQueryParams
+            }
+        },
+        authorityAttrs(){
+            return{
+                visible:this.authorityVisible,
+                buttonsName: [
+                { name:'儲存',type:'primary',status:'authoritycreate'},
+                { name:'取消',type:'info',status:'cancel'}],
+                title:this.title,
+                accessAuthoritiesData:this.treeData,
+                accessAuthorities:this.roleAccessAuthority
             }
         }
     },
@@ -77,8 +105,6 @@ export default {
             var data = await Role.getSearchPage(this.listQueryParams)
             this.blockData = data.result
             this.listQueryParams.total = data.totalPageCount
-            this.$refs.block.resetpictLoading()
-            await this.getFilterItems()
         },
         async setMenuRoleAccess(){
             this.accessAuthority = []
@@ -120,6 +146,8 @@ export default {
                     this.$store.dispatch('permission/setmenu',await  Menu.get())
                     this.$store.dispatch('building/setroles',await Role.get())
                     await this.resetlistQueryParams()
+                }else{
+                    this.$message.error('系統錯誤')
                 }
             }else if(index === 'empty'){
                 this.dialogData.push( Role.empty() )
@@ -133,18 +161,14 @@ export default {
                 this.roleAccessAuthority = await content.getAccess('role') //取得角色所有權限的id
                 this.originalRoleAccessAuthority =  JSON.parse(JSON.stringify(this.roleAccessAuthority))
                 this.treeData = this.menu.map(item=>{ return new Menu(item)})
-                this.dialogButtonsName = [
-                { name:'儲存',type:'primary',status:'authoritycreate'},
-                { name:'取消',type:'info',status:'cancel'}]
-                this.innerVisible = true
-                this.dialogStatus = 'authority'
+                this.authorityVisible = true
             }else if(index === 'exportExcel'){
                 this.exportExcelData = this.blockData
-                this.innerVisible = true
-                this.dialogStatus = 'exportExcel'
+                this.excelVisible = true
+                this.excelType = 'exportExcel'
             }else if(index === 'uploadExcel'){
-                this.innerVisible = true
-                this.dialogStatus = 'uploadExcel'
+                this.excelVisible = true
+                this.excelType = 'uploadExcel'
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
@@ -158,8 +182,12 @@ export default {
                     this.$store.dispatch('building/setroles',await Role.get())
                     await this.getAllRole()
                     if(index == 'create'){
-                        this.$refs.dialog.insertSuccess('roleSelect')
+                        this.$refs.dialogform.insertSuccess('roleSelect')
                     }
+                    this.innerVisible = false
+                    this.excelVisible = false
+                }else{
+                    this.$message.error('角色名稱不可重複')
                 }
             }else if(index === 'authoritycreate'){
                 var array = this.originalRoleAccessAuthority
@@ -223,28 +251,27 @@ export default {
                     this.$message('更新成功')
                     this.$store.dispatch('permission/setmenu',await Menu.get())
                     await this.getAllRole()
+                    this.authorityVisible = false
+                }else{
+                    this.$message.error('系統錯誤')
                 }
+            }else{
+                this.innerVisible = false
+                this.excelVisible = false
+                this.authorityVisible = false
             }
-            this.innerVisible = false
+            
         },
         async changeTable(value){
             this.isTable = value
-            if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+            if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0 && this.$route.params.type == 'open'){
                 if(typeof this.$route.params.target == 'object'){
                     await this.handleBlock('roles','open',this.$route.params.target)
                 }
-            }else if(this.$route.query.type !== undefined && 
-            this.$route.query.type == 'role'){
+            }else if(this.$route.query.type !== undefined && this.$route.query.type == 'role'){
                 await this.handleBlock('role','empty','')
             }
         }
     }
 }
 </script>
-<style lang="scss" scoped>
-.block-wrapper {
-    background: #fff;
-    padding: 15px 15px;
-    height: 720px;
-}
-</style>

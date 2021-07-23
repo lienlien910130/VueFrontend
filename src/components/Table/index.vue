@@ -111,7 +111,7 @@
             </el-table-column>
     </el-table>
 
-        <div v-if="total > 0 " class="pagination-container">
+    <div v-if="total > 0 " class="pagination-container">
             <el-pagination
               background
               layout="total, sizes, prev, pager, next, jumper"
@@ -122,7 +122,7 @@
               @current-change="handleCurrentChange"
               @size-change="handleSizeChange"
             ></el-pagination>
-        </div>
+    </div>
   </div>
 </template>
 

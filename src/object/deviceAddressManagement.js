@@ -14,9 +14,8 @@ class DeviceAddressManagement extends Parent {
         this.number = number
         this.status = status
         this.systemUsed = systemUsed
-        this.protocolMode = protocolMode
+        this.protocolMode = parseInt(protocolMode)
         this.linkDevices = devices
-        return this
     }
     clone(data){
         return new DeviceAddressManagement(data)
@@ -58,87 +57,93 @@ class DeviceAddressManagement extends Parent {
             status:'',
             systemUsed:false,
             protocolMode:1,
-            linkDevices:[]
-        })
-    }
-    static manyEmpty(){
-        return {
-            id:'',
             linkDevices:[],
-            addressStart:'001',
-            addressEnd:'250',
-            numberStart:'001',
-            numberEnd:'250'
-        }
+            linkAssignDevices:[]
+        })
     }
     static getManyEmptyTableConfig(){
         return [
             { 
-                label:'設備' , 
-                prop:'linkDevices',
+                label:'火警總機/PLC設備' , 
+                prop:'linkAssignDevices',
                 format:'assignDeviceSelect', 
-                mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
-                isHidden:false,isSearch:false,
-                isAssociate:true,isEdit:true,isUpload:false,isExport:false,isBlock:true
+                mandatory:true,message:'請選擇火警總機/PLC設備',type:'array',typemessage:'',
+                isHidden:true,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
             },
-            { 
-                label:'位址編號起始' , 
-                prop:'addressStart',
-                mandatory:true,message:'請輸入位址編號起始',
-                isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
+            {
+                label: '網路編號',
+                prop: 'internet',format:'internetNumber',
+                mandatory:true, message:'請輸入網路編號',isHidden:false,maxlength:'5',
+                isSearch:true,placeholder:'請輸入網路編號',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            { 
-                label:'位址編號結束' , 
-                prop:'addressEnd',
-                mandatory:true,message:'請輸入位址編號結束',
-                isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
+            {
+               label: '系統編號',
+               prop: 'system',
+               mandatory:true, message:'請輸入系統編號',isHidden:false,maxlength:'11',
+               pattern:/\S[^a-zA-Z]\d*-\S[^a-zA-Z]\d*$/g,errorMsg:'請輸入起始值-結束值',isPattern:true,
+               isSearch:true,placeholder:'請輸入系統編號',
+               isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            { 
-                label:'編號起始' , 
-                prop:'numberStart',
-                mandatory:true,message:'請輸入編號起始',
-                isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
+            {
+                label: '位址編號',
+                prop: 'address',
+                mandatory:true, message:'請輸入位址編號',isHidden:false,maxlength:'11',
+                pattern:/\S[^a-zA-Z]\d*-\S[^a-zA-Z]\d*$/g,errorMsg:'請輸入起始值-結束值',isPattern:true,
+                isSearch:true,placeholder:'請輸入位址編號',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            { 
-                label:'編號結束' , 
-                prop:'numberEnd',
-                mandatory:true,message:'請輸入編號結束',
-                isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
+            {
+                label: '編號',
+                prop: 'number',
+                mandatory:true, message:'請輸入編號',isHidden:false,maxlength:'11',
+                pattern:/\S[^a-zA-Z]\d*-\S[^a-zA-Z]\d*$/g,errorMsg:'請輸入起始值-結束值',isPattern:true,
+                isSearch:true,placeholder:'請輸入編號',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             }
         ]
     }
     static getTableConfig(){
         return [
+            { 
+                label:'火警總機/PLC設備' , 
+                prop:'linkAssignDevices',
+                format:'assignDeviceSelect', 
+                mandatory:false,message:'請選擇火警總機/PLC設備',type:'array',typemessage:'',
+                isHidden:true,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
+            },
              {
                  label: '網路編號',
-                 prop: 'internet',
+                 prop: 'internet',format:'internetNumber',
                  mandatory:true, message:'請輸入網路編號',isHidden:false,maxlength:'5',
-                 isSearch:true,placeholder:'請輸入名稱',
+                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
+                 isSearch:true,placeholder:'請輸入網路編號',
                  isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
              },
              {
                 label: '系統編號',
                 prop: 'system',
                 mandatory:true, message:'請輸入系統編號',isHidden:false,maxlength:'5',
-                isSearch:true,placeholder:'請輸入名稱',
+                pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
+                isSearch:true,placeholder:'請輸入系統編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
                 label: '位址編號',
                 prop: 'address',
                 mandatory:true, message:'請輸入位址編號',isHidden:false,maxlength:'5',
-                isSearch:true,placeholder:'請輸入名稱',
+                pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
+                isSearch:true,placeholder:'請輸入位址編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
                 label: '編號',
                 prop: 'number',
                 mandatory:true, message:'請輸入編號',isHidden:false,maxlength:'5',
-                isSearch:true,placeholder:'請輸入名稱',
+                pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
+                isSearch:true,placeholder:'請輸入編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
@@ -172,10 +177,10 @@ class DeviceAddressManagement extends Parent {
             }
          ]
     }
-    static async get (){
-        var data = await api.device.apiGetDevicesAddress().then(response => {
-            var array = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceAddressManagement(item) })
-            return array
+    static async getOfID (deviceAddressId){
+        var data = await api.device.apiGetDevicesAddress(deviceAddressId).then(response => {
+            var array = response.result.map(item=>{ return new DeviceAddressManagement(item) })
+            return array[0]
         }).catch(error=>{
             return []
         })
@@ -183,6 +188,7 @@ class DeviceAddressManagement extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.device.apiGetDevicesAddressSearchPages(data).then(response => {
+            console.log(response)
             response.result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new DeviceAddressManagement(item)})
             return response
@@ -199,6 +205,17 @@ class DeviceAddressManagement extends Parent {
         })
         return data
     }
+    static async batchInsert(data,deviceId = null){
+        var data = await api.device.apiPostDevicesAddressesBatchInsert(data,deviceId).then(response => {
+            console.log('batchInsertcount',response)
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
 }
+
+
 
 export default DeviceAddressManagement

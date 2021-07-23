@@ -16,7 +16,6 @@ class Contactunit extends Parent {
         this.note = note 
         this.collaborate = collaborate
         this.hide = hide
-        return this
     }
     clone(data){
         return new Contactunit(data)

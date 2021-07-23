@@ -2,7 +2,7 @@
     <div class="editor-container">
         <el-row  :gutter="32">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                <div class="block-wrapper" >
                     <Block 
                     ref="block"
                     :list-query-params.sync="listQueryParams"
@@ -11,23 +11,33 @@
                 </div>
             </el-col>
         </el-row>
-        <Dialog 
+        <!-- <Dialog 
         ref="dialog"
         v-if="innerVisible === true"
         v-bind="dialogAttrs" 
-        v-on:handleDialog="handleDialog"></Dialog>
+        v-on:handleDialog="handleDialog"></Dialog> -->
+
+        <DialogForm 
+        ref="dialogform"
+        v-if="innerVisible === true"
+        v-bind="dialogAttrs"
+        v-on:handleDialog="handleDialog"></DialogForm>
+
+        <DialogExcel 
+        ref="dialogexcel"
+        v-if="excelVisible === true"
+        v-bind="excelAttrs"
+        v-on:handleDialog="handleDialog"></DialogExcel>
+
     </div>
 </template>
 <script>
-import DeviceAddressManagement from '@/object/deviceAddressManagement'
-import Device from '@/object/device'
-import sharemixin  from '@/mixin/sharemixin'
-import blockmixin  from '@/mixin/blockmixin'
-import dialogmixin from '@/mixin/dialogmixin'
+import { blockmixin, dialogmixin, sharemixin, excelmixin } from '@/mixin/index'
+import { Device, DeviceAddressManagement } from '@/object/index'
 
 export default {
     name:'DeviceAddressManagement',
-    mixins:[sharemixin,blockmixin,dialogmixin],
+    mixins:[sharemixin,blockmixin,dialogmixin,excelmixin],
     computed:{
         blockEvent(){
             return{
@@ -41,8 +51,10 @@ export default {
         async init(){
             this.title = 'deviceAddressManagement'
             this.headerButtonsName = [
+                { name:'多筆刪除',icon:'el-icon-delete',status:'deleteMany'},
+                { name:'多筆更新',icon:'el-icon-edit',status:'updateMany'},
                 { name:'多筆資料新增',icon:'el-icon-document',status:'manyempty'},
-                { name:'單筆資料新增',icon:'el-icon-circle-plus-outline',status:'empty'},
+                { name:'單筆新增資料',icon:'el-icon-circle-plus-outline',status:'empty'},
                 { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
                 { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}
             ]
@@ -65,10 +77,11 @@ export default {
         async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
             this.dialogData = []
-            this.dialogConfig = this.tableConfig
+            this.dialogConfig = DeviceAddressManagement.getTableConfig()
             this.dialogTitle = this.title
             this.dialogButtonsName = []
             if(index === 'open'){
+                this.dialogConfig[0].isEdit = false
                 this.dialogStatus = 'update'
                 if(content.length !== undefined){ //代表不是外傳近來的
                     content.forEach(item=>{
@@ -86,6 +99,8 @@ export default {
                 if(isDelete){
                     this.$message('刪除成功')
                     await this.resetlistQueryParams()
+                }else{
+                    this.$message.error('系統錯誤') 
                 }
             }else if(index === 'empty'){
                 this.dialogData.push( DeviceAddressManagement.empty() )
@@ -96,16 +111,16 @@ export default {
                 this.dialogStatus = 'create'
             }else if(index === 'exportExcel'){
                 this.exportExcelData = this.blockData
-                this.innerVisible = true
-                this.dialogStatus = 'exportExcel'
+                this.excelVisible = true
+                this.excelType = 'exportExcel'
             }else if(index === 'uploadExcel'){
-                this.innerVisible = true
-                this.dialogStatus = 'uploadExcel'
+                this.excelVisible = true
+                this.excelType = 'uploadExcel'
             }else if(index === 'manyempty'){
                 this.dialogConfig = DeviceAddressManagement.getManyEmptyTableConfig()
-                this.dialogData.push( DeviceAddressManagement.manyEmpty() )
+                this.dialogData.push( DeviceAddressManagement.empty() )
                 this.dialogButtonsName = [
-                { name:'儲存',type:'primary',status:'create'},
+                { name:'儲存',type:'primary',status:'createmany'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'create'
@@ -113,14 +128,48 @@ export default {
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,JSON.stringify(content))
-            if(index !== 'cancel' && index !== 'selectData'){
-                var isOk = index === 'update' ? await content.update() : 
-                index === 'create' ? await content.create() : 
-                await DeviceAddressManagement.postMany(content)
+            if(index == 'createmany' || index == 'create' ){
+                var deviceId = title == 'updateDevice' ? content.linkAssignDevices[0].getID() : null
+                delete content.linkAssignDevices
+                if(index == 'createmany'){
+                    delete content.linkDevices
+                    delete content.systemUsed
+                    delete content.protocolMode
+                    delete content.status
+                    delete content.status
+                }
+                console.log('deviceId',deviceId)
+                var isOk = index === 'create' ? await content.create() : 
+                    await DeviceAddressManagement.batchInsert(content,deviceId)
                 if(isOk){
-                    index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+                    this.$message('新增成功')
                     await this.getBuildingDeviceAddressManagement()
                     this.innerVisible = false
+                }else{
+                    this.$message.error('系統錯誤')
+                }
+            }else if(index == 'update'){
+                delete content.linkAssignDevices
+                var isOk = await content.update() 
+                if(isOk){
+                    this.$message('更新成功') 
+                    await this.getBuildingDeviceAddressManagement()
+                    this.innerVisible = false
+                    if(title == 'openDialog'){
+                        var data = await DeviceAddressManagement.getOfID(content.getID())
+                        await this.handleBlock(this.title,'open',data)
+                    }
+                }else{
+                    this.$message.error('系統錯誤')
+                }
+            }else if(index == 'uploadExcelSave'){
+                var isOk = await DeviceAddressManagement.postMany(content)
+                if(isOk){
+                    this.$message('新增成功')
+                    await this.getBuildingDeviceAddressManagement()
+                    this.excelVisible = false
+                }else{
+                    this.$message.error('系統錯誤')
                 }
             }else if(index == 'selectData'){
                 switch (content) {
@@ -130,6 +179,7 @@ export default {
                 }
             }else{
                 this.innerVisible = false
+                this.excelVisible = false
             }
         },
         async changeTable(value){
@@ -138,10 +188,3 @@ export default {
     }
 }
 </script>
-<style lang="scss" scoped>
-.block-wrapper {
-    background: #fff;
-    padding: 15px 15px;
-    height: 720px;
-}
-</style>

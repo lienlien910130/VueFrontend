@@ -11,7 +11,6 @@ class PublicSafeLack extends Parent {
         this.accordLaws = accordLaws
         this.improvePlan = improvePlan
         this.status = status
-        return this
     }
     clone(data){
         return new PublicSafeLack(data)

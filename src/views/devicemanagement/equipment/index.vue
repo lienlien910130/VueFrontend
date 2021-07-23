@@ -11,29 +11,41 @@
                 </div>
             </el-col>
         </el-row>
-        <Dialog 
+        <!-- <Dialog 
         ref="dialog"
         v-if="innerVisible === true"
         v-bind="dialogAttrs" 
         :formtableData="formtableData"
         :formtableconfig="formtableconfig"
         :listQueryParams="maintainlistQueryParams"
-        v-on:handleDialog="handleDialog"></Dialog>
+        v-on:handleDialog="handleDialog"></Dialog> -->
+
+        <DialogForm 
+        ref="dialogform"
+        v-if="innerVisible === true"
+        v-bind="dialogAttrs"
+        v-on:handleDialog="handleDialog"></DialogForm>
+
+        <DialogTable 
+        ref="dialogtable"
+        v-if="tableVisible === true"
+        v-bind="tableAttrs"
+        v-on="tableEvent"></DialogTable>
+        
+        <DialogExcel 
+        ref="dialogexcel"
+        v-if="excelVisible === true"
+        v-bind="excelAttrs"
+        v-on:handleDialog="handleDialog"></DialogExcel>
     </div>
 </template>
 <script>
-import blockmixin from '@/mixin/blockmixin'
-import dialogmixin from '@/mixin/dialogmixin'
-import sharemixin  from '@/mixin/sharemixin'
-import Device  from '@/object/device'
-import DeviceType  from '@/object/deviceType'
-import Contactunit from '@/object/contactunit'
-import Setting from '@/object/setting'
-import { MaintainManagement } from '@/object/maintainManagement'
+import { blockmixin, dialogmixin, sharemixin, tablemixin, excelmixin } from '@/mixin/index'
+import { Device, DeviceType, Contactunit, Setting, DeviceAddressManagement, MaintainManagement } from '@/object/index'
 
 export default {
     name:'Device',
-    mixins:[sharemixin,blockmixin,dialogmixin],
+    mixins:[sharemixin,blockmixin,dialogmixin,tablemixin,excelmixin],
     computed:{
         blockEvent(){
             return{
@@ -41,18 +53,17 @@ export default {
                 clickPagination:this.getBuildingDevicesManage,
                 resetlistQueryParams:this.resetlistQueryParams
             }
+        },
+        tableEvent(){
+            return{
+                handleTableClick:this.handleTableClick,
+                clickPagination:this.handleTableClick
+            }
         }
     },
     data(){
         return{
-            selectdevice:null,
-            formtableData:[],
-            formtableconfig: MaintainManagement.getDeviceOfMaintainTableConfig(),
-            maintainlistQueryParams:{
-                pageIndex: 1,
-                pageSize: 10,
-                total:0
-            }
+            selectdevice:null
         }
     },
     methods: {
@@ -64,7 +75,7 @@ export default {
                 { name:'維保紀錄',icon:'el-icon-document',status:'openmaintain'}
             ]
             this.tableConfig = Device.getTableConfig()
-            this.dialogSelect = await DeviceType.get('devicesManagement')
+            this.dialogSelect = await DeviceType.get()
             await this.getBuildingDevicesManage()
         },
         async resetlistQueryParams(){
@@ -75,13 +86,17 @@ export default {
             }
             await this.getBuildingDevicesManage()
         },
-        async resetmaintainlistQueryParams(){
-            this.maintainlistQueryParams = {
+        async resettablelistQueryParams(isMaintain){
+            this.tablelistQueryParams = {
                 pageIndex: 1,
                 pageSize: 10,
                 total:0
             }
-            await this.getDevicesManageMaintain()
+            if(isMaintain){
+                await this.getDevicesManageMaintain()
+            }else{
+                await this.getDevicesAddress()
+            }
         },
         async getBuildingDevicesManage(){
             var data = await Device.getSearchPage(this.listQueryParams)
@@ -90,9 +105,27 @@ export default {
         },
         async getDevicesManageMaintain(){
             var data =  await this.selectdevice.getMaintain(
-            this.maintainlistQueryParams)
-            this.formtableData = data.result
-            this.maintainlistQueryParams.total = data.totalPageCount
+            this.tablelistQueryParams)
+            this.tableTitle = 'devicemaintain'
+            this.isHasHeaderButtons = false
+            this.dialogtableConfig= MaintainManagement.getDeviceOfMaintainTableConfig()
+            this.tableData = data.result
+            this.tablelistQueryParams.total = data.totalPageCount
+            this.tablebuttonsName = [
+                { name:'檢視',icon:'el-icon-view',status:'openmaintain'}
+            ]
+        },
+        async getDevicesAddress(){
+            var data =  await this.selectdevice.getDeviceAddresss(
+            this.tablelistQueryParams)
+            this.tableTitle = 'deviceaddress'
+            this.isHasHeaderButtons = false
+            this.dialogtableConfig= DeviceAddressManagement.getTableConfig()
+            this.tableData = data.result
+            this.tablelistQueryParams.total = data.totalPageCount
+            this.tablebuttonsName = [
+                { name:'檢視',icon:'el-icon-view',status:'openaddress'}
+            ]
         },
         async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
@@ -119,6 +152,8 @@ export default {
                     this.$message('刪除成功')
                     this.$store.dispatch('building/setbuildingdevices',await Device.get())
                     await this.resetlistQueryParams()
+                }else{
+                    this.$message.error('系統錯誤') 
                 }
             }else if(index === 'empty'){
                 this.dialogData.push( Device.empty() )
@@ -129,38 +164,42 @@ export default {
                 this.dialogStatus = 'create'
             }else if(index === 'openmaintain'){
                 this.selectdevice = content
-                this.dialogTitle = 'devicemaintain'
-                await this.resetmaintainlistQueryParams()
-                this.dialogStatus = 'devicemaintain'
-                this.innerVisible = true
+                await this.resettablelistQueryParams(true)
+                this.tableVisible = true
             }else if(index === 'exportExcel'){
                 this.exportExcelData = this.blockData
-                this.innerVisible = true
-                this.dialogStatus = 'exportExcel'
+                this.excelVisible = true
+                this.excelType = 'exportExcel'
             }else if(index === 'uploadExcel'){
-                this.innerVisible = true
-                this.dialogStatus = 'uploadExcel'
+                this.excelVisible = true
+                this.excelType = 'uploadExcel'
+            }else if(index === 'address'){
+                 this.selectdevice = content
+                await this.resettablelistQueryParams(false)
+                this.tableVisible = true
             }
         },
-        async handleDialog(title ,index, content){ //Dialog相關操作
-            console.log(title ,index,JSON.stringify(content))
+        async handleDialog(resetLink ,index, content){ //Dialog相關操作
+            console.log(index,JSON.stringify(content))
             if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
-                var isOk = index === 'update' ? await content.update() : 
-                index === 'create' ? await content.create() : 
-                await Device.postMany(content)
+                var isOk = index === 'update' ? await content.update(resetLink) : 
+                index === 'create' ? await content.create() : await Device.postMany(content)
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('building/setbuildingdevices',await Device.get())
                     await this.getBuildingDevicesManage()
                     this.innerVisible = false
+                    this.excelVisible = false
                     if(index == 'create'){
                         this.$refs.dialog.insertSuccess('deviceSelect')
                     }
+                }else{
+                    this.$message.error('系統錯誤') 
                 }
-            }else if(index === 'selectData'){
+            }else if(index === 'selectData' && window.child && window.child.open){
                 switch (content) {
                     case 'deviceTypeSelect':
-                        this.dialogSelect = await DeviceType.get('devicesManagement')    
+                        this.dialogSelect = await DeviceType.get()    
                         break;
                     case 'contactunitSelect':
                         this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())    
@@ -169,14 +208,28 @@ export default {
                         this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
                         break;
                 }
-            }else if(index === 'clickPagination'){
-                this.lacklistQueryParams = content
-                await this.getDevicesManageMaintain()
-            }else if(index === 'openmaintain'){
-                var routeData = this.$router.resolve({ path: '/normal/maintenance',query:{ type:'maintain',obj:content.getID() } })
-                window.open(routeData.href, '_blank')
             }else{
                 this.innerVisible = false
+                this.excelVisible = false
+            }
+        },
+        async handleTableClick(index, content){
+            console.log(index,JSON.stringify(content))
+            if(index == 'openmaintain'){
+                var routeData = this.$router.resolve({ path: '/normal/maintenance',query:{ type:'maintain',obj:content.getID() } })
+                window.open(routeData.href, '_blank')
+            }else if(index == 'openaddress'){
+                // var routeData = this.$router.resolve({ path: '/normal/maintenance',query:{ type:'maintain',obj:content.getID() } })
+                // window.open(routeData.href, '_blank')
+            }else if(index == 'clickPagination'){
+                //this.tablelistQueryParams = content
+                // if(this.tableTitle == 'devicemaintain'){
+                //     await this.getDevicesManageMaintain()
+                // }else{  
+                //     await this.getDevicesAddress()
+                // }
+            }else{
+                this.tableVisible = false
             }
         },
         async changeTable(value){
@@ -185,8 +238,7 @@ export default {
                 if(typeof this.$route.params.target == 'object'){
                     await this.handleBlock('equipment','open',this.$route.params.target)
                 }
-            }else if(this.$route.query.type !== undefined && 
-            this.$route.query.type == 'device'){
+            }else if(this.$route.query.type !== undefined && this.$route.query.type == 'device'){
                 await this.handleBlock('','empty','')
             }
         }

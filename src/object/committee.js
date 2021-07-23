@@ -1,18 +1,20 @@
 import Parent from './parent'
 import api from '@/api'
 import UsageOfFloor from './usageOfFloor'
+import User from './user'
 import { removeDuplicates } from '@/utils/index'
 
 class Committee extends Parent {
  
     constructor (data) {
         super(data)
-        const { title, note, linkUsageOfFloors } = data
+        const { title, note, linkUsageOfFloors, linkUsers } = data
         var usageOfFloor = linkUsageOfFloors.map(item=>{ return new UsageOfFloor(item)})
+        var user = linkUsers.map(item=>{ return new User(item)})
         this.title = title 
         this.note = note 
         this.linkUsageOfFloors = usageOfFloor
-        return this
+        this.linkUsers = user
     }
     clone(data){
         return new Committee(data)
@@ -66,7 +68,8 @@ class Committee extends Parent {
             id:'',
             title:'',
             note :'',
-            linkUsageOfFloors :[]
+            linkUsageOfFloors :[],
+            linkUsers:[]
         })
     }
     static getTableConfig(){
@@ -78,10 +81,10 @@ class Committee extends Parent {
             { label:'職稱' , prop:'title', mandatory:true, message:'請輸入職稱',
             isHidden:false,maxlength:'50',isSearch:true,placeholder:'請輸入職稱',
             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
-            { label:'姓名' , format:'floorOfHouseUsersName', 
-            mandatory:false,
+            { label:'住戶' , prop:'linkUsers',format:'floorOfHouseuserInfo', 
+            mandatory:true, message:'請選擇住戶',
             isHidden:false,isSearch:false,
-            isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true},
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
             { label:'備註' , prop:'note',format:'textarea', 
             mandatory:false,isHidden:false,
             maxlength:'200',isSearch:true,

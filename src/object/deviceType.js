@@ -12,7 +12,6 @@ class DeviceType extends Parent {
         this.productId = productId
         this.certificationNumber = certificationNumber
         this.protocolMode = protocolMode
-        return this
     }
     clone(data){
         return new DeviceType(data)
@@ -132,28 +131,34 @@ class DeviceType extends Parent {
             }
         ]   
     }
-    static async get (type){
-        var data
-        if(type == 'devicesManagement'){
-            data = await api.device.apiGetDevicesTypeByDevicesManagement().then(response => {
-                return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
-            }).catch(error=>{
-                return []
-            })
-        }else if(type == 'deviceTypesManagement'){
-            data = await api.device.apiGetDevicesType().then(response => {
-                return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
-            }).catch(error=>{
-                return []
-            })
-        }else{
-            data = await api.device.apiGetDevicesTypeByDevicesAddress().then(response => {
-                return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
-            }).catch(error=>{
-                return []
-            })
-        }
+    static async get (){
+        var data = await api.device.apiGetDevicesTypeByDevicesManagement().then(response => {
+            return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
+        }).catch(error=>{
+            return []
+        })
         return data
+        // if(type == 'devicesManagement'){
+        //     data = await api.device.apiGetDevicesTypeByDevicesManagement().then(response => {
+        //         return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
+        //     }).catch(error=>{
+        //         return []
+        //     })
+        // }
+        // else if(type == 'deviceTypesManagement'){
+        //     data = await api.device.apiGetDevicesType().then(response => {
+        //         return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
+        //     }).catch(error=>{
+        //         return []
+        //     })
+        // }else{
+        //     data = await api.device.apiGetDevicesTypeByDevicesAddress().then(response => {
+        //         return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
+        //     }).catch(error=>{
+        //         return []
+        //     })
+        // }
+        // return data
     }
     static async getDefault (){
         var data = await api.device.apiGetDefaultFullType().then(response => {

@@ -83,7 +83,7 @@
                 </div>
               </el-col>
           </el-row>
-          <Dialog 
+          <!-- <Dialog 
             ref="dialog"
             v-if="innerVisible === true"
             v-bind="dialogAttrs" 
@@ -92,19 +92,41 @@
             :formtableData="formtableData"
             :formtableconfig="formtableconfig"
             :listQueryParams="lacklistQueryParams"
-            v-on:handleDialog="handleDialog"></Dialog>
+            v-on:handleDialog="handleDialog"></Dialog> -->
+
+          <DialogForm 
+          ref="dialogform"
+          v-if="innerVisible === true"
+          v-bind="dialogAttrs"
+          v-on:handleDialog="handleDialog"></DialogForm>
+
+          <DialogTable 
+          ref="dialogtable"
+          v-if="tableVisible === true"
+          v-bind="tableAttrs"
+          v-on="tableEvent"></DialogTable>
+
+           <DialogUpload
+          ref="dialogupload"
+          v-if="uploadVisible === true"
+          v-bind="uploadAttrs"
+          v-on:handleDialog="handleDialog"></DialogUpload>
+
+          <DialogExcel 
+          ref="dialogexcel"
+          v-if="excelVisible === true"
+          v-bind="excelAttrs"
+          v-on:handleDialog="handleDialog"></DialogExcel>
+
+
         </div>
 </template>
 <script>
-import Files  from '@/object/files'
-import Inspection  from '@/object/inspection'
-import InspectionLacks from '@/object/inspectionLacks'
-import blockmixin from '@/mixin/blockmixin'
-import dialogmixin from '@/mixin/dialogmixin'
-import sharemixin  from '@/mixin/sharemixin'
+import { blockmixin, dialogmixin, sharemixin, tablemixin, excelmixin } from '@/mixin/index'
+import { Files, Inspection, InspectionLacks } from '@/object/index'
 
 export default {
-    mixins:[sharemixin,blockmixin,dialogmixin],
+    mixins:[sharemixin,blockmixin,dialogmixin,tablemixin,excelmixin],
     data(){
         return{
             inspection:'',
@@ -112,13 +134,7 @@ export default {
             //dialog額外的參數
             lackFileId:'', //缺失檔案id
             files:[],
-            formtableData:[],
-            formtableconfig:InspectionLacks.getTableConfig(),
-            lacklistQueryParams:{
-              pageIndex: 1,
-              pageSize: 10,
-              total:0
-            }
+            uploadVisible:false
         }
     },
     computed: {
@@ -127,6 +143,20 @@ export default {
                 handleBlock:this.handleBlock,
                 clickPagination:this.getBuildingMaintenanceReport,
                 resetlistQueryParams:this.resetlistQueryParams
+            }
+      },
+      tableEvent(){
+            return{
+                handleTableClick:this.handleTableClick,
+                clickPagination:this.handleTableClick
+            }
+      },
+      uploadAttrs(){
+            return{
+                visible:this.uploadVisible,
+                title:this.title,
+                specialId:this.lackFileId,
+                files:this.files
             }
       }
   },
@@ -151,11 +181,11 @@ export default {
       }
       await this.getBuildingMaintenanceReport()
     },
-    async resetlacklistQueryParams(){
-      this.lacklistQueryParams = {
-        pageIndex: 1,
-        pageSize: 10,
-        total:0
+    async resettablelistQueryParams(){
+      this.tablelistQueryParams = {
+          pageIndex: 1,
+          pageSize: 10,
+          total:0
       }
       await this.getInspectionLack()
     },
@@ -171,26 +201,26 @@ export default {
       var data = await Inspection.getSearchPage(this.listQueryParams)
       this.blockData = data.result
       this.listQueryParams.total = data.totalPageCount
-      this.$refs.block.resetpictLoading()
-      await this.getFilterItems()
     },  
     async getInspectionLack(){ //取得缺失內容
       var data =  await InspectionLacks.getSearchPage(this.inspection.getID(),
-      this.lacklistQueryParams)
-      this.formtableData = data.result
-      this.lacklistQueryParams.total = data.totalPageCount
+      this.tablelistQueryParams)
+      this.tableTitle = 'inspectionlack'
+      this.dialogtableConfig = InspectionLacks.getTableConfig()
+      this.tableData = data.result
+      this.tablelistQueryParams.total = data.totalPageCount
     },
     async handleBlock(title,index, content) { //檢修申報的操作
       console.log(index,JSON.stringify(content))
       this.dialogData = []
       this.dialogTitle = this.title
       this.dialogButtonsName = []
+      this.dialogConfig = this.tableConfig
       if(index === 'open'){
         this.dialogData.push(content)
         this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'update'},
           { name:'取消',type:'info',status:'cancel'}]
-        this.dialogConfig = this.tableConfig
         this.innerVisible = true
         this.dialogStatus = 'update'
       }else if(index === 'delete'){
@@ -198,36 +228,32 @@ export default {
         if(isDelete){
           this.$message('刪除成功')
           await this.resetlistQueryParams()
+        }else{
+          this.$message.error('系統錯誤') 
         }
       }else if(index === 'empty'){
           this.dialogData.push( Inspection.empty() )
           this.dialogButtonsName = [
           { name:'儲存',type:'primary',status:'create'},
           { name:'取消',type:'info',status:'cancel'}]
-          this.dialogConfig = this.tableConfig
           this.innerVisible = true
           this.dialogStatus = 'create'
       }else if(index === 'openfiles'){
         this.inspection = content
         this.files = await content.files()
         this.lackFileId = await content.getlackfileID()
-        this.innerVisible = true
-        this.dialogStatus = 'upload'
+        this.uploadVisible = true
       }else if(index === 'openlacks'){
-        this.dialogTitle = 'lack'
         this.inspection = content
-        await this.resetlacklistQueryParams()
-        this.dialogStatus = 'lack'
-        this.innerVisible = true
+        await this.resettablelistQueryParams()
+        this.tableVisible = true
       }else if(index === 'exportExcel'){
-        this.dialogConfig = this.tableConfig
         this.exportExcelData = this.blockData
-        this.innerVisible = true
-        this.dialogStatus = 'exportExcel'
+        this.excelVisible = true
+        this.excelType = 'exportExcel'
       }else if(index === 'uploadExcel'){
-        this.dialogConfig = this.tableConfig
-        this.innerVisible = true
-        this.dialogStatus = 'uploadExcel'
+        this.excelVisible = true
+        this.excelType = 'uploadExcel'
       }
     },
     async handleDialog(title ,index, content){ //Dialog相關操作
@@ -240,8 +266,11 @@ export default {
             if(isOk){
               index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
               await this.getBuildingMaintenanceReport()
+            }else{
+              this.$message.error('系統錯誤')
             }
             this.innerVisible = false
+            this.excelVisible = false
           }else if(index === 'createfile'){
               const formData = new FormData()
                 content.forEach(item => {
@@ -251,6 +280,8 @@ export default {
               if(isOk){
                 this.$message('上傳成功')
                 this.files = await this.inspection.files()
+              }else{
+                this.$message.error('系統錯誤')
               }
           }else if(index === 'deletefile'){
             var data = { id:content.toString() }
@@ -258,6 +289,8 @@ export default {
             if(isOk){
               this.$message('刪除成功')
               this.files = await this.inspection.files()
+            }else{
+              this.$message.error('系統錯誤')
             }
           }else if(index !== 'cancel'){ //更換缺失內容檔案
             var autoCreate = false
@@ -276,12 +309,18 @@ export default {
             if(isOk){
               this.$message('更新成功')
               this.lackFileId = content
-              this.$refs.dialog.insertSuccess('inspectionSelect')
+              this.$refs.dialogform.insertSuccess('inspectionSelect')
             }else{
               this.$message.error('檔案格式有誤，請重新設定')
             }
           }else{
+            if(this.isUpdate){
+              await this.getBuildingMaintenanceReport()
+              this.isUpdate = false
+            }
             this.innerVisible = false
+            this.excelVisible = false
+            this.uploadVisible = false
           }
         }else{
           await this.handleLackDialog(title,index,content)
@@ -289,97 +328,91 @@ export default {
     },
     async handleLackDialog(title ,index, content){ //LackDialog相關操作
         this.dialogData = []
-        this.dialogTitle = 'lack'
-        if(index === 'empty'){
-          this.dialogData.push( InspectionLacks.empty() )
-          this.dialogConfig = this.formtableconfig
-          this.dialogButtonsName = [
-          { name:'儲存',type:'primary',status:'createlack'},
-          { name:'返回',type:'info',status:'cancellack'}]
-          this.innerVisible = true
-          this.dialogStatus = 'create'
-        }else if(index === 'open'){
-          this.dialogConfig = this.formtableconfig   
-          this.dialogData.push(content)
-          this.dialogButtonsName = [
-          { name:'儲存',type:'primary',status:'updatelack'},
-          { name:'取消',type:'info',status:'cancellack'}]
-          this.innerVisible = true
-          this.dialogStatus = 'update'
-        }else if(index === 'openother'){
-          this.dialogConfig = this.formtableconfig   
-          if(content.length !== undefined){ //代表不是外傳近來的
-            content.forEach(item=>{
-              this.dialogData.push(item)
-            })
-          }else{
-              this.dialogData.push(content)
-          } 
-          this.dialogButtonsName = [
-          { name:'儲存',type:'primary',status:'updatelack'},
-          { name:'取消',type:'info',status:'cancel'}]
-          this.innerVisible = true
-          this.dialogStatus = 'update'
-        }else if(index === 'delete'){
-          var isDelete = await content.delete()
-          if(isDelete){
-              this.$message('刪除成功')
-              await this.resetlacklistQueryParams()
-              this.isUpdate = true
-          }
-        }else if(index === 'createlack' || index === 'updatelack'){
+        this.dialogTitle = 'inspectionlack'
+        if(index === 'createlack' || index === 'updatelack'){
           var isOk = index === 'createlack' ? await content.create(this.inspection.getID()) : await content.update()
           if(isOk){
               index === 'updatelack' ? this.$message('更新成功') : this.$message('新增成功')
-              await this.handleBlock('lack','openlacks',this.inspection)
-              this.isUpdate = true
-          }
-        }else if(index === 'cancel'){
-          this.innerVisible = false
-          this.lacklistQueryParams = {
-            page: 1,
-            limit: 10,
-            total: 0
-          }
-          if(this.isUpdate){
-            await this.getBuildingMaintenanceReport()
-            this.isUpdate = false
+              if(index === 'createlack') this.isUpdate = true
+              await this.getInspectionLack()
+              this.innerVisible = false
+          }else{
+            this.$message.error('系統錯誤')
           }
         }else if(index === 'cancellack'){
-          this.lacklistQueryParams = {
-            page: 1,
-            limit: 10,
-            total: 0
-          }
-          await this.handleBlock('lack','openlacks',this.inspection)
-        }else if(index === 'clickPagination'){
-          this.lacklistQueryParams = content
-          await this.getInspectionLack()
-        }else if(index === 'exportExcel'){
-          this.dialogConfig = this.formtableconfig  
-          this.exportExcelData = this.formtableData
-          this.innerVisible = true
-          this.dialogStatus = 'exportExcel'
-        }else if(index === 'uploadExcel'){
-          this.dialogConfig = this.formtableconfig  
-          this.innerVisible = true
-          this.dialogStatus = 'uploadExcel'
+          this.innerVisible = false
+        }else if(index === 'cancel'){
+          this.excelVisible = false
         }else if(index === 'uploadExcelSave'){
           var isOk = await InspectionLacks.postMany(this.inspection.getID(),content)
-           if(isOk){
+          if(isOk){
               this.$message('新增成功')
-              await this.handleBlock('lack','openlacks',this.inspection)
+              this.isUpdate = true
+              await this.getInspectionLack()
+              this.excelVisible = false
+          }else{
+            this.$message.error('系統錯誤')
           }
         }
     },
+    async handleTableClick(index, content){
+      console.log(index,JSON.stringify(content))
+      this.dialogData = []
+      this.dialogTitle = 'inspectionlack'
+      this.dialogConfig = this.dialogtableConfig
+      if(index === 'empty'){
+        this.dialogData.push( InspectionLacks.empty() )
+        this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'createlack'},
+          { name:'返回',type:'info',status:'cancellack'}]
+        this.innerVisible = true
+        this.dialogStatus = 'create'
+      }else if(index === 'delete'){
+        var isDelete = await content.delete()
+        if(isDelete){
+            this.$message('刪除成功')
+            await this.resettablelistQueryParams()
+            this.isUpdate = true
+        }else{
+          this.$message.error('系統錯誤')
+        }
+      }else if(index === 'open'){
+        if(content.length !== undefined){ //代表不是外傳近來的
+          content.forEach(item=>{
+            this.dialogData.push(item)
+          })
+        }else{
+            this.dialogData.push(content)
+        }
+        this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'updatelack'},
+          { name:'取消',type:'info',status:'cancellack'}]
+        this.innerVisible = true
+        this.dialogStatus = 'update'
+      }else if(index === 'exportExcel'){
+        this.exportExcelData = this.tableData
+        this.excelVisible = true
+        this.excelType = 'exportExcel'
+      }else if(index === 'uploadExcel'){
+        this.excelVisible = true
+        this.excelType = 'uploadExcel'
+      }else if(index === 'clickPagination'){
+        // this.lacklistQueryParams = content
+          // await this.getInspectionLack()
+      }else{
+        if(this.isUpdate){
+          await this.getBuildingMaintenanceReport()
+          this.isUpdate = false
+        }
+        this.tableVisible = false
+      }
+    },
     async changeTable(value){
       this.isTable = value
-      if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+      if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0 && this.$route.params.type == 'open'){
         if(typeof this.$route.params.target == 'object'){
           if(this.$route.params.type == 'open'){
-            await this.handleBlock('','open',this.$route.params.target)
-          }else{
-            await this.handleLackDialog('','openother',this.$route.params.target)
+            await this.handleTableClick('open',this.$route.params.target)
           }
         }
       }else if(this.$route.query.type !== undefined && 

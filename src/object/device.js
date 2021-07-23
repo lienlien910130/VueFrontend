@@ -2,17 +2,16 @@ import Parent from './parent'
 import DeviceType from './deviceType'
 import api from '@/api'
 import Contactunit from './contactunit'
-import Floors from './floors'
 import moment from 'moment'
 import { MaintainManagement } from '@/object/maintainManagement'
-
+import DeviceAddressManagement from '@/object/deviceAddressManagement';
 
 class Device extends Parent {
  
     constructor (data) {
         super(data)
         const { name,dateOfPurchase, dateOfWarranty, location,groupID, 
-            status,lastMaintainTime,nextMaintainTime, protocolMode, systemUnUseMode,
+            status,lastMaintainTime,nextMaintainTime, protocolMode, systemUnUseMode, internetNumber,
             linkKeeperUnits,linkMaintainVendors, linkDeviceTypes } = data
         var deviceType = linkDeviceTypes !== undefined ?
          linkDeviceTypes.map(item=>{ return new DeviceType(item) }) : []
@@ -20,10 +19,6 @@ class Device extends Parent {
          linkKeeperUnits.map(item=>{ return new Contactunit(item) }) : []
         var maintainVendors = linkMaintainVendors !== undefined ?
          linkMaintainVendors.map(item=>{ return new Contactunit(item) }) : []
-        // var floors = linkFloors !== undefined ?
-        //  linkFloors.map(item=>{ return new Floors(item) }) :[]
-        // var devices = linkDevices !== undefined ?
-        //  linkDevices.map(item=>{ return new Device(item) }) :[]
         this.name = name
         this.dateOfPurchase = dateOfPurchase
         this.dateOfWarranty = dateOfWarranty
@@ -34,18 +29,18 @@ class Device extends Parent {
         this.nextMaintainTime = nextMaintainTime
         this.protocolMode = protocolMode
         this.systemUnUseMode = systemUnUseMode
+        this.internetNumber = internetNumber
         this.linkKeeperUnits = keeperUnits
         this.linkMaintainVendors = maintainVendors
-        // this.linkFloors = floors
         this.linkDeviceTypes = deviceType
-        // this.linkDevices = devices
-        return this
     }
     clone(data){
         return new Device(data)
     }
-    async update(){
-        var data = await api.device.apiPatchDevicesManagement(this).then(async(response) => {
+    async update(resetLink){
+        var temp = JSON.parse(JSON.stringify(this))
+        if(temp.internetNumber !== '' )  temp.internetNumber = '{Check}'+temp.internetNumber  
+        var data = await api.device.apiPatchDevicesManagement(temp,resetLink).then(async(response) => {
             return true
         }).catch(error=>{
             return false
@@ -53,7 +48,9 @@ class Device extends Parent {
         return data
     }
     async create(){
-        var data = await api.device.apiPostDevicesManagement(this).then(response => {
+        var temp = JSON.parse(JSON.stringify(this))
+        if(temp.internetNumber !== '' )  temp.internetNumber = '{Check}'+temp.internetNumber 
+        var data = await api.device.apiPostDevicesManagement(temp).then(response => {
             return true
         }).catch(error=>{
             return false
@@ -72,6 +69,15 @@ class Device extends Parent {
         data.id = this.id
         var data = await api.device.apiGetDevicesManagementMaintain(data).then(response => {
             response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new MaintainManagement(item) })
+            return response
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    async getDeviceAddresss(data){
+        var data = await api.device.apiGetLinkDeviceAddresss(data,this.id).then(response => {
+            response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceAddressManagement(item) })
             return response
         }).catch(error=>{
             return []
@@ -111,6 +117,9 @@ class Device extends Parent {
         '【'+this.linkDeviceTypes[0].getName()+'】'+this.name :  '【尚未設定設備種類】'+this.name
         return name
     }
+    getInternetNumber(){
+        return this.internetNumber
+    }
     static empty(){
         return new Device({
             id:'',
@@ -122,11 +131,10 @@ class Device extends Parent {
             nextMaintainTime:null,
             protocolMode:0,
             systemUnUseMode:0,
+            internetNumber:'',
             linkKeeperUnits : [],
             linkMaintainVendors :[],
-            // linkFloors :[],
             linkDeviceTypes: [],
-            // linkDevices:[]
         })
     }
     static getTableConfig(){
@@ -147,6 +155,21 @@ class Device extends Parent {
                  isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
              },
              {
+                label: '控制模式',
+                prop: 'protocolMode',format:'protocolMode',
+                type:'number',typemessage:'',
+                mandatory:true,message:'請選擇控制模式',isHidden:false,
+                isSearch:false,placeholder:'請選擇控制模式',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '網路編號',
+                prop: 'internetNumber',format:'internetNumber',
+                mandatory:false,isHidden:true,
+                isSearch:true,maxlength:'5',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+             {
                  label: '購買日期',
                  prop: 'dateOfPurchase',
                  format:'YYYY-MM-DD',
@@ -166,7 +189,7 @@ class Device extends Parent {
                  label: '位置設置',
                  prop: 'location',
                  mandatory:false, 
-                 isHidden:false,maxlength:'20',isSearch:true,placeholder:'請輸入位置設置',
+                 isHidden:true,maxlength:'20',isSearch:true,placeholder:'請輸入位置設置',
                  isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false
              },
              {
@@ -192,14 +215,6 @@ class Device extends Parent {
                  isHidden:false,isSearch:false,
                  isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            // { 
-            //     label:'設備' , 
-            //     prop:'linkDevices',
-            //     format:'assignDeviceSelect', 
-            //     mandatory:false,message:'請選擇設備',type:'array',typemessage:'',
-            //     isHidden:false,isSearch:false,
-            //     isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
-            // },
             {
                  label: '設備狀況',
                  prop: 'status',
@@ -224,14 +239,7 @@ class Device extends Parent {
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            {
-                label: '控制模式',
-                prop: 'protocolMode',format:'protocolMode',
-                type:'number',typemessage:'',
-                mandatory:true,message:'請選擇控制模式',isHidden:false,
-                isSearch:false,placeholder:'請選擇控制模式',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-            },
+            
             {
                 label: '尚未被使用',
                 prop: 'systemUnUseMode',

@@ -17,7 +17,6 @@ class Account extends Parent {
         this.removable = removable
         this.linkRoles = roles
         this.linkBuildings = buildings
-        return this
     }
     clone(data){
         return new Account(data)

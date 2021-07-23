@@ -2,7 +2,7 @@
         <div class="editor-container">
             <el-row :gutter="32">
                 <el-col :xs="24" :sm="24" :md="24" :lg="6">
-                    <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                    <div class="block-wrapper">
                         <h3>基本資料</h3>
                         <Form 
                         v-on:handleBuildingInfo="handleBuildingInfo"
@@ -10,7 +10,7 @@
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="18">
-                    <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                    <div class="block-wrapper" >
                         <el-tabs v-model="activeName" type="border-card" 
                         >
                           <el-tab-pane label="管委會" name="MC" >
@@ -41,13 +41,13 @@
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="6">
-                    <div :class="floorwrapper" :style="{ height: blockwrapperheight }">
+                    <div :class="floorwrapper">
                         <h3>大樓樓層</h3>
                         <Range v-on:handleBuildingFloorSelect="handleBuildingFloorSelect"></Range>
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="18">
-                    <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                  <div class="block-wrapper">
                         <el-tabs v-model="activeFloor" type="border-card">
                             <el-tab-pane label="大樓住戶資料" name="US" >
                               <Block 
@@ -77,7 +77,7 @@
                               v-on:handleFilesUpload="handleFilesUpload"></Upload>
                             </el-tab-pane>
                         </el-tabs>
-                    </div>
+                  </div>
                 </el-col>
                 <Dialog 
                 ref="dialog"
@@ -708,25 +708,7 @@ export default {
 }
 </script>
 
-<style>
-.el-upload-list{
-  height:500px;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-.el-form-item{
-  margin-bottom: 18px;
-}
-.el-form-item__label{
-  font-size: 18px;
-}
-.el-form-item__content{
-  font-size: 18px;
-}
-</style>
-
 <style lang="scss" scoped>
-
 .block-wrapper {
     background: #fff;
     padding: 15px 15px;
@@ -738,7 +720,7 @@ export default {
     background: #fff;
     padding: 10px;
     margin-bottom: 32px;
-    height: 750px;
+    height: 720px;
     overflow-x:hidden;
     overflow-y:auto;
   }
@@ -768,10 +750,4 @@ export default {
   }
 }
 
-
-@media (max-width:1024px) {
-  .block-wrapper {
-    padding: 8px;
-  }
-}
 </style>

@@ -8,7 +8,6 @@ class InspectionLacks extends Parent {
         this.lackItem = lackItem
         this.lackContent = lackContent
         this.status = status
-        return this
     }
     clone(data){
         return new InspectionLacks(data)

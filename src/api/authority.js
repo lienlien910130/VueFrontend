@@ -25,11 +25,11 @@ const authority = {
     apiGetAllRole(){ return req('get','/index/default/roles') },
     apiGetAllRoleAuthority(){ return req('get','/roleSetting/a') },
     apiGetRoleAuthority(roleId){ return req('get','/roleSetting/'+roleId) },
-    apiPostRoleAuthority(data){ return req('post','/roleSetting',data) },
-    apiPatchRoleAuthority(data){ return req('patch','/roleSetting',data) },
+    apiPostRoleAuthority(data){ return req('post','/roleSetting/check',data) },
+    apiPatchRoleAuthority(data){ return req('patch','/roleSetting/check',data) },
     apiDeleteRoleAuthority(roleId){ return req('delete','/roleSetting/'+roleId) },
     apiGetRoleAuthoritySearchPages(data){ return req('post','/roleSetting/ss',data)  },
-    apiPostRoleAuthorities(data){ return req('post','/roleSetting/s',data) },
+    apiPostRoleAuthorities(data){ return req('post','/roleSetting/check/s',data) },
     //角色取得權限管理
     apiGetAccountAuthorityByRole(roleId){ return req('get','/roleSetting/'+this.getBid()+'/accessAuthorities/'+roleId) },
     //角色管理修改權限 - 多筆更新

@@ -24,7 +24,6 @@ class Inspection extends Parent {
         this.note = note
         this.completedCount = completedCount
         this.allCount = allCount
-        return this
     }
     clone(data){
         return new Inspection(data)

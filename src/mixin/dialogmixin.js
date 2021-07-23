@@ -9,8 +9,7 @@ export default {
         dialogStatus:'',
         dialogButtonsName:[],
         dialogConfig:[],
-        dialogSelect:[],
-        exportExcelData:[]
+        dialogSelect:[]
     }
   },
   computed: {
@@ -22,8 +21,7 @@ export default {
             dialogStatus: this.dialogStatus,
             buttonsName: this.dialogButtonsName,
             config: this.dialogConfig,
-            selectData: this.dialogSelect,
-            exportExcelData:this.exportExcelData
+            selectData: this.dialogSelect
         }
     }
   }

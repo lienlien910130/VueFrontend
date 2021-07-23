@@ -29,11 +29,15 @@ export default {
         isHasButtons:true,
         buttonsName:[
           { name:'刪除',icon:'el-icon-delete',status:'delete'},
-                { name:'編輯',icon:'el-icon-edit',status:'open'}],
+          { name:'編輯',icon:'el-icon-edit',status:'open'}
+        ],
         headerButtonsName:[
+          { name:'多筆刪除',icon:'el-icon-delete',status:'deleteMany'},
+          { name:'多筆更新',icon:'el-icon-edit',status:'updateMany'},
           { name:'新增資料',icon:'el-icon-circle-plus-outline',status:'empty'},
           { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
-          { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}]
+          { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}
+        ]
       }
     }
 }

@@ -20,7 +20,6 @@ class Menu extends Parent {
         this.icon = icon
         this.linkMainMenus = mainMenu
         this.linkAccessAuthorities = accessAuthority
-        return this
     }
 
     clone(data){

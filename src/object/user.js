@@ -7,7 +7,7 @@ class User extends Parent {
     constructor (data) {
         super(data)
         const { name,identityCard, birthday, callNumber,cellPhoneNumber, 
-            emergencyNumber, email, note, linkUsageOfFloors } = data
+            emergencyNumber, email, note, usageOfFloor } = data
         this.name = name
         this.identityCard = identityCard
         this.birthday = birthday
@@ -16,7 +16,7 @@ class User extends Parent {
         this.emergencyNumber = emergencyNumber
         this.email = email
         this.note = note
-        this.linkUsageOfFloors = linkUsageOfFloors
+        this.usageOfFloor = usageOfFloor
         return this
     }
     clone(data){
@@ -58,12 +58,12 @@ class User extends Parent {
         var y = year - 1911
         return this.name +'-'+y.toString()+'年次'
     }
-    getNameOfHouse(){
-        var house = this.linkUsageOfFloors!== undefined && 
-        this.linkUsageOfFloors.length !== 0 ? '-'+
-            this.linkUsageOfFloors[0].houseNumber : ''
-         return this.name + house
-    }
+    // getNameOfHouse(){
+    //     var house = this.linkUsageOfFloors!== undefined && 
+    //     this.linkUsageOfFloors.length !== 0 ? '-'+
+    //         this.linkUsageOfFloors[0].houseNumber : ''
+    //      return this.name + house
+    // }
     static empty(){
         return new User({
             id:'',
@@ -74,7 +74,8 @@ class User extends Parent {
             cellPhoneNumber :'',
             emergencyNumber :'',
             email :'',
-            linkUsageOfFloors:[]
+            note:'',
+            usageOfFloor:''
         })
     }
     static getTableConfig(){
@@ -103,10 +104,13 @@ class User extends Parent {
          pattern:/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/,
          errorMsg:'格式錯誤,請重新輸入',isPattern: true,maxlength:'100',
          isHidden:false,isSearch:true,placeholder:'請輸入電子信箱',
-         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},    
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},   
+         { label:'門牌' , prop:'usageOfFloor', mandatory:false,maxlength:'15',
+         isHidden:false,isSearch:true,placeholder:'請輸入職稱',
+         isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true},  
          { label:'備註' , prop:'note', mandatory:false,format:'textarea',maxlength:'200',
          isHidden:false,isSearch:true,placeholder:'請輸入職稱',
-         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false}, 
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false} 
        ]
     }
     static async get (){
@@ -131,6 +135,7 @@ class User extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.building.apiGetUserSearchPages(data).then(response => {
+            console.log(JSON.stringify(response))
             response.result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new User(item)})
             return response

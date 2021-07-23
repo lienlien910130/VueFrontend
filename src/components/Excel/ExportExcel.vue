@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="height:200px">
     <div class="rowdiv">
         <label class="rowlabel" >檔案名稱: </label>
         <el-input v-model="filename" placeholder="請輸入檔案名稱(預設excel-list)" 
@@ -27,7 +27,7 @@
           />
         </el-select>
     </div>
-    <el-button :loading="downloadLoading" style="float:right"  type="primary" icon="el-icon-document" 
+    <el-button :loading="downloadLoading" style="float:right" size="mini"  type="primary" icon="el-icon-document" 
         @click="handleDownload">
           匯出
     </el-button>

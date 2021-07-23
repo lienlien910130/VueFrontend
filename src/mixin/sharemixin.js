@@ -51,22 +51,22 @@ export default {
           },
           immediate:true
         },
-        fullscreen:{
-            handler:async function(){
-                this.blockwrapperheight = this.fullscreen == false ? '720px' : '850px'
-            },
-            immediate:true
-        },
+        // fullscreen:{
+        //     handler:async function(){
+        //         this.blockwrapperheight = this.fullscreen == false ? '710px' : '850px'
+        //     },
+        //     immediate:true
+        // },
         device:{
             handler:async function(){
                 this.device == 'desktop' ? this.changeTable(true) : this.changeTable(false)
-                this.blockwrapperheight = this.device == 'desktop' ? '720px' : '790px'
+                //this.blockwrapperheight = this.device == 'desktop' ? '710px' : '790px'
             }
         }
     },
     data() {
         return {
-            blockwrapperheight:'',
+            //blockwrapperheight:'',
             origin:[],
             selectSetting:[], //儲存篩選資料
             isTable:true,

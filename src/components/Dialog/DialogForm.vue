@@ -1,3 +1,4 @@
+
 <template>
     <div>
       <el-dialog
@@ -23,11 +24,7 @@
         </div>
         <!-- dialogStatus : 一般表單/upload/lack/authority -->
         <keep-alive>
-
-        <el-form v-if="dialogStatus !== 'upload' && dialogStatus !== 'lack' 
-        && dialogStatus !== 'authority'
-         && dialogStatus !== 'exportExcel' && dialogStatus !== 'uploadExcel' 
-         && dialogStatus !== 'selectMaintain' && dialogStatus !== 'floor' && dialogStatus !== 'devicemaintain' "
+        <el-form
         ref="dataForm"  
         :model="temp"  
         :label-position="label" 
@@ -72,7 +69,7 @@
                         value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </span>
-                <!-- 設備清單-設備種類 / 設備(火警總機/PLC)關聯點位 / 點位選取設備 (limit-1) 
+                <!-- 設備清單-設備種類 / 設備(火警總機/PLC)關聯點位選取關聯的 / 點位選取設備 (limit-1) 
                 設備 / 廠商 / 角色 / 建築物 / 門牌 / 住戶 下拉選單 (多)-->
                 <el-select
                     v-else-if="item.format =='deviceTypeSelect' || item.format == 'assignDeviceSelect' 
@@ -81,7 +78,7 @@
                     item.format =='roleSelect' ||  
                     item.format =='buildingSelect' || 
                     item.format == 'floorOfHouseSelect'
-                    || item.format =='userInfo'    "
+                    || item.format =='userInfo' "
                     v-model="temp[item.prop]"
                     filterable
                     multiple
@@ -90,7 +87,7 @@
                     value-key="id"
                     placeholder="請選擇"
                     style="width:100%"
-                    @change="checkMode"
+                    @change="checkMode($event, item.format)"
                     >
                         <el-option
                         v-for="(obj,index) in selectfilter(item.format)"
@@ -101,10 +98,32 @@
                         >
                         </el-option>  
                 </el-select>
+
+                <el-select
+                    v-else-if="item.format =='floorOfHouseuserInfo'"
+                    v-model="temp[item.prop]"
+                    filterable
+                    multiple
+                    :multiple-limit="1"
+                    value-key="id"
+                    placeholder="請選擇"
+                    style="width:100%"
+                    :disabled="disable"
+                    >
+                        <el-option
+                        v-for="(obj,index) in floorOfHouseuserInfoArray"
+                        :key="index"
+                        :label="obj.label"
+                        :value="obj"
+                        :disabled="item.usageOfFloor == null ? false : true "
+                        >
+                        </el-option>  
+                </el-select>
                 <!-- 控制模式 -->
                 <el-radio-group 
                 v-else-if="item.format == 'protocolMode'"
-                v-model="temp[item.prop]" >
+                v-model="temp[item.prop]" 
+                @change="changeprotocolMode">
                     <el-radio v-if="title !== 'deviceAddressManagement'" :label="0">皆無</el-radio>
                     <el-radio :label="1">{{ title !== 'deviceAddressManagement' ? '監視' : '接收' }}</el-radio>
                     <el-radio :label="2">控制</el-radio>
@@ -235,9 +254,7 @@
                         <span v-else>樓</span>
                     </template>
                 </el-input>
-
-                
-
+                <!-- 專技人員 -->
                 <el-autocomplete
                 v-else-if="item.format =='searchColumn'"
                 class="inline-input"
@@ -246,7 +263,7 @@
                 :placeholder="item.placeholder"
                 style="width:100%"
                 ></el-autocomplete>   
-
+                <!-- 區塊 -->
                 <el-input v-else-if="item.format =='textarea'"
                 v-model="temp[item.prop]" 
                 :autosize="{ minRows: 4, maxRows: 8}"
@@ -259,13 +276,13 @@
                     請至維護保養修改進度
                 </span>
 
-                <div v-else-if="item.format =='openmaintain' ">
+                <!-- <div v-else-if="item.format =='openmaintain' ">
                     <Table 
                         :list-query-params.sync="listQueryParams"
                         v-bind="tableAttrs" 
                         v-on="tableEvent">
                     </Table>  
-                </div>
+                </div> -->
                 
                 <el-input v-else
                 v-model="temp[item.prop]" 
@@ -277,94 +294,7 @@
 
             </el-form-item>
         </el-form>
-
         </keep-alive>
-        <!-- 檔案 -->
-        <Upload 
-        v-if="dialogStatus === 'upload'"
-        ref="Upload"
-        v-bind="uploadAttrs" 
-        v-on:handleFilesUpload="handleFilesUpload">
-        </Upload>   
-        <!-- 缺失內容 -->
-        <Table v-if="dialogStatus === 'lack' || dialogStatus === 'floor' || dialogStatus === 'devicemaintain'"
-        :list-query-params.sync="listQueryParams"
-        v-bind="tableAttrs" 
-        v-on="tableEvent">
-        </Table>  
-        <!-- 分配權限 -->
-        <el-table v-if="dialogStatus === 'authority'"
-            :data="accessAuthoritiesData"
-            style="width: 100%;margin-bottom: 20px;"
-            row-key="id"
-            border
-            default-expand-all
-            ref="authorityTable"
-            :tree-props="{children: 'linkMainMenus', hasChildren: 'hasChildren'}"
-            @select="handleSelectionChange"
-            @select-all="handleSelectionAll"
-            :header-cell-class-name="cellClass"
-            :row-class-name="rowClass"
-            v-loading = "pictLoading">
-            <el-table-column
-            type="selection"
-            :selectable="selectable"
-            width="55">
-            </el-table-column>
-            <el-table-column
-            prop="name"
-            label="菜單"
-            min-width="20%">
-            </el-table-column>
-            <el-table-column
-            prop="linkAccessAuthorities"
-            label="權限"
-            min-width="80%">
-            <template slot-scope="scope">
-                <el-checkbox-group 
-                v-model="accessArray" 
-                @change="handleCheckedChange(scope.row)">
-                    <el-checkbox 
-                    v-for="item in scope.row.getAccessAuthorities()"
-                    :key="item.getID()"
-                    :label="item.getID()"
-                    :disabled="title == 'account'">
-                    {{ item.getName()  }}
-                    </el-checkbox>
-                </el-checkbox-group>
-            </template>
-            </el-table-column>
-        </el-table>
-        <!-- 下載檔案 -->
-        <ExportExcel  
-        v-if="dialogStatus === 'exportExcel'"
-        ref="ExportExcel"
-            v-bind="exportExcelAttrs">
-        </ExportExcel>
-        <!-- 上傳檔案 -->
-        <UploadExcel  
-        v-if="dialogStatus === 'uploadExcel'"
-        ref="UploadExcel"
-        :config="config"
-        v-on:handleFilesUpload="handleFilesUpload">
-        </UploadExcel>
-        
-
-        <el-select v-if="dialogStatus === 'selectMaintain'"
-            v-model="maintainListID"
-            filterable
-            placeholder="請選擇"
-            style="width:100%"
-            value-key="id"
-            >
-                <el-option
-                    v-for="(item,index) in selectData"
-                    :key="index"
-                    :label="item.getName()"
-                    :value="item"
-                >
-                </el-option>  
-        </el-select>
 
         <div v-if="isHasButtons" slot="footer" class="dialog-footer">
             <span
@@ -390,7 +320,7 @@ import { changeDeviceFullType } from '@/utils/index'
 import constant from '@/constant/index'
 
 export default {
-    name:'Dialog',
+    name:'DialogForm',
     mixins:[computedmixin],
     props:{
         dialogData: {
@@ -422,44 +352,6 @@ export default {
         },
         selectData: {
             type: Array
-        },
-        //exportExcel
-        exportExcelData: {
-            type: Array
-        },
-        //auth-menu&該角色所有權限id
-        accessAuthoritiesData: {
-            type: Array
-        },
-        accessAuthorities: {
-            type: Array,
-            default: function () {
-                return []
-            }
-        },
-        //upload
-        files:{
-            type: Array,
-            default: function () {
-                return []
-            }
-        },
-        specialId:{
-            type: String,
-            default:'0' 
-        },
-        //表單內的表格
-        formtableData: {
-            type: Array,
-            default: function () {
-                return []
-            }
-        },
-        formtableconfig: {
-            type: Array
-        },
-        listQueryParams:{
-            type:Object
         }
     },
     watch:{
@@ -468,64 +360,18 @@ export default {
                 this.init()
             },
             immediate:true
-        },
-        accessAuthoritiesData:{ 
-            handler:function(){
-                this.$nextTick(()=>{
-                    this.$refs.authorityTable.clearSelection()
-                    this.accessArray = JSON.parse(JSON.stringify(this.accessAuthorities))
-                    this.treeSelection()
-                })
-            }
         }
     },
     computed:{
-        label() {
-            if (this.$store.state.app.device === 'mobile') {
-                return 'top'
-            } else {
-                return 'left'
-            }
-        },
         dialogWidth(){
             if (this.$store.state.app.device === 'mobile') {
                 return "90%"
             } else {
-                if(this.dialogStatus == 'exportExcel'){
-                    return "500px"
-                }
-                if(this.title == 'maintainList' || 
-                this.title == 'lack' || this.title == 'devicemaintain' || this.title == 'deviceaddress' ){
-                    return "1400px"
-                }
+                // if(this.title == 'maintainList' || 
+                // this.title == 'lack' || this.title == 'devicemaintain' || this.title == 'deviceaddress' ){
+                //     return "1400px"
+                // }
                 return "1000px"
-            }
-        },
-        uploadAttrs(){
-            return{
-                files:this.files,
-                title:this.title,
-                specialId:this.specialId
-            }
-        },
-        exportExcelAttrs(){
-            return{
-                exportExcelData:this.exportExcelData,
-                config:this.config,
-                title:this.title
-            }
-        },
-        tableAttrs(){
-            return {
-                title:this.title,
-                tableData: this.formtableData,
-                config:this.formtableconfig
-            }
-        },
-        tableEvent(){
-            return {
-                clickPagination:this.clickPagination,
-                handleTableClick:this.handleTableClick
             }
         },
         selectfilter(){
@@ -569,9 +415,7 @@ export default {
                                 this.$set(v, 'id', v.getID()) 
                                 return v
                             })
-                        case 'inspectionSelect':
-                            return this.selectData
-                        case 'floorOfHouseSelect':
+                        case 'inspectionSelect': case 'floorOfHouseSelect': case 'deviceTypeSelect':
                             return this.selectData
                         case 'userInfo':
                             if(this.title == 'building'){
@@ -591,8 +435,6 @@ export default {
                                 this.$set(v, 'id', v.getID()) 
                                 return v
                             })
-                        case 'deviceTypeSelect':
-                            return this.selectData
                         case 'buildingSelect' :
                             return this.buildingarray.map(v => {
                                 this.$set(v, 'value', v.id) 
@@ -615,22 +457,22 @@ export default {
         return {
             textMap: {
                 update: '編輯',
-                create: '新增',
-                selectMaintain: '關聯維保大項'
+                create: '新增'
             },
             activeName:'',
             temp:{},
             rangevalue: [],
             fulltypevalue:[],
             addressvalue:[],
-            pictLoading:false,
             accessArray:[],
             createOption:[],
             prop:[],
             maintainListID:'',
             disable:true,
             originalProtocolMode:'',
-            originalDeviceType:''
+            originalDeviceType:'',
+            originalInternet:'',
+            floorOfHouseuserInfoArray:[]
         }
     },
     methods: {
@@ -650,48 +492,24 @@ export default {
                     var value = changeDeviceFullType(fullType,true,false)
                     this.fulltypevalue = [value,fullType]
                 }
-                if(this.title == 'equipment'){ //受信總機/PLC才可編輯網路編號欄位
+                if(this.title == 'equipment' || this.title == 'deviceAddressManagement'){ //受信總機/PLC才可編輯網路編號欄位
                     this.originalProtocolMode = JSON.parse(JSON.stringify(this.temp['protocolMode']))
-                    this.originalDeviceType = this.temp.getLinkType().clone(this.temp.getLinkType())
-                    var type = this.temp.getLinkType().getFullType()
-                    if(type == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
-                    type == 'nDeviceTypeList.PLC.PLC_ProgrammableLogicController'){
-                        this.disable = false
-                    }
-                }
-            }
-            if(this.dialogStatus !== 'upload' && this.dialogStatus !== 'lack' 
-                && this.dialogStatus !== 'authority' && this.dialogStatus !== 'exportExcel' 
-                && this.dialogStatus !== 'uploadExcel' && this.dialogStatus !== 'selectMaintain' && this.dialogStatus !== 'devicemaintain'){
-                this.$nextTick(() => {
-                    if(this.$refs.dataForm !== undefined){
-                        this.$refs.dataForm.clearValidate()
-                    }
-                })
-            }
-        },
-        treeSelection(){ //初始化控制表格checkbox&row是否勾選狀態
-            this.pictLoading = true
-            var _temp = this.accessAuthoritiesData
-            for(var i =0;i<_temp.length;i++){
-                _temp[i].getAccessAuthorities().forEach(item=>{
-                    var index = this.accessArray.indexOf(item.getID())
-                    if(index !== -1){
-                        this.$refs.authorityTable.toggleRowSelection(_temp[i],true)
-                    }
-                })
-                var _below = _temp[i].getLink()
-                for(var x=0;x<_below.length;x++){
-                    _below[x].getAccessAuthorities().forEach(item=>{
-                        var index = this.accessArray.indexOf(item.getID())
-                        if(index !== -1){
-                            this.$refs.authorityTable.toggleRowSelection(_below[x],true)
-                            this.$refs.authorityTable.toggleRowSelection(_temp[i],true)
+                    if(this.title == 'equipment'){
+                        this.originalDeviceType = this.temp.getLinkType().clone(this.temp.getLinkType())
+                        var type = this.temp.getLinkType().getFullType()
+                        if(type == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
+                        type == 'nDeviceTypeList.PLC.PLC_ProgrammableLogicController'){
+                            this.originalInternet = JSON.parse(JSON.stringify(this.temp['internetNumber']))
+                            this.disable = false
                         }
-                    })
+                    }
                 }
             }
-            this.pictLoading = false
+            this.$nextTick(() => {
+                if(this.$refs.dataForm !== undefined){
+                    this.$refs.dataForm.clearValidate()
+                }
+            })
         },
         optionfilter(format){
             if(format !== null ){
@@ -704,35 +522,69 @@ export default {
             }
         },
         //設備清單裡面--設備種類異動時須預設種類的控制欄位同步到設備的控制欄位&設備種類為授信總機/plc時可編輯網路編號欄位
-        checkMode(value){
-            console.log(this.title)
-            if(value.length && this.title == 'equipment'){
-               this.temp['protocolMode'] = value[0].getProtocolMode()
-               this.temp['systemUnUseMode'] = value[0].getProtocolMode()
-               if(value[0].getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
-               value[0].getFullType() == 'nDeviceTypeList.PLC.PLC_ProgrammableLogicController'){
+        checkMode(value,format){
+            console.log(this.title, format)
+            if(value.length){
+               if(this.title == 'equipment' && format == 'deviceTypeSelect'){
+                    this.temp['protocolMode'] = value[0].getProtocolMode()
+                    this.temp['systemUnUseMode'] = value[0].getProtocolMode()
+                    if(value[0].getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
+                    value[0].getFullType() == 'nDeviceTypeList.PLC.PLC_ProgrammableLogicController'){
+                        this.disable = false
+                    }
+               }else if(this.title == 'deviceAddressManagement' && format == 'assignDeviceSelect'){
+                    if(value[0].getInternetNumber() == ''){
+                        this.disable = false
+                        this.temp['internet'] = ''
+                    }else{
+                        this.temp['internet'] = value[0].getInternetNumber()
+                        this.disable = true
+                    }
+               }else if(this.title == 'committee' && format == 'floorOfHouseSelect'){
                    this.disable = false
+                   console.log(value)
                }
-            }else if(value.length == 0 && this.title == 'equipment'){
-                this.disable = true
-                this.temp['internetNumber'] = ''
-                this.temp['protocolMode'] = 0
-                this.temp['systemUnUseMode'] = 0
+            }else{
+                if(this.title == 'equipment' && format == 'deviceTypeSelect'){
+                    this.disable = true
+                    this.temp['internetNumber'] = ''
+                    this.temp['protocolMode'] = 0
+                    this.temp['systemUnUseMode'] = 0
+                }else if(this.title == 'deviceAddressManagement' && format == 'assignDeviceSelect'){
+
+                }else if(this.title == 'committee' && format == 'floorOfHouseSelect'){
+                    this.disable = true
+                }
+            }
+        },
+        changeprotocolMode(value){
+            if(this.title == 'deviceAddressManagement' && this.dialogStatus == 'update'){
+                this.$confirm('更換【控制模式】將會重置關聯的設備，是否要更新【控制模式】?', 
+                '提示', {
+                    confirmButtonText: '確定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.temp['linkDevices'] = []
+                    this.$emit('handleDialog', 'openDialog', this.dialogStatus , this.temp) 
+                }).catch(() => {
+                    this.temp['protocolMode'] = this.originalProtocolMode
+                    this.temp['linkDevices'] = []
+                })
             }
         },
         querySearch(queryString, cb) {
             var restaurants = this.selectData
             var results = queryString ? restaurants.filter(this.createFilter(queryString)) : this.selectData
-            cb(results);
+            cb(results)
         },
         createFilter(queryString) {
             return (restaurant) => {
-                console.log(restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()))
                 return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
             }
         },
+        //傳遞父子視窗資料
         insertSuccess(type){
-            console.log('insertSuccess',type,window.opener)
             if(window.opener !== undefined && window.opener !== null){
                 window.opener.postMessage(type, window.location)
             }
@@ -743,11 +595,10 @@ export default {
             if(event.data == 'userInfo' || event.data == 'deviceTypeSelect' || 
             event.data == 'contactunitSelect' ||  event.data == 'floorOfHouseSelect' ||
             event.data == 'inspectionSelect' || event.data == 'deviceSelect' ||
-            event.data == 'roleSelect' || event.data == 'setting' ){
+            event.data == 'roleSelect' || event.data == 'setting'){
                 this.$emit('handleDialog',this.title, 'selectData' , event.data)
             }
         },
-        //打開新視窗
         openWindows(format){
             var routeData
             switch (format) {
@@ -816,18 +667,19 @@ export default {
         changeFullType(){
             this.temp['fullType'] = this.fulltypevalue[1]
         },
+        //地址欄位
+        handleChange(value){
+            this.temp.address = value[0]+value[1]
+        },
         //子傳父窗口
         handleClickOption(status){
+            console.log('handleClickOption',status)
             if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                 this.temp['checkStartDate'] = this.rangevalue[0]
                 this.temp['checkEndDate'] = this.rangevalue[1]
             }
             if(status !== 'cancel' && status !== 'cancellack' && status !== 'empty' && 
-            status !== 'cancelfloor' &&
-            this.dialogStatus !== 'upload' && this.dialogStatus !== 'exportExcel' && 
-            this.dialogStatus !== 'uploadExcel' && this.dialogStatus !== 'selectMaintain' &&
-            this.dialogStatus !== 'lack' && this.dialogStatus !== 'floor' &&
-             this.dialogStatus !== 'authority' && this.dialogStatus !== 'devicemaintain'){
+            status !== 'cancelfloor'){
                 this.$refs.dataForm.validate(async(valid) => {
                     if (valid) {
                         if(this.createOption.length !== 0){ //有動態新增選項
@@ -845,8 +697,9 @@ export default {
                         if(this.title == 'equipment' && status == 'update'){ 
                             var resetLink = this.originalDeviceType.getFullType()  !== this.temp.getLinkType().getFullType() 
                             var protocolMode = this.originalProtocolMode !== this.temp['protocolMode']
-                            if(resetLink == true || protocolMode == true){
-                                this.$confirm('更換【設備種類】或【控制模式】將會重置關聯的點位，是否要更新【設備種類】或【控制模式】?', 
+                            var internet = this.originalInternet !== this.temp['internetNumber']
+                            if(resetLink == true || protocolMode == true || internet == true){
+                                this.$confirm('更換【設備種類】或【控制模式】或【網路編號】將會重置關聯的點位，是否要更新【設備種類】或【控制模式】或【網路編號】?', 
                                 '提示', {
                                     confirmButtonText: '確定',
                                     cancelButtonText: '取消',
@@ -857,13 +710,16 @@ export default {
                                 }).catch(() => {
                                     this.temp['protocolMode'] = this.originalProtocolMode
                                     this.temp['linkDeviceTypes'] = new Array(this.originalDeviceType)
+                                    this.temp['internetNumber'] = this.originalInternet
                                     this.$emit('handleDialog', false, status , this.temp)          
                                 })
                             }else{
                                 this.$emit('handleDialog', false, status , this.temp)  
                             }   
                         }else{
-                            this.$emit('handleDialog', this.title, status , this.temp)  
+                            this.$emit('handleDialog', 
+                            this.title == 'deviceAddressManagement' && this.disable == false ? 'updateDevice' : this.title, 
+                            status , this.temp)  
                         }  
                     } else {
                         this.$message.error('請輸入完整資訊')
@@ -871,21 +727,7 @@ export default {
                     }
                 })
             }
-            if(status == 'cancel'){
-                switch (this.dialogStatus) {
-                    case 'upload':
-                        this.$refs.Upload.resetFileList()
-                        break;
-                    case 'uploadExcel':
-                        this.$refs.UploadExcel.resetTableData()
-                        break;
-                    case 'exportExcel':
-                        this.$refs.ExportExcel.resetData()
-                        break;
-                    default:
-                        break;
-                }
-            }
+           
             if(status == 'cancel' || status == 'cancellack' || status == 'cancelfloor' ||
             status == 'empty' || status == 'authoritycreate' ){
                 var data = status == 'authoritycreate' ? this.accessArray : ''
@@ -896,122 +738,11 @@ export default {
                 this.$emit('handleDialog',this.title, 'empty' , this.maintainListID)
             }
         },
-        //地址欄位
-        handleChange(value){
-            this.temp.address = value[0]+value[1]
-        },
-        //table表格
-        handleTableClick(title,index,row){
-            var str = title == '' ? this.title : title
-            this.$emit('handleDialog', str , index , row)
-        },
-        //table表格分頁
-        clickPagination(){
-            this.$emit('handleDialog', this.title , 'clickPagination' , 
-            this.listQueryParams)
-        },
         //頁籤
         async handleTabClick(tab, event) {
             this.temp = this.dialogData
              .filter((element,index) => element.id == tab.name)[0]
-        },
-        async handleFilesUpload(index,title,data) { 
-            this.$emit('handleDialog',this.title, index , data)
-        },
-        //客製化樣式
-        cellClass(row){
-            if (this.title == 'account') {//帳號管理不可選全選
-                return 'disabledCheck'
-            }
-        },
-        rowClass(row){
-            if (this.title == 'account') {//帳號管理不可選全選
-                return 'disabledEdit'
-            }
-        },
-        selectable(row,index){ //帳號管理不可選每列
-            if(this.title == 'account'){
-                return false
-            }else {
-                return true
-            }
-        },
-        //權限勾選
-        async handleSelectionChange(selection, row){ //先檢查該列是否原先有被選取的選項 有的話先刪除 無的話則加入全部
-            var isSelect = selection.filter((item,index) => item.id == row.getID())
-            var isLevelOne = row.getLink().length > 0 // 是否為第一層
-            if(!isLevelOne){
-                row.getAccessAuthorities().forEach(item=>{
-                    if(isSelect.length == 0){
-                        var index = this.accessArray.indexOf(item.id)
-                        if(index !== -1){
-                            this.accessArray.splice(index, 1)
-                        }
-                    }else{
-                        this.accessArray.push(item.getID())
-                    }
-                })
-            }else{
-                row.getLink().forEach(children=>{
-                    children.getAccessAuthorities().forEach(item=>{
-                        var index = this.accessArray.indexOf(item.getID())
-                        if(isSelect.length > 0){
-                            this.$refs.authorityTable.toggleRowSelection(children,true)
-                            if(index === -1){
-                                this.accessArray.push(item.getID())
-                            }
-                        }else{
-                            this.$refs.authorityTable.toggleRowSelection(children,false)
-                            this.accessArray.splice(index, 1)
-                        }
-                    })
-                })
-            }
-        },
-        async handleCheckedChange(row){ //選取checkbox時table該列要勾選
-            var isHas = false
-            var data = row.linkAccessAuthorities
-            for(let acc of data ){
-                var index = this.accessArray.indexOf(acc.id)
-                if(index !== -1){
-                    isHas = true
-                }
-            }
-            if(isHas){
-                this.$refs.authorityTable.toggleRowSelection(row,true)
-            }else{
-                this.$refs.authorityTable.toggleRowSelection(row,false)
-            }
-        },
-        async handleSelectionAll(val){ //全選
-            var array = val.filter(item => item.linkMainMenus.length !== 0)
-            this.accessArray = []
-            if(array.length == 0){ //代表取消全選
-                this.$refs.authorityTable.clearSelection()
-            }else{
-                var _temp = this.accessAuthoritiesData
-                for(var i =0;i<_temp.length;i++){
-                    _temp[i].getAccessAuthorities().forEach(item=>{
-                        this.accessArray.push(item.getID())
-                    })
-                    var _below = _temp[i].getLink()
-                    for(var x=0;x<_below.length;x++){
-                        this.$refs.authorityTable.toggleRowSelection(_below[x],true)    
-                        _below[x].getAccessAuthorities().forEach(item=>{
-                            this.accessArray.push(item.getID())
-                        })
-                    }
-                }
-            }
         }
     }
 }
 </script>
-<style scoped>
-.el-table /deep/.disabledCheck .cell .el-checkbox__inner{
-    display: none!important;
-}
-.el-table /deep/.disabledEdit  .cell .is-checked .el-checkbox__label{
-    color: red;
-}
-</style>

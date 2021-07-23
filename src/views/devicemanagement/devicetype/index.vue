@@ -2,7 +2,7 @@
     <div class="editor-container">
         <el-row  :gutter="32">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
-                <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                <div class="block-wrapper">
                     <Block 
                     ref="block"
                     :list-query-params.sync="listQueryParams"
@@ -11,24 +11,34 @@
                 </div>
             </el-col>
         </el-row>
-        <Dialog 
+        <!-- <Dialog 
         ref="dialog"
         v-if="innerVisible === true"
         v-bind="dialogAttrs" 
-        v-on:handleDialog="handleDialog"></Dialog>
+        v-on:handleDialog="handleDialog"></Dialog> -->
+
+        <DialogForm 
+        ref="dialogform"
+        v-if="innerVisible === true"
+        v-bind="dialogAttrs"
+        v-on:handleDialog="handleDialog"></DialogForm>
+
+        <DialogExcel 
+        ref="dialogexcel"
+        v-if="excelVisible === true"
+        v-bind="excelAttrs"
+        v-on:handleDialog="handleDialog"></DialogExcel>
+
     </div>
 </template>
 <script>
 import { changeDeviceFullType } from '@/utils/index'
-import blockmixin from '@/mixin/blockmixin'
-import dialogmixin from '@/mixin/dialogmixin'
-import sharemixin  from '@/mixin/sharemixin'
-import DeviceType  from '@/object/deviceType'
-import Device from '@/object/device'
+import { blockmixin, dialogmixin, sharemixin, excelmixin } from '@/mixin/index'
+import { Device, DeviceType } from '@/object/index'
 
 export default {
     name:'Device',
-    mixins:[sharemixin,blockmixin,dialogmixin],
+    mixins:[sharemixin,blockmixin,dialogmixin,excelmixin],
     computed:{
         blockEvent(){
             return{
@@ -78,6 +88,8 @@ export default {
                     this.$message('刪除成功')
                     this.$store.dispatch('building/setbuildingdevices',await Device.get())
                     await this.resetlistQueryParams()
+                }else{
+                    this.$message.error('系統錯誤') 
                 }
             }else if(index === 'empty'){
                 this.dialogData.push( DeviceType.empty() )
@@ -88,11 +100,11 @@ export default {
                 this.dialogStatus = 'create'
             }else if(index === 'exportExcel'){
                 this.exportExcelData = this.blockData
-                this.innerVisible = true
-                this.dialogStatus = 'exportExcel'
+                this.excelVisible = true
+                this.excelType = 'exportExcel'
             }else if(index === 'uploadExcel'){
-                this.innerVisible = true
-                this.dialogStatus = 'uploadExcel'
+                this.excelVisible = true
+                this.excelType = 'uploadExcel'
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
@@ -100,8 +112,7 @@ export default {
             if(index === 'update' || index === 'create'){
                 var label = changeDeviceFullType(content.fullType,false,true)
                 content.setTypeName(label) 
-                var isOk = index === 'update' ? await content.update() : 
-                await content.create()
+                var isOk = index === 'update' ? await content.update() : await content.create()
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     if(index === 'update'){
@@ -109,37 +120,37 @@ export default {
                     }
                     await this.getBuildingDevicesType()
                     if(index == 'create'){
-                        this.$refs.dialog.insertSuccess('deviceTypeSelect')
+                        this.$refs.dialogform.insertSuccess('deviceTypeSelect')
                     }
+                    this.innerVisible = false
+                }else{
+                    this.$message.error('系統錯誤')
                 }
             }else if(index === 'uploadExcelSave'){
                 var isOk = await DeviceType.postMany(content)
                 if(isOk){
                     this.$message('新增成功')
                     await this.getBuildingDevicesType()
+                    this.excelVisible = false
+                }else{
+                    this.$message.error('系統錯誤')
                 }
+            }else{
+                this.innerVisible = false
+                this.excelVisible = false
             }
-            this.innerVisible = false
         },
         async changeTable(value){
             this.isTable = value
-            if(this.$route.params.target !== undefined && 
-            this.$route.params.target.length !== 0){
+            if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0
+            && this.$route.params.type == 'open'){
                 if(typeof this.$route.params.target == 'object'){
                     await this.handleBlock('devicetype','open',this.$route.params.target[0])
                 }
-            }else if(this.$route.query.type !== undefined && 
-            this.$route.query.type == 'devicetype'){
+            }else if(this.$route.query.type !== undefined && this.$route.query.type == 'devicetype'){
                 await this.handleBlock('devicetype','empty','')
             }
         }
     }
 }
 </script>
-<style lang="scss" scoped>
-.block-wrapper {
-    background: #fff;
-    padding: 15px 15px;
-    height: 720px;
-}
-</style>

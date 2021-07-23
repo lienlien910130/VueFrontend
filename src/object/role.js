@@ -13,13 +13,14 @@ class Role extends Parent {
         this.sort = sort
         this.removable = removable
         this.linkAccessAuthorities = accessAuthorities
-        return this
     }
     clone(data){
         return new Role(data)
     }
     async update(){
-        var data = await api.authority.apiPatchRoleAuthority(this).then(async(response) => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.name = '{Check}'+temp.name
+        var data = await api.authority.apiPatchRoleAuthority(temp).then(async(response) => {
             return true
         }).catch(error=>{
             return false
@@ -27,7 +28,9 @@ class Role extends Parent {
         return data
     }
     async create(){
-        var data = await api.authority.apiPostRoleAuthority(this).then(response => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.name = '{Check}'+temp.name
+        var data = await api.authority.apiPostRoleAuthority(temp).then(response => {
             return true
         }).catch(error=>{
             return false

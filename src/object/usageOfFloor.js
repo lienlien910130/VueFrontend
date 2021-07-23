@@ -9,9 +9,10 @@ class UsageOfFloor extends Parent {
         super(data)
         const { houseNumber,placeName, capacity, note,
             spatialCharacteristics,businessHours,
-            linkUsers, linkOwners } = data
+            linkUsers, linkOwners, linkLivingUsers } = data
         var owners = linkUsers.map(item=>{ return new User(item)})
         var users = linkOwners.map(item=>{ return new User(item)})
+        var livinguser = linkLivingUsers.map(item=>{ return new User(item)})
         this.houseNumber = houseNumber
         this.placeName = placeName
         this.capacity = capacity
@@ -20,6 +21,7 @@ class UsageOfFloor extends Parent {
         this.note = note
         this.linkUsers = users
         this.linkOwners = owners
+        this.linkLivingUsers = livinguser
         return this
     }
     clone(data){
@@ -83,7 +85,8 @@ class UsageOfFloor extends Parent {
             spatialCharacteristics:'',
             businessHours:'',
             linkUsers :[],
-            linkOwners :[]
+            linkOwners :[],
+            linkLivingUsers: []
         })
     }
     static getTableConfig(){
@@ -108,12 +111,17 @@ class UsageOfFloor extends Parent {
              isHidden:false,maxlength:'50',isSearch:true,placeholder:'請輸入營業時間',
              isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
              { label:'所有人' , prop:'linkOwners',format:'userInfo', 
-             mandatory:true, message:'請選擇所有人',
+             mandatory:false, 
              type:'array',typemessage:'',
              isHidden:false,isSearch:false,
              isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
              { label:'使用人' , prop:'linkUsers',format:'userInfo', 
-             mandatory:true, message:'請選擇使用人',
+             mandatory:false, 
+             type:'array',typemessage:'',
+             isHidden:false,isSearch:false,
+             isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+             { label:'住戶' , prop:'linkLivingUsers',format:'userInfo', 
+             mandatory:false, 
              type:'array',typemessage:'',
              isHidden:false,isSearch:false,
              isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},

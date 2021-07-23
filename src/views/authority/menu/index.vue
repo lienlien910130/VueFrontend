@@ -2,15 +2,16 @@
         <div class="editor-container">
            <el-row :gutter="32">
                <el-col :xs="24" :sm="24" :md="24" :lg="7">
-                    <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                    <div class="block-wrapper">
                         <MenuTree
-                            v-bind="treeAttrs"
+                            ref="menuTree"
+                            :treeData="treeData"
                             v-on:handleTreeNode="handleTreeNode">
                         </MenuTree>
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
-                    <div class="block-wrapper" :style="{ height: blockwrapperheight }">
+                    <div class="block-wrapper">
                         <Block 
                         ref="block"
                         :list-query-params.sync="listQueryParams"
@@ -19,24 +20,32 @@
                     </div>
                 </el-col>
            </el-row>
-           <Dialog 
+           <!-- <Dialog 
                 v-bind="dialogAttrs" 
-                v-on:handleDialog="handleDialog"></Dialog>
+                v-on:handleDialog="handleDialog"></Dialog> -->
+            <DialogForm 
+            ref="dialogform"
+            v-if="innerVisible === true"
+            v-bind="dialogAttrs"
+            v-on:handleDialog="handleDialog"></DialogForm>
+
+            <DialogExcel 
+            ref="dialogexcel"
+            v-if="excelVisible === true"
+            v-bind="excelAttrs"
+            v-on:handleDialog="handleDialog"></DialogExcel>
         </div>
 </template>
 <script>
-import Menu from '@/object/menu'
-import blockmixin from '@/mixin/blockmixin'
-import dialogmixin from '@/mixin/dialogmixin'
-import sharemixin  from '@/mixin/sharemixin'
+import { blockmixin, dialogmixin, sharemixin, excelmixin } from '@/mixin/index'
+import { Menu } from '@/object/index'
 
 export default {
-    mixins:[sharemixin,blockmixin,dialogmixin],
+    mixins:[sharemixin,blockmixin,dialogmixin,excelmixin],
     watch:{
         menu:{
             handler:async function(){
                 this.blockData = []
-                this.listQueryParams = { pageIndex: 1, pageSize: 12, total:0 }
                 var data = this.menu.map(item=>{ return item.clone(item)})
                 this.treeData = data.map(element => {
                     this.$set(element,'children',element.getLink())
@@ -48,6 +57,7 @@ export default {
                 }).filter(item=>{return item.code !== 'sys-Setting' && item.code !== 'sys-Building'
                     && item.code !== 'sys-Index'})
                 if(this.selectId !== null){
+                    this.$refs.menuTree.setHighlight(this.selectId)
                     var array = []
                     for(let element of this.treeData){
                         array.push(element)
@@ -59,8 +69,7 @@ export default {
                         },[]
                     )
                     var data = concatarray.filter(item=>{ return item.id == this.selectId})[0]
-                    this.origin = data.getLink()
-                    await this.getMainMenu()
+                    this.blockData = data.getLink()
                 }
             },
             immediate:true
@@ -76,14 +85,7 @@ export default {
     computed: {
         blockEvent(){
             return{
-                handleBlock:this.handleBlock,
-                resetlistQueryParams:this.resetlistQueryParams
-            }
-        },
-        treeAttrs(){
-            return{
-                treeData:this.treeData,
-                selectId:this.selectId
+                handleBlock:this.handleBlock
             }
         }
     },
@@ -93,23 +95,9 @@ export default {
             this.tableConfig = Menu.getTableConfig()
             this.hasSearch = false
         },
-        async resetlistQueryParams(){
-            this.listQueryParams = {
-                pageIndex: 1,
-                pageSize: 12,
-                total:0
-            }
-            await this.getMainMenu()
-        },
-        async getMainMenu(){
-            this.blockData = this.origin
-            this.$refs.block.resetpictLoading()
-            await this.getFilterItems()
-        },
         async handleTreeNode(node,data){
-            this.origin = data.getLink()
+            this.blockData = data.getLink()
             this.selectId = data.getID()
-            await this.resetlistQueryParams()
         },
         async handleBlock(title,index, content){
             console.log(title,index, JSON.stringify(content))
@@ -125,13 +113,12 @@ export default {
                 this.innerVisible = true
                 this.dialogStatus = 'update'
             }else if(index === 'delete'){
-                var temp = this.selectId
                 var isOk = await content.delete()
                 if(isOk){
-                    this.selectId = ''
                     this.$message('刪除成功')
-                    this.selectId = temp
                     this.$store.dispatch('permission/setRoutes')
+                }else{
+                    this.$message.error('系統錯誤')
                 }
             }else if(index === 'empty'){
                 if(this.selectId == null){
@@ -152,8 +139,8 @@ export default {
                     })
                 }else{
                     this.exportExcelData = this.blockData
-                    this.innerVisible = true
-                    this.dialogStatus = 'exportExcel'
+                    this.excelVisible = true
+                    this.excelType = 'exportExcel'
                 }
             }else if(index === 'uploadExcel'){
                 if(this.selectId == null){
@@ -161,8 +148,8 @@ export default {
                         message: '請選擇目錄'
                     })
                 }else{
-                    this.innerVisible = true
-                    this.dialogStatus = 'uploadExcel'
+                    this.excelVisible = true
+                    this.excelType = 'uploadExcel'
                 }
             }
         },
@@ -177,9 +164,16 @@ export default {
                 if(isOk){
                     index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('permission/setRoutes')
-                }    
-            }   
-            this.innerVisible = false
+                    this.innerVisible = false
+                    this.excelVisible = false
+                }else{
+                    this.$message.error('系統錯誤')
+                }
+            }else{
+                this.innerVisible = false
+                this.excelVisible = false
+            }
+            
         },
         async changeTable(value){
             this.isTable = value
@@ -187,49 +181,3 @@ export default {
     }
 }
 </script>
-<style lang="scss" scoped>
-.block-wrapper {
-    background: #fff;
-    padding: 15px 15px;
-    height: 720px;
-}
-
-</style>
-
-<style lang="scss">
-.el-tree {
-  color: black;
-  background: transparent;
-  font-size: 20px;
-  margin:10px;
-}
-.custom-tree-node{
-    margin: 5px;
-    width:100%;
-}
-/* 设置三角形图标的颜色 */
-.el-tree-node__expand-icon {
-  color: black;
-  font-size: 25px;
-}
-
-/* 树节点鼠标悬浮式改变背景色，字体颜色 */
-.el-tree-node__content:hover {
-  background-color: rgb(202, 191 , 220);
-  color: rgb(29, 4, 4);
-}
- 
-/* 改变节点高度 */
-.el-tree-node__content {
-  height: 30px;
-}
- 
-.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
-    background-color: lightgray;
-  color:black;
-}
-.el-tree-node .is-focusable .is-checked{
-background-color:rgb(147, 180 , 197);
-  color: black;
-}
-</style>
