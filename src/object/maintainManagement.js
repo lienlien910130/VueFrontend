@@ -15,7 +15,6 @@ class MaintainManagementList extends Parent {
         this.createdDate = createdDate
         this.completedCount = completedCount
         this.allCount = allCount
-        return this
     }
     clone(data){
         return new MaintainManagementList(data)
@@ -99,7 +98,7 @@ class MaintainManagementList extends Parent {
                 label: '保養細項總數',
                 prop: 'allCount',format:'openmaintain',
                 mandatory:false, isHidden:true,isSearch:false,type:'number',typemessage:'',
-                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true
             },
             //   {
             //     label: '已保養/未保養',
@@ -210,7 +209,6 @@ class MaintainManagement extends Parent {
         this.linkDevices = devices
         this.linkInspectionLacks = inspectionLacks
         this.linkContactUnits = contactUnits
-        return this
     }
     clone(data){
         return new MaintainManagement(data)

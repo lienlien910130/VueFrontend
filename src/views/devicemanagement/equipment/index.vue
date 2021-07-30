@@ -121,6 +121,7 @@ export default {
             this.tableTitle = 'deviceaddress'
             this.isHasHeaderButtons = false
             this.dialogtableConfig= DeviceAddressManagement.getTableConfig()
+            this.dialogtableConfig.shift()
             this.tableData = data.result
             this.tablelistQueryParams.total = data.totalPageCount
             this.tablebuttonsName = [
@@ -173,7 +174,7 @@ export default {
             }else if(index === 'uploadExcel'){
                 this.excelVisible = true
                 this.excelType = 'uploadExcel'
-            }else if(index === 'address'){
+            }else if(index === 'openaddress'){
                  this.selectdevice = content
                 await this.resettablelistQueryParams(false)
                 this.tableVisible = true
@@ -191,7 +192,7 @@ export default {
                     this.innerVisible = false
                     this.excelVisible = false
                     if(index == 'create'){
-                        this.$refs.dialog.insertSuccess('deviceSelect')
+                        this.$refs.dialogform.insertSuccess('deviceSelect')
                     }
                 }else{
                     this.$message.error('系統錯誤') 
@@ -219,8 +220,8 @@ export default {
                 var routeData = this.$router.resolve({ path: '/normal/maintenance',query:{ type:'maintain',obj:content.getID() } })
                 window.open(routeData.href, '_blank')
             }else if(index == 'openaddress'){
-                // var routeData = this.$router.resolve({ path: '/normal/maintenance',query:{ type:'maintain',obj:content.getID() } })
-                // window.open(routeData.href, '_blank')
+                var routeData = this.$router.resolve({ path: '/equipment/address',query:{ type:'address',obj:content.getID() } })
+                window.open(routeData.href, '_blank')
             }else if(index == 'clickPagination'){
                 //this.tablelistQueryParams = content
                 // if(this.tableTitle == 'devicemaintain'){
@@ -234,7 +235,8 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
-            if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
+            if(this.$route.params.target !== undefined && this.$route.params.target.length !== 0
+            && this.$route.params.type == 'open'){
                 if(typeof this.$route.params.target == 'object'){
                     await this.handleBlock('equipment','open',this.$route.params.target)
                 }

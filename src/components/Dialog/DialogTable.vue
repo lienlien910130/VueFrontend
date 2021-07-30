@@ -21,7 +21,6 @@
                 empty-text="暫無資料"
                 @sort-change="sortChange"
                 >
-                        
                         <el-table-column
                         fixed
                         type="index">
@@ -56,11 +55,14 @@
                                     <span v-else-if="scope.column.property == 'linkDevices'"> 
                                         {{ scope.row.getDevicesName() }}
                                     </span>
-                                    <span v-else-if="scope.column.property == 'linkContactUnits'"> 
+                                    <span v-else-if="scope.column.property == 'linkContactUnits' "> 
                                         {{ changeContainUnit(scope.row[scope.column.property]) }}
                                     </span>
                                     <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
                                         {{ scope.row.getInspectionLackName() }}
+                                    </span>
+                                    <span v-else-if="scope.column.property == 'systemUsed'"> 
+                                        {{ scope.row[item.prop] == true ? '已設置' : '未設置' }}
                                     </span>
                                     <span v-else-if="scope.column.property == 'floorPlanID'"> 
                                         <i 
@@ -182,7 +184,7 @@ export default {
                 this.title == 'inspectionlack' || 
                 this.title == 'devicemaintain' || 
                 this.title == 'deviceaddress' ||
-                this.title == 'publicsafelack'){
+                this.title == 'publicsafelack' || this.title == 'listOfMaintain'){
                     return "1400px"
                 }
                 return "1000px"
@@ -205,7 +207,9 @@ export default {
                 devicemaintain:'維護保養紀錄',
                 deviceaddress:'設備關聯點位',
                 inspectionlack:'檢修申報缺失項目',
-                publicsafelack:'公安申報缺失項目'
+                publicsafelack:'公安申報缺失項目',
+                listOfMaintain:'維護保養細項',
+                floor:'樓層'
             },
         }
     },

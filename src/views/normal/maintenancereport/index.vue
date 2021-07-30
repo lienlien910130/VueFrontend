@@ -359,7 +359,7 @@ export default {
       console.log(index,JSON.stringify(content))
       this.dialogData = []
       this.dialogTitle = 'inspectionlack'
-      this.dialogConfig = this.dialogtableConfig
+      this.dialogConfig = InspectionLacks.getTableConfig()
       if(index === 'empty'){
         this.dialogData.push( InspectionLacks.empty() )
         this.dialogButtonsName = [

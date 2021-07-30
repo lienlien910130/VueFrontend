@@ -79,31 +79,40 @@
                         </el-tabs>
                   </div>
                 </el-col>
-                <Dialog 
+                <!-- <Dialog 
                 ref="dialog"
                 v-bind="dialogAttrs"
                 :files="floorFiles" 
-                v-on:handleDialog="handleDialog"></Dialog>
+                v-on:handleDialog="handleDialog"></Dialog> -->
+
+                <DialogForm 
+                ref="dialogform"
+                v-if="innerVisible === true"
+                v-bind="dialogAttrs"
+                v-on:handleDialog="handleDialog"></DialogForm>
+
+                <DialogUpload
+                ref="dialogupload"
+                v-if="uploadVisible === true"
+                v-bind="uploadAttrs"
+                v-on:handleDialog="handleDialog"></DialogUpload>
+
+                <DialogExcel 
+                ref="dialogexcel"
+                v-if="excelVisible === true"
+                v-bind="excelAttrs"
+                v-on:handleDialog="handleDialog"></DialogExcel>
+
             </el-row>
         </div>
 </template>
 
 <script>
-import blockmixin from '@/mixin/blockmixin'
-import dialogmixin from '@/mixin/dialogmixin'
-import sharemixin  from '@/mixin/sharemixin'
-import Committee from '@/object/committee'
-import UsageOfFloor from '@/object/usageOfFloor'
-import Contactunit from '@/object/contactunit'
-import User from '@/object/user'
-import Building from '@/object/building'
-import Files  from '@/object/files'
-import Floors from '@/object/floors'
-import Setting from '@/object/setting'
-
+import { blockmixin, dialogmixin, sharemixin, excelmixin } from '@/mixin/index'
+import { Files, Committee, UsageOfFloor,Setting ,User,Contactunit,Building,Floors  } from '@/object/index'
 export default {
   name: 'Tab',
-  mixins:[sharemixin,blockmixin,dialogmixin],
+  mixins:[sharemixin,blockmixin,dialogmixin, excelmixin],
   components: { 
     Form: () => import('./components/Form'),
     FloorImage: () => import('./components/Floor'),
@@ -130,6 +139,13 @@ export default {
         isneed:true
       }
     },
+    uploadAttrs(){
+      return{
+          visible:this.uploadVisible,
+          title:'floorOfHouse',
+          files:this.floorFiles
+      }
+    },
     floorUploadAttrs(){
       return{
         specialId:this.floorImageId,
@@ -144,7 +160,6 @@ export default {
         config: this.downConfig,
         title:this.downTitle,
         isTable:this.isTable,
-        selectSetting:this.downselectSetting,
         buttonsName:this.downButtonsName
       }
     },
@@ -198,7 +213,6 @@ export default {
       downTitle:'',
       downData:[],
       downConfig:[],
-      downselectSetting:[],
       downButtonsName:[
         { name:'刪除',icon:'el-icon-delete',status:'delete'},
         { name:'編輯',icon:'el-icon-edit',status:'open'}],
@@ -206,7 +220,8 @@ export default {
         pageIndex: 1,
         pageSize: 12,
         total:0
-      }
+      },
+      uploadVisible:false
     }
   },
   watch: {
@@ -218,7 +233,6 @@ export default {
     },
     async activeFloor(val){
       this.downData = []
-      this.downselectSetting = []
       this.downButtonsName = [
         { name:'刪除',icon:'el-icon-delete',status:'delete'},
         { name:'編輯',icon:'el-icon-edit',status:'open'}]
@@ -253,16 +267,15 @@ export default {
       if(val == 'MC'){
         this.title = 'committee'
         this.tableConfig = Committee.getTableConfig()
-        await this.getFloorOfHouse()
-        await this.resetlistQueryParams()
+        // await this.getFloorOfHouse()
       }else if(val == 'Vender'){
         this.title = 'contactUnit'
         this.tableConfig = Contactunit.getTableConfig()
-        await this.resetlistQueryParams()
       }else{ //BOT
         this.title = 'buildingFiles'
         this.buildingFiles = await this.building.files()
       }
+      await this.resetlistQueryParams()
     }
   },
   methods: { 
@@ -271,7 +284,7 @@ export default {
       this.downTitle = 'user'
       this.tableConfig = Committee.getTableConfig()
       this.downConfig = User.getTableConfig()
-      await this.getFloorOfHouse()
+      // await this.getFloorOfHouse()
       await this.getManagementList()
       await this.getUserList()
     },
@@ -283,7 +296,7 @@ export default {
       }
       if(this.activeName == 'MC'){
         await this.getManagementList()
-      }else{
+      }else if(this.activeName == 'Vender'){
         await this.getContactunitList()
       }
     },
@@ -309,42 +322,34 @@ export default {
       }
     },
     async getFloorOfHouse(){ //取得大樓所有門牌
-      var data = await UsageOfFloor.getAll()
-      this.usageOfFloorSelectList = data.map(v => {
-          this.$set(v, 'id', v.id) 
-          this.$set(v, 'label', v.houseNumber) 
-          this.$set(v, 'value', v.id) 
-          return v
-      })
+      // var data = await UsageOfFloor.getAll()
+      // this.usageOfFloorSelectList = data.map(v => {
+      //     this.$set(v, 'id', v.id) 
+      //     this.$set(v, 'label', v.houseNumber) 
+      //     this.$set(v, 'value', v.id) 
+      //     return v
+      // })
     },
     async getManagementList() { //取得管委會
       var data = await Committee.getSearchPage(this.listQueryParams)
       this.blockData = data.result
       this.listQueryParams.total = data.totalPageCount
-      this.$refs.block.resetpictLoading()
-      await this.getFilterItems()
     },
     async getContactunitList(){ //取得廠商資料
       var data = await Contactunit.getSearchPage(this.listQueryParams)
       this.blockData = data.result
       this.listQueryParams.total = data.totalPageCount
-      this.$refs.block.resetpictLoading()
-      await this.getFilterItems()
     },
     async getFloorOfHouseList(){ //取得樓層門牌資料
       var data = await UsageOfFloor.getSearchPage(this.selectFloor.getID(),
       this.downlistQueryParams)
       this.downData = data.result
       this.downlistQueryParams.total = data.totalPageCount
-      if(this.$refs.downblock !== undefined)  this.$refs.downblock.resetpictLoading()
-      await this.getFilterItems(this.downConfig)
     },
     async getUserList(){ //取得大樓住戶資料
       var data = await User.getSearchPage(this.downlistQueryParams)
       this.downData = data.result
       this.downlistQueryParams.total = data.totalPageCount
-      if(this.$refs.downblock !== undefined)  this.$refs.downblock.resetpictLoading()
-      await this.getFilterItems(this.downConfig)
     },
     async handleBuildingInfo(index, content){ //轉接口
       console.log('handleBuildingInfo',index,content)
@@ -413,6 +418,8 @@ export default {
           this.buildingFiles = await this.building.files() :  
         title === 'floorFiles' ?
           this.floorFiles = await this.selectFloor.files() : this.floorFiles = await this.floorofhouse.files()
+      }else{
+        this.$message.error('系統錯誤')
       }
     },
     async handleBlock(title,index, content) { //管委會、廠商資料、樓層門牌相關操作
@@ -426,7 +433,15 @@ export default {
       this.dialogButtonsName = []
       switch(title){
         case 'committee':
-          this.dialogSelect = this.usageOfFloorSelectList
+          if(index == 'open' || index == 'empty'){
+            var data = await UsageOfFloor.getAll()
+            this.dialogSelect =  data.map(v => {
+                this.$set(v, 'id', v.id) 
+                this.$set(v, 'label', v.houseNumber) 
+                this.$set(v, 'value', v.id) 
+                return v
+            })
+          }
           this.dialogConfig = Committee.getTableConfig()
           empty = Committee.empty()
           exportdata = this.blockData
@@ -465,30 +480,30 @@ export default {
         if(isDelete){
             this.$message('刪除成功')
             switch(title){
-              case 'committee':
-                await this.resetlistQueryParams()
-                break;
               case 'contactUnit':
                 this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
+              case 'committee': case 'contactUnit':
                 await this.resetlistQueryParams()
                 break;
               case 'user': //刪除user時重整建築物資料&管委會資料
                 this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
                 this.$store.dispatch('building/setbuildingusers',await User.get())
+                // if(this.activeName == 'MC'){ //重整管委會
+                //   // await this.getFloorOfHouse()
+                //   await this.getManagementList()
+                // }
+                // await this.resetdownlistQueryParams()
+                // break;
+              case 'user': case 'floorOfHouse':
                 if(this.activeName == 'MC'){ //重整管委會
-                  await this.getFloorOfHouse()
-                  await this.getManagementList()
-                }
-                await this.resetdownlistQueryParams()
-                break;
-              case 'floorOfHouse':
-                if(this.activeName == 'MC'){ //重整管委會
-                  await this.getFloorOfHouse()
+                  // await this.getFloorOfHouse()
                   await this.getManagementList()
                 }  
                 await this.resetdownlistQueryParams()
                 break;
             }
+        }else{
+          this.$message.error('系統錯誤')
         }
       }else if(index === 'empty'){
         this.dialogData.push(empty)
@@ -498,28 +513,33 @@ export default {
         this.innerVisible = true
         this.dialogStatus = 'create'
       }else if(index == 'openuser'){ //打開住戶資訊
-        await this.handleBuildingInfo('open',content)
+        await this.handleBuildingInfo('openUser',content)
       }else if(index === 'openfiles'){ //門牌檔案
         this.floorofhouse = content
         this.floorFiles = await content.files()
-        this.dialogTitle = 'floorOfHouse'
-        this.innerVisible = true
-        this.dialogStatus = 'upload'
+        this.uploadVisible = true
       }else if(index === 'openfloorofhouse'){ //管委會關聯門牌
         await this.handleBuildingInfo('openfloorofhouse',content)
       }else if(index === 'exportExcel'){
+        // this.exportExcelData = exportdata
+        // this.innerVisible = true
+        // this.dialogStatus = 'exportExcel'
         this.exportExcelData = exportdata
-        this.innerVisible = true
-        this.dialogStatus = 'exportExcel'
+        this.excelVisible = true
+        this.excelType = 'exportExcel'
       }else if(index === 'uploadExcel'){
-        this.innerVisible = true
-        this.dialogStatus = 'uploadExcel'
+        // this.innerVisible = true
+        // this.dialogStatus = 'uploadExcel'
+        this.excelVisible = true
+        this.excelType = 'uploadExcel'
       }
     },
     async handleDialog(title ,index, content){ //Dialog相關操作
       console.log(title ,index,JSON.stringify(content))
       if(index === 'cancel'){
         this.innerVisible = false
+        this.excelVisible = false
+        this.uploadVisible = false
       }else{
         switch(title){
           case 'user':
@@ -541,21 +561,29 @@ export default {
       }
     },
     async onCommitteeActions(index, content){
-      if(index !== 'cancel' && index !== 'selectData'){
+      if(index !== 'selectData'){
         var isOk = index === 'update' ? await content.update() : 
         index === 'create' ? await content.create() : await Committee.postMany(content)
         if(isOk){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           await this.getManagementList()
           this.innerVisible = false
+        }else{
+          this.$message.error('系統錯誤')
         }
       }else if(index == 'selectData'){
-        await this.getFloorOfHouse()
-        this.dialogSelect = this.usageOfFloorSelectList
-      }else{
-        this.innerVisible = false
+        // await this.getFloorOfHouse()
+        var data = await UsageOfFloor.getAll()
+        this.dialogSelect =  data.map(v => {
+            this.$set(v, 'id', v.id) 
+            this.$set(v, 'label', v.houseNumber) 
+            this.$set(v, 'value', v.id) 
+            return v
+        })
       }
-      
+      // else{
+      //   this.innerVisible = false
+      // }
     },
     async onContactUnitActions(index, content){
        if(index !== 'cancel' && index !== 'selectData'){
@@ -566,7 +594,7 @@ export default {
           this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
           await this.getContactunitList()
           if(index == 'create'){
-            this.$refs.dialog.insertSuccess('contactunitSelect')
+            this.$refs.dialogform.insertSuccess('contactunitSelect')
           }
           this.innerVisible = false
         }else{
@@ -574,9 +602,10 @@ export default {
         }
       }else if(index == 'selectData'){
         this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
-      }else{
-        this.innerVisible = false
       }
+      // else{
+      //   this.innerVisible = false
+      // }
     },
     async onFloorOfHouseActions(index, content){
       if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
@@ -589,22 +618,22 @@ export default {
           this.$store.dispatch('building/setbuildingusers',await User.get())
           this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
           this.innerVisible = false
-          if(this.selectFloor !== null){
+          if(this.selectFloor !== null && this.activeFloor == 'IN'){
             await this.getFloorOfHouseList()
           }
-          if(this.activeName == 'MC'){ //重整管委會
-            await this.getFloorOfHouse()
-            if(index === 'update') await this.getManagementList()
+          if(this.activeName == 'MC' && index === 'update'){ //重整管委會
+            await this.getManagementList()
           }
           if(index == 'create'){
-            this.$refs.dialog.insertSuccess('floorOfHouseSelect')
+            console.log('floorOfHouseSelect')
+            this.$refs.dialogform.insertSuccess('floorOfHouseSelect')
           }
         }
       }else if(index === 'createfile'){
         await this.handleFilesUpload('createfile','floorOfHouse',content)
       }else if(index == 'selectData'){
         this.$store.dispatch('building/setbuildingusers',await User.get())
-      }else{
+      }else if(index == 'deletefile'){
         await this.handleFilesUpload('deletefile','floorOfHouse',content)
       }
     },
@@ -628,12 +657,12 @@ export default {
               this.$message('更新成功')
               this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
               if(this.activeName == 'MC'){ //重整管委會
-                await this.getFloorOfHouse()
+                // await this.getFloorOfHouse()
                 await this.getManagementList()
               }
             }else{
               this.$message('新增成功')
-              this.$refs.dialog.insertSuccess('userInfo')
+              this.$refs.dialogform.insertSuccess('userInfo')
             }
             this.innerVisible = false
           }else{
@@ -648,11 +677,14 @@ export default {
           this.$message('新增成功')
           this.$store.dispatch('building/setbuildingusers',await User.get())
           await this.getUserList()
-          this.innerVisible = false
+          this.excelVisible = false
+        }else{
+          this.$message.error('系統錯誤')
         }
-      }else{
-        this.innerVisible = false
       }
+      // else{
+      //   this.innerVisible = false
+      // }
     },
     async onBuildingActions(index, content){
       if(index == 'update'){
@@ -665,7 +697,6 @@ export default {
           this.innerVisible = false
         }
       }else if(index == 'selectData'){
-        console.log('selectDataselectDataselectData')
         this.$store.dispatch('building/setbuildingusers',await User.get())
       }else{
         this.innerVisible = false
@@ -675,11 +706,9 @@ export default {
       this.isTable = value
       //內部轉頁面
       if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
-        if(typeof this.$route.params.target == 'object' && 
-        this.$route.params.type == 'user'){
-          await this.handleBuildingInfo('open',this.$route.params.target)
-        }else if(typeof this.$route.params.target == 'object' && 
-          this.$route.params.type == 'contactunit'){
+        if(typeof this.$route.params.target == 'object' && this.$route.params.type == 'user'){
+          await this.handleBuildingInfo('openUser',this.$route.params.target)
+        }else if(typeof this.$route.params.target == 'object' && this.$route.params.type == 'contactunit'){
           this.activeName = 'Vender'
           this.title = 'contactUnit'
           this.tableConfig = Contactunit.getTableConfig() 

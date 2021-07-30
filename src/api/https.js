@@ -82,6 +82,7 @@ service.interceptors.request.use(
         config.headers.menu = store.getters.menuId
     }
     config.headers.loadReverse = true
+    config.headers.buildId = store.getters.buildingid
     return config
   },
   error => {

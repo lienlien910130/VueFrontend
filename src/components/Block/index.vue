@@ -192,7 +192,8 @@
                                 {{ item.getType() }}
                                 </span>
 
-                                <span v-else-if="option.format == 'userInfo' " 
+                                <span v-else-if="option.format == 'userInfo'  || option.format == 'usageOfFloorUserInfo' || 
+                                 option.format =='commitUserInfo' " 
                                 @click="clickMessageBox('住戶資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ changeUserName(item[option.prop]) }}
@@ -218,11 +219,11 @@
                                     {{ item.getUsageOfFloorsName() }}
                                 </span>
 
-                                <span v-else-if="option.format == 'floorOfHouseUsersName' " 
+                                <!-- <span v-else-if="option.format == 'floorOfHouseUsersName' " 
                                 @click="clickMessageBox('住戶資料','floorOfHouseUsersName',item.getlinkUsageOfFloorsUser())"
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ changeUserName(item.getlinkUsageOfFloorsUser()) }}
-                                </span>
+                                </span> -->
 
                                 <span v-else-if="option.format == 'deviceSelect' || option.format == 'addressdeviceSelect' ||
                                 option.format == 'assignDeviceSelect' " 
@@ -261,15 +262,6 @@
                                     {{ item.getInspectionLackName() }}
                                 </span>
 
-                                <!-- <el-input v-else-if="option.format == 'address' "
-                                v-model="item[option.prop]"
-                                :maxlength="option.maxlength"
-                                show-word-limit
-                                @change="checkUpdate(item)"
-                                @input="item[option.prop] = 
-                                item[option.prop].replace(/[^\d]/g,'').replace(/\s*/g,'')">
-                                </el-input> -->
-                                
                                 <span v-else>{{ item[option.prop] }}</span>
                             </div>
                         </div>
@@ -281,7 +273,9 @@
                             :key="index"
                             >
                             <el-button
-                            :type="button.status == 'open' ? 'primary' : button.status == 'delete' ? 'info' : 'danger'"
+                            :type="button.status == 'open' ? 'primary' : 
+                            button.status == 'delete' ? 'info' : 
+                            button.status == 'openfiles' ? 'danger' : 'warning'"
                             @click="handleClickOption(button.status,item)"
                             size="mini"
                             :disabled="button.status == 'delete' && 
@@ -368,8 +362,9 @@
                                             {{ scope.row[item.prop] | changeBoolean(item.format) }}
                                         </span>
 
-                                        <span v-else-if="item.format == 'userInfo' "
-                                        @click="clickMessageBox('住戶資料',item.format,scope.row[item.prop])"
+                                        <span v-else-if="item.format == 'userInfo' || item.format == 'usageOfFloorUserInfo' ||
+                                        item.format =='commitUserInfo' "
+                                        @click="clickMessageBox('住戶資料','userInfo',scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ changeUserName(scope.row[item.prop]) }}
                                         </span>
@@ -405,11 +400,11 @@
                                             {{ scope.row.getUsageOfFloorsName() }}
                                         </span>
 
-                                        <span v-else-if="item.format == 'floorOfHouseUsersName' " 
+                                        <!-- <span v-else-if="item.format == 'floorOfHouseUsersName' " 
                                         @click="clickMessageBox('住戶資料','floorOfHouseUsersName',scope.row.getlinkUsageOfFloorsUser())"
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ changeUserName(scope.row.getlinkUsageOfFloorsUser()) }}
-                                        </span>
+                                        </span> -->
 
                                         <span v-else-if="item.format == 'buildingSelect' " 
                                         @click="clickMessageBox('建築物資料',item.format,scope.row[item.prop])"
@@ -486,7 +481,7 @@
                                             placement="top">
                                                 <i 
                                                 class="el-icon-setting" 
-                                                @click="handleClickOption('address',scope.row)" 
+                                                @click="handleClickOption('openaddress',scope.row)" 
                                                 style="cursor: pointer;font-size:25px;float:right"
                                                 >
                                                 </i>
@@ -822,7 +817,7 @@ export default {
                         }else if(item == 'collaborate'){
                             value = data[item] == true ? '合作中' : '未配合'
                         }else if(item == 'linkOwners' || item == 'linkUsers' || 
-                        item == 'linkFireManagers' ){
+                        item == 'linkFireManagers' || item == 'linkLivingUsers' ){
                             value = this.changeUserName(data[item])
                         }else if(item == 'linkKeeperUnits' || item == 'linkMaintainVendors'){
                             value = this.changeContainUnit(data[item])
@@ -892,27 +887,27 @@ export default {
                                             message: '請先選擇該棟建築物，才可對住戶進行編輯',
                                             type: 'warning'
                                         })
-                                    }else if(this.title == 'floorOfHouse'){ //門牌資料>打開住戶資料
+                                    }else if(this.title == 'floorOfHouse' || this.title == 'committee'){ //門牌資料>打開住戶資料
                                         this.handleClickOption('openuser',data)
                                     }else{
-                                        this.$router.push({ name: 'basic', params: { target: data,type:'user' }})
+                                        this.$router.push({ name: 'basic', params: { target: data, type:'user' }})
                                     }
                                     break;
                                 case 'deviceTypeSelect': //設備種類>設備管理-設備種類
                                     this.$router.push({ name: 'deviceTypesManagement', params: { target: data, type:'open' }})
                                     break;
-                                case 'deviceSelect': //設備>設備管理-設備清單
-                                    this.$router.push({ name: 'devicesManagement', params: { target: data }})
+                                case 'deviceSelect': case 'assignDeviceSelect': case 'addressdeviceSelect': //設備>設備管理-設備清單 & 點位>設備管理-設備清單
+                                    this.$router.push({ name: 'devicesManagement', params: { target: data, type:'open' }})
                                     break;
                                 case 'contactunitSelect': //廠商資料>平時管理-基本資料
-                                    this.$router.push({ name: 'basic', params: { target: data,type:'contactunit' }})
+                                    this.$router.push({ name: 'basic', params: { target: data, type:'contactunit' }})
                                     break;
                                 case 'floorOfHouseSelect': //門牌資料>打開當前視窗
                                     this.handleClickOption('openfloorofhouse',data)
                                     break;
-                                case 'floorOfHouseUsersName': //管委會>打開住戶資料
-                                    this.handleClickOption('openuser',data)
-                                    break;
+                                // case 'floorOfHouseUsersName': //管委會>打開住戶資料
+                                //     this.handleClickOption('openuser',data)
+                                //     break;
                                 case 'roleSelect': //角色資料>權限設定-角色管理
                                     this.$router.push({ name: 'roleSetting', params: { target: data, type:'open' }})
                                     break;
@@ -973,7 +968,7 @@ export default {
                 if(this.selectArray.length == 0){
                     this.$message.error('請勾選要更新的資料列')
                 }else{
-                    this.$emit('handleBlock', this.title , status , this.selectArray)
+                    //this.$emit('handleBlock', this.title , status , this.selectArray)
                 }
             } else if(status === 'deleteMany'){
                 if(this.selectArray.length == 0){
@@ -985,7 +980,7 @@ export default {
                     type: 'warning',
                     center: true
                     }).then(() => {
-                        this.$emit('handleBlock', this.title , status , this.selectArray)
+                        //this.$emit('handleBlock', this.title , status , this.selectArray)
                     }).catch(() => {
                     })
                 }

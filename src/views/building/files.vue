@@ -1,7 +1,7 @@
 <template>
     <div class="editor-container">
         <el-col :xs="24" :sm="24" :md="24" :lg="24">
-            <div class="block-wrapper-files" :style="{ height: blockwrapperheight }">
+            <div class="block-wrapper-files" >
                 <el-row>
                     <el-col :xs="24" :sm="24" :md="24" :lg="15" style="padding:0px">
                         

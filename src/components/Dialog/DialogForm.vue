@@ -78,12 +78,13 @@
                     item.format =='roleSelect' ||  
                     item.format =='buildingSelect' || 
                     item.format == 'floorOfHouseSelect'
-                    || item.format =='userInfo' "
+                    || item.format =='userInfo' || item.format == 'maintainListSelect' || item.format == 'usageOfFloorUserInfo' "
                     v-model="temp[item.prop]"
                     filterable
                     multiple
                     :multiple-limit=" item.format =='deviceTypeSelect' || item.format == 'assignDeviceSelect' 
-                    || item.format == 'addressdeviceSelect' ? 1 : 0"
+                    || item.format == 'addressdeviceSelect' || item.format == 'maintainListSelect' || 
+                    item.format == 'floorOfHouseSelect' ? 1 : 0 "
                     value-key="id"
                     placeholder="請選擇"
                     style="width:100%"
@@ -92,15 +93,16 @@
                         <el-option
                         v-for="(obj,index) in selectfilter(item.format)"
                         :key="index"
-                        :label="item.format =='deviceTypeSelect' ? obj.getSelectName() : obj.label"
+                        :label="item.format =='deviceTypeSelect' ? obj.getSelectName() : 
+                        item.format =='maintainListSelect' ? obj.getName() : obj.label"
                         :value="obj"
-                        :disabled="item.format =='addressdeviceSelect' ? obj.disabled : false "
+                        :disabled="item.format =='addressdeviceSelect' || item.format == 'usageOfFloorUserInfo' ? obj.disabled : false "
                         >
                         </el-option>  
                 </el-select>
-
+                <!-- 管委會的住戶選擇 -->
                 <el-select
-                    v-else-if="item.format =='floorOfHouseuserInfo'"
+                    v-else-if="item.format =='commitUserInfo'"
                     v-model="temp[item.prop]"
                     filterable
                     multiple
@@ -111,11 +113,10 @@
                     :disabled="disable"
                     >
                         <el-option
-                        v-for="(obj,index) in floorOfHouseuserInfoArray"
+                        v-for="(obj,index) in commitUserInfoArray"
                         :key="index"
-                        :label="obj.label"
+                        :label="obj.getName()"
                         :value="obj"
-                        :disabled="item.usageOfFloor == null ? false : true "
                         >
                         </el-option>  
                 </el-select>
@@ -415,7 +416,11 @@ export default {
                                 this.$set(v, 'id', v.getID()) 
                                 return v
                             })
-                        case 'inspectionSelect': case 'floorOfHouseSelect': case 'deviceTypeSelect':
+                        case 'maintainListSelect':
+                            return this.selectData[1]
+                        case 'inspectionSelect':
+                            return this.selectData[0]
+                        case 'floorOfHouseSelect': case 'deviceTypeSelect':
                             return this.selectData
                         case 'userInfo':
                             if(this.title == 'building'){
@@ -428,6 +433,14 @@ export default {
                                     return v
                                 })
                             }
+                        case 'usageOfFloorUserInfo':
+                            return this.buildingusers.map(v => {
+                                    this.$set(v, 'value', v.getID()) 
+                                    this.$set(v, 'label', v.getName()) 
+                                    this.$set(v, 'id', v.getID()) 
+                                    this.$set(v, 'disabled', !(v.getUsageOfFloor() == null) )
+                                    return v
+                            })
                         case 'roleSelect' :
                             return this.buildingroles.map(v => {
                                 this.$set(v, 'value', v.getID()) 
@@ -472,7 +485,7 @@ export default {
             originalProtocolMode:'',
             originalDeviceType:'',
             originalInternet:'',
-            floorOfHouseuserInfoArray:[]
+            commitUserInfoArray:[]
         }
     },
     methods: {
@@ -504,6 +517,25 @@ export default {
                         }
                     }
                 }
+                if(this.title == 'committee'){
+                    var usage = this.temp.getLinkUsageOfFloors()
+                    var data = []
+                    if(usage.length){
+                        this.disable = false
+                        var user = this.temp.getLinkUsers()
+                        if(user.length){
+                            data.push(user[0])
+                        }
+                        usage[0].getLinkUsers().forEach(element => {
+                            data.push(element)
+                        })
+                        usage[0].getLivingUsers().forEach(element => {
+                            data.push(element)
+                        })
+                        const set = new Set()
+                        this.commitUserInfoArray = data.filter(item => !set.has(item.id) ? set.add(item.id) : false)
+                    }   
+                }
             }
             this.$nextTick(() => {
                 if(this.$refs.dataForm !== undefined){
@@ -521,9 +553,11 @@ export default {
                 return ""
             }
         },
-        //設備清單裡面--設備種類異動時須預設種類的控制欄位同步到設備的控制欄位&設備種類為授信總機/plc時可編輯網路編號欄位
+        // 設備清單-設備種類選項
+        // 點位-火警總機選項
+        // 管委會-選擇住戶
         checkMode(value,format){
-            console.log(this.title, format)
+            // console.log(this.title, format)
             if(value.length){
                if(this.title == 'equipment' && format == 'deviceTypeSelect'){
                     this.temp['protocolMode'] = value[0].getProtocolMode()
@@ -541,8 +575,16 @@ export default {
                         this.disable = true
                     }
                }else if(this.title == 'committee' && format == 'floorOfHouseSelect'){
-                   this.disable = false
-                   console.log(value)
+                    this.disable = false
+                    var data = []
+                    value[0].getLinkUsers().forEach(element => {
+                        data.push(element)
+                    })
+                    value[0].getLivingUsers().forEach(element => {
+                        data.push(element)
+                    })
+                    const set = new Set()
+                    this.commitUserInfoArray = data.filter(item => !set.has(item.id) ? set.add(item.id) : false)
                }
             }else{
                 if(this.title == 'equipment' && format == 'deviceTypeSelect'){
@@ -551,9 +593,11 @@ export default {
                     this.temp['protocolMode'] = 0
                     this.temp['systemUnUseMode'] = 0
                 }else if(this.title == 'deviceAddressManagement' && format == 'assignDeviceSelect'){
-
+                    this.disable = true
+                    this.temp['internet'] = ''
                 }else if(this.title == 'committee' && format == 'floorOfHouseSelect'){
                     this.disable = true
+                    this.temp['linkUsers'] = []
                 }
             }
         },
@@ -565,7 +609,6 @@ export default {
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    this.temp['linkDevices'] = []
                     this.$emit('handleDialog', 'openDialog', this.dialogStatus , this.temp) 
                 }).catch(() => {
                     this.temp['protocolMode'] = this.originalProtocolMode
@@ -733,7 +776,7 @@ export default {
                 var data = status == 'authoritycreate' ? this.accessArray : ''
                 this.$emit('handleDialog',this.title, status , data)
             }else if (status == 'openempty'){
-                this.$emit('handleDialog','maintainList', status , '')
+                this.$emit('handleDialog','maintain', status , '')
             }else if (status == 'tablemaintain'){
                 this.$emit('handleDialog',this.title, 'empty' , this.maintainListID)
             }

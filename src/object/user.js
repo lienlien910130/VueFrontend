@@ -17,7 +17,6 @@ class User extends Parent {
         this.email = email
         this.note = note
         this.usageOfFloor = usageOfFloor
-        return this
     }
     clone(data){
         return new User(data)
@@ -57,6 +56,9 @@ class User extends Parent {
         var year = moment(this.birthday).format('YYYY')
         var y = year - 1911
         return this.name +'-'+y.toString()+'年次'
+    }
+    getUsageOfFloor(){
+        return this.usageOfFloor
     }
     // getNameOfHouse(){
     //     var house = this.linkUsageOfFloors!== undefined && 
@@ -135,7 +137,6 @@ class User extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.building.apiGetUserSearchPages(data).then(response => {
-            console.log(JSON.stringify(response))
             response.result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new User(item)})
             return response

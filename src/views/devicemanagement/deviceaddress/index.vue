@@ -138,7 +138,6 @@ export default {
                     delete content.status
                     delete content.status
                 }
-                console.log('deviceId',deviceId)
                 var isOk = index === 'create' ? await content.create() : 
                     await DeviceAddressManagement.batchInsert(content,deviceId)
                 if(isOk){
@@ -150,7 +149,7 @@ export default {
                 }
             }else if(index == 'update'){
                 delete content.linkAssignDevices
-                var isOk = await content.update() 
+                var isOk = await content.update(title == 'openDialog' ? true : false) 
                 if(isOk){
                     this.$message('更新成功') 
                     await this.getBuildingDeviceAddressManagement()
@@ -184,6 +183,11 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
+            if(this.$route.query.type !== undefined && 
+                    this.$route.query.type == 'address' && this.$route.query.obj !== '' ){
+                var data = await DeviceAddressManagement.getOfID(this.$route.query.obj )
+                await this.handleBlock('','open',data)
+            }
         }
     }
 }

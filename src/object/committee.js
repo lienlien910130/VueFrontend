@@ -46,23 +46,16 @@ class Committee extends Parent {
     getName(){
         return this.name
     }
+    getLinkUsers(){
+        return this.linkUsers
+    }
+    getLinkUsageOfFloors(){
+        return this.linkUsageOfFloors
+    }
     getUsageOfFloorsName(){
         return this.linkUsageOfFloors.map(item=>{return item.getName()}).toString()
     }
     //搜門關聯門牌的所有使用者，去掉重複的
-    getlinkUsageOfFloorsUser(){
-        var array = []
-        for(let element of this.linkUsageOfFloors){
-            array.push(element.getlinkUsers())
-        }
-        var concatarray = array.reduce(
-            function(a, b) {
-              return a.concat(b)
-            },[]
-        )
-        var temp = removeDuplicates(concatarray,'id') 
-        return temp
-    }
     static empty(){
         return new Committee({
             id:'',
@@ -81,7 +74,7 @@ class Committee extends Parent {
             { label:'職稱' , prop:'title', mandatory:true, message:'請輸入職稱',
             isHidden:false,maxlength:'50',isSearch:true,placeholder:'請輸入職稱',
             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
-            { label:'住戶' , prop:'linkUsers',format:'floorOfHouseuserInfo', 
+            { label:'住戶' , prop:'linkUsers',format:'commitUserInfo', type:'array',typemessage:'',
             mandatory:true, message:'請選擇住戶',
             isHidden:false,isSearch:false,
             isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},

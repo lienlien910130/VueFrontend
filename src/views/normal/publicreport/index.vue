@@ -133,13 +133,6 @@ export default {
             //dialog額外的參數
             files:[],
             uploadVisible:false
-            // formtableData:[],
-            // formtableconfig: PublicSafeLack.getTableConfig(),
-            // lacklistQueryParams:{
-            //     pageIndex: 1,
-            //     pageSize: 10,
-            //     total:0
-            // }
         }
     },
     computed: {

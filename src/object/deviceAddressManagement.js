@@ -20,8 +20,13 @@ class DeviceAddressManagement extends Parent {
     clone(data){
         return new DeviceAddressManagement(data)
     }
-    async update(){
-        var data = await api.device.apiPatchDevicesAddress(this).then(async(response) => {
+    async update(resetLink){
+        // var temp = JSON.parse(JSON.stringify(this))
+        // temp.internet = '{Check}'+temp.internet
+        // temp.system = '{Check}'+temp.system
+        // temp.address = '{Check}'+temp.address
+        // temp.number = '{Check}'+temp.number
+        var data = await api.device.apiPatchDevicesAddress(resetLink,this).then(async(response) => {
             return true
         }).catch(error=>{
             return false
@@ -29,6 +34,11 @@ class DeviceAddressManagement extends Parent {
         return data
     }
     async create(){
+        // var temp = JSON.parse(JSON.stringify(this))
+        // temp.internet = '{Check}'+temp.internet
+        // temp.system = '{Check}'+temp.system
+        // temp.address = '{Check}'+temp.address
+        // temp.number = '{Check}'+temp.number
         var data = await api.device.apiPostDevicesAddress(this).then(response => {
             return true
         }).catch(error=>{
@@ -82,7 +92,7 @@ class DeviceAddressManagement extends Parent {
                label: '系統編號',
                prop: 'system',
                mandatory:true, message:'請輸入系統編號',isHidden:false,maxlength:'11',
-               pattern:/\S[^a-zA-Z]\d*-\S[^a-zA-Z]\d*$/g,errorMsg:'請輸入起始值-結束值',isPattern:true,
+               pattern:/^\d*\-\d*$/g,errorMsg:'請輸入起始值-結束值',isPattern:true,
                isSearch:true,placeholder:'請輸入系統編號',
                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
@@ -90,7 +100,7 @@ class DeviceAddressManagement extends Parent {
                 label: '位址編號',
                 prop: 'address',
                 mandatory:true, message:'請輸入位址編號',isHidden:false,maxlength:'11',
-                pattern:/\S[^a-zA-Z]\d*-\S[^a-zA-Z]\d*$/g,errorMsg:'請輸入起始值-結束值',isPattern:true,
+                pattern:/^\d*\-\d*$/g,errorMsg:'請輸入起始值-結束值',isPattern:true,
                 isSearch:true,placeholder:'請輸入位址編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
@@ -98,7 +108,7 @@ class DeviceAddressManagement extends Parent {
                 label: '編號',
                 prop: 'number',
                 mandatory:true, message:'請輸入編號',isHidden:false,maxlength:'11',
-                pattern:/\S[^a-zA-Z]\d*-\S[^a-zA-Z]\d*$/g,errorMsg:'請輸入起始值-結束值',isPattern:true,
+                pattern:/^\d*\-\d*$/g,errorMsg:'請輸入起始值-結束值',isPattern:true,
                 isSearch:true,placeholder:'請輸入編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             }
@@ -188,6 +198,7 @@ class DeviceAddressManagement extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.device.apiGetDevicesAddressSearchPages(data).then(response => {
+            console.log('sss')
             console.log(response)
             response.result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new DeviceAddressManagement(item)})

@@ -22,7 +22,6 @@ class UsageOfFloor extends Parent {
         this.linkUsers = users
         this.linkOwners = owners
         this.linkLivingUsers = livinguser
-        return this
     }
     clone(data){
         return new UsageOfFloor(data)
@@ -72,8 +71,11 @@ class UsageOfFloor extends Parent {
         return this.houseNumber
     }
     //管委會使用
-    getlinkUsers(){
+    getLinkUsers(){
         return this.linkUsers
+    }
+    getLivingUsers(){
+        return this.linkLivingUsers
     }
     static empty(){
         return new UsageOfFloor({
@@ -120,7 +122,7 @@ class UsageOfFloor extends Parent {
              type:'array',typemessage:'',
              isHidden:false,isSearch:false,
              isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
-             { label:'住戶' , prop:'linkLivingUsers',format:'userInfo', 
+             { label:'住戶' , prop:'linkLivingUsers',format:'usageOfFloorUserInfo', 
              mandatory:false, 
              type:'array',typemessage:'',
              isHidden:false,isSearch:false,

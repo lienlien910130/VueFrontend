@@ -358,8 +358,6 @@ export default {
                     type: 'warning'
                 })
             }else{
-                console.log(this.title === 'reportInspectio')
-                console.log(this.specialId !== '0',this.specialId)
                 if(this.title === 'reportInspectio' && this.specialId !== '0'){ //不是第一次設定缺失
                     this.$confirm('缺失內容檔案已上傳過，重新上傳會將舊有資料全部刪除，請問是否確認上傳?',
                     '提示', {
