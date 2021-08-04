@@ -25,7 +25,6 @@ class Building extends Parent {
         this.useful = useful
         this.linkOwners = owners
         this.linkFireManagers = fireManagers
-        return this
     }
     clone(data){
         return new Building(data)

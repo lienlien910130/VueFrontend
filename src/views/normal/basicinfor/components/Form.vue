@@ -5,45 +5,19 @@
     :label-position="label" 
     label-width="auto"> 
       <el-form-item label="名稱" prop="buildingName">
-        <!-- <el-input ref="buildingName" name="buildingName" v-model="form.buildingName" show-word-limit maxlength="20"
-        :disabled="type === 'view' ? true : false"/> -->
         <span>{{ form.buildingName }}</span>
       </el-form-item>
       <el-form-item label="地址" prop="address">
         <span>{{ form.address }}</span>
-        <!-- <el-cascader
-          v-model="addressValue"
-          :options="options"
-          :props="{ value: 'label'}"
-          style="width:100%"
-          :disabled="type === 'view' ? true : false"
-          @change="handleChange"
-        ></el-cascader>
-        <el-input ref="address" name="address" v-model="form.address"  show-word-limit maxlength="100"
-        :disabled="type === 'view' ? true : false"/> -->
       </el-form-item>
       <el-form-item label="面積" prop="area">
         <span>{{ form.area }}</span>
-        <!-- <el-input ref="area" name="area" 
-          v-model.number="form.area" 
-          type="number" min="0" :disabled="type === 'view' ? true : false">
-        <template slot="append">
-            m<sup>2</sup>
-        </template>
-        </el-input> -->
       </el-form-item>
       <el-form-item label="高度" prop="height">
         <span>{{ form.height }}</span>
-        <!-- <el-input ref="height" name="height" v-model.number="form.height"  type="number" min="0"
-        :disabled="type === 'view' ? true : false"/> -->
       </el-form-item>
       <el-form-item label="層數" prop="floorsOfAboveGround">
         <span>地上 {{ form.floorsOfAboveGround }} 層，地下 {{ form.floorsOfUnderground }} 層</span>
-                      <!-- <el-input ref="floorsOfAboveGround" name="floorsOfAboveGround" 
-                      v-model.number="form.floorsOfAboveGround" type="number" min="0" :disabled="true">
-                      <template slot="prepend">地上</template>
-                      <template slot="append">樓</template>
-                      </el-input> -->
       </el-form-item>
       <el-form-item label="場所電話" prop="contactPhone">
         <span>{{ form.contactPhone }}</span>
@@ -51,88 +25,24 @@
       <el-form-item label="場所用途" prop="useful">
         <span>{{ form.useful }}</span>
       </el-form-item>
-      <!-- <el-form-item prop="floorsOfUnderground">
-        <span>{{ form.floorsOfUnderground }}</span>
-                      <el-input ref="floorsOfUnderground" name="floorsOfUnderground" 
-                      v-model.number="form.floorsOfUnderground" type="number" min="0" :disabled="true">
-                      <template slot="prepend">地下</template>
-                      <template slot="append">樓</template>
-                      </el-input>
-      </el-form-item> -->
       <el-form-item label="使用執照字號" prop="licenseNumber">
         <span>{{ form.licenseNumber }}</span>
-                      <!-- <el-input ref="licenseNumber" name="licenseNumber" v-model="form.licenseNumber" show-word-limit maxlength="30"
-                      :disabled="type === 'view' ? true : false"/> -->
       </el-form-item>
       <el-form-item label="所有權人" prop="linkOwners">
         <span @click="openUser(form.linkOwners)" 
         style="color:#66b1ff;cursor:pointer">
           {{ changeUserName(form.linkOwners) }}
         </span>
-        <!-- <el-select 
-        v-if="this.type === 'edit'" 
-        filterable multiple 
-        v-model="linkOwners" style="width:100%">
-          <el-option v-for="(item,index) in buildingUsers" 
-          :key="index" :label="item.label" :value="item.id">
-          </el-option>
-        </el-select>
-
-        <el-input v-else-if="this.type === 'view' 
-        && form.linkOwners.length == 0 
-        && this.buildingusers.length > 0" 
-          ref="linkOwners" name="linkOwners" placeholder="請設定所有權人" 
-          disabled></el-input>
-
-        <el-button v-else-if="this.buildingusers.length == 0" type="text" 
-        @click="openDialog">新增用戶</el-button>
-        
-        <el-input v-else-if="form.linkOwners.length" ref="linkOwners" name="linkOwners" 
-        :placeholder="changeUserName(form.linkOwners)" disabled>
-          <template slot="append">
-            <el-link :underline="false" @click="openUser(form.linkOwners)">查看</el-link>
-          </template>
-        </el-input> -->
-
       </el-form-item>
       <el-form-item label="防火管理人" prop="linkFireManagers">
         <span @click="openUser(form.linkFireManagers)" 
         style="color:#66b1ff;cursor:pointer">
         {{ changeUserName(form.linkFireManagers) }}
         </span>
-        <!-- <el-select 
-        v-if="this.type === 'edit' " 
-        filterable multiple 
-        v-model="linkFireManagers" style="width:100%">
-          <el-option v-for="(item,index) in buildingUsers" 
-          :key="index" :label="item.label" :value="item.id">
-          </el-option>
-        </el-select>
-
-        <el-input v-else-if="this.type === 'view' && form.linkFireManagers.length == 0 && 
-        this.buildingusers.length>0" ref="linkFireManagers" name="linkFireManagers" 
-        placeholder="請設定防火管理人" disabled></el-input>
-
-        <el-button v-else-if="this.buildingusers.length == 0" type="text"
-         @click="openDialog">新增用戶</el-button>
-        
-        <el-input v-else-if="form.linkFireManagers.length" ref="linkFireManagers" name="linkFireManagers" 
-        :placeholder="changeUserName(form.linkFireManagers)" disabled>
-          <template slot="append">
-            <el-link :underline="false" @click="openUser(form.linkFireManagers)">查看</el-link>
-          </template>
-        </el-input> -->
-
       </el-form-item>
     </el-form>
-    <!-- <div>
-      <p>建築物名稱：{{ }}</p>
-    </div> -->
     <div style="float:right">
       <el-button type="primary" @click="handleClick">修改</el-button>
-      <!-- <el-button type="primary" @click="onEdit" v-if="type === 'view' ">修改</el-button>
-      <el-button type="primary" :loading="loading"  @click="postBuildingInfo" v-if="type === 'edit' ">儲存</el-button>
-      <el-button type="info" @click="onCancel" v-if="type === 'edit' ">取消</el-button> -->
     </div>
   </div>
 </template>
@@ -166,40 +76,7 @@ export default {
     }
   },
   data() {
-    const vaildateInt = (rule, value, callback) => {
-      if (!value) {
-        return callback(new Error('請輸入層數'))
-      }
-      if (!Number(value)) {
-        callback(new Error('請輸入正確格式'))
-      } else {
-        const re = /^[0-9]*[1-9][0-9]*$/
-        const rsCheck = re.test(value)
-        if (!rsCheck) {
-          callback(new Error('請輸入正確格式'))
-        } else {
-          callback();
-        }
-      }
-    }
-    const validateNumber = (rule, value, callback) => {
-      let numberReg = /^\d+$|^\d+[.]?\d+$/
-      if (!numberReg.test(value)) {
-        callback(new Error('請輸入正確格式'))
-      } else if (value == '') {
-        rule.name == 'area' ? callback(new Error('請輸入面積')) : callback(new Error('請輸入高度'))
-      } else {
-        callback()
-      }
-    }
-    const validateText = (rule, value, callback) => {
-      if (value == '' || value == undefined) {
-        rule.name == 'buildingName' ? callback(new Error('請輸入名稱')) : 
-        rule.name == 'address' ? callback(new Error('請輸入地址')) : callback(new Error('請輸入執照字號'))
-      } else {
-        callback()
-      }
-    }
+   
     return {
       buildingUsers:[],
       origin: {},
@@ -208,17 +85,6 @@ export default {
         linkFireManagers:[]
       },
       type: 'view',
-      formRules: {
-            buildingName: [{ required: true, trigger: 'blur', validator: validateText, name:'buildingName' }],
-            address: [{ required: true, trigger: 'blur', validator: validateText, name:'address' }],
-            area: [{ required: true, trigger: 'blur', validator: validateNumber, name:'area' }],
-            height: [{ required: true, trigger: 'blur', validator: validateNumber, name:'height' }],
-            floorsOfAboveGround: [{ required: true, trigger: 'blur', validator: vaildateInt, name:'floorsOfAboveGround' }],
-            floorsOfUnderground: [{ required: true, trigger: 'blur', validator: vaildateInt, name:'floorsOfUnderground' }],
-            licenseNumber: [{ required: true, trigger: 'blur', validator: validateText, name:'licenseNumber' }],
-            linkOwners: [{ required: false, trigger: 'change', message: '請選擇所有權人' }],
-            linkFireManagers: [{ required: false, trigger: 'change', message: '請選擇防火管理人' }]
-      },
       linkOwners:'',
       linkFireManagers:'',
       loading:false,
@@ -279,8 +145,8 @@ export default {
           await this.form.update()
           this.addressValue = []
           var data = await Building.get()
-          this.$store.dispatch('building/setbuildingarray',data)
-          this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+          this.$store.dispatch('building/setBuildingList',data)
+          this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
           this.$message('更新成功')
           this.type = 'view'
         }

@@ -326,8 +326,8 @@ export default {
                     this.innerVisible = false
                     this.uploadVisible = false
                 }else if(index === 'clickPagination'){
-                    this.tablelistQueryParams = content
-                    await this.getMaintain()
+                    // this.tablelistQueryParams = content
+                    // await this.getMaintain()
                 }
             }
         },
@@ -471,6 +471,9 @@ export default {
                         this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
                         break;
                 }
+            }else if(index === 'clickPagination'){
+                this.tablelistQueryParams = content
+                await this.getMaintain()
             }
         },
         async handleTableClick(index, content){

@@ -8,8 +8,8 @@ const device = {
     //設備管理
     apiGetBuildingDevicesManagement(){ return req('get','/index/buildings/'+this.getBid()+'/devices') },
     apiGetDevicesManagement(deviceId){ return req('get','/devicesManagement/'+deviceId) },
-    apiPostDevicesManagement(data){ return req('post','/devicesManagement/'+this.getBid(), data) },
-    apiPatchDevicesManagement(data,resetLink){ return req('patch','/devicesManagement/'+resetLink, data) },
+    apiPostDevicesManagement(data){ return req('post','/devicesManagement/'+this.getBid()+'/check', data) },
+    apiPatchDevicesManagement(data,resetLink){ return req('patch','/devicesManagement/check/'+resetLink, data) },
     apiDeleteDevicesManagement(deviceId){ return req('delete','/devicesManagement/'+deviceId) },
     apiGetDevicesManagementSearchPages(data){ return req('post','/devicesManagement/'+this.getBid()+'/ss', data)  },
     apiPostDevicesManagements(data){ return req('post','/devicesManagement/'+this.getBid()+'/check/s', data) },    
@@ -34,8 +34,8 @@ const device = {
     //點位設定
     // apiGetDevicesAddress(){ return req('get','/deviceAddressManagement/a') },
     apiGetDevicesAddress(deviceAddressId){ return req('get','/deviceAddressManagement/'+deviceAddressId) },
-    apiPostDevicesAddress(data){ return req('post','/deviceAddressManagement/'+this.getBid(),data) },
-    apiPatchDevicesAddress(resetLink,data){ return req('put','/deviceAddressManagement/'+resetLink,data) },
+    apiPostDevicesAddress(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/check',data) },
+    apiPatchDevicesAddress(resetLink,data){ return req('put','/deviceAddressManagement/check/'+resetLink,data) },
     apiDeleteDevicesAddress(deviceAddressId){ return req('delete','/deviceAddressManagement/'+deviceAddressId+'/'+true) },
     apiGetDevicesAddressSearchPages(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/ss',data)  },
     apiPostDevicesAddresses(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/s',data) }, 

@@ -305,10 +305,6 @@
                     @selection-change="handleSelectionChange"
                     :header-cell-class-name="handleHeaderCellClass"
                     :max-height="height"
-                    v-loading="pictLoading"
-                    element-loading-background = "rgba(0, 0, 0, 0.5)"
-                    element-loading-text = "資料載入中，請稍後..."
-                    element-loading-spinner = "el-icon-loading"
                     >
                         <el-table-column
                         reserve-selection
@@ -400,12 +396,6 @@
                                             {{ scope.row.getUsageOfFloorsName() }}
                                         </span>
 
-                                        <!-- <span v-else-if="item.format == 'floorOfHouseUsersName' " 
-                                        @click="clickMessageBox('住戶資料','floorOfHouseUsersName',scope.row.getlinkUsageOfFloorsUser())"
-                                        style="color:#66b1ff;cursor:pointer">
-                                            {{ changeUserName(scope.row.getlinkUsageOfFloorsUser()) }}
-                                        </span> -->
-
                                         <span v-else-if="item.format == 'buildingSelect' " 
                                         @click="clickMessageBox('建築物資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
@@ -487,33 +477,6 @@
                                                 </i>
                                             </el-tooltip>
                                         </span>
-                                        <!-- <el-button v-if="title == 'maintain' || 
-                                        title == 'reportInspectio' || title == 'reportPublicSafe' 
-                                        || title == 'floorOfHouse'   " 
-                                        @click="handleTableClick('openfiles',scope.row)" type="primary" size="small">
-                                        <i class="el-icon-folder-opened"  
-                                        style="cursor: pointer;float:right"></i>
-                                        </el-button>
-                                        <el-button v-if="title == 'reportInspectio' || title == 'reportPublicSafe' " 
-                                        @click="handleTableClick('openlacks',scope.row)" type="danger" size="small">
-                                        缺失
-                                        </el-button>
-                                        <el-button v-if="title == 'roles' || title == 'account'"
-                                        @click="handleTableClick('distribution',scope.row)" type="danger" size="small">
-                                        {{ title == 'roles' ? '分配權限' : '查看權限'}}
-                                        </el-button>
-                                        <el-button 
-                                            @click="handleTableClick('open',scope.row)" 
-                                            type="primary" 
-                                            size="small">
-                                            編輯
-                                        </el-button>
-                                        <el-button 
-                                            type="info" size="small" 
-                                            @click="handleTableClick('delete',scope.row)"
-                                            :disabled="scope.row.removable !== undefined && scope.row.removable == false">
-                                            刪除
-                                        </el-button>  -->
                                     </div>
                                 </template>
                             </el-table-column>
@@ -764,7 +727,6 @@ export default {
             orderArray:[],
             inputSelect:null,
             inputSearch:'',
-            pictLoading:false,
             //更新多筆&刪除多筆使用
             selectArray:[],
             //電腦版搜尋
@@ -1091,7 +1053,6 @@ export default {
             return this.config.filter(item => item.isSearch == true)
         },
         clearInputSearch(){
-            //this.pictLoading = true
             this.inputSelect = null
             this.$emit('resetlistQueryParams')
         },
@@ -1113,7 +1074,6 @@ export default {
                         this.$set(this.listQueryParams,item.prop,'{LIKE}'+words[index])
                     }
                 })
-                //this.pictLoading = true
                 this.listQueryParams.pageIndex = 1
                 this.$emit('update:listQueryParams', this.listQueryParams)
                 this.$emit('clickPagination')
@@ -1125,7 +1085,6 @@ export default {
         },
         // 改變翻頁組件中每頁數據總數
         handleSizeChange(val) {
-            //this.pictLoading = true
             this.listQueryParams.pageSize = val
             this.listQueryParams.pageIndex = 1 // 改變翻頁數目，將頁面=1
             this.$emit('update:listQueryParams', this.listQueryParams)
@@ -1133,13 +1092,9 @@ export default {
         },
         // 跳到當前是第幾頁
         handleCurrentChange(val) {
-            //this.pictLoading = true
             this.listQueryParams.pageIndex = val
             this.$emit('update:listQueryParams', this.listQueryParams)
             this.$emit('clickPagination')
-        },
-        resetpictLoading(){
-            this.pictLoading = false
         },
         change(){
             this.$emit('changeTable',!this.isTable)

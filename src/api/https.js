@@ -1,14 +1,12 @@
 import axios from 'axios'
-import { Message } from 'element-ui'
-import { Loading } from 'element-ui'
+import { Message, Loading } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
-import router from '@/router'
 
 let requestCount = 0;
 let loading;
 let timer;
-// (客户端请求前)显示loading
+// 顯示遮罩
 function showLoading() {
     if (requestCount === 0) {
       loading = Loading.service({
@@ -20,7 +18,7 @@ function showLoading() {
     }
     requestCount++
 }
-// (服务器响应后)尝试隐藏loading
+// 隱藏遮罩
 function tryHideLoading() {
     requestCount-- 
     //采用setTimeout是为了解决一个请求结束后紧接着有另一请求发起导致loading闪烁的问题
@@ -31,11 +29,11 @@ function tryHideLoading() {
       }
     })
 }
+// 重置遮罩
 function resetLoading(){
     requestCount = 0
     loading.close()
 }
-
 const tip = msg => {
     Message.error(msg)
 }
@@ -56,7 +54,7 @@ const errorHandle = (status,error) =>{
             break;
         case 401:
             tip('登入過期，請重新登入')
-            store.dispatch('user/resetToken')
+            store.dispatch('user/logout')
             break;
         case 403:
             tip('權限不足')
@@ -119,6 +117,9 @@ export default function(method,url,data = null,isHeader = false) {
     console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data)+' || isHeader:'+isHeader)
     method = method.toLowerCase()
     if(method == 'post'){   
+        var search = url.indexOf('/ss')
+        var isAddress = url.indexOf('/deviceAddressManagement')
+        var isRoleSetting = url.indexOf('/roleSetting')
         if(isHeader !== false){ //檔案上傳
             return service.request({
                 url: url,
@@ -127,6 +128,9 @@ export default function(method,url,data = null,isHeader = false) {
                 data
             })
         } else{
+            if(search > 0 && isAddress < 0 && isRoleSetting < 0){ //是搜尋但不包含點位&角色
+                data.orderBy = 'id desc'
+            }
             return service.post(url,data)
         }
     }else if(method == 'get'){

@@ -1,13 +1,13 @@
 import { 
   getToken,setToken,removeToken, 
-  getID,setID,removeID,
-  removeVersion
+  getID,setID,removeID
 }  from '../../utils/auth'
 import idb from '../../utils/indexedDB'
 import { resetRouter } from '../../router'
 import user from '../../api/user.js'
 import store from '../index.js'
 import { Message } from 'element-ui'
+import { Role, Building } from '@/object/index'
 
 // 個人資料
 const getDefaultState = () => {
@@ -57,7 +57,6 @@ const actions = {
         setToken(response.accessToken) //cookie儲存
         commit('SET_USER', response.userId) //store 儲存
         setID(response.userId) //cookie儲存
-        store.dispatch('building/setbuildingarray',response.buildingList)
         resolve()
       }).catch(error => {
         console.log("error.response.status=>" + error)
@@ -72,14 +71,13 @@ const actions = {
         if (!response) {
           reject('登入失敗，請重新登入')
         }
-        const { account, name, linkRoles } = response.result[0]
-        var roles = []
-        linkRoles.forEach(element => {
-            roles.push(element.id)
-        })
+        const { account, name, linkRoles, linkBuildings } = response.result[0]
+        var roles = linkRoles.map(item=>{ return new Role(item)})
+        var buildingarray = linkBuildings.map(item=>{ return new Building(item)})
         commit('SET_ACCOUNT', account)
         commit('SET_NAME', name)
         commit('SET_ROLES', roles)
+        store.dispatch('building/setBuildingList',buildingarray)
         resolve(roles)
       }).catch(error => {
         reject(error)
@@ -93,7 +91,6 @@ const actions = {
       store.dispatch('app/closeSideBar', { withoutAnimation: false })
       removeToken() 
       removeID()
-      removeVersion()
       store.dispatch('building/resetBuildingid')
       commit('RESET_STATE')
       resetRouter()
@@ -102,18 +99,18 @@ const actions = {
   },
 
   // remove token
-  resetToken({ commit }) {
-    return new Promise(resolve => {
-      removeToken() 
-      removeID()
-      removeVersion()
-      store.dispatch('building/resetBuildingid')
-      idb.deleteDb()
-      commit('RESET_STATE')
-      resetRouter()
-      resolve()
-    })
-  }
+  // resetToken({ commit }) {
+  //   return new Promise(resolve => {
+  //     removeToken() 
+  //     removeID()
+  //     removeVersion()
+  //     store.dispatch('building/resetBuildingid')
+  //     idb.deleteDb()
+  //     commit('RESET_STATE')
+  //     resetRouter()
+  //     resolve()
+  //   })
+  // }
 }
 
 export default {

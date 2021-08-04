@@ -12,118 +12,120 @@
         @close="handleTableClick('cancel','')"
         center>
         <keep-alive>
-            <el-table
-                :key="Math.random()"
-                :data="tableData"
-                border
-                highlight-current-row
-                style="width: 100%;"
-                empty-text="暫無資料"
-                @sort-change="sortChange"
-                >
+            <el-row>
+                <el-table
+                    :key="Math.random()"
+                    :data="tableData"
+                    border
+                    highlight-current-row
+                    style="width: 100%;"
+                    empty-text="暫無資料"
+                    @sort-change="sortChange"
+                    :height="600"
+                    >
                         <el-table-column
                         fixed
                         type="index">
                         </el-table-column>
 
                         <el-table-column 
-                            v-for="(item,index) in config"
-                            align="left" 
-                            :label="item.label" 
-                            :key="index" 
-                            :prop="item.prop" 
-                            :column-key="item.prop"
-                            sortable="custom"
-                            header-align="center"
-                            >
-                            <template slot-scope="scope">
-                                    <div v-if="scope.column.property == 'lackContent'"
-                                        v-html="stringToBr(scope.row[scope.column.property])">
-                                    </div>
-                                    <span v-else-if="scope.column.property == 'status'">
-                                        {{  changeOptionName(scope.row[item.prop]) }}
-                                    </span>
-                                    <span v-else-if="scope.column.property == 'dateOfFailure' || 
-                                    scope.column.property == 'dateOfCallRepair' || 
-                                    scope.column.property == 'completedTime' " style="width:150px"> 
-                                        {{ dataStr(scope.row[scope.column.property],'YYYY-MM-DD') }}
-                                    </span>
-                                    <span v-else-if="scope.column.property == 'processStatus' 
-                                    || scope.column.property == 'processContent'"> 
-                                        {{  changeOptionName(scope.row[scope.column.property]) }}
-                                    </span>
-                                    <span v-else-if="scope.column.property == 'linkDevices'"> 
-                                        {{ scope.row.getDevicesName() }}
-                                    </span>
-                                    <span v-else-if="scope.column.property == 'linkContactUnits' "> 
-                                        {{ changeContainUnit(scope.row[scope.column.property]) }}
-                                    </span>
-                                    <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
-                                        {{ scope.row.getInspectionLackName() }}
-                                    </span>
-                                    <span v-else-if="scope.column.property == 'systemUsed'"> 
-                                        {{ scope.row[item.prop] == true ? '已設置' : '未設置' }}
-                                    </span>
-                                    <span v-else-if="scope.column.property == 'floorPlanID'"> 
+                                v-for="(item,index) in config"
+                                align="left" 
+                                :label="item.label" 
+                                :key="index" 
+                                :prop="item.prop" 
+                                :column-key="item.prop"
+                                sortable="custom"
+                                header-align="center"
+                                >
+                                <template slot-scope="scope">
+                                        <div v-if="scope.column.property == 'lackContent'"
+                                            v-html="stringToBr(scope.row[scope.column.property])">
+                                        </div>
+                                        <span v-else-if="scope.column.property == 'status'">
+                                            {{  changeOptionName(scope.row[item.prop]) }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'dateOfFailure' || 
+                                        scope.column.property == 'dateOfCallRepair' || 
+                                        scope.column.property == 'completedTime' " style="width:150px"> 
+                                            {{ dataStr(scope.row[scope.column.property],'YYYY-MM-DD') }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'processStatus' 
+                                        || scope.column.property == 'processContent'"> 
+                                            {{  changeOptionName(scope.row[scope.column.property]) }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'linkDevices'"> 
+                                            {{ scope.row.getDevicesName() }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'linkContactUnits' "> 
+                                            {{ changeContainUnit(scope.row[scope.column.property]) }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
+                                            {{ scope.row.getInspectionLackName() }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'systemUsed'"> 
+                                            {{ scope.row[item.prop] == true ? '已設置' : '未設置' }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'floorPlanID'"> 
+                                            <i 
+                                            v-if="scope.row[scope.column.property] !== null && 
+                                            scope.row[scope.column.property] !== ''"
+                                            class="el-icon-picture-outline" 
+                                            @click="handleTableClick('image',scope.row)" 
+                                            style="cursor: pointer;font-size:25px"></i>
+                                        </span>
+                                        <span v-else>{{  scope.row[item.prop] }}</span>
+                                </template>
+                        </el-table-column>
+                            
+                        <el-table-column
+                            fixed="right"
+                            label="操作">
+                            <template v-if="isHasHeaderButtons" slot="header" >
+                                <span
+                                    v-for="(button, index) in headerButtonsName"
+                                    :key="index"
+                                >
+                                    <el-tooltip 
+                                    class="item" effect="dark" :content="button.name" 
+                                    placement="top">
                                         <i 
-                                        v-if="scope.row[scope.column.property] !== null && 
-                                        scope.row[scope.column.property] !== ''"
-                                        class="el-icon-picture-outline" 
-                                        @click="handleTableClick('image',scope.row)" 
-                                        style="cursor: pointer;font-size:25px"></i>
-                                    </span>
-                                    <span v-else>{{  scope.row[item.prop] }}</span>
+                                        :class="button.icon" 
+                                        @click="handleTableClick(button.status,'')" 
+                                        style="cursor: pointer;font-size:25px;float:right"></i>
+                                    </el-tooltip>
+                                </span>
+                            </template>
+                            <template slot-scope="scope">
+                                <span
+                                v-for="(button, index) in buttonsName"
+                                :key="index"
+                                >
+                                <el-tooltip 
+                                    class="item" effect="dark" :content="button.name" 
+                                    placement="top">
+                                        <i 
+                                        :class="button.icon" 
+                                        @click="handleTableClick(button.status,scope.row)" 
+                                        style="cursor: pointer;font-size:25px;float:right"></i>
+                                </el-tooltip>
+                                </span>
                             </template>
                         </el-table-column>
-                        
-                    <el-table-column
-                        fixed="right"
-                        label="操作">
-                        <template v-if="isHasHeaderButtons" slot="header" >
-                            <span
-                                v-for="(button, index) in headerButtonsName"
-                                :key="index"
-                            >
-                                <el-tooltip 
-                                class="item" effect="dark" :content="button.name" 
-                                placement="top">
-                                    <i 
-                                    :class="button.icon" 
-                                    @click="handleTableClick(button.status,'')" 
-                                    style="cursor: pointer;font-size:25px;float:right"></i>
-                                </el-tooltip>
-                            </span>
-                        </template>
-                        <template slot-scope="scope">
-                            <span
-                            v-for="(button, index) in buttonsName"
-                            :key="index"
-                            >
-                            <el-tooltip 
-                                class="item" effect="dark" :content="button.name" 
-                                placement="top">
-                                    <i 
-                                    :class="button.icon" 
-                                    @click="handleTableClick(button.status,scope.row)" 
-                                    style="cursor: pointer;font-size:25px;float:right"></i>
-                            </el-tooltip>
-                            </span>
-                        </template>
-                    </el-table-column>
-            </el-table>
-
-            <div  class="pagination-container">
-                <el-pagination
-                    background
-                    layout="total, sizes, prev, pager, next, jumper"
-                    :current-page="page"
-                    page-sizes="[10, 30, 50, 100]"
-                    :page-size="limit"
-                    :total="total"
-                    @current-change="handleCurrentChange"
-                    @size-change="handleSizeChange"
-                ></el-pagination>
-            </div> 
+                </el-table>
+                <div  class="pagination-container">
+                    <el-pagination
+                        background
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :current-page="page"
+                        :page-sizes="[10, 30, 50, 100]"
+                        :page-size="limit"
+                        :total="total"
+                        @current-change="handleCurrentChange"
+                        @size-change="handleSizeChange"
+                    ></el-pagination>
+                </div> 
+            </el-row>
         </keep-alive>
         </el-dialog>  
     </div>
@@ -232,8 +234,6 @@ export default {
         handleSizeChange(val) {
             this.tablelistQueryParams.pageSize = val
             this.tablelistQueryParams.pageIndex = 1 // 改變翻頁數目，將頁面=1
-            console.log(this.tablelistQueryParams)
-            // this.$emit('update:tablelistQueryParams', this.tablelistQueryParams)
             this.$emit('clickPagination', 'clickPagination', this.tablelistQueryParams)
         },
         // 跳到當前是第幾頁

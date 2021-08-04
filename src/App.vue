@@ -5,10 +5,30 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 export default {
   name: 'App',
-  async created(){
-    //this.initsocket()
+  created(){
+    this.initsocket()
+  },
+  computed: {
+    ...mapGetters([
+        'wsmsg',
+        'wsuserId'
+    ])
+  },
+  watch:{
+    wsmsg:{
+      handler:async function(){
+          var data = JSON.parse(this.wsmsg.data)
+          console.log(data,this.wsuserId,data.Data.Id)
+          if(data.Data.Id !== this.wsuserId){
+              console.log('收到別人的訊息!')
+              console.log(data.Data.Content)
+          }
+      },
+      immediate:true
+    }
   },
   methods: {
     initsocket(){

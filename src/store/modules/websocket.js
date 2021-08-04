@@ -1,7 +1,8 @@
 
 const getDefaultState = () => {
     return {
-      wsmsg: ''
+      wsmsg: '',
+      wsuserId:''
     }
   }
   
@@ -13,13 +14,19 @@ const getDefaultState = () => {
     },
     SET_MSG: (state, wsmsg) => {
       state.wsmsg = wsmsg
-    }
+    },
+    SET_MSGUSERID: (state, wsuserId) => {
+      state.wsuserId = wsuserId
+    },
 }
   
 const actions = {
-    sendMsg({ commit } , wsmsg){
-        commit('SET_MSG', wsmsg)
-    }
+  sendMsg({ commit } , wsmsg){
+      commit('SET_MSG', wsmsg)
+  },
+  saveUserId({ commit } , wsuserId){
+      commit('SET_MSGUSERID', wsuserId)
+  },
 }
 
 export default {

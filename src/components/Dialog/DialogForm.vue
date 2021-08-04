@@ -84,7 +84,7 @@
                     multiple
                     :multiple-limit=" item.format =='deviceTypeSelect' || item.format == 'assignDeviceSelect' 
                     || item.format == 'addressdeviceSelect' || item.format == 'maintainListSelect' || 
-                    item.format == 'floorOfHouseSelect' ? 1 : 0 "
+                    item.format == 'floorOfHouseSelect' || item.format == 'contactunitSelect' || item.format == 'deviceSelect' ? 1 : 0 "
                     value-key="id"
                     placeholder="請選擇"
                     style="width:100%"
@@ -143,6 +143,7 @@
                     v-model="temp[item.prop]"
                     filterable
                     multiple
+                    :multiple-limit="1"
                     value-key="id"
                     placeholder="請選擇"
                     style="width:100%"
@@ -609,6 +610,7 @@ export default {
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
+                    this.temp['linkDevices'] = []
                     this.$emit('handleDialog', 'openDialog', this.dialogStatus , this.temp) 
                 }).catch(() => {
                     this.temp['protocolMode'] = this.originalProtocolMode

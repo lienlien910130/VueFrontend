@@ -2,13 +2,7 @@ import  {
   getBuildingid,setBuildingid,removeBuildingid
  }  from '../../utils/auth'
 import idb from '../../utils/indexedDB'
-import Device from '@/object/device';
-import User from '@/object/user';
-import Contactunit from '@/object/contactunit';
-import Floors from '@/object/floors';
-import Building from '@/object/building';
-import Role from '@/object/role';
-
+import { Device, User, Contactunit, Floors, Building } from '@/object/index'
 
 // 個人資料
 const getDefaultState = () => {
@@ -41,7 +35,7 @@ const mutations = {
   SET_BUILDINGINFO: (state, buildinginfo) => {
     state.buildinginfo = buildinginfo
   },
-  SET_BUILDINGARRAY: (state, buildingarray) => {
+  SET_BUILDINGLIST: (state, buildingarray) => {
     state.buildingarray = buildingarray
   },
   SET_BUILDINGOPTIONS: (state, buildingoptions) => {
@@ -72,41 +66,44 @@ const actions = {
   },
   setroles({ commit }, roles) { 
     return new Promise((resolve, reject) => {
+      console.log(roles)
       commit('SET_ROLES', roles)
       // idb.deleteData('roles')
       // idb.saveValue('roles',roles)
       resolve()
     })
   },
-  async setbuildingid({ commit }, buildingid){
+  async setBuildingID({ commit }, buildingid){
     commit('SET_BUILDINGID', buildingid)
     setBuildingid(buildingid)
   },
-  async getbuildinginfo({ commit }) { //從網頁資料庫取出來儲存在store上
-    let buildinginfo = await idb.getValue('buildingInfo')
-    var array = buildinginfo.map(item=>{ return new Building(item)})
-    commit('SET_BUILDINGINFO', array)
-  },
-  setbuildinginfo({ commit }, buildinginfo) { 
+  setBuildingList({ commit }, buildingarray) { //登入時儲存再網頁資料庫&store
     return new Promise((resolve, reject) => {
-      commit('SET_BUILDINGINFO', buildinginfo)
-      // idb.deleteData('buildingInfo')
-      // idb.saveValue('buildingInfo',buildinginfo)
-      resolve()
-    })
-  },
-  async getbuildingarray({ commit }) { //從網頁資料庫取出來儲存在store上
-    let buildingarray = await idb.getValue('buildingList')
-    commit('SET_BUILDINGARRAY', buildingarray)
-  },
-  setbuildingarray({ commit }, buildingarray) { //登入時儲存再網頁資料庫&store
-    return new Promise((resolve, reject) => {
-        commit('SET_BUILDINGARRAY', buildingarray)
-        // idb.deleteData('buildingList')
-        // idb.saveValue('buildingList',buildingarray)
+        commit('SET_BUILDINGLIST', buildingarray)
+        idb.deleteData('BuildingInfo')
+        idb.saveValue('BuildingInfo',buildingarray)
         resolve()
     })
   },
+  async getBuildingList({ commit }) { //從網頁資料庫取出來儲存在store上
+    let list = await idb.getValue('BuildingInfo')
+    commit('SET_BUILDINGLIST', list)
+  },
+ 
+  // async getbuildinginfo({ commit }) { //從網頁資料庫取出來儲存在store上
+  //   let buildinginfo = await idb.getValue('buildingInfo')
+  //   var array = buildinginfo.map(item=>{ return new Building(item)})
+  //   commit('SET_BUILDINGINFO', array)
+  // },
+  setBuildingInfo({ commit }, buildinginfo) { 
+    return new Promise((resolve, reject) => {
+      console.log(buildinginfo)
+      commit('SET_BUILDINGINFO', buildinginfo)
+      resolve()
+    })
+  },
+
+ 
   async getbuildingoptions({ commit }) { //從網頁資料庫取出來儲存在store上
     let buildingoptions = await idb.getValue('buildingOptions')
     commit('SET_BUILDINGOPTIONS', buildingoptions)
@@ -140,8 +137,6 @@ const actions = {
   setbuildingusers({ commit }, buildingusers) {
     return new Promise((resolve, reject) => {
         commit('SET_BUILDINGUSERS', buildingusers)
-        // idb.deleteData('buildingUsers')
-        // idb.saveValue('buildingUsers',buildingusers)
         resolve()
     })
   },

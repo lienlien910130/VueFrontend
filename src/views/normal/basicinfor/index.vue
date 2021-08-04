@@ -486,7 +486,7 @@ export default {
                 await this.resetlistQueryParams()
                 break;
               case 'user': //刪除user時重整建築物資料&管委會資料
-                this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+                this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
                 this.$store.dispatch('building/setbuildingusers',await User.get())
                 // if(this.activeName == 'MC'){ //重整管委會
                 //   // await this.getFloorOfHouse()
@@ -616,7 +616,7 @@ export default {
         if(isOk){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           this.$store.dispatch('building/setbuildingusers',await User.get())
-          this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+          this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
           this.innerVisible = false
           if(this.selectFloor !== null && this.activeFloor == 'IN'){
             await this.getFloorOfHouseList()
@@ -625,9 +625,10 @@ export default {
             await this.getManagementList()
           }
           if(index == 'create'){
-            console.log('floorOfHouseSelect')
             this.$refs.dialogform.insertSuccess('floorOfHouseSelect')
           }
+        }else{
+          this.$message.error('戶號不可重複')
         }
       }else if(index === 'createfile'){
         await this.handleFilesUpload('createfile','floorOfHouse',content)
@@ -655,7 +656,7 @@ export default {
             await this.getUserList()
             if(index === 'update'){
               this.$message('更新成功')
-              this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+              this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
               if(this.activeName == 'MC'){ //重整管委會
                 // await this.getFloorOfHouse()
                 await this.getManagementList()
@@ -692,7 +693,7 @@ export default {
         if(isOk){
           this.$message('更新成功')
           if(this.buildingid == content.getID()){
-            this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+            this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
           }
           this.innerVisible = false
         }

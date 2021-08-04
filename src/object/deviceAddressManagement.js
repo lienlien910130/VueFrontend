@@ -21,12 +21,12 @@ class DeviceAddressManagement extends Parent {
         return new DeviceAddressManagement(data)
     }
     async update(resetLink){
-        // var temp = JSON.parse(JSON.stringify(this))
-        // temp.internet = '{Check}'+temp.internet
-        // temp.system = '{Check}'+temp.system
-        // temp.address = '{Check}'+temp.address
-        // temp.number = '{Check}'+temp.number
-        var data = await api.device.apiPatchDevicesAddress(resetLink,this).then(async(response) => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.internet = '{Check}'+temp.internet
+        temp.system = '{Check}'+temp.system
+        temp.address = '{Check}'+temp.address
+        temp.number = '{Check}'+temp.number
+        var data = await api.device.apiPatchDevicesAddress(resetLink,temp).then(async(response) => {
             return true
         }).catch(error=>{
             return false
@@ -34,12 +34,12 @@ class DeviceAddressManagement extends Parent {
         return data
     }
     async create(){
-        // var temp = JSON.parse(JSON.stringify(this))
-        // temp.internet = '{Check}'+temp.internet
-        // temp.system = '{Check}'+temp.system
-        // temp.address = '{Check}'+temp.address
-        // temp.number = '{Check}'+temp.number
-        var data = await api.device.apiPostDevicesAddress(this).then(response => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.internet = '{Check}'+temp.internet
+        temp.system = '{Check}'+temp.system
+        temp.address = '{Check}'+temp.address
+        temp.number = '{Check}'+temp.number
+        var data = await api.device.apiPostDevicesAddress(temp).then(response => {
             return true
         }).catch(error=>{
             return false
@@ -198,8 +198,6 @@ class DeviceAddressManagement extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.device.apiGetDevicesAddressSearchPages(data).then(response => {
-            console.log('sss')
-            console.log(response)
             response.result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new DeviceAddressManagement(item)})
             return response
@@ -218,7 +216,6 @@ class DeviceAddressManagement extends Parent {
     }
     static async batchInsert(data,deviceId = null){
         var data = await api.device.apiPostDevicesAddressesBatchInsert(data,deviceId).then(response => {
-            console.log('batchInsertcount',response)
             return true
         }).catch(error=>{
             return false

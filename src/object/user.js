@@ -137,7 +137,8 @@ class User extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.building.apiGetUserSearchPages(data).then(response => {
-            response.result = response.result.sort((x,y) => x.id - y.id)
+            
+            response.result = response.result.sort((x,y) => y.id - x.id)
             .map(item=>{ return new User(item)})
             return response
         }).catch(error=>{

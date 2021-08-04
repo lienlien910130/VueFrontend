@@ -38,9 +38,9 @@ class Device extends Parent {
         return new Device(data)
     }
     async update(resetLink){
-        // var temp = JSON.parse(JSON.stringify(this))
-        // if(temp.internetNumber !== '' )  temp.internetNumber = '{Check}'+temp.internetNumber  
-        var data = await api.device.apiPatchDevicesManagement(this,resetLink).then(async(response) => {
+        var temp = JSON.parse(JSON.stringify(this))
+        if(temp.internetNumber !== '' )  temp.internetNumber = '{Check}'+temp.internetNumber  
+        var data = await api.device.apiPatchDevicesManagement(temp,resetLink).then(async(response) => {
             return true
         }).catch(error=>{
             return false
@@ -48,9 +48,12 @@ class Device extends Parent {
         return data
     }
     async create(){
-        // var temp = JSON.parse(JSON.stringify(this))
-        // if(temp.internetNumber !== '' )  temp.internetNumber = '{Check}'+temp.internetNumber 
-        var data = await api.device.apiPostDevicesManagement(this).then(response => {
+        var temp = JSON.parse(JSON.stringify(this))
+        if(temp.internetNumber !== '' )  
+        {
+            temp.internetNumber = '{Check}'+temp.internetNumber 
+        }
+        var data = await api.device.apiPostDevicesManagement(temp).then(response => {
             return true
         }).catch(error=>{
             return false

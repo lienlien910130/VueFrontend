@@ -175,9 +175,9 @@ export default {
     },
     async handleSelect(content){
        if(content !== undefined){
-          this.$store.dispatch('building/setbuildingid',content.id)
+          this.$store.dispatch('building/setBuildingID',content.id)
           this.$store.dispatch('permission/setRoutes')
-          this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+          this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
           this.$store.dispatch('building/setbuildingusers',await User.get())
           this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
           this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())

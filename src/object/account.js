@@ -116,7 +116,7 @@ class Account extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.authority.apiGetAccountAuthoritySearchPages(data).then(response => {
-            response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Account(item)})
+            response.result = response.result.map(item=>{ return new Account(item)})
             return response
         }).catch(error=>{
             return []

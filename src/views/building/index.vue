@@ -208,7 +208,7 @@ export default {
           if(isOk){
             this.$message('刪除成功')
             await this.resetlistQueryParams()
-            this.$store.dispatch('building/setbuildingarray',await Building.get())
+            this.$store.dispatch('building/setBuildingList',await Building.get())
             if(this.buildingid == content.getID()){
               this.$store.dispatch('permission/generateRoutes', true)
               this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
@@ -308,7 +308,7 @@ export default {
           var isOk = await this.postFloor(buildingId)
           if(isOk){
             this.$message('新增成功')
-            this.$store.dispatch('building/setbuildingarray',await Building.get())
+            this.$store.dispatch('building/setBuildingList',await Building.get())
             await this.getAllBuilding()
             this.innerVisible = false
           }else{
@@ -318,9 +318,9 @@ export default {
           var isOk = await content.update()
           if(isOk){
             this.$message('更新成功')
-            this.$store.dispatch('building/setbuildingarray',await Building.get())
+            this.$store.dispatch('building/setBuildingList',await Building.get())
             if(this.buildingid == content.getID()){
-              this.$store.dispatch('building/setbuildinginfo',await Building.getInfo())
+              this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
             }
             await this.getAllBuilding()
             this.innerVisible = false
@@ -338,7 +338,7 @@ export default {
           }
           if(isOk){
             this.$message('新增成功')
-            this.$store.dispatch('building/setbuildingarray',await Building.get())
+            this.$store.dispatch('building/setBuildingList',await Building.get())
             await this.getAllBuilding()
             this.innerVisible = false
           }else{

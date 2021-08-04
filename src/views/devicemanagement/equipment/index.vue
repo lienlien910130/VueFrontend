@@ -191,11 +191,13 @@ export default {
                     await this.getBuildingDevicesManage()
                     this.innerVisible = false
                     this.excelVisible = false
+                    //var data = await Device.get()
+                    this.$socket.sendMsg('device','dataupdate','ww')
                     if(index == 'create'){
                         this.$refs.dialogform.insertSuccess('deviceSelect')
                     }
                 }else{
-                    this.$message.error('系統錯誤') 
+                    this.$message.error('網路編號不可重複') 
                 }
             }else if(index === 'selectData' && window.child && window.child.open){
                 switch (content) {
@@ -223,12 +225,12 @@ export default {
                 var routeData = this.$router.resolve({ path: '/equipment/address',query:{ type:'address',obj:content.getID() } })
                 window.open(routeData.href, '_blank')
             }else if(index == 'clickPagination'){
-                //this.tablelistQueryParams = content
-                // if(this.tableTitle == 'devicemaintain'){
-                //     await this.getDevicesManageMaintain()
-                // }else{  
-                //     await this.getDevicesAddress()
-                // }
+                this.tablelistQueryParams = content
+                if(this.tableTitle == 'devicemaintain'){
+                    await this.getDevicesManageMaintain()
+                }else{  
+                    await this.getDevicesAddress()
+                }
             }else{
                 this.tableVisible = false
             }

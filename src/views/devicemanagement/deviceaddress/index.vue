@@ -155,6 +155,7 @@ export default {
                     await this.getBuildingDeviceAddressManagement()
                     this.innerVisible = false
                     if(title == 'openDialog'){
+                        this.$store.dispatch('building/setbuildingdevices',await Device.get())
                         var data = await DeviceAddressManagement.getOfID(content.getID())
                         await this.handleBlock(this.title,'open',data)
                     }

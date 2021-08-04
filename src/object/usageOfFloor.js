@@ -35,7 +35,9 @@ class UsageOfFloor extends Parent {
         return data
     }
     async create(floorId){
-        var data = await api.building.apiPostFloorOfHouse(floorId,this).then(response => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.houseNumber = '{Check}'+temp.houseNumber  
+        var data = await api.building.apiPostFloorOfHouse(floorId,temp).then(response => {
             return true
         }).catch(error=>{
             return false

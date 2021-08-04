@@ -1,25 +1,18 @@
 import router from './router'
 import store from './store'
 import { Message } from 'element-ui'
-import NProgress from 'nprogress' // progress bar
-import 'nprogress/nprogress.css' // progress bar style
-import { getToken,getBuildingid } from '@/utils/auth' // get token from cookie
-import User from './object/user'
-import Role from './object/role'
-import Building from './object/building'
-import DeviceType from './object/deviceType'
-import Contactunit from './object/contactunit'
-import Device from './object/device'
-import Floors from './object/floors'
-import Setting from './object/setting'
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css' 
+import { getToken, getBuildingid } from '@/utils/auth' 
+import { User,Role,Building,DeviceType,Contactunit,Device,Floors,Setting } from './object/index'
+import idb from './utils/indexedDB'
 
-
-NProgress.configure({ showSpinner: false }) // NProgress Configuration
+NProgress.configure({ showSpinner: false }) 
 
 const whiteList = ['/login'] // no redirect whitelist
 
 router.beforeEach(async(to, from, next) => {
-  // logForTranslate.logtoLocal('router=>'+to.name,from.name)
+ 
   console.log(to.name,from.name,to.meta.title)
   NProgress.start()
   document.title = `${to.meta.title} - 智慧消防管理平台`
@@ -51,18 +44,17 @@ router.beforeEach(async(to, from, next) => {
             await store.dispatch('building/setdeviceType',await DeviceType.getDefault()) ////跟大樓無關連
             const isSystem = store.getters.id == '1'
             if(isSystem){ //系統管理員=>取得所有大樓清單
-              store.dispatch('building/setbuildingarray',await Building.get())
+              store.dispatch('building/setBuildingList',await Building.get())
             }
             if(buildingID){ //已經有選過大樓
               console.log('已選擇過建築物大樓')
-              await store.dispatch('building/setbuildingid', buildingID)
-              if(!isSystem) await store.dispatch('building/setbuildingarray',
-              await Building.get()) 
+              await store.dispatch('building/setBuildingID', buildingID)
+              if(!isSystem) await store.dispatch('building/setBuildingList',await Building.get()) 
               await store.dispatch('permission/setRoutes') //設定選單資料庫&側邊選單欄
-              await store.dispatch('building/setbuildinginfo',await Building.getInfo())
-              await store.dispatch('building/setbuildingusers',await User.get())
+              await store.dispatch('building/setBuildingInfo',await Building.getInfo())
               await store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
               await store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
+              await store.dispatch('building/setbuildingusers',await User.get())
               await store.dispatch('building/setbuildingdevices',await Device.get())
               await store.dispatch('building/setbuildingfloors',await Floors.get())
             }else{ //第一次登入 選單初始化

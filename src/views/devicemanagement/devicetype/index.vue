@@ -66,8 +66,6 @@ export default {
             var data = await DeviceType.getSearchPage(this.listQueryParams)
             this.blockData = data.result
             this.listQueryParams.total = data.totalPageCount
-            this.$refs.block.resetpictLoading()
-            await this.getFilterItems()
         },
         async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
