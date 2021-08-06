@@ -372,8 +372,8 @@ export default {
         this.excelVisible = true
         this.excelType = 'uploadExcel'
       }else if(index === 'clickPagination'){
-        // this.lacklistQueryParams = content
-          // await this.getInspectionLack()
+        this.tablelistQueryParams = content
+        await this.getPublicSafeLack()
       }else{
         if(this.isUpdate){
           await this.getBuildingPublicSafeReport()

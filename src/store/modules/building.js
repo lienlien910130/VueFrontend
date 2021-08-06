@@ -140,18 +140,30 @@ const actions = {
         resolve()
     })
   },
-  async getbuildingdevices({ commit }) { //從網頁資料庫取出來儲存在store上
-    let buildingdevices = await idb.getValue('buildingDevices')
-    var array = buildingdevices.map(item=>{ return new Device(item)})
-    commit('SET_BUILDINGDEVICES', array)
-  },
+  // async getbuildingdevices({ commit }) { //從網頁資料庫取出來儲存在store上
+  //   let buildingdevices = await idb.getValue('buildingDevices')
+  //   var array = buildingdevices.map(item=>{ return new Device(item)})
+  //   commit('SET_BUILDINGDEVICES', array)
+  // },
   setbuildingdevices({ commit }, buildingdevices) {
     return new Promise((resolve, reject) => {
         commit('SET_BUILDINGDEVICES', buildingdevices)
-        // idb.deleteData('buildingDevices')
-        // idb.saveValue('buildingDevices',buildingdevices)
         resolve()
     })
+  },
+  updateDevice({ commit }, content){
+    var obj = state.buildingdevices.find((item) => {
+        return item.id === content.id
+    })
+    console.log(obj)
+    // obj = content
+    console.log(state.buildingdevices)
+  },
+  deleteDevice({ commit }, id){
+    var obj = state.buildingdevices.filter((item) => {
+        return item.id !== id
+    })
+    commit('SET_BUILDINGDEVICES', obj)
   },
   async getbuildingfloors({ commit }) { //從網頁資料庫取出來儲存在store上
     let buildingfloors = await idb.getValue('buildingFloors')

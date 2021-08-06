@@ -286,8 +286,8 @@ export default {
          null : content.getImageID()
         await this.handleUpload(this.floor,index,content)
       }else if(index === 'clickPagination'){
-        // this.lacklistQueryParams = content
-          // await this.getInspectionLack()
+        this.tablelistQueryParams = content
+        await this.getFloorList()
       }else if(index === 'image'){
         var _temp = await content.getImage()
         this.previewPath = _temp
@@ -393,7 +393,7 @@ export default {
         this.uploadVisible = false
         this.excelVisible = false
       }else if(index === 'clickPagination'){
-        // this.floorlistQueryParams = content
+        // this.tablelistQueryParams = content
         // await this.getFloorList()
       }else if(index === 'exportExcel'){
         this.exportExcelData = this.tableData

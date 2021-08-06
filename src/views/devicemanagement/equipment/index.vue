@@ -191,8 +191,8 @@ export default {
                     await this.getBuildingDevicesManage()
                     this.innerVisible = false
                     this.excelVisible = false
-                    //var data = await Device.get()
-                    this.$socket.sendMsg('device','dataupdate','ww')
+                    var data = await Device.get()
+                    this.$socket.sendMsg('device','dataupdate',data)
                     if(index == 'create'){
                         this.$refs.dialogform.insertSuccess('deviceSelect')
                     }

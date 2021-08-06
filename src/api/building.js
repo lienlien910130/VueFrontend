@@ -10,7 +10,7 @@ const building = {
     apiPostBuilding(data){ return req('post','/index/buildings',data) },
     apiDeleteBuilding(buildingId){ return req('delete','/index/buildings/'+buildingId) },
     apiPatchBuildingInfo(data){ return req('patch','/index/buildings',data) }, //修改建築物資料
-    apiGetBuildingSearchPages(data){ return req('post','index/buildings/ss',data)  },
+    apiGetBuildingSearchPages(data){ return req('post','index/buildings/ss',data, true)  },
     apiPostBuildings(data){ return req('post','index/buildings/s',data) },    
     
     //管委會
@@ -18,7 +18,7 @@ const building = {
     apiPostCommittee(data){ return req('post','/basic/'+this.getBid()+'/community-management-committee',data) },
     apiPatchCommittee(data){ return req('patch','/basic/community-management-committee',data) },
     apiDeleteCommittee(committeeId){ return req('delete','/basic/'+committeeId+'/community-management-committee') },
-    apiGetCommitteeSearchPages(data){ return req('post','/basic/'+this.getBid()+'/community-management-committee/ss',data)  },
+    apiGetCommitteeSearchPages(data){ return req('post','/basic/'+this.getBid()+'/community-management-committee/ss',data, true)  },
     apiPostCommittees(data){ return req('post','/basic/'+this.getBid()+'/community-management-committee/s',data) },    
     
     //廠商
@@ -27,7 +27,7 @@ const building = {
     apiPostContactUnit(data){ return req('post','/basic/'+this.getBid()+'/contact-unit/check',data) },
     apiPatchContactUnit(data){ return req('patch','/basic/contact-unit/check',data) },
     apiDeleteContactUnit(contactunitId){ return req('delete','/basic/'+contactunitId+'/contact-unit') },
-    apiGetContactUnitSearchPages(data){ return req('post','/basic/'+this.getBid()+'/contact-unit/ss',data)  },
+    apiGetContactUnitSearchPages(data){ return req('post','/basic/'+this.getBid()+'/contact-unit/ss',data,true)  },
     apiPostContactUnits(data){ return req('post','/basic/'+this.getBid()+'/contact-unit/check/s',data) },    
     
     //樓層
@@ -51,14 +51,14 @@ const building = {
     apiGetFloorOfHouseUser(floorofhouseId){ return req('get','/basic/usageOfFloors/'+floorofhouseId+'/house-holders') },
     apiPostFloorOfHouseUser(floorofhouseId,data){ return req('post','/basic/usageOfFloors/'+floorofhouseId+'/house-holders',data) },
     
-    //使用者資料
+    //住戶資料
     apiGetAllBuildingOfUser(){ return req('get','/index/'+this.getBid()+'/a/house-holders') },
     apiGetBuildingOfUser(buildingId){ return req('get','/index/'+buildingId+'/a/house-holders') },
     apiGetUser(userId){ return req('get','/basic/house-holders/'+userId) },
     apiPostUser(data){ return req('post','/basic/'+this.getBid()+'/house-holders/check',data) },
     apiPatchUser(data){ return req('patch','/basic/house-holders/check',data) },
     apiDeleteUser(userId){ return req('delete','/basic/'+userId+'/house-holders') },
-    apiGetUserSearchPages(data){ return req('post','/basic/'+this.getBid()+'/house-holders/ss',data)  },
+    apiGetUserSearchPages(data){ return req('post','/basic/'+this.getBid()+'/house-holders/ss',data, true)  },
     apiPostUsers(data){ return req('post','/basic/'+this.getBid()+'/house-holders/check/s',data) },    
     
 }

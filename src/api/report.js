@@ -10,7 +10,7 @@ const report = {
     apiPostInspection(data){ return req('post','/reportInspection/'+this.getBid(),data) },
     apiPatchInspection(data){ return req('patch','/reportInspection',data) },
     apiDeleteInspection(reportInspectionListId){ return req('delete','/reportInspection/'+reportInspectionListId) },
-    apiGetInspectionSearchPages(data){ return req('post','/index/reportInspection/'+this.getBid()+'/ss',data)  },
+    apiGetInspectionSearchPages(data){ return req('post','/index/reportInspection/'+this.getBid()+'/ss',data,true)  },
     apiPostInspections(data){ return req('post','/reportInspection/'+this.getBid()+'/s',data) },    
     apiGetInspectionColumn(data){ return req('post','/reportInspection/'+this.getBid()+'/list/listValue',data)  },
     
@@ -31,7 +31,7 @@ const report = {
     apiPostPublicSafe(data){ return req('post','/reportPublicSafe/'+this.getBid(),data) },
     apiPatchPublicSafe(data){ return req('patch','/reportPublicSafe',data) },
     apiDeletePublicSafe(reportPublicSafeListId){ return req('delete','/reportPublicSafe/'+reportPublicSafeListId) },
-    apiGetPublicSafeSearchPages(data){ return req('post','/index/reportPublicSafe/'+this.getBid()+'/ss',data)  },
+    apiGetPublicSafeSearchPages(data){ return req('post','/index/reportPublicSafe/'+this.getBid()+'/ss',data,true)  },
     apiPostPublicSafes(data){ return req('post','/reportPublicSafe/'+this.getBid()+'/s',data) },    
     apiGetPublicSafeColumn(data){ return req('post','/reportPublicSafe/'+this.getBid()+'/list/listValue',data)  },
     //公安申報缺失

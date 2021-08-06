@@ -100,7 +100,7 @@ service.interceptors.response.use(
       if(error) {
           //成功發出請求且收到resp，但有error
           //alert(error)
-          console.log(error.response.status,error.response.data.errorMessage)
+          console.log(error.response.status,error.response)
           errorHandle(error.response.status,error)
           return Promise.reject(error)
       } else {
@@ -113,13 +113,11 @@ service.interceptors.response.use(
   }
 )
 
-export default function(method,url,data = null,isHeader = false) {
+export default function(method, url, data = null, isOrderby = false, isHeader = false) {
     console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data)+' || isHeader:'+isHeader)
     method = method.toLowerCase()
     if(method == 'post'){   
         var search = url.indexOf('/ss')
-        var isAddress = url.indexOf('/deviceAddressManagement')
-        var isRoleSetting = url.indexOf('/roleSetting')
         if(isHeader !== false){ //檔案上傳
             return service.request({
                 url: url,
@@ -128,9 +126,10 @@ export default function(method,url,data = null,isHeader = false) {
                 data
             })
         } else{
-            if(search > 0 && isAddress < 0 && isRoleSetting < 0){ //是搜尋但不包含點位&角色
+            if( search>0 && isOrderby ){ 
                 data.orderBy = 'id desc'
             }
+            console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data)+' || isHeader:'+isHeader)
             return service.post(url,data)
         }
     }else if(method == 'get'){

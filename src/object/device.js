@@ -41,6 +41,7 @@ class Device extends Parent {
         var temp = JSON.parse(JSON.stringify(this))
         if(temp.internetNumber !== '' )  temp.internetNumber = '{Check}'+temp.internetNumber  
         var data = await api.device.apiPatchDevicesManagement(temp,resetLink).then(async(response) => {
+            console.log(JSON.stringify(response))
             return true
         }).catch(error=>{
             return false
@@ -54,6 +55,7 @@ class Device extends Parent {
             temp.internetNumber = '{Check}'+temp.internetNumber 
         }
         var data = await api.device.apiPostDevicesManagement(temp).then(response => {
+            console.log(JSON.stringify(response))
             return true
         }).catch(error=>{
             return false
@@ -280,8 +282,7 @@ class Device extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.device.apiGetDevicesManagementSearchPages(data).then(response => {
-            response.result = response.result.sort((x,y) => x.id - y.id)
-            .map(item=>{ return new Device(item)})
+            response.result = response.result.map(item=>{ return new Device(item)})
             return response
         }).catch(error=>{
             return []

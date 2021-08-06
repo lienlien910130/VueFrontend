@@ -11,10 +11,10 @@ const device = {
     apiPostDevicesManagement(data){ return req('post','/devicesManagement/'+this.getBid()+'/check', data) },
     apiPatchDevicesManagement(data,resetLink){ return req('patch','/devicesManagement/check/'+resetLink, data) },
     apiDeleteDevicesManagement(deviceId){ return req('delete','/devicesManagement/'+deviceId) },
-    apiGetDevicesManagementSearchPages(data){ return req('post','/devicesManagement/'+this.getBid()+'/ss', data)  },
+    apiGetDevicesManagementSearchPages(data){ return req('post','/devicesManagement/'+this.getBid()+'/ss', data, true)  },
     apiPostDevicesManagements(data){ return req('post','/devicesManagement/'+this.getBid()+'/check/s', data) },    
     //取得維護保養
-    apiGetDevicesManagementMaintain(data){ return req('post','/devicesManagement/maintains/ss',data) },
+    apiGetDevicesManagementMaintain(data){ return req('post', '/devicesManagement/maintains/ss', data, true) },
     //火警總機/plc取得點位
     apiGetLinkDeviceAddresss(data,deviceId){ return req('post','/devicesManagement/deviceAddressManagement/ss',data) },
     //設備清單-取得設備種類
@@ -28,7 +28,7 @@ const device = {
     apiPostDevicesType(data){ return req('post','/deviceTypesManagement',data) },
     apiPatchDevicesType(data){ return req('patch','/deviceTypesManagement',data) },
     apiDeleteDevicesType(deviceTypeId){ return req('delete','/deviceTypesManagement/'+deviceTypeId) },
-    apiGetDevicesTypeSearchPages(data){ return req('post','/deviceTypesManagement/ss',data)  },
+    apiGetDevicesTypeSearchPages(data){ return req('post','/deviceTypesManagement/ss',data, true)  },
     apiPostDevicesTypes(data){ return req('post','/deviceTypesManagement/s',data) },    
     
     //點位設定
@@ -37,7 +37,7 @@ const device = {
     apiPostDevicesAddress(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/check',data) },
     apiPatchDevicesAddress(resetLink,data){ return req('put','/deviceAddressManagement/check/'+resetLink,data) },
     apiDeleteDevicesAddress(deviceAddressId){ return req('delete','/deviceAddressManagement/'+deviceAddressId+'/'+true) },
-    apiGetDevicesAddressSearchPages(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/ss',data)  },
+    apiGetDevicesAddressSearchPages(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/ss', data)  },
     apiPostDevicesAddresses(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/s',data) }, 
     //批次新增
     apiPostDevicesAddressesBatchInsert(data,deviceId = null){ 
@@ -59,7 +59,7 @@ const device = {
     apiPostMaintainsList(data){ return req('post','/maintainManagement/buildings/'+this.getBid()+'/maintains',data) },
     apiPatchMaintainsList(data){ return req('patch','/maintainManagement',data) },
     apiDeleteMaintainsList(maintainListId){ return req('delete','/maintainManagement/'+maintainListId) },
-    apiGetMaintainsListSearchPages(data){ return req('post','/maintainManagement/'+this.getBid()+'/ss',data)  },
+    apiGetMaintainsListSearchPages(data){ return req('post','/maintainManagement/'+this.getBid()+'/ss', data, true)  },
     apiPostMaintainsLists(data){ return req('post','/maintainManagement/'+this.getBid()+'/s',data) },    
     
     //維護保養取得檢修申報缺失內容
@@ -71,8 +71,8 @@ const device = {
     apiPostMaintain(maintainListId,data){ return req('post','/maintainManagement/maintains/'+maintainListId+'/list',data) },
     apiPatchMaintains(data){ return req('patch','/maintainManagement/maintains/list',data) },
     apiDeleteMaintains(maintainId){ return req('delete','/maintainManagement/maintains/list/'+maintainId) },
-    apiGetMaintainAllSearchPages(data){ return req('post','/index/'+this.getBid()+'/maintains/list/ss',data)  },
-    apiGetMaintainSearchPages(maintainListId,data){ return req('post','/maintainManagement/maintains/'+maintainListId+'/list/ss',data)  },
+    apiGetMaintainAllSearchPages(data){ return req('post','/index/'+this.getBid()+'/maintains/list/ss', data, true)  },
+    apiGetMaintainSearchPages(maintainListId,data){ return req('post','/maintainManagement/maintains/'+maintainListId+'/list/ss', data, true)  },
     apiPostMaintains(maintainListId,data){ return req('post','/maintainManagement/maintains/'+maintainListId+'/list/s',data) },    
     
 }
