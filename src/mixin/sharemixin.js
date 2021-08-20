@@ -19,7 +19,9 @@ export default {
             'device',
             'menu',
             'wsmsg',
-            'wsuserId'
+            'wsuserId',
+            'menuAuthority',
+            'role_record'
         ]),
         TimeOptions(){ //設定名稱
             return function (value) {
@@ -52,6 +54,12 @@ export default {
           },
           immediate:true
         },
+        // menuAuthority:{
+        //     handler:async function(){
+                
+        //     },
+        //     immediate:true
+        // },
         device:{
             handler:async function(){
                 this.device == 'desktop' ? this.changeTable(true) : this.changeTable(false)

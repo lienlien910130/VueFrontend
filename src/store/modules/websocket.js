@@ -22,6 +22,7 @@ const getDefaultState = () => {
   
 const actions = {
   sendMsg({ commit } , wsmsg){
+      console.log('sendMsgsendMsgsendMsg')
       commit('SET_MSG', wsmsg)
   },
   saveUserId({ commit } , wsuserId){

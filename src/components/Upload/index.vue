@@ -70,8 +70,8 @@
                                     {{ item.getFileName() }}.{{ item.getExtName() }} 
                                 </span>
                                 <span style="float:right">
-                                    {{ item.getExtName() }}  
-                                    {{ ' / 上傳時間：'+item.getUploadTime() }}
+                                    <!-- {{ item.getExtName() }}   -->
+                                    {{ '時間：'+item.getUploadTime() }}
                                 </span>
                             </span>
                         </div>
@@ -97,6 +97,7 @@
 </template>
 
 <script>
+import { Files } from '@/object'
 import { mapGetters } from 'vuex'
 export default {
     name:'Upload',
@@ -241,7 +242,7 @@ export default {
             var data 
             if(filename == 'png' || filename == 'jpeg' 
             || filename == 'jpg'){
-                data = await file.image()
+                data = await Files.getImage(file.getID())
                 this.type = 'image'
             }else {
                 data = await file.download()

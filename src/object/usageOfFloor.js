@@ -10,9 +10,9 @@ class UsageOfFloor extends Parent {
         const { houseNumber,placeName, capacity, note,
             spatialCharacteristics,businessHours,
             linkUsers, linkOwners, linkLivingUsers } = data
-        var owners = linkUsers.map(item=>{ return new User(item)})
-        var users = linkOwners.map(item=>{ return new User(item)})
-        var livinguser = linkLivingUsers.map(item=>{ return new User(item)})
+        var owners = linkUsers !== undefined ? linkUsers.map(item=>{ return new User(item)}) : []
+        var users = linkOwners !== undefined ? linkOwners.map(item=>{ return new User(item)}) : []
+        var livinguser = linkLivingUsers !== undefined ? linkLivingUsers.map(item=>{ return new User(item)}) :[]
         this.houseNumber = houseNumber
         this.placeName = placeName
         this.capacity = capacity
@@ -27,20 +27,23 @@ class UsageOfFloor extends Parent {
         return new UsageOfFloor(data)
     }
     async update(){
-        var data = await api.building.apiPatchFloorOfHouse(this).then(async(response) => {
-            return true
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.houseNumber = '{Check}'+temp.houseNumber 
+        var data = await api.building.apiPatchFloorOfHouse(temp).then(async(response) => {
+            console.log(JSON.stringify(response))
+            return new UsageOfFloor(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
     async create(floorId){
         var temp = JSON.parse(JSON.stringify(this))
         temp.houseNumber = '{Check}'+temp.houseNumber  
-        var data = await api.building.apiPostFloorOfHouse(floorId,temp).then(response => {
-            return true
+        var data = await api.building.apiPostFloorOfHouse(floorId, temp).then(response => {
+            return new UsageOfFloor(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
@@ -136,6 +139,7 @@ class UsageOfFloor extends Parent {
     }
     static async getAll(){
         var data = await api.building.apiGetBuildingOfHouse().then(response => {
+            console.log(JSON.stringify(response))
             var result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new UsageOfFloor(item)})
             return result
@@ -155,8 +159,8 @@ class UsageOfFloor extends Parent {
         return data
     }
     static async getSearchPage(floorId,data){
-        var data = await api.building.apiGetFloorOfHouseSearchPages(floorId,data).then(response => {
-            response.result = response.result.sort((x,y) => x.id - y.id)
+        var data = await api.building.apiGetFloorOfHouseSearchPages(floorId, data).then(response => {
+            response.result = response.result.sort((x,y) => x.houseNumber - y.houseNumber)
             .map(item=>{ return new UsageOfFloor(item)})
             return response
         }).catch(error=>{

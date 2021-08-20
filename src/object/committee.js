@@ -96,8 +96,7 @@ class Committee extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.building.apiGetCommitteeSearchPages(data).then(response => {
-            response.result = response.result.sort((x,y) => x.id - y.id)
-            .map(item=>{ return new Committee(item)})
+            response.result = response.result.map(item=>{ return new Committee(item)})
             return response
         }).catch(error=>{
             return []

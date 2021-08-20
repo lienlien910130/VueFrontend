@@ -107,7 +107,10 @@ export default {
         },
         async getOptions(){ //取得大樓的所有分類
             this.options = await Setting.getAllOption()
-            this.$store.dispatch('building/setbuildingoptions',this.options)
+            this.$store.dispatch('building/setoptions', this.options)
+            if(this.setting_record == 0){
+                this.$store.dispatch('record/saveSettingRecord',1)
+            }
         },
         optionsFilter(title){
             let data = this.options.filter((item, index) => 
@@ -153,28 +156,30 @@ export default {
         },
         async PostData(index,content){
             var temp = {
-                'classType' : '{Check}'+index,
-                'textName':'{Check}'+content,
+                'classType' : index,
+                'textName': content,
                 'sort':99
             }
-            var isOk = await Setting.checkOption(temp)
-            if(isOk){
+            var result = await Setting.postOption(temp)
+            if(Object.keys(result).length !== 0){
                 this.$message("新增成功")
                 await this.getOptions()
-                if(window.opener !== undefined && window.opener !== null){
-                    window.opener.postMessage('setting', window.location)
-                }
+                this.$socket.sendMsg('setting', 'create' , result)
+                // if(window.opener !== undefined && window.opener !== null){
+                //     window.opener.postMessage('setting', window.location)
+                // }
             }else{
                 this.$message.error('不可重複新增')
             }
         },
         async UpdateData(content){
-            var isOk = await Setting.updateOption(content)
-            if(isOk){
+            var result = await Setting.updateOption(content)
+            if(Object.keys(result).length !== 0){
                 this.$message("更新成功")
                 this.type = 'view'
                 this.current = ''
                 await this.getOptions()
+                this.$socket.sendMsg('setting', 'update' , result)
             }else{
                 this.$message.error('不可重複新增')
             }
@@ -184,6 +189,7 @@ export default {
             if(isOk){
                 this.$message("刪除成功")
                 await this.getOptions()
+                this.$socket.sendMsg('setting', 'delete' , content)
             }
         }
     }

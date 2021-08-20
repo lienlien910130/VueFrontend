@@ -79,14 +79,17 @@ import store from '../store'
      _this.startWsHeartbeat()
    },
    //發送訊息
-   sendMsg: function(dataType,sendType,content){
+   sendMsg: function(dataType,sendType,content,Bid = null){
       const msg = {
         DataType:dataType,
         SendType:sendType,
         SenderName:store.getters.name,
-        Data:{ Id:store.getters.wsuserId, Content:content}
+        Data:{ 
+          Id: store.getters.wsuserId, 
+          Bid: Bid == null ? store.getters.buildingid : Bid, 
+          Content:content
+        }
       }
-      console.log(JSON.stringify(msg))
       this.$ws.send(JSON.stringify(msg))
    }
  }

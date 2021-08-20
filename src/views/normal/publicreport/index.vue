@@ -10,7 +10,7 @@
                     </i>
                   </div>
                   <div class="content">
-                    <span> {{ this.buildinginfo[0].getName() }}</span> 
+                    <span> {{ this.buildinginfo.getName() }}</span> 
                   </div>
                 </div>
                 <div class="verticalhalfdiv">
@@ -38,7 +38,7 @@
                     </div>
                     <div class="content">
                       <div
-                        v-for="(item,index) in this.buildinginfo[0].linkOwners"
+                        v-for="(item,index) in this.buildinginfo.linkOwners"
                         :key="index" class="user">
                         <div style="padding-bottom:2px">
                             姓名 ： {{ item.name }}
@@ -59,7 +59,7 @@
                     </div>
                     <div class="content">
                       <div
-                        v-for="(item,index) in this.buildinginfo[0].linkFireManagers"
+                        v-for="(item,index) in this.buildinginfo.linkFireManagers"
                         :key="index" class="user">
                         <div style="padding-bottom:2px">
                             姓名 ： {{ item.name }}
@@ -178,14 +178,6 @@ export default {
       }
       await this.getBuildingPublicSafeReport()
     },
-    async resettablelistQueryParams(){
-      this.tablelistQueryParams = {
-          pageIndex: 1,
-          pageSize: 10,
-          total:0
-      }
-      await this.getPublicSafeLack()
-    },
     async getCertificateNumber(){
       var data = await PublicSafe.getColumn({
               "professName": "{IsNotNull}"
@@ -225,7 +217,11 @@ export default {
         var isDelete = await content.delete()
         if(isDelete){
           this.$message('刪除成功')
-          await this.resetlistQueryParams()
+          if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
+            this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+          }
+          await this.getBuildingPublicSafeReport()
+          // await this.resetlistQueryParams()
         }else{
           this.$message.error('系統錯誤')
         }
@@ -243,7 +239,8 @@ export default {
         this.uploadVisible = true
       }else if(index === 'openlacks'){
         this.publicSafe = content
-        await this.resettablelistQueryParams()
+        this.tablelistQueryParams = { pageIndex: 1, pageSize: 10, total:0 }
+        await this.getPublicSafeLack()
         this.tableVisible = true
       }else if(index === 'exportExcel'){
         this.exportExcelData = this.blockData
@@ -319,6 +316,7 @@ export default {
               this.$message.error('系統錯誤')
           }
         }else if(index === 'cancel'){
+          this.innerVisible = false
           this.excelVisible = false
         }else if(index === 'cancellack'){
           this.innerVisible = false
@@ -332,9 +330,10 @@ export default {
           }else{
               this.$message.error('系統錯誤')
           }
-        }else if(index === 'selectData'){
-          this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
         }
+        // else if(index === 'selectData'){
+        //   this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
+        // }
     },
     async handleTableClick(index, content){
       console.log(index,JSON.stringify(content))
@@ -352,7 +351,11 @@ export default {
         var isDelete = await content.delete()
         if(isDelete){
             this.$message('刪除成功')
-            await this.resettablelistQueryParams()
+            if(this.tablelistQueryParams.pageIndex !== 1 && this.tableData.length == 1){
+              this.tablelistQueryParams.pageIndex = this.tablelistQueryParams.pageIndex-1
+            }
+            await this.getPublicSafeLack()
+            //await this.resettablelistQueryParams()
             this.isUpdate = true
         }else{
           this.$message.error('系統錯誤')

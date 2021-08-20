@@ -21,7 +21,7 @@ class InspectionLacks extends Parent {
         return data
     }
     async create(inspectionId){
-        var data = await api.report.apiPostInspectionLack(inspectionId,this).then(response => {
+        var data = await api.report.apiPostInspectionLack(inspectionId, this).then(response => {
             return true
         }).catch(error=>{
             return false
@@ -93,7 +93,7 @@ class InspectionLacks extends Parent {
         return data
     }
     static async postMany(inspectionId,data){
-        var data = await api.report.apiPostInspectionLacks(inspectionId,data).then(response => {
+        var data = await api.report.apiPostInspectionLacks(inspectionId, data).then(response => {
             return true
         }).catch(error=>{
             return false

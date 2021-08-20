@@ -5,45 +5,48 @@ const files = {
     getUid(){ return store.getters.id},
     getBid(){ return store.getters.buildingid},
 
-    apiGetAllFiles(data){ return req('post','/fileManager/'+this.getBid()+'/ss',data, true)  },
+    apiGetAllFiles(data){ return req('post','/fileManager/'+this.getBid()+'/ss', null, data, true)  },
 
     //大樓檔案
     apiGetBuildingFiles(){ return req('get','/index/'+this.getBid()+'/filesList') } ,
-    apiPostBuildingFiles(data){ return req('post','/basic/'+this.getUid()+'/buildings/'+this.getBid()+'/fileUpload',data,false,true) } ,
-    
+    // apiPostBuildingFiles(data){ return req('post','/basic/'+this.getUid()+'/buildings/'+this.getBid()+'/fileUpload',data,false,true) } ,
+    apiPostBuildingFiles(data){ return req('upload','/index/'+this.getUid()+'/fileUpload', null, data) } ,
     //樓層檔案
     apiGetFloorFiles(floorId){ return req('get','/index/Floors/'+floorId+'/filesList') } ,
-    apiPostFloorFiles(floorId,data){ return req('post','/basic/'+this.getUid()+'/buildings/'+this.getBid()+'/Floors/'+floorId+'/fileUpload',data,false,true) } ,
+    // apiPostFloorFiles(floorId,data){ return req('post','/basic/'+this.getUid()+'/buildings/'+this.getBid()+'/Floors/'+floorId+'/fileUpload',data,false,true) } ,
+    apiPostFloorFiles(floorId,data){ return req('upload','/index/'+this.getUid()+'/Floors/'+floorId+'/fileUpload', null, data) } ,
     //樓層平面圖檔案
-    apiGetFloorImage(filesId){ return req('get','/Public/fileDownload/'+filesId+'/r',null,false,true) } ,
+    // apiGetFloorImage(filesId){ return req('files','/public/fileDownload/'+filesId+'/r') } ,
 
     //門牌檔案
     apiGetFloorOfHouseFiles(floorofhouseId){ return req('get','/basic/usageOfFloors/'+floorofhouseId+'/filesList') } ,
+    // apiPostFloorOfHouseFiles(floorofhouseId,data){ 
+    //     return req('post','/basic/'+this.getUid()+'/buildings/'+this.getBid()+'/usageOfFloors/'+floorofhouseId+'/fileUpload',data,false,true) } ,
     apiPostFloorOfHouseFiles(floorofhouseId,data){ 
-        return req('post','/basic/'+this.getUid()+'/buildings/'+this.getBid()+'/usageOfFloors/'+floorofhouseId+'/fileUpload',data,false,true) } ,
-    
+        return req('upload','/basic/usageOfFloors/'+this.getUid()+'/'+floorofhouseId+'/fileUpload',null, data) } ,
+
     //檢修申報
-    apiGetInspectionFiles(reportInspectionListId){ return req('get',
-    '/reportInspection/'+reportInspectionListId+'/filesList') } ,
+    apiGetInspectionFiles(reportInspectionListId){ return req('get', '/reportInspection/'+reportInspectionListId+'/filesList') } ,
     apiPostInspectionFiles(reportInspectionListId,data){ 
-        return req('post',
-        '/reportInspection/'+this.getUid()+'/buildings/'+this.getBid()+'/'+reportInspectionListId+'/fileUpload',data,false,true) } ,
+        return req('upload',
+        '/reportInspection/'+this.getUid()+'/buildings/'+this.getBid()+'/'+reportInspectionListId+'/fileUpload', null, data) } ,
     
     //公安申報
     apiGetPublicSafeFiles(reportPublicSafeListId){ return req('get',
     '/reportPublicSafe/'+reportPublicSafeListId+'/filesList') } ,
     apiPostPublicSafeFiles(reportPublicSafeListId,data){ 
-        return req('post','/reportPublicSafe/'+this.getUid()+'/buildings/'+this.getBid()+'/'+reportPublicSafeListId+'/fileUpload',data,false,true) } ,
+        return req('upload','/reportPublicSafe/'+this.getUid()+'/buildings/'+this.getBid()+'/'+reportPublicSafeListId+'/fileUpload', null, data) } ,
     
     //維護保養大項
-    apiGetMaintainsListFiles(maintainListId){ return req('get','/maintainManagement/maintains/'+maintainListId+'/filesList') } ,
+    apiGetMaintainsListFiles(maintainListId){ return req('get','/maintainListManagement/maintains/'+maintainListId+'/filesList') } ,
     apiPostMaintainsListFiles(maintainListId,data){ 
-        return req('post','/maintainManagement/'+this.getUid()+'/buildings/'+this.getBid()+'/maintains/'+maintainListId+'/fileUpload',data,false,true) } ,
+        return req('upload','/maintainListManagement/'+this.getUid()+'/maintains/'+maintainListId+'/fileUpload', null, data) } ,
 
     //維護保養細項
-    apiGetMaintainsFiles(maintainId){ return req('get','/maintainManagement/maintains/list/'+maintainId+'/filesList') } ,
+    
+    apiGetMaintainsFiles(maintainId){ return req('get','/maintainListManageMent/maintainManagement/maintains/list/'+maintainId+'/filesList')},
     apiPostMaintainsFiles(maintainId,data){ 
-        return req('post','/maintainManagement/'+this.getUid()+'/buildings/'+this.getBid()+'/maintains/list/'+maintainId+'/fileUpload',data,false,true) } ,
+        return req('upload','/maintainListManagement/maintainManagement/'+this.getUid()+'/maintains/list/'+maintainId+'/fileUpload', null, data) } ,
 
     //用圖控檔案id找資料
     apiGetFileIdToGraphicFile(supervisoryControlSystemId){ 
@@ -52,13 +55,13 @@ const files = {
     apiGetFloorIdToGraphicFile(floorId){ 
         return req('get','/drawingControl/floors/'+floorId+'/supervisoryControlSystems') },
     apiPostGraphicFile(floorId,data){ 
-        return req('post','/drawingControl/'+this.getUid()+'/buildings/'+this.getBid()+'/floors/'+floorId+'/supervisoryControlSystems/file',
-        data,false,true) },
+        return req('upload','/drawingControl/'+this.getUid()+'/buildings/'+this.getBid()+'/floors/'+floorId+'/supervisoryControlSystems/file', null,
+        data) },
 
     //共用方法 刪除/下載
-    apiDeleteFile(data){ return req('post','/public/fileDelete',data) },
-    apiGetFile(fileId){ return req('get','/public/fileDownload/'+fileId,null,false,true) },
-    apiGetImage(fileId){ return req('get','/public/fileDownload/'+fileId+'/r',null,false,true) }
+    apiDeleteFile(data){ return req('post','/public/fileDelete', null, data) },
+    apiGetFile(fileId){ return req('files','/public/fileDownload/'+fileId) },
+    apiGetImage(fileId){ return req('files','/public/fileDownload/'+fileId+'/r') }
     
 }
 

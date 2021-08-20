@@ -83,6 +83,7 @@ export default {
             this.title = 'accessAuthority'
             this.tableConfig = AccessAuthority.getTableConfig()
             this.hasSearch = false
+            
         },
         async handleTreeNode(node,data){
             this.selectId = data.getID()
@@ -105,8 +106,11 @@ export default {
             }else if(index === 'delete'){
                 var isOk = await content.delete()
                 if(isOk){
-                    this.$store.dispatch('permission/setmenu',await  Menu.get())
                     this.$message('刪除成功')
+                    this.$socket.sendMsg('menus','reset', '')
+                    this.$store.dispatch('permission/setmenu',await  Menu.get())
+                    // var array = await AccessAuthority.get(this.selectId)
+                    // this.blockData = array.result
                 }else{
                     this.$message.error('系統錯誤')
                 }
@@ -158,15 +162,20 @@ export default {
                 index === 'create' ? await content.create() : await AccessAuthority.postMany(content)
                 if(isOk){
                     index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
+                    this.$socket.sendMsg('menus', 'reset', '')
                     this.$store.dispatch('permission/setmenu',await  Menu.get())
+                    // var array = await AccessAuthority.get(this.selectId)
+                    // this.blockData = array.result
                     this.innerVisible = false
                     this.excelVisible = false
                 }else{
                     this.$message.error('系統錯誤')
                 }
-            }else if(index == 'selectData'){
-                this.$store.dispatch('building/setroles',await Role.get())
-            }else{
+            }
+            // else if(index == 'selectData'){
+            //     this.$store.dispatch('building/setroles')
+            // }
+            else{
                 this.innerVisible = false
                 this.excelVisible = false
             }

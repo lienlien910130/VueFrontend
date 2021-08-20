@@ -24,9 +24,9 @@ class Contactunit extends Parent {
         var temp = JSON.parse(JSON.stringify(this))
         temp.name = '{Check}'+temp.name
         var data = await api.building.apiPatchContactUnit(temp).then(async(response) => {
-            return true
+            return new Contactunit(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
@@ -34,9 +34,9 @@ class Contactunit extends Parent {
         var temp = JSON.parse(JSON.stringify(this))
         temp.name = '{Check}'+temp.name
         var data = await api.building.apiPostContactUnit(temp).then(response => {
-            return true
+            return new Contactunit(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
@@ -129,7 +129,7 @@ class Contactunit extends Parent {
        ]
     }
     static async get (){
-        var data = await api.building.apiGetBuildingContactUnit().then(response => {
+        var data = await api.building.apiGetContactUnit().then(response => {
             var result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Contactunit(item) })
             return result
         }).catch(error=>{
@@ -139,8 +139,7 @@ class Contactunit extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.building.apiGetContactUnitSearchPages(data).then(response => {
-            response.result = response.result.sort((x,y) => x.id - y.id)
-            .map(item=>{ return new Contactunit(item)})
+            response.result = response.result.map(item=>{ return new Contactunit(item)})
             return response
         }).catch(error=>{
             return []

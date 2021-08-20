@@ -6,7 +6,7 @@ import Building from './building'
 class Account extends Parent {
     constructor (data) {
         super(data)
-        const { account,  password, name, description, status, removable,linkRoles,linkBuildings } = data
+        const { account,  password, name, description, status, removable, linkRoles,linkBuildings } = data
         var roles = linkRoles.map(item=>{ return new Role(item)})
         var buildings = linkBuildings.map(item=>{ return new Building(item)})
         this.account = account
@@ -22,9 +22,9 @@ class Account extends Parent {
         return new Account(data)
     }
     async update(){
-        var temp = JSON.parse(JSON.stringify(this))
-        temp.account = '{Check}'+temp.account
-        var data = await api.authority.apiPutAccountAuthority(temp).then(async(response) => {
+        // var temp = JSON.parse(JSON.stringify(this))
+        // temp.account = '{Check}'+temp.account
+        var data = await api.authority.apiPutAccountAuthority(this).then(async(response) => {
             return true
         }).catch(error=>{
             return false
@@ -32,9 +32,9 @@ class Account extends Parent {
         return data
     }
     async create(){
-        var temp = JSON.parse(JSON.stringify(this))
-        temp.account = '{Check}'+temp.account
-        var data = await api.authority.apiPostAccountAuthority(temp).then(response => {
+        // var temp = JSON.parse(JSON.stringify(this))
+        // temp.account = '{Check}'+temp.account
+        var data = await api.authority.apiPostAccountAuthority(this).then(response => {
             return true
         }).catch(error=>{
             return false

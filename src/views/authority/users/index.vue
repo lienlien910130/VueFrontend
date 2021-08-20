@@ -128,7 +128,11 @@ export default {
                 var isOk = await content.delete()
                 if(isOk){
                     this.$message('刪除成功')
-                    await this.resetlistQueryParams()
+                    if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
+                        this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+                    }
+                    await this.getAllAccount()
+                    // await this.resetlistQueryParams()
                 }else{
                     this.$message.error('系統錯誤')
                 }
@@ -177,9 +181,11 @@ export default {
                 }else{
                     this.$message.error('該帳號已存在，請重新輸入')
                 }
-            }else if(index == 'selectData'){
-                this.$store.dispatch('building/setroles',await Role.get())
-            }else{
+            }
+            // else if(index == 'selectData'){
+            //     this.$store.dispatch('building/setroles')
+            // }
+            else{
                 this.innerVisible = false
                 this.excelVisible = false
                 this.authorityVisible = false

@@ -185,7 +185,7 @@ export default {
     },
 
     async loadImage(imageId) {
-        var data = await Files.get(imageId)
+        var data = await Files.getImage(imageId)
         return data
     },
     saveOrUpdate(db, tableName, data) {

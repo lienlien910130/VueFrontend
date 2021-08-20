@@ -11,6 +11,8 @@
     <link rel="apple-touch-icon" sizes="152x152" href="./manifestimg/152.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="./manifestimg/180.png" />
     <title><%= webpackConfig.name %></title>
+    <script src="https://cdn.jsdelivr.net/npm/mobile-detect@1.4.5/mobile-detect.min.js"></script>
+    
   </head>
   <body>
     <div id="app"></div>
@@ -53,6 +55,17 @@ if ('serviceWorker' in navigator) {
       })
   })
 }
+window.onload = function() {
+  getVersion()
+  getBrand()
+  getNetwork()
+  console.log('版本=>'+this.os_version+',手機型號=>'+model+',操作系統=>'+this.os_type+',網路類型=>'+this.device_network_type)
+}
+
+const os_version ='' //版本
+const model = '' //手機型號
+const os_type = '' //操作系統
+const device_network_type = '' //網路類型
 
 function urlBase64ToUint8Array (base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4)
@@ -68,11 +81,70 @@ function urlBase64ToUint8Array (base64String) {
   }
   return outputArray
 }
-// var enableNotifications = document.querySelectorAll('.enable-notifications');
-// if ('Notification' in window) {
-//     for (var i= 0; i < enableNotifications.length; i++) {
-//         enableNotifications[i].style.display = 'inline-block';
-//         enableNotifications[i].addEventListener('click', askForNotificationPermission);
-//     }
-// }
+
+function getVersion() {
+  var u = navigator.userAgent,version = ''
+  if (u.indexOf('Mac OS X') > -1) {
+      //ios
+      var regStr_saf = /OS [\d._]*/gi
+      var verinfo = u.match(regStr_saf)
+      version = (verinfo + "").replace(/[^0-9|_.]/ig,'').replace(/_/ig,'.')
+  } else if (u.indexOf('Android') > -1
+      || u.indexOf('Linux') > -1) {
+      //android
+      version = u.substr(u.indexOf('Android') + 8, u.indexOf(";", u.indexOf("Android")) - u.indexOf('Android') - 8)
+  } else if (u.indexOf('BB10') > -1) {
+      //黑莓bb10系统
+      version = u.substr(u.indexOf('BB10') + 5, u.indexOf(";", u.indexOf("BB10")) - u.indexOf('BB10') - 5)
+  } else if (u.indexOf('IEMobile')) {
+      //windows phone
+      version = u.substr(u.indexOf('IEMobile') + 9, u.indexOf(";", u.indexOf("IEMobile")) - u.indexOf('IEMobile') - 9)
+  }
+  this.os_version = version
+}
+
+function getBrand(){
+    var md = new MobileDetect(navigator.userAgent)
+    var device_type = navigator.userAgent//获取userAgent信息
+    this.os_type = md.os()
+    var model = ""
+    if (this.os_type == "iOS") {//ios系统的处理
+      model = md.mobile()
+    } else if (this.os_type == "AndroidOS") {//Android系统的处理
+      var sss = device_type.split(";")
+      var i = sss.contains("Build/")
+      if (i > -1) {
+        model = sss[i].substring(0, sss[i].indexOf("Build/"))
+      }
+    }
+    this.model = model
+}
+
+function getNetwork(){
+    var device_type = navigator.userAgent
+    var networkStr = device_type.match(/NetType\/\w+/) ? device_type.match(/NetType\/\w+/)[0] : 'NetType/other'
+    networkStr = networkStr.toLowerCase().replace('nettype/', '')
+    var networkType
+    switch (networkStr) {
+        case 'wifi':
+            networkType = 'wifi'
+            break;
+        case '4g':
+            networkType = '4g'
+            break;
+        case '3g':
+            networkType = '3g'
+            break;
+        case '3gnet':
+            networkType = '3g'
+            break;
+        case '2g':
+            networkType = '2g'
+            break;
+        default:
+            networkType = 'other'
+    }
+    this.device_network_type = networkType
+}
+
 </script>

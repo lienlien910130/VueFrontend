@@ -10,7 +10,7 @@ class Floors extends Parent {
     constructor (data) {
         super(data)
         const { floor, floorPlanID, sort, linkDevices } = data
-        var devices = linkDevices.map(item=>{ return new Device(item)})
+        var devices = linkDevices !== undefined ? linkDevices.map(item=>{ return new Device(item)}) : []
         this.floor = floor 
         this.floorPlanID =  floorPlanID == undefined ? null :  floorPlanID
         this.sort = sort
@@ -23,11 +23,11 @@ class Floors extends Parent {
     setFloorPlanID(planID){
         this.floorPlanID = planID
     }
-    async update(){
-        var data = await api.building.apiPatchFloors(this).then(async(response) => {
-            return true
+    async update(buildingId){
+        var data = await api.building.apiPatchFloors(buildingId, this).then(async(response) => {
+            return new Floors(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
@@ -118,7 +118,7 @@ class Floors extends Parent {
        ]
     }
     static async get (){
-        var data = await api.building.apiGetBuildingFloors().then(response => {
+        var data = await api.building.apiGetFloors().then(response => {
             var result = response.result.sort((x,y) => x.sort - y.sort)
             .map(item=>{ return new Floors(item)})
             return result

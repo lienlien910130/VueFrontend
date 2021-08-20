@@ -142,8 +142,8 @@ export default {
       buildinginfo:{
         handler:async function(){
           this.buildingName = this.buildinginfo.length === 0 ? 
-          '請選擇建築物' : this.buildinginfo[0].buildingName !== undefined ?
-          this.buildinginfo[0].buildingName : ''
+           '請選擇建築物' : this.buildinginfo.buildingName !== undefined ?
+           this.buildinginfo.buildingName : ''
         },
         immediate:true
       },
@@ -177,12 +177,21 @@ export default {
        if(content !== undefined){
           this.$store.dispatch('building/setBuildingID',content.id)
           this.$store.dispatch('permission/setRoutes')
-          this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
-          this.$store.dispatch('building/setbuildingusers',await User.get())
-          this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
-          this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
-          this.$store.dispatch('building/setbuildingdevices',await Device.get())
-          this.$store.dispatch('building/setbuildingfloors',await Floors.get())
+          this.$store.dispatch('building/setBuildingInfo', content)
+          this.$store.dispatch('record/saveRoleRecord', 0)
+          this.$store.dispatch('record/saveSettingRecord', 0)
+          this.$store.dispatch('record/saveFloorRecord', 0)
+          this.$store.dispatch('record/saveFloorOfHouseRecord', 0)
+          this.$store.dispatch('record/saveHouseHolderRecord', 0)
+          this.$store.dispatch('record/saveDeviceRecord', 0)
+          this.$store.dispatch('record/saveContactunitRecord', 0)
+          this.$store.dispatch('record/saveDeviceTypeRecord', 0)
+          this.$store.dispatch('record/saveAddressManagementRecord', 0)
+          // this.$store.dispatch('building/setbuildingusers',await User.get())
+          // this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
+          // this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
+          // this.$store.dispatch('building/setbuildingdevices',await Device.get())
+          // this.$store.dispatch('building/setbuildingfloors',await Floors.get())
           this.$router.push('/')
           console.log('Navbardone')
           this.$store.dispatch('app/openSideBar')

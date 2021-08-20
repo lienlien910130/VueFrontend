@@ -44,6 +44,25 @@
                         @click="change">
                             <span> 檢視大項 </span>                  
                     </el-button>
+                    <!-- 火警總機&plc搜尋 -->
+                    <el-select
+                        v-if="title == 'deviceAddressManagement' || title == 'devicePLCAddressManagement'"
+                        v-model="deviceIdSelect"
+                        filterable
+                        placeholder="請選擇設備"
+                        style="width:500px"
+                        clearable 
+                        value-key="id"
+                        @change="searchDevice"
+                        >
+                        <el-option
+                            v-for="(item,index) in deviceSelectArray"
+                            :key="index"
+                            :label="item.label"
+                            :value="item"
+                        >
+                        </el-option>  
+                    </el-select>
             </el-col>
             <el-col v-else
                 :xs="24" :sm="24" :md="24" :lg="24">
@@ -218,15 +237,8 @@
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ item.getUsageOfFloorsName() }}
                                 </span>
-
-                                <!-- <span v-else-if="option.format == 'floorOfHouseUsersName' " 
-                                @click="clickMessageBox('住戶資料','floorOfHouseUsersName',item.getlinkUsageOfFloorsUser())"
-                                style="color:#66b1ff;cursor:pointer">
-                                    {{ changeUserName(item.getlinkUsageOfFloorsUser()) }}
-                                </span> -->
-
-                                <span v-else-if="option.format == 'deviceSelect' || option.format == 'addressdeviceSelect' ||
-                                option.format == 'assignDeviceSelect' " 
+                                <!-- assignFireDeviceSelect -->
+                                <span v-else-if="option.format == 'deviceSelect' || option.format == 'addressdeviceSelect' " 
                                 @click="clickMessageBox('設備資料',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
                                     {{ item.getDevicesName() }}
@@ -370,9 +382,9 @@
                                         style="color:#66b1ff;cursor:pointer">
                                             {{ scope.row.getLinkType().getSelectName()  }}
                                         </span>
-
+                                        <!-- assignFireDeviceSelect -->
                                         <span v-else-if="item.format == 'deviceSelect' || item.format == 'addressdeviceSelect'
-                                        || item.format == 'assignDeviceSelect' " 
+                                        " 
                                         @click="clickMessageBox('設備資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                              {{ scope.row.getDevicesName() }}
@@ -429,7 +441,7 @@
                             width="150px"
                             >
                                 <template slot="header">
-                                    <!-- 建立維保大項&檔案上傳&檔案下載&新增資料 -->
+                                    <!-- 檔案上傳&檔案下載&新增資料 -->
                                     <span
                                         v-for="(button, index) in headerButtonsName"
                                         :key="index"
@@ -440,7 +452,8 @@
                                             <i 
                                             :class="button.icon" 
                                             @click="handleClickOption(button.status,'')" 
-                                            style="cursor: pointer;font-size:25px;float:right"></i>
+                                            style="cursor: pointer;font-size:25px;float:right">
+                                            </i>
                                         </el-tooltip>
                                     </span>
                                 </template>
@@ -457,21 +470,6 @@
                                                 <i 
                                                 :class="button.icon" 
                                                 @click="handleClickOption(button.status,scope.row)" 
-                                                style="cursor: pointer;font-size:25px;float:right"
-                                                >
-                                                </i>
-                                            </el-tooltip>
-                                        </span>
-                                        <span v-if="title == 'equipment' ">
-                                            <el-tooltip
-                                            v-if="
-                                            scope.row.getLinkType().getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' ||
-                                            scope.row.getLinkType().getFullType() == 'nDeviceTypeList.PLC.PLC_ProgrammableLogicController' "
-                                            class="item" effect="dark" content="點位" 
-                                            placement="top">
-                                                <i 
-                                                class="el-icon-setting" 
-                                                @click="handleClickOption('openaddress',scope.row)" 
                                                 style="cursor: pointer;font-size:25px;float:right"
                                                 >
                                                 </i>
@@ -711,6 +709,32 @@ export default {
                }
             },
             immediate:true
+        },
+        title:{
+            handler:async function(){
+                if(this.title == 'deviceAddressManagement' || this.title == 'devicePLCAddressManagement'){
+                    if(this.device_record == 0){
+                        await this.$store.dispatch('building/setDevice')
+                        this.$store.dispatch('record/saveDeviceRecord',1)
+                    }
+                    var type = this.title == 'deviceAddressManagement' ? 
+                        'nDeviceTypeList.AE.AE_FireDetectorCentralControl' : 
+                        'nDeviceTypeList.OE.OE_ProgrammableLogicController'
+                    this.deviceSelectArray = this.buildingdevices.filter(item => 
+                        item.getLinkType().getFullType() == type && 
+                        item.getInternetNumber() !== null).map(v => {
+                            this.$set(v, 'value', v.getID()) 
+                            this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
+                            this.$set(v, 'id', v.getID()) 
+                            return v
+                    })
+                    if(this.deviceSelectArray.length !== 0){
+                        this.deviceIdSelect = this.deviceSelectArray[0]
+                        this.searchDevice()
+                    }
+                }
+            },
+            immediate:true
         }
     },
     data() {
@@ -733,7 +757,9 @@ export default {
             activeNames: ['1'],
             filterSearch:[],
             sortValue:'',
-            sortOrder:''
+            sortOrder:'',
+            deviceIdSelect:null,
+            deviceSelectArray:[]
         }
     },
     methods: {
@@ -844,7 +870,8 @@ export default {
                             done()
                             switch(format){
                                 case 'userInfo': //住戶資料>平時管理-基本資料
-                                    if(this.buildinginfo.length == 0){
+                                    console.log(this.buildinginfo)
+                                    if(this.buildinginfo == undefined){
                                         this.$message({
                                             message: '請先選擇該棟建築物，才可對住戶進行編輯',
                                             type: 'warning'
@@ -858,7 +885,8 @@ export default {
                                 case 'deviceTypeSelect': //設備種類>設備管理-設備種類
                                     this.$router.push({ name: 'deviceTypesManagement', params: { target: data, type:'open' }})
                                     break;
-                                case 'deviceSelect': case 'assignDeviceSelect': case 'addressdeviceSelect': //設備>設備管理-設備清單 & 點位>設備管理-設備清單
+                                //assignFireDeviceSelect
+                                case 'deviceSelect': case 'addressdeviceSelect': //設備>設備管理-設備清單 & 點位>設備管理-設備清單
                                     this.$router.push({ name: 'devicesManagement', params: { target: data, type:'open' }})
                                     break;
                                 case 'contactunitSelect': //廠商資料>平時管理-基本資料
@@ -954,24 +982,6 @@ export default {
                 }
             } 
         },
-        //篩選
-        // filterHandler(value, row, column) {
-        //     const property = column['property']
-        //     if(property.indexOf('link') !== -1){
-        //         return row[property].findIndex(item => item.id == value) !== -1 
-        //     }else if(property == 'rangeDate'){
-        //         return row['checkStartDate'] == value
-        //     }else if(value == null){
-        //         return row[property] === value || row[property] === ''
-        //     }else{
-        //         return row[property] === value
-        //     }
-        // },
-        // getFilterItems(prop){
-        //     var data = this.selectSetting.filter(item=>{ 
-        //         return item.value == prop })
-        //     return data.length !== 0 ? data[0].children : null
-        // },
         //排序
         handleHeaderCellClass({row, column, rowIndex, columnIndex}){
             this.orderArray.forEach(element => {
@@ -1096,8 +1106,26 @@ export default {
             this.$emit('update:listQueryParams', this.listQueryParams)
             this.$emit('clickPagination')
         },
+        selectfilter(value){
+            var type = value == 'fire' ? 
+                'nDeviceTypeList.AE.AE_FireDetectorCentralControl' : 
+                'nDeviceTypeList.OE.OE_ProgrammableLogicController'
+            return this.buildingdevices.filter(item => 
+                item.getLinkType().getFullType() == type && 
+                item.getInternetNumber() !== null).map(v => {
+                    this.$set(v, 'value', v.getID()) 
+                    this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
+                    this.$set(v, 'id', v.getID()) 
+                     return v
+            })
+        },
         change(){
             this.$emit('changeTable',!this.isTable)
+        },
+        searchDevice(){
+            this.listQueryParams.internet = this.deviceIdSelect.getInternetNumber()
+            this.$emit('update:listQueryParams', this.listQueryParams)
+            this.$emit('clickPagination')
         }
     }
 }

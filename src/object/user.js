@@ -25,9 +25,9 @@ class User extends Parent {
         var temp = JSON.parse(JSON.stringify(this))
         temp.name = '{Check}'+temp.name
         var data = await api.building.apiPatchUser(temp).then(async(response) => {
-            return true
+            return new User(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
@@ -35,9 +35,9 @@ class User extends Parent {
         var temp = JSON.parse(JSON.stringify(this))
         temp.name = '{Check}'+temp.name
         var data = await api.building.apiPostUser(temp).then(async(response) => {
-            return true
+            return new User(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
@@ -116,7 +116,7 @@ class User extends Parent {
        ]
     }
     static async get (){
-        var data = await api.building.apiGetAllBuildingOfUser().then(response => {
+        var data = await api.building.apiGetUser().then(response => {
             var result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new User(item) })
             return result
@@ -137,9 +137,7 @@ class User extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.building.apiGetUserSearchPages(data).then(response => {
-            
-            response.result = response.result.sort((x,y) => y.id - x.id)
-            .map(item=>{ return new User(item)})
+            response.result = response.result.map(item=>{ return new User(item)})
             return response
         }).catch(error=>{
             return []

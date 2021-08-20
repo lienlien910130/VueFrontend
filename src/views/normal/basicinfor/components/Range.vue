@@ -54,7 +54,8 @@ export default {
   },
   computed:{
     ...mapGetters([
-        'buildingfloors'
+        'buildingfloors',
+        'floor_record'
     ]),
     mobile(){
       if (this.$store.state.app.device === 'mobile') {
@@ -67,14 +68,18 @@ export default {
   watch:{
     buildingfloors:{
       handler:async function(newValue,oldValue){
+        if(this.floor_record == 0){
+            this.$store.dispatch('building/setFloors')
+            this.$store.dispatch('record/saveFloorRecord',1)
+        }
         var array = this.buildingfloors
-        if(this.buildingfloors.length>0 && oldValue == undefined ){ //第一次建立
+        if(this.buildingfloors.length>0 && oldValue == undefined || oldValue.length == 0 ){ //第一次建立
           this.upFloors = array.filter((item,index) => 
           item.getName().includes("地下") == false)
           this.downFloors = array.filter((item,index) => 
           item.getName().includes("地下") == true)
           this.setRange()
-        }else{ //修改平面圖
+        }else if(this.buildingfloors.length>0 && oldValue !== undefined && oldValue.length !== 0 ){ //修改平面圖
           this.upFloors = array.filter((item,index) => 
           item.getName().includes("地下") == false)
           this.downFloors = array.filter((item,index) => 

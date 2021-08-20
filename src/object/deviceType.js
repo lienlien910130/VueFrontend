@@ -5,30 +5,30 @@ import { changeDeviceFullType } from '@/utils/index'
 class DeviceType extends Parent {
     constructor (data) {
         super(data)
-        const { name, fullType, brand, productId, certificationNumber ,protocolMode  } = data
+        const { name, fullType, brand, productId, certificationNumber   } = data
         this.name = name
         this.fullType = fullType
         this.brand = brand
         this.productId = productId
         this.certificationNumber = certificationNumber
-        this.protocolMode = protocolMode
+        
     }
     clone(data){
         return new DeviceType(data)
     }
     async update(){
         var data = await api.device.apiPatchDevicesType(this).then(async(response) => {
-            return true
+            return new DeviceType(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
     async create(){
         var data = await api.device.apiPostDevicesType(this).then(response => {
-            return true
+            return new DeviceType(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
@@ -63,9 +63,7 @@ class DeviceType extends Parent {
     getFullType(){
         return this.fullType
     }
-    getProtocolMode(){
-        return this.protocolMode
-    }
+    
     //設備清單使用
     getSelectName(){
         return this.getType() !== '' ? 
@@ -120,14 +118,6 @@ class DeviceType extends Parent {
                 mandatory:false,isHidden:false,maxlength:'20',
                 isSearch:true,placeholder:'請輸入國家認證編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-            },
-            {
-                label: '控制模式',
-                prop: 'protocolMode',format:'protocolMode',
-                type:'number',typemessage:'',
-                mandatory:true,message:'請選擇控制模式',isHidden:false,
-                isSearch:false,placeholder:'請選擇控制模式',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             }
         ]   
     }
@@ -170,7 +160,7 @@ class DeviceType extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.device.apiGetDevicesTypeSearchPages(data).then(response => {
-            response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item)})
+            response.result = response.result.map(item=>{ return new DeviceType(item)})
             return response
         }).catch(error=>{
             return []

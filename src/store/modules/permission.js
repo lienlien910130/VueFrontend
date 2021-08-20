@@ -5,39 +5,6 @@ import { resetRouter } from '@/router'
 import  Menu  from '@/object/menu'
 import _import from '@/router/_import'
 import Layout from '@/layout'
-/**
- * Use meta.role to determine if the current user has permission
- * @param roles
- * @param route
- */
-// function hasPermission(roles, route) {
-//   if (route.meta && route.meta.roles) {
-//     return roles.some(role => route.meta.roles.includes(role))
-//   } else {
-//     return true
-//   }
-// }
-
-// /**
-//  * Filter asynchronous routing tables by recursion
-//  * @param routes asyncRoutes
-//  * @param roles
-//  */
-// export function filterAsyncRoutes(routes, roles) {
-//   const res = []
-
-//   routes.forEach(route => {
-//     const tmp = { ...route }
-//     if (hasPermission(roles, tmp)) {
-//       if (tmp.children) {
-//         tmp.children = filterAsyncRoutes(tmp.children, roles)
-//       }
-//       res.push(tmp)
-//     }
-//   })
-
-//   return res
-// }
 
 function addRouter(routerlist) {
   routerlist.forEach(e => {
@@ -95,15 +62,20 @@ function addRouter(routerlist) {
 
 const state = {
   menuId:'',
+  menuAuthority:[],
   menu:[],
   menuNoLevel:[],
   routes: [],
-  addRoutes: []
+  addRoutes: [],
+  needreload: false
 }
 
 const mutations = {
   SET_MENUID: (state, menuId) => {
     state.menuId = menuId
+  },
+  SET_MENUAUTHORITY: (state, menuAuthority) => {
+    state.menuAuthority = menuAuthority
   },
   SET_MENU: (state, menu) => {
     state.menu = menu
@@ -114,6 +86,9 @@ const mutations = {
   SET_ROUTES: (state, routes) => {
     state.addRoutes = routes
     state.routes = constantRoutes.concat(routes)
+  },
+  SET_NEEDRELOAD: (state, needreload) => {
+    state.needreload = needreload
   }
 }
 
@@ -121,6 +96,12 @@ const actions = {
   setmenuId({ commit }, menuId) { 
     return new Promise((resolve, reject) => {
       commit('SET_MENUID', menuId)
+      resolve()
+    })
+  },
+  setmenuAuthority({ commit }, menuAuthority) { 
+    return new Promise((resolve, reject) => {
+      commit('SET_MENUAUTHORITY', menuAuthority)
       resolve()
     })
   },
@@ -161,7 +142,13 @@ const actions = {
     }).concat(notfound)
     commit('SET_ROUTES', getRouter)
     router.addRoutes(getRouter)
-  }
+  },
+  setneedreload({ commit }, needreload) { 
+    return new Promise((resolve, reject) => {
+      commit('SET_NEEDRELOAD', needreload)
+      resolve()
+    })
+  },
 }
 
 export default {

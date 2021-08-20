@@ -7,8 +7,8 @@ class AccessAuthority extends Parent {
         super(data)
         const { name, action, description, status, sort, removable, linkRoles,
             linkMainMenus } = data
-        var mainMenu = linkMainMenus.map(item=>{ return new Menu(item)})
-        var roles = linkRoles.map(item=>{ return new Role(item)})        
+        var mainMenu = linkMainMenus !== undefined ? linkMainMenus.map(item=>{ return new Menu(item)}) : []
+        var roles = linkRoles !== undefined ? linkRoles.map(item=>{ return new Role(item)})  : []      
         this.name = name 
         this.description = description 
         this.status = status 
@@ -17,7 +17,6 @@ class AccessAuthority extends Parent {
         this.action = action
         this.linkMainMenus = mainMenu
         this.linkRoles = roles
-        return this
     }
     clone(data){
         return new AccessAuthority(data)
@@ -111,15 +110,15 @@ class AccessAuthority extends Parent {
         })
         return data
     }
-    static async getSearchPage(mainMenuId,data){
-        var data = await api.authority.apiGetAccessAuthoritySearchPages(mainMenuId,data).then(response => {
-            response.result = response.result.sort((x,y) => x.sort - y.sort).map(item=>{ return new AccessAuthority(item)})
-            return response
-        }).catch(error=>{
-            return []
-        })
-        return data
-    }
+    // static async getSearchPage(mainMenuId,data){
+    //     var data = await api.authority.apiGetAccessAuthoritySearchPages(mainMenuId,data).then(response => {
+    //         response.result = response.result.sort((x,y) => x.sort - y.sort).map(item=>{ return new AccessAuthority(item)})
+    //         return response
+    //     }).catch(error=>{
+    //         return []
+    //     })
+    //     return data
+    // }
     static async postMany(data){
         var data = await api.authority.apiPostAccessAuthorities(data).then(response => {
             return true

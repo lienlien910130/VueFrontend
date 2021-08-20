@@ -6,6 +6,8 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { Building, Contactunit, Device, DeviceType, Floors, Role, UsageOfFloor, User } from './object'
+
 export default {
   name: 'App',
   created(){
@@ -14,18 +16,50 @@ export default {
   computed: {
     ...mapGetters([
         'wsmsg',
-        'wsuserId'
+        'wsuserId',
+        'buildingid',
+        'id'
     ])
   },
   watch:{
     wsmsg:{
       handler:async function(){
           var data = JSON.parse(this.wsmsg.data)
-          console.log(data,this.wsuserId,data.Data.Id)
-          if(data.Data.Id !== this.wsuserId){
-              console.log('收到別人的訊息!')
-              console.log(data.Data.Content)
+          if(data.Data.Id !== this.wsuserId && data.DataType == 'building'){ //不是自己傳送的訊息 && 建築物清單不須判斷是否有選擇建築物
+            this.handleBuilding(data.SendType, data.Data.Bid, data.Data.Content)
+          }else if(data.Data.Id !== this.wsuserId && data.Data.Bid == this.buildingid){ //不是自己傳送的 && 判斷是否有選擇建築物=更動的建築物
+              console.log('收到別人的訊息!', data.DataType)
+                switch(data.DataType){
+                  case 'roles':
+                    this.handleRoles(data.SendType, data.Data.Content)
+                    break;
+                  case 'menus':
+                    this.handleMenus(data.SendType, data.Data.Content)
+                    break;
+                  case 'setting':
+                    this.handleSetting(data.SendType, data.Data.Content)
+                    break;
+                  case 'floor':
+                    this.handleFloor(data.SendType, data.Data.Content)
+                    break;
+                  case 'contactUnit':
+                    this.handleContactUnit(data.SendType, data.Data.Content)
+                    break;
+                  case 'houseHolder':
+                    this.handleHouseHolder(data.SendType, data.Data.Content)
+                    break;
+                  case 'floorOfHouse':
+                    this.handleFloorOfHouse(data.SendType, data.Data.Content)
+                    break;
+                  case 'device':
+                    this.handleDevice(data.SendType, data.Data.Content)
+                    break;
+                  case 'deviceType':
+                    this.handleDeviceType(data.SendType, data.Data.Content)
+                    break;
+                }
           }
+          
       },
       immediate:true
     }
@@ -38,7 +72,112 @@ export default {
       }else{
         console.log("您的瀏覽器不支援 WebSocket!")
       }
-    }
+    },
+    handleRoles(index,content){
+      console.log('handleRoles',index,content)
+      if(index == 'update'){
+        this.$store.dispatch('building/updateRole', new Role(content))
+      }else if(index == 'delete'){
+        this.$store.dispatch('building/deleteRole',content)
+      }else if(index == 'create'){
+        this.$store.dispatch('building/addRole', new Role(content))
+      }
+    },
+    handleMenus(index,content){
+      console.log('handleMenus',index,content)
+      if(index == 'reset'){ //切換頁面的同時重新載入選單並儲存
+        this.$store.dispatch('permission/setneedreload', true)
+      }else if(index == 'routes'){
+        this.$store.dispatch('permission/setRoutes')
+      }
+    },
+    handleSetting(index,content){
+      console.log('handleSetting',index,content)
+      if(index == 'update'){
+        this.$store.dispatch('building/updateOption', content)
+      }else if(index == 'delete'){
+        this.$store.dispatch('building/deleteOption',content)
+      }else if(index == 'create'){
+        this.$store.dispatch('building/addOption', content)
+      }
+    },
+    handleBuilding(index,bid,content){
+      console.log('handleBuilding',index,content)
+      if(index == 'update'){
+        this.$store.dispatch('building/updateBuildingList', new Building(content))
+      }else if(index == 'delete'){
+        this.$store.dispatch('building/deleteBuildingList',content)
+      }else if(index == 'create'){
+        if(this.id == '1'){ //系統管理員
+          this.$store.dispatch('building/addBuildingList', new Building(content))
+        }
+      }else if(index == 'info'){
+        if(bid == this.buildingid){
+          this.$store.dispatch('building/setBuildingInfo', new Building(content))
+        }
+      }else if(index == 'set'){
+        if(this.id == '1'){ //系統管理員
+          var array = content.map(item=>{ return new Building(item)})
+          this.$store.dispatch('building/setBuildingList', array)
+        }
+      }
+    },
+    handleFloor(index,content){
+      console.log('handleSetting',index,content)
+      if(index == 'update'){
+        this.$store.dispatch('building/updateFloor', new Floors(content))
+      }
+    },
+    handleContactUnit(index,content){
+      console.log('handleContactUnit',index,content)
+      if(index == 'update'){
+        this.$store.dispatch('building/updateContactunit', new Contactunit(content))
+      }else if(index == 'delete'){
+        this.$store.dispatch('building/deleteContactunit',content)
+      }else if(index == 'create'){
+        this.$store.dispatch('building/addContactunit', new Contactunit(content))
+      }
+    },
+    handleHouseHolder(index,content){
+      console.log('handleHouseHolder',index,content)
+      if(index == 'update'){
+        this.$store.dispatch('building/updateHouseHolder', new User(content))
+      }else if(index == 'delete'){
+        this.$store.dispatch('building/deleteHouseHolder',content)
+      }else if(index == 'create'){
+        this.$store.dispatch('building/addHouseHolder', new User(content))
+      }
+    },
+    handleFloorOfHouse(index,content){
+      console.log('handleFloorOfHouse',index,content)
+      if(index == 'update'){
+        this.$store.dispatch('building/updateFloorOfHouse', new UsageOfFloor(content))
+      }else if(index == 'delete'){
+        this.$store.dispatch('building/deleteFloorOfHouse',content)
+      }else if(index == 'create'){
+        this.$store.dispatch('building/addFloorOfHouse', new UsageOfFloor(content))
+      }
+    },
+    handleDevice(index,content){
+      console.log('handleDevice',index,content)
+      if(index == 'update'){
+        this.$store.dispatch('building/updateDevice', new Device(content))
+      }else if(index == 'delete'){
+        this.$store.dispatch('building/deleteDevice',content)
+      }else if(index == 'create'){
+        this.$store.dispatch('building/addDevice', new Device(content))
+      }
+    },
+    handleDeviceType(index,content){
+      console.log('handleDeviceType',index,content)
+      if(index == 'update'){
+        this.$store.dispatch('building/updateDeviceType', new DeviceType(content))
+      }else if(index == 'delete'){
+        this.$store.dispatch('building/deleteDeviceType',content)
+      }else if(index == 'create'){
+        this.$store.dispatch('building/addDeviceType', new DeviceType(content))
+      }
+    },
   }
     
 }

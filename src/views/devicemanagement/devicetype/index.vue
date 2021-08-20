@@ -84,8 +84,13 @@ export default {
                 var isDelete = await content.delete()
                 if(isDelete){
                     this.$message('刪除成功')
-                    this.$store.dispatch('building/setbuildingdevices',await Device.get())
-                    await this.resetlistQueryParams()
+                    this.$store.dispatch('building/setDevice')
+                    this.$socket.sendMsg('deviceType', 'delete' , content.getID())
+                    if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
+                        this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+                    }
+                    await this.getBuildingDevicesType()
+                    // await this.resetlistQueryParams()
                 }else{
                     this.$message.error('系統錯誤') 
                 }
@@ -110,16 +115,17 @@ export default {
             if(index === 'update' || index === 'create'){
                 var label = changeDeviceFullType(content.fullType,false,true)
                 content.setTypeName(label) 
-                var isOk = index === 'update' ? await content.update() : await content.create()
-                if(isOk){
+                var result = index === 'update' ? await content.update() : await content.create()
+                if(Object.keys(result).length !== 0){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     if(index === 'update'){
-                        this.$store.dispatch('building/setbuildingdevices',await Device.get())
+                        this.$store.dispatch('building/setDevice')
                     }
+                    this.$socket.sendMsg('deviceType', index , result)
                     await this.getBuildingDevicesType()
-                    if(index == 'create'){
-                        this.$refs.dialogform.insertSuccess('deviceTypeSelect')
-                    }
+                    // if(index == 'create'){
+                    //     this.$refs.dialogform.insertSuccess('deviceTypeSelect')
+                    // }
                     this.innerVisible = false
                 }else{
                     this.$message.error('系統錯誤')

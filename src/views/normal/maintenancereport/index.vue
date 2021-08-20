@@ -10,7 +10,7 @@
                     </i>
                   </div>
                   <div class="content">
-                    <span> {{ this.buildinginfo[0].getName() }}</span> 
+                    <span> {{ this.buildinginfo.getName() }}</span> 
                   </div>
                 </div>
                 <div class="verticalhalfdiv">
@@ -36,7 +36,7 @@
                     </div>
                     <div class="content">
                       <div
-                        v-for="(item,index) in this.buildinginfo[0].linkOwners"
+                        v-for="(item,index) in this.buildinginfo.linkOwners"
                         :key="index" class="user">
                         <div style="padding-bottom:2px">
                             姓名 ： {{ item.name }}
@@ -57,7 +57,7 @@
                     </div>
                     <div class="content">
                       <div
-                        v-for="(item,index) in this.buildinginfo[0].linkFireManagers"
+                        v-for="(item,index) in this.buildinginfo.linkFireManagers"
                         :key="index" class="user">
                         <div style="padding-bottom:2px">
                             姓名 ： {{ item.name }}
@@ -227,7 +227,11 @@ export default {
         var isDelete = await content.delete()
         if(isDelete){
           this.$message('刪除成功')
-          await this.resetlistQueryParams()
+          // await this.resetlistQueryParams()
+          if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
+            this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+          }
+          await this.getBuildingMaintenanceReport()
         }else{
           this.$message.error('系統錯誤') 
         }
@@ -245,7 +249,8 @@ export default {
         this.uploadVisible = true
       }else if(index === 'openlacks'){
         this.inspection = content
-        await this.resettablelistQueryParams()
+        this.tablelistQueryParams = { pageIndex: 1, pageSize: 10, total:0 }
+        await this.getInspectionLack()
         this.tableVisible = true
       }else if(index === 'exportExcel'){
         this.exportExcelData = this.blockData
@@ -342,6 +347,7 @@ export default {
         }else if(index === 'cancellack'){
           this.innerVisible = false
         }else if(index === 'cancel'){
+          this.innerVisible = false
           this.excelVisible = false
         }else if(index === 'uploadExcelSave'){
           var isOk = await InspectionLacks.postMany(this.inspection.getID(),content)
@@ -371,7 +377,11 @@ export default {
         var isDelete = await content.delete()
         if(isDelete){
             this.$message('刪除成功')
-            await this.resettablelistQueryParams()
+            if(this.tablelistQueryParams.pageIndex !== 1 && this.tableData.length == 1){
+              this.tablelistQueryParams.pageIndex = this.tablelistQueryParams.pageIndex-1
+            }
+            await this.getInspectionLack()
+            //await this.resettablelistQueryParams()
             this.isUpdate = true
         }else{
           this.$message.error('系統錯誤')

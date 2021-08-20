@@ -216,9 +216,9 @@ export default {
   },
   methods: {
     async init(){   
-      await this.getMaintain()
-      await this.getInspection()
-      await this.getPublicSafe()
+      // await this.getMaintain()
+      // await this.getInspection()
+      // await this.getPublicSafe()
     },
     loadMore() {
       this.loading = true;

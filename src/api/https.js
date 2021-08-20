@@ -40,12 +40,12 @@ const tip = msg => {
 
 const service = axios.create({
 //   baseURL: process.env.VUE_APP_BASE_API2, // url = base url + request url
-    baseURL: 'http://192.168.88.65:59119', // url = base url + request url
-    // baseURL: 'https://192.168.88.65:59110',
+     // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 20000, 
-  headers: { 
-      'Content-Type': 'application/json; charset=utf-8;' }
+    baseURL: 'http://192.168.88.65:49119',
+    timeout: 20000, 
+    headers: { 
+        'Content-Type': 'application/json; charset=utf-8;' }
 })
 
 const errorHandle = (status,error) =>{
@@ -81,6 +81,7 @@ service.interceptors.request.use(
     }
     config.headers.loadReverse = true
     config.headers.buildId = store.getters.buildingid
+    //config.url = decodeURI(encodeURI(config.url).replace(/%E2%80%8B/g,""))
     return config
   },
   error => {
@@ -99,7 +100,7 @@ service.interceptors.response.use(
     resetLoading()
       if(error) {
           //成功發出請求且收到resp，但有error
-          //alert(error)
+          alert(error)
           console.log(error.response.status,error.response)
           errorHandle(error.response.status,error)
           return Promise.reject(error)
@@ -112,39 +113,43 @@ service.interceptors.response.use(
       }
   }
 )
-
-export default function(method, url, data = null, isOrderby = false, isHeader = false) {
-    console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data)+' || isHeader:'+isHeader)
+//post put patch upload
+export default function(method, url, parentId = null, data = null, isOrderby = false) {
+    // console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data)+' || isUpload:'+isUpload)
     method = method.toLowerCase()
     if(method == 'post'){   
         var search = url.indexOf('/ss')
-        if(isHeader !== false){ //檔案上傳
-            return service.request({
-                url: url,
-                method: 'post',
-                headers: {'Content-Type': 'multipart/form-data'},
-                data
-            })
-        } else{
-            if( search>0 && isOrderby ){ 
-                data.orderBy = 'id desc'
-            }
-            console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data)+' || isHeader:'+isHeader)
-            return service.post(url,data)
+        if( search>0 && isOrderby ){ 
+            data.orderBy = 'id desc'
         }
+        if(parentId !== null ){
+            data.parentId = parentId
+        }
+        console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data))
+        return service.post(url,data)
+    }else if(method == 'upload'){
+        console.log('method:post || url:'+url+' || data:'+JSON.stringify(data))
+        return service.request({
+            url: url,
+            method: 'post',
+            headers: {'Content-Type': 'multipart/form-data'},
+            data
+        })
     }else if(method == 'get'){
-        if(isHeader !== false){ //下載圖片檔&檔案
-            return service.request({
-                url: url,
-                method: 'get',
-                responseType: 'arraybuffer'
-            })
-        } else{
-            return service.get(url)
-        }
+        console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data))
+        return service.get(url)
+    }else if(method == 'files'){
+        console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data))
+        return service.request({
+            url: url,
+            method: 'get',
+            responseType: 'arraybuffer'
+        })
     }else if(method == 'delete'){
+        console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data))
         return service.delete(url)
     }else if(method == 'put'){
+        console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data))
         return service.request({
             url: url,
             method: 'put',
@@ -152,6 +157,10 @@ export default function(method, url, data = null, isOrderby = false, isHeader = 
             data
         })
     }else if(method == 'patch'){
+        if(parentId !== null){
+            data.parentId = parentId
+        }
+        console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data))
         return service.patch(url,data)
     }else {
         console.error('未知的method:'+method)

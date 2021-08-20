@@ -75,7 +75,7 @@
                 <!-- 設備清單-設備種類 / 設備(火警總機/PLC)關聯點位 / 點位選取設備 (limit-1) 
                 設備 / 廠商 / 角色 / 建築物 / 門牌 / 住戶 下拉選單 (多)-->
                 <el-select
-                    v-else-if="item.format =='deviceTypeSelect' || item.format == 'assignDeviceSelect' 
+                    v-else-if="item.format =='deviceTypeSelect' || item.format == 'assignFireDeviceSelect' 
                     || item.format == 'addressdeviceSelect' || item.format == 'deviceSelect' || 
                     item.format =='contactunitSelect' || 
                     item.format =='roleSelect' ||  
@@ -85,7 +85,7 @@
                     v-model="temp[item.prop]"
                     filterable
                     multiple
-                    :multiple-limit=" item.format =='deviceTypeSelect' || item.format == 'assignDeviceSelect' 
+                    :multiple-limit=" item.format =='deviceTypeSelect' || item.format == 'assignFireDeviceSelect' 
                     || item.format == 'addressdeviceSelect' ? 1 : 0"
                     value-key="id"
                     placeholder="請選擇"
@@ -539,7 +539,7 @@ export default {
                                 this.$set(v, 'id', v.getID()) 
                                 return v
                             })
-                        case 'assignDeviceSelect':
+                        case 'assignFireDeviceSelect':
                             return this.buildingdevices.filter(item => 
                             item.getLinkType().getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
                             item.getLinkType().getFullType() == 'nDeviceTypeList.PLC.PLC_ProgrammableLogicController').map(v => {

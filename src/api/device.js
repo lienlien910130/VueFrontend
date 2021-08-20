@@ -6,17 +6,24 @@ const device = {
     getBid(){ return store.getters.buildingid},
 
     //設備管理
-    apiGetBuildingDevicesManagement(){ return req('get','/index/buildings/'+this.getBid()+'/devices') },
-    apiGetDevicesManagement(deviceId){ return req('get','/devicesManagement/'+deviceId) },
-    apiPostDevicesManagement(data){ return req('post','/devicesManagement/'+this.getBid()+'/check', data) },
-    apiPatchDevicesManagement(data,resetLink){ return req('patch','/devicesManagement/check/'+resetLink, data) },
-    apiDeleteDevicesManagement(deviceId){ return req('delete','/devicesManagement/'+deviceId) },
-    apiGetDevicesManagementSearchPages(data){ return req('post','/devicesManagement/'+this.getBid()+'/ss', data, true)  },
-    apiPostDevicesManagements(data){ return req('post','/devicesManagement/'+this.getBid()+'/check/s', data) },    
+    apiGetBuildingDevicesManagement(){ return req('get','/index/devices') },
+    // apiGetDevicesManagement(deviceId){ return req('get','/devicesManagement/'+deviceId) },
+    apiPostDevicesManagement(data){ return req('post','/devicesManagement/check', this.getBid(), data) },
+    apiPatchDevicesManagement(data,resetLink){ return req('patch','/devicesManagement/check/'+resetLink, this.getBid(), data) },
+    apiDeleteDevicesManagement(deviceId){ return req('delete','/devicesManagement/'+deviceId+'/true') },
+    apiGetDevicesManagementSearchPages(data){ return req('post','/devicesManagement/ss', this.getBid(), data, true)  },
+    apiPostDevicesManagements(data){ 
+        data.forEach(element => {
+            element.parentId = this.getBid()
+        })
+        return req('post','/devicesManagement/check/s', null, data) 
+    },    
     //取得維護保養
-    apiGetDevicesManagementMaintain(data){ return req('post', '/devicesManagement/maintains/ss', data, true) },
-    //火警總機/plc取得點位
-    apiGetLinkDeviceAddresss(data,deviceId){ return req('post','/devicesManagement/deviceAddressManagement/ss',data) },
+    apiGetDevicesManagementMaintain(deviceId,data){ return req('post', '/devicesManagement/maintains/ss', deviceId, data, true) },
+    //取得點位-火警總機類型
+    apiGetLinkDeviceAddresss(data){ return req('post','/devicesManagement/deviceAddressManagement/ss', null, data) },
+    //取得點位-plc類型
+    apiGetLinkDevicePLCAddresss(data){ return req('post','/devicesManagement/devicePlcAddressManagement/ss', null, data) },
     //設備清單-取得設備種類
     apiGetDevicesTypeByDevicesManagement(){ return req('get','/devicesManagement/devicesType/a') },
     //圖控更新設備-多筆更新
@@ -25,55 +32,74 @@ const device = {
     //設備種類
     apiGetDefaultFullType(){ return req('get','/index/deviceTypes/fta') },
     // apiGetDevicesType(){ return req('get','/deviceTypesManagement/a') },
-    apiPostDevicesType(data){ return req('post','/deviceTypesManagement',data) },
-    apiPatchDevicesType(data){ return req('patch','/deviceTypesManagement',data) },
+    apiPostDevicesType(data){ return req('post','/deviceTypesManagement', null , data) },
+    apiPatchDevicesType(data){ return req('patch','/deviceTypesManagement', null, data) },
     apiDeleteDevicesType(deviceTypeId){ return req('delete','/deviceTypesManagement/'+deviceTypeId) },
-    apiGetDevicesTypeSearchPages(data){ return req('post','/deviceTypesManagement/ss',data, true)  },
-    apiPostDevicesTypes(data){ return req('post','/deviceTypesManagement/s',data) },    
+    apiGetDevicesTypeSearchPages(data){ return req('post','/deviceTypesManagement/ss', null, data, true)  },
+    apiPostDevicesTypes(data){ return req('post','/deviceTypesManagement/s', null, data) },    
     
-    //點位設定
+    //點位設定-火警總機
     // apiGetDevicesAddress(){ return req('get','/deviceAddressManagement/a') },
     apiGetDevicesAddress(deviceAddressId){ return req('get','/deviceAddressManagement/'+deviceAddressId) },
-    apiPostDevicesAddress(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/check',data) },
-    apiPatchDevicesAddress(resetLink,data){ return req('put','/deviceAddressManagement/check/'+resetLink,data) },
-    apiDeleteDevicesAddress(deviceAddressId){ return req('delete','/deviceAddressManagement/'+deviceAddressId+'/'+true) },
-    apiGetDevicesAddressSearchPages(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/ss', data)  },
-    apiPostDevicesAddresses(data){ return req('post','/deviceAddressManagement/'+this.getBid()+'/s',data) }, 
-    //批次新增
-    apiPostDevicesAddressesBatchInsert(data,deviceId = null){ 
-        if(deviceId == null){
-            return req('post','/deviceAddressManagement/batchInsert',data) 
-        }else{
-            return req('post','/deviceAddressManagement/batchInsert/'+deviceId,data) 
-        }
-        
+    apiPostDevicesAddress(deviceId,data){ return req('post','/deviceAddressManagement/check', deviceId, data) }, //單點新增
+    apiPatchDevicesAddress(resetLink,data){ return req('put','/deviceAddressManagement/check/'+resetLink, this.getBid(), data) },
+    apiDeleteDevicesAddress(deviceAddressId){ return req('delete','/deviceAddressManagement/'+deviceAddressId+'/true') },
+    apiGetDevicesAddressSearchPages(data){ return req('post','/deviceAddressManagement/ss', null, data)  },
+    apiPostDevicesAddresses(data){ 
+        data.forEach(element => {
+            element.parentId = this.getBid()
+        })
+        return req('post','/deviceAddressManagement/check/s', null, data) 
     }, 
+    //批次新增
+    apiPostDevicesAddressesBatchInsert(deviceId,data){ return req('post','/deviceAddressManagement/batchInsert',deviceId,data)}, 
+
+    //點位設定-PLC
+    apiGetDevicesPLCAddress(deviceAddressId){ return req('get','/devicePlcAddressManagement/'+deviceAddressId) },
+    apiPostDevicesPLCAddress(deviceId,data){ return req('post','/devicePlcAddressManagement/check', deviceId, data) }, //單點新增
+    apiPatchDevicesPLCAddress(resetLink,data){ return req('put','/devicePlcAddressManagement/check/'+resetLink, this.getBid(), data) },
+    apiDeleteDevicesPLCAddress(deviceAddressId){ return req('delete','/devicePlcAddressManagement/'+deviceAddressId+'/true') },
+    apiGetDevicesPLCAddressSearchPages(data){ return req('post','/devicePlcAddressManagement/ss', this.getBid(), data)  },
+    apiPostDevicesPLCAddresses(data){ 
+        data.forEach(element => {
+            element.parentId = this.getBid()
+        })
+        return req('post','/devicePlcAddressManagement/check/s', null, data) 
+    }, 
+    //批次新增
+    apiPostDevicesPLCAddressesBatchInsert(deviceId,data){ return req('post','/devicePlcAddressManagement/batchInsert',deviceId,data)}, 
+
     //點位設定-取得設備種類
     // apiGetDevicesTypeByDevicesAddress(){ return req('get','/deviceAddressManagement/deviceType/a') },
     //點位設定-多筆更新
-    apiPatchDevicesAddresses(data){ return req('patch','/deviceAddressManagement/s',data) },
+    // apiPatchDevicesAddresses(data){ return req('patch','/deviceAddressManagement/s',data) },
 
     //維護保養大項
-    apiGetBuildingMaintainsList(){ return req('get','/maintainManagement/buildings/'+this.getBid()+'/maintains') },
-    apiGetMaintainsList(maintainListId){ return req('get','/maintainManagement/'+maintainListId) },
-    apiPostMaintainsList(data){ return req('post','/maintainManagement/buildings/'+this.getBid()+'/maintains',data) },
-    apiPatchMaintainsList(data){ return req('patch','/maintainManagement',data) },
-    apiDeleteMaintainsList(maintainListId){ return req('delete','/maintainManagement/'+maintainListId) },
-    apiGetMaintainsListSearchPages(data){ return req('post','/maintainManagement/'+this.getBid()+'/ss', data, true)  },
-    apiPostMaintainsLists(data){ return req('post','/maintainManagement/'+this.getBid()+'/s',data) },    
-    
+    apiGetBuildingMaintainsList(){ return req('get','/maintainListManagement/'+this.getBid()+'/a') },
+    apiGetMaintainsList(maintainListId){ return req('get','/maintainListManagement/'+maintainListId) },
+    apiPostMaintainsList(data){ return req('post','/maintainListManagement', this.getBid(), data) },
+    apiPatchMaintainsList(data){ return req('patch','/maintainListManagement', null, data) },
+    apiDeleteMaintainsList(maintainListId){ return req('delete','/maintainListManagement/'+maintainListId) },
+    apiGetMaintainsListSearchPages(data){ return req('post','/maintainListManagement/ss',this.getBid(), data, true)  },
+    apiPostMaintainsLists(data){ return req('post','/maintainListManagement/s', null, data) },    
     //維護保養取得檢修申報缺失內容
-    apiGetInspectionListByMaintain(){ return req('get','/maintainManagement/buildings/'+this.getBid()+'/options') },
+    apiGetInspectionListByMaintain(){ return req('get','/maintainListManagement/options') },
+
     //維護保養細項
-    apiGetMaintainAll(){ return req('get','/maintainManagement/'+this.getBid()+'/maintains/list') },
-    apiGetListMaintains(maintainListId){ return req('get','/maintainManagement/maintains/'+maintainListId+'/list') },
-    apiGetMaintains(maintainId){ return req('get','/maintainManagement/maintains/list/'+maintainId) },
-    apiPostMaintain(maintainListId,data){ return req('post','/maintainManagement/maintains/'+maintainListId+'/list',data) },
-    apiPatchMaintains(data){ return req('patch','/maintainManagement/maintains/list',data) },
-    apiDeleteMaintains(maintainId){ return req('delete','/maintainManagement/maintains/list/'+maintainId) },
-    apiGetMaintainAllSearchPages(data){ return req('post','/index/'+this.getBid()+'/maintains/list/ss', data, true)  },
-    apiGetMaintainSearchPages(maintainListId,data){ return req('post','/maintainManagement/maintains/'+maintainListId+'/list/ss', data, true)  },
-    apiPostMaintains(maintainListId,data){ return req('post','/maintainManagement/maintains/'+maintainListId+'/list/s',data) },    
+    apiGetMaintainAll(){ return req('get','/maintainListManagement/maintainManagement/a/ss') },
+    apiGetListMaintains(maintainListId){ return req('get','/maintainListManagement/maintainManagement/'+maintainListId+'/a') },
+    apiGetMaintains(maintainId){ return req('get','/maintainListManagement/maintainManagement/'+maintainId) },
+    apiPostMaintain(maintainListId,data){ return req('post','/maintainListManagement/maintainManagement', maintainListId, data) },
+    apiPatchMaintains(data){ return req('patch','/maintainListManagement/maintainManagement', null, data) },
+    apiDeleteMaintains(maintainId){ return req('delete','/maintainListManagement/maintainManagement/'+maintainId) },
+    apiGetMaintainAllSearchPages(data){ return req('post','/index/maintains/ss', this.getBid(), data, true)  },
+    apiGetMaintainSearchPages(maintainListId,data){ return req('post','/maintainListManagement/maintainManagement/ss', maintainListId, data, true)  },
+    apiPostMaintains(maintainListId,data){ 
+        data.forEach(element => {
+            element.parentId = maintainListId
+        })
+        return req('post','/maintainListManagement/maintainManagement/s', null, data) 
+    },    
     
 }
 

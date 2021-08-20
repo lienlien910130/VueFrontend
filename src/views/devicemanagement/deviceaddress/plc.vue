@@ -42,14 +42,14 @@ export default {
         blockEvent(){
             return{
                 handleBlock:this.handleBlock,
-                clickPagination:this.getBuildingDeviceAddressManagement,
+                clickPagination:this.getBuildingDevicePLCAddressManagement,
                 resetlistQueryParams:this.resetlistQueryParams
             }
         }
     },
     methods:{
         async init(){
-            this.title = 'deviceAddressManagement'
+            this.title = 'devicePLCAddressManagement'
             this.headerButtonsName = [
                 { name:'多筆刪除',icon:'el-icon-delete',status:'deleteMany'},
                 { name:'多筆更新',icon:'el-icon-edit',status:'updateMany'},
@@ -58,8 +58,8 @@ export default {
                 { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
                 { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}
             ]
-            this.tableConfig = DeviceAddressManagement.getTableConfig()
-            //await this.getBuildingDeviceAddressManagement()
+            this.tableConfig = DeviceAddressManagement.getPLCTableConfig()
+            //await this.getBuildingDevicePLCAddressManagement()
         },
         async resetlistQueryParams(){
             this.listQueryParams = {
@@ -68,17 +68,17 @@ export default {
                 total:0,
                 internet : this.listQueryParams.internet
             }
-            await this.getBuildingDeviceAddressManagement()
+            await this.getBuildingDevicePLCAddressManagement()
         },
-        async getBuildingDeviceAddressManagement(){
-            var data = await DeviceAddressManagement.getSearchPage(this.listQueryParams)
+        async getBuildingDevicePLCAddressManagement(){
+            var data = await DeviceAddressManagement.getSearchPage(this.listQueryParams,true)
             this.blockData = data.result
             this.listQueryParams.total = data.totalPageCount
         },
         async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
             this.dialogData = []
-            this.dialogConfig = DeviceAddressManagement.getTableConfig()
+            this.dialogConfig = DeviceAddressManagement.getPLCTableConfig()
             this.dialogTitle = this.title
             this.dialogButtonsName = []
             if(index === 'open'){
@@ -96,13 +96,13 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
             }else if(index === 'delete'){
-                var isDelete = await content.delete()
+                var isDelete = await content.delete(true)
                 if(isDelete){
                     this.$message('刪除成功')
                     if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
                         this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
                     }
-                    await this.getBuildingDeviceAddressManagement()
+                    await this.getBuildingDevicePLCAddressManagement()
                     // await this.resetlistQueryParams()
                 }else{
                     this.$message.error('系統錯誤') 
@@ -123,6 +123,8 @@ export default {
                 this.excelType = 'uploadExcel'
             }else if(index === 'manyempty'){
                 this.dialogConfig = DeviceAddressManagement.getManyEmptyTableConfig()
+                this.dialogConfig[0].label = 'PLC'
+                this.dialogConfig[0].format = 'assignPLCDeviceSelect'
                 this.dialogData.push( DeviceAddressManagement.empty() )
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'createmany'},
@@ -142,35 +144,35 @@ export default {
                     delete content.protocolMode
                     delete content.status
                 }
-                var result = index === 'create' ? await content.create(deviceId) : 
-                    await DeviceAddressManagement.batchInsert(deviceId,content)
+                var result = index === 'create' ? await content.create(deviceId,true) : 
+                    await DeviceAddressManagement.batchInsert(deviceId,content,true)
                 if(Object.keys(result).length !== 0 || result == true){
                     this.$message('新增成功')
-                    await this.getBuildingDeviceAddressManagement()
+                    await this.getBuildingDevicePLCAddressManagement()
                     this.innerVisible = false
                 }else{
                     this.$message.error('系統錯誤')
                 }
             }else if(index == 'update'){
                 delete content.linkAssignDevices
-                var result = await content.update(title == 'openDialog' ? true : false) 
+                var result = await content.update(title == 'openDialog' ? true : false,true) 
                 if(Object.keys(result).length !== 0){
                     this.$message('更新成功') 
-                    await this.getBuildingDeviceAddressManagement()
+                    await this.getBuildingDevicePLCAddressManagement()
                     this.innerVisible = false
                     if(title == 'openDialog'){
                         this.$store.dispatch('building/setDevice')
-                        var data = await DeviceAddressManagement.getOfID(content.getID())
+                        var data = await DeviceAddressManagement.getOfID(content.getID(),true)
                         await this.handleBlock(this.title,'open',data)
                     }
                 }else{
                     this.$message.error('系統錯誤')
                 }
             }else if(index == 'uploadExcelSave'){
-                var isOk = await DeviceAddressManagement.postMany(content)
+                var isOk = await DeviceAddressManagement.postMany(content,true)
                 if(isOk){
                     this.$message('新增成功')
-                    await this.getBuildingDeviceAddressManagement()
+                    await this.getBuildingDevicePLCAddressManagement()
                     this.excelVisible = false
                 }else{
                     this.$message.error('系統錯誤')
@@ -192,7 +194,7 @@ export default {
             this.isTable = value
             if(this.$route.query.type !== undefined && 
                     this.$route.query.type == 'address' && this.$route.query.obj !== '' ){
-                var data = await DeviceAddressManagement.getOfID(this.$route.query.obj )
+                var data = await DeviceAddressManagement.getOfID(this.$route.query.obj ,true)
                 await this.handleBlock('','open',data)
             }
         }

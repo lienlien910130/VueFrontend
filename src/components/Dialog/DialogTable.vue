@@ -12,7 +12,14 @@
         @close="handleTableClick('cancel','')"
         center>
         <keep-alive>
+            
             <el-row>
+                <el-tabs 
+                v-if="title == 'deviceaddress'"
+                v-model="activeName" type="card" @tab-click="tabChange">
+                    <el-tab-pane label="火警總機" name="fire"></el-tab-pane>
+                    <el-tab-pane label="PLC" name="plc"></el-tab-pane>
+                </el-tabs>
                 <el-table
                     :key="Math.random()"
                     :data="tableData"
@@ -213,6 +220,7 @@ export default {
                 listOfMaintain:'維護保養細項',
                 floor:'樓層'
             },
+            activeName:'fire'
         }
     },
     methods: {
@@ -241,6 +249,10 @@ export default {
             this.tablelistQueryParams.pageIndex = val
             //this.$emit('update:tablelistQueryParams', this.tablelistQueryParams)
             this.$emit('clickPagination','clickPagination', this.tablelistQueryParams)
+        },
+        tabChange(){
+            console.log(this.activeName)
+            this.$emit('searchChange',this.activeName)
         }
     }
 }

@@ -11,8 +11,8 @@ class Building extends Parent {
             floorsOfAboveGround, floorsOfUnderground, licenseNumber,
             specialStorageItems,contactPhone,useful,
             linkOwners,linkFireManagers } = data
-        var owners = linkOwners.map(item=>{ return new User(item)})
-        var fireManagers = linkFireManagers.map(item=>{ return new User(item)})
+        var owners = linkOwners !== undefined ? linkOwners.map(item=>{ return new User(item)}) : []
+        var fireManagers = linkFireManagers !== undefined ? linkFireManagers.map(item=>{ return new User(item)}) : []
         this.buildingName = buildingName
         this.address = address 
         this.area = area == undefined ? null : area
@@ -31,17 +31,17 @@ class Building extends Parent {
     }
     async create(){
         var data = await api.building.apiPostBuilding(this).then(response => {
-            return response.result.id
+            return new Building(response.result)
         }).catch(error=>{
-            return ''
+            return {}
         })
         return data
     }
     async update(){
         var data = await api.building.apiPatchBuildingInfo(this).then(async(response) => {
-            return true
+            return new Building(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
@@ -55,9 +55,7 @@ class Building extends Parent {
     }
     async files(){
         var data = await api.files.apiGetBuildingFiles().then(response => {
-            console.log('response')
-            console.log(JSON.stringify(response))
-            var result = response.result.sort((x,y) => x.id - y.id).map(item=>{return new Files(item)})
+            var result = response.result.map(item=>{return new Files(item)})
             return result
         }).catch(error=>{
             return []
@@ -66,7 +64,6 @@ class Building extends Parent {
     }
     async createfiles(formData){
         var data = await api.files.apiPostBuildingFiles(formData).then(response => {
-            console.log(response)
             return true
         }).catch(error=>{
             return false
@@ -199,7 +196,7 @@ class Building extends Parent {
     }
     static async get (){
         var data = await api.building.apiGetBuilding().then(response => {
-            var result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Building(item)})
+            var result = response.result.map(item=>{ return new Building(item)})
             return result
         }).catch(error=>{
             return []
@@ -209,7 +206,7 @@ class Building extends Parent {
     static async getInfo(){
         var data = await api.building.apiGetBuildingInfo().then(response => {
             var result = response.result.map(item=>{ return new Building(item)})
-            return result
+            return result[0]
         }).catch(error=>{
             return []
         })
@@ -217,7 +214,7 @@ class Building extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.building.apiGetBuildingSearchPages(data).then(response => {
-            response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Building(item)})
+            response.result = response.result.map(item=>{ return new Building(item)})
             return response
         }).catch(error=>{
             return []

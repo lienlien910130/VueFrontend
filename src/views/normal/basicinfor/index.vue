@@ -227,7 +227,7 @@ export default {
   watch: {
     buildinginfo:{
       handler:async function(){
-        this.building = this.buildinginfo[0]
+        this.building = this.buildinginfo
       },
       immediate:true
     },
@@ -405,10 +405,14 @@ export default {
         isOk = await Files.delete(data)
       }else{ //設定平面圖
         this.selectFloor.setFloorPlanID(parseInt(content))
-        isOk = await this.selectFloor.update()
-        if(isOk){
+        var result = await this.selectFloor.update(this.buildingid)
+        if(Object.keys(result).length !== 0){
+          isOk = true
           this.floorImageId = content
-          this.$store.dispatch('building/setbuildingfloors',await Floors.get())
+          this.$store.dispatch('building/setFloors')
+          this.$socket.sendMsg('floor', 'update' , result)
+        }else{
+          this.$message.error('系統錯誤') 
         }
       }
       if(isOk){
@@ -433,15 +437,15 @@ export default {
       this.dialogButtonsName = []
       switch(title){
         case 'committee':
-          if(index == 'open' || index == 'empty'){
-            var data = await UsageOfFloor.getAll()
-            this.dialogSelect =  data.map(v => {
-                this.$set(v, 'id', v.id) 
-                this.$set(v, 'label', v.houseNumber) 
-                this.$set(v, 'value', v.id) 
-                return v
-            })
-          }
+          // if(index == 'open' || index == 'empty'){
+          //   var data = await UsageOfFloor.getAll()
+          //   this.dialogSelect =  data.map(v => {
+          //       this.$set(v, 'id', v.id) 
+          //       this.$set(v, 'label', v.houseNumber) 
+          //       this.$set(v, 'value', v.id) 
+          //       return v
+          //   })
+          // }
           this.dialogConfig = Committee.getTableConfig()
           empty = Committee.empty()
           exportdata = this.blockData
@@ -481,25 +485,40 @@ export default {
             this.$message('刪除成功')
             switch(title){
               case 'contactUnit':
-                this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
+                this.$store.dispatch('building/setContactunit')
+                this.$socket.sendMsg('contactUnit', 'delete' , content.getID())
               case 'committee': case 'contactUnit':
-                await this.resetlistQueryParams()
-                break;
-              case 'user': //刪除user時重整建築物資料&管委會資料
-                this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
-                this.$store.dispatch('building/setbuildingusers',await User.get())
-                // if(this.activeName == 'MC'){ //重整管委會
-                //   // await this.getFloorOfHouse()
-                //   await this.getManagementList()
-                // }
-                // await this.resetdownlistQueryParams()
-                // break;
-              case 'user': case 'floorOfHouse':
-                if(this.activeName == 'MC'){ //重整管委會
-                  // await this.getFloorOfHouse()
+                // await this.resetlistQueryParams()
+                if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
+                  this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+                }
+                if(this.activeName == 'MC'){
                   await this.getManagementList()
-                }  
-                await this.resetdownlistQueryParams()
+                }else if(this.activeName == 'Vender'){
+                  await this.getContactunitList()
+                }
+                break;
+              case 'floorOfHouse':
+                this.$socket.sendMsg('floorOfHouse', 'delete' , content.getID())
+              case 'user': //刪除user時重整建築物資料(可能會更改到所有權人&防火管理人的資料)&管委會資料(有關聯住戶)
+                var data = await Building.getInfo()
+                this.$store.dispatch('building/setBuildingInfo', data)
+                this.$socket.sendMsg('building', 'info' , data)
+                this.$store.dispatch('building/setHouseHolders')
+                this.$socket.sendMsg('houseHolder', 'delete' , content.getID())
+              case 'user': case 'floorOfHouse':
+                if(this.downlistQueryParams.pageIndex !== 1 && this.downData.length == 1){
+                  this.downlistQueryParams.pageIndex = this.downlistQueryParams.pageIndex-1
+                }
+                if(this.activeFloor == 'US'){
+                  await this.getUserList()
+                }else{
+                  await this.getFloorOfHouseList()
+                }
+                if(this.activeName == 'MC'){ //重整管委會
+                  await this.getManagementList()
+                }
+                //await this.resetdownlistQueryParams()
                 break;
             }
         }else{
@@ -561,62 +580,92 @@ export default {
       }
     },
     async onCommitteeActions(index, content){
-      if(index !== 'selectData'){
-        var isOk = index === 'update' ? await content.update() : 
+      var isOk = index === 'update' ? await content.update() : 
         index === 'create' ? await content.create() : await Committee.postMany(content)
-        if(isOk){
+      if(isOk){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           await this.getManagementList()
           this.innerVisible = false
-        }else{
+      }else{
           this.$message.error('系統錯誤')
-        }
-      }else if(index == 'selectData'){
-        // await this.getFloorOfHouse()
-        var data = await UsageOfFloor.getAll()
-        this.dialogSelect =  data.map(v => {
-            this.$set(v, 'id', v.id) 
-            this.$set(v, 'label', v.houseNumber) 
-            this.$set(v, 'value', v.id) 
-            return v
-        })
       }
+      // if(index !== 'selectData'){
+      //   var isOk = index === 'update' ? await content.update() : 
+      //   index === 'create' ? await content.create() : await Committee.postMany(content)
+      //   if(isOk){
+      //     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+      //     await this.getManagementList()
+      //     this.innerVisible = false
+      //   }else{
+      //     this.$message.error('系統錯誤')
+      //   }
+      // }
+      // else if(index == 'selectData'){
+      //   // await this.getFloorOfHouse()
+      //   var data = await UsageOfFloor.getAll()
+      //   this.dialogSelect =  data.map(v => {
+      //       this.$set(v, 'id', v.id) 
+      //       this.$set(v, 'label', v.houseNumber) 
+      //       this.$set(v, 'value', v.id) 
+      //       return v
+      //   })
+      // }
       // else{
       //   this.innerVisible = false
       // }
     },
     async onContactUnitActions(index, content){
-       if(index !== 'cancel' && index !== 'selectData'){
-        var isOk = index === 'update' ? await content.update() : 
+      var result = index === 'update' ? await content.update() : 
         index === 'create' ? await content.create() : await Contactunit.postMany(content)
-        if(isOk){
+      if(Object.keys(result).length !== 0){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-          this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
+          this.$store.dispatch('building/setContactunit')
+          this.$socket.sendMsg('contactUnit', index , result)
           await this.getContactunitList()
-          if(index == 'create'){
-            this.$refs.dialogform.insertSuccess('contactunitSelect')
-          }
+          // if(index == 'create'){
+          //   this.$refs.dialogform.insertSuccess('contactunitSelect')
+          // }
           this.innerVisible = false
-        }else{
+      }else{
           this.$message.error('該公司名稱已存在，請重新輸入')
-        }
-      }else if(index == 'selectData'){
-        this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
       }
+      //  if(index !== 'cancel' && index !== 'selectData'){
+      //   var result = index === 'update' ? await content.update() : 
+      //   index === 'create' ? await content.create() : await Contactunit.postMany(content)
+      //   if(Object.keys(result).length !== 0){
+      //     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+      //     this.$store.dispatch('building/setContactunit')
+      //     this.$socket.sendMsg('contactUnit', index , result)
+      //     await this.getContactunitList()
+      //     // if(index == 'create'){
+      //     //   this.$refs.dialogform.insertSuccess('contactunitSelect')
+      //     // }
+      //     this.innerVisible = false
+      //   }else{
+      //     this.$message.error('該公司名稱已存在，請重新輸入')
+      //   }
+      // }
+      // else if(index == 'selectData'){
+      //   this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
+      // }
       // else{
       //   this.innerVisible = false
       // }
     },
     async onFloorOfHouseActions(index, content){
       if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
-        var isOk = index === 'update' ? await content.update() :
-        index === 'create' ? 
-          await content.create(this.selectFloor.getID()) : 
-          await UsageOfFloor.postMany(this.selectFloor.getID(),content)
-        if(isOk){
+        var result = 
+            index === 'update' ? await content.update() :
+            index === 'create' ? 
+              await content.create(this.selectFloor.getID()) : 
+              await UsageOfFloor.postMany(this.selectFloor.getID(),content)
+        
+        if(Object.keys(result).length !== 0){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-          this.$store.dispatch('building/setbuildingusers',await User.get())
+          //this.$store.dispatch('building/setHouseHolders') //門牌有選擇住戶 住戶會更新居住的樓層
+          //this.$socket.sendMsg('houseHolder', 'update' , result)
           this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
+          this.$socket.sendMsg('floorOfHouse', index , result)
           this.innerVisible = false
           if(this.selectFloor !== null && this.activeFloor == 'IN'){
             await this.getFloorOfHouseList()
@@ -624,17 +673,19 @@ export default {
           if(this.activeName == 'MC' && index === 'update'){ //重整管委會
             await this.getManagementList()
           }
-          if(index == 'create'){
-            this.$refs.dialogform.insertSuccess('floorOfHouseSelect')
-          }
+          // if(index == 'create'){
+          //   this.$refs.dialogform.insertSuccess('floorOfHouseSelect')
+          // }
         }else{
           this.$message.error('戶號不可重複')
         }
       }else if(index === 'createfile'){
         await this.handleFilesUpload('createfile','floorOfHouse',content)
-      }else if(index == 'selectData'){
-        this.$store.dispatch('building/setbuildingusers',await User.get())
-      }else if(index == 'deletefile'){
+      }
+      // else if(index == 'selectData'){
+      //   this.$store.dispatch('building/setbuildingusers',await User.get())
+      // }
+      else if(index == 'deletefile'){
         await this.handleFilesUpload('deletefile','floorOfHouse',content)
       }
     },
@@ -650,20 +701,23 @@ export default {
         data.totalPageCount !==0 && data.result[0].getID() == content.id ?
         true : false
         if(canSave){
-          var isOk = index === 'update' ? await content.update() : await content.create()
-          if(isOk){
-            this.$store.dispatch('building/setbuildingusers',await User.get())
+          var result = index === 'update' ? await content.update() : await content.create()
+          if(Object.keys(result).length !== 0){
+            this.$store.dispatch('building/setHouseHolders')
+            this.$socket.sendMsg('houseHolder', index , result)
             await this.getUserList()
             if(index === 'update'){
               this.$message('更新成功')
-              this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
+              var data = await Building.getInfo()
+              this.$store.dispatch('building/setBuildingInfo', data)
+              this.$socket.sendMsg('building', 'info' , data)
               if(this.activeName == 'MC'){ //重整管委會
                 // await this.getFloorOfHouse()
                 await this.getManagementList()
               }
             }else{
               this.$message('新增成功')
-              this.$refs.dialogform.insertSuccess('userInfo')
+              //this.$refs.dialogform.insertSuccess('userInfo')
             }
             this.innerVisible = false
           }else{
@@ -676,7 +730,7 @@ export default {
         var isOk = await User.postMany(content)
         if(isOk){
           this.$message('新增成功')
-          this.$store.dispatch('building/setbuildingusers',await User.get())
+          this.$store.dispatch('building/setHouseHolders')
           await this.getUserList()
           this.excelVisible = false
         }else{
@@ -689,17 +743,22 @@ export default {
     },
     async onBuildingActions(index, content){
       if(index == 'update'){
-        var isOk = await content.update()
-        if(isOk){
+        var result = await content.update()
+        if(Object.keys(result).length !== 0){
           this.$message('更新成功')
+          this.$socket.sendMsg('building', 'info' , result)
           if(this.buildingid == content.getID()){
             this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
           }
           this.innerVisible = false
+        }else{
+          this.$message.error('系統錯誤')
         }
-      }else if(index == 'selectData'){
-        this.$store.dispatch('building/setbuildingusers',await User.get())
-      }else{
+      }
+      // else if(index == 'selectData'){
+      //   this.$store.dispatch('building/setbuildingusers',await User.get())
+      // }
+      else{
         this.innerVisible = false
       }
     },

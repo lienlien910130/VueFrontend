@@ -95,8 +95,8 @@ export default {
   watch:{
     buildinginfo:{
       handler:async function(){
-        if(this.buildinginfo.length){
-          this.form = new Building(this.buildinginfo[0])
+        if(this.buildinginfo !== undefined){
+          this.form = new Building(this.buildinginfo)
         }
       },
       immediate:true

@@ -207,7 +207,7 @@ class Inspection extends Parent {
     }
     static async getSearchPage(data){
         var data = await api.report.apiGetInspectionSearchPages(data).then(response => {
-            response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Inspection(item)})
+            response.result = response.result.map(item=>{ return new Inspection(item)})
             return response
         }).catch(error=>{
             return []

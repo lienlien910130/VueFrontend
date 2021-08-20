@@ -11,7 +11,7 @@
                         </i>
                     </div>
                     <div class="content">
-                        <span> {{ this.buildinginfo[0].getName() }}</span> 
+                        <span> {{ this.buildinginfo.getName() }}</span> 
                     </div>
                     </div>
                     <div class="verticalhalfdiv">
@@ -38,7 +38,7 @@
                             </div>
                             <div class="content">
                             <div
-                                v-for="(item,index) in this.buildinginfo[0].linkOwners"
+                                v-for="(item,index) in this.buildinginfo.linkOwners"
                                 :key="index" class="user">
                                 <div style="padding-bottom:2px">
                                     姓名 ： {{ item.name }}
@@ -59,7 +59,7 @@
                     </div>
                     <div class="content">
                       <div
-                        v-for="(item,index) in this.buildinginfo[0].linkFireManagers"
+                        v-for="(item,index) in this.buildinginfo.linkFireManagers"
                         :key="index" class="user">
                         <div style="padding-bottom:2px">
                             姓名 ： {{ item.name }}
@@ -249,7 +249,11 @@ export default {
                 var isDelete = await content.delete()
                 if(isDelete){
                     this.$message('刪除成功')
-                    await this.resetlistQueryParams()
+                    if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
+                        this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+                    }
+                    await this.searchAndPage()
+                    // await this.resetlistQueryParams()
                 }else{
                     this.$message.error('系統錯誤')
                 }
@@ -286,7 +290,8 @@ export default {
                     if(isOk){
                         this.innerVisible = false
                         index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                        await this.resetlistQueryParams()
+                        await this.searchAndPage()
+                        //await this.resetlistQueryParams()
                     }else{
                         this.$message.error('系統錯誤')
                     }
@@ -326,8 +331,8 @@ export default {
                     this.innerVisible = false
                     this.uploadVisible = false
                 }else if(index === 'clickPagination'){
-                    // this.tablelistQueryParams = content
-                    // await this.getMaintain()
+                    this.tablelistQueryParams = content
+                    await this.getMaintain()
                 }
             }
         },
@@ -371,10 +376,18 @@ export default {
                 if(isDelete){
                     this.$message('刪除成功')
                     if(this.isTable) {
-                        await this.resetlistQueryParams()    
+                        if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
+                            this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+                        }
+                        await this.searchAndPage()
+                        // await this.resetlistQueryParams()    
                     }else{
                         this.isUpdate = true
-                        await this.resettablelistQueryParams()
+                        if(this.tablelistQueryParams.pageIndex !== 1 && this.tableData.length == 1){
+                            this.tablelistQueryParams.pageIndex = this.tablelistQueryParams.pageIndex-1
+                        }
+                        await this.getMaintain()
+                        //await this.resettablelistQueryParams()
                     }
                 }else{
                     this.$message.error('系統錯誤')
@@ -456,22 +469,24 @@ export default {
                 }else{
                  this.$message.error('系統錯誤')
                 }
-            }else if(index === 'selectData'){
-                switch (content) {
-                    case 'deviceSelect':
-                        this.$store.dispatch('building/setbuildingdevices',await Device.get())   
-                        break;
-                    case 'contactunitSelect':
-                        this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())    
-                        break;
-                    case 'inspectionSelect':
-                        this.dialogSelect = new Array(await MaintainManagementList.getAllLack())
-                        break;
-                    case 'setting':
-                        this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
-                        break;
-                }
-            }else if(index === 'clickPagination'){
+            }
+            // else if(index === 'selectData'){
+            //     switch (content) {
+            //         case 'deviceSelect':
+            //             this.$store.dispatch('building/setbuildingdevices',await Device.get())   
+            //             break;
+            //         case 'contactunitSelect':
+            //             this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())    
+            //             break;
+            //         case 'inspectionSelect':
+            //             this.dialogSelect = new Array(await MaintainManagementList.getAllLack())
+            //             break;
+            //         case 'setting':
+            //             this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
+            //             break;
+            //     }
+            // }
+            else if(index === 'clickPagination'){
                 this.tablelistQueryParams = content
                 await this.getMaintain()
             }

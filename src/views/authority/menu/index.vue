@@ -56,20 +56,31 @@ export default {
                     return element
                 }).filter(item=>{return item.code !== 'sys-Setting' && item.code !== 'sys-Building'
                     && item.code !== 'sys-Index'})
+                this.treeData.unshift(new Menu({
+                    id: '0' ,
+                    sort:'0',
+                    name:'主選單'
+                }))
                 if(this.selectId !== null){
-                    this.$refs.menuTree.setHighlight(this.selectId)
-                    var array = []
-                    for(let element of this.treeData){
-                        array.push(element)
-                        array.push(element.linkMainMenus)
+                    if(this.selectId == '0'){
+                        this.$refs.menuTree.setHighlight(this.selectId)
+                        var a = this.menu.map(item=>{ return item.clone(item)})
+                        this.blockData = a
+                    }else{
+                        this.$refs.menuTree.setHighlight(this.selectId)
+                        var array = []
+                        for(let element of this.treeData){
+                            array.push(element)
+                            array.push(element.linkMainMenus)
+                        }
+                        var concatarray = array.reduce(
+                            function(a, b) {
+                                return a.concat(b)
+                            },[]
+                        )
+                        var data = concatarray.filter(item=>{ return item.id == this.selectId})[0]
+                        this.blockData = data.getLink()
                     }
-                    var concatarray = array.reduce(
-                        function(a, b) {
-                            return a.concat(b)
-                        },[]
-                    )
-                    var data = concatarray.filter(item=>{ return item.id == this.selectId})[0]
-                    this.blockData = data.getLink()
                 }
             },
             immediate:true
@@ -96,8 +107,13 @@ export default {
             this.hasSearch = false
         },
         async handleTreeNode(node,data){
+            console.log(node,data)
             this.blockData = data.getLink()
             this.selectId = data.getID()
+            if(this.selectId == '0'){
+                var a = this.menu.map(item=>{ return item.clone(item)})
+                this.blockData = a
+            }
         },
         async handleBlock(title,index, content){
             console.log(title,index, JSON.stringify(content))
@@ -117,15 +133,16 @@ export default {
                 if(isOk){
                     this.$message('刪除成功')
                     this.$store.dispatch('permission/setRoutes')
+                    this.$socket.sendMsg('menus', 'routes' , '')
                 }else{
                     this.$message.error('系統錯誤')
                 }
             }else if(index === 'empty'){
-                if(this.selectId == null){
-                    this.$alert('如需新增子目錄，請先選擇父節點，再進行新增', '新增提醒', {
-                        confirmButtonText: '確定'
-                    })
-                }
+                // if(this.selectId == null){
+                //     this.$alert('如需新增子目錄，請先選擇父節點，再進行新增', '新增提醒', {
+                //         confirmButtonText: '確定'
+                //     })
+                // }
                 this.dialogData.push( Menu.empty() )    
                     this.dialogButtonsName = [
                     { name:'儲存',type:'primary',status:'create'},
@@ -159,11 +176,12 @@ export default {
                 delete content.linkMainMenus
                 delete content.linkAccessAuthorities
                 var isOk = index == 'update' ? await content.update() : 
-                index === 'create' ? await content.create(this.selectId) : 
+                index === 'create' ? await content.create(this.selectId == '0' ? null : this.selectId) : 
                 await Menu.postMany(this.selectId,content)
                 if(isOk){
                     index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('permission/setRoutes')
+                    this.$socket.sendMsg('menus', 'routes' , '')
                     this.innerVisible = false
                     this.excelVisible = false
                 }else{
@@ -173,7 +191,6 @@ export default {
                 this.innerVisible = false
                 this.excelVisible = false
             }
-            
         },
         async changeTable(value){
             this.isTable = value

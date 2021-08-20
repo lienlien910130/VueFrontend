@@ -57,13 +57,15 @@ export default {
         tableEvent(){
             return{
                 handleTableClick:this.handleTableClick,
-                clickPagination:this.handleTableClick
+                clickPagination:this.handleTableClick,
+                searchChange:this.searchChange
             }
         }
     },
     data(){
         return{
-            selectdevice:null
+            selectdevice:null,
+            searchType:'fire'
         }
     },
     methods: {
@@ -72,7 +74,8 @@ export default {
             this.buttonsName = [
                 { name:'刪除',icon:'el-icon-delete',status:'delete'},
                 { name:'編輯',icon:'el-icon-edit',status:'open'},
-                { name:'維保紀錄',icon:'el-icon-document',status:'openmaintain'}
+                { name:'維保紀錄',icon:'el-icon-document',status:'openmaintain'},
+                { name:'點位',icon:'el-icon-setting',status:'openaddress'}
             ]
             this.tableConfig = Device.getTableConfig()
             this.dialogSelect = await DeviceType.get()
@@ -104,7 +107,7 @@ export default {
             this.listQueryParams.total = data.totalPageCount
         },
         async getDevicesManageMaintain(){
-            var data =  await this.selectdevice.getMaintain(
+            var data =  await this.selectdevice.getMaintain(this.selectdevice.getID(),
             this.tablelistQueryParams)
             this.tableTitle = 'devicemaintain'
             this.isHasHeaderButtons = false
@@ -116,11 +119,10 @@ export default {
             ]
         },
         async getDevicesAddress(){
-            var data =  await this.selectdevice.getDeviceAddresss(
-            this.tablelistQueryParams)
+            var data =  await this.selectdevice.getDeviceAddresss(this.tablelistQueryParams,this.searchType)
             this.tableTitle = 'deviceaddress'
             this.isHasHeaderButtons = false
-            this.dialogtableConfig= DeviceAddressManagement.getTableConfig()
+            this.dialogtableConfig= this.searchType == 'fire' ? DeviceAddressManagement.getTableConfig() : DeviceAddressManagement.getPLCTableConfig()
             this.dialogtableConfig.shift()
             this.tableData = data.result
             this.tablelistQueryParams.total = data.totalPageCount
@@ -151,8 +153,13 @@ export default {
                 var isDelete = await content.delete()
                 if(isDelete){
                     this.$message('刪除成功')
-                    this.$store.dispatch('building/setbuildingdevices',await Device.get())
-                    await this.resetlistQueryParams()
+                    this.$store.dispatch('building/setDevice')
+                    this.$socket.sendMsg('device', 'delete' , content.getID())
+                    if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
+                        this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+                    }
+                    await this.getBuildingDevicesManage()
+                    // await this.resetlistQueryParams()
                 }else{
                     this.$message.error('系統錯誤') 
                 }
@@ -183,35 +190,38 @@ export default {
         async handleDialog(resetLink ,index, content){ //Dialog相關操作
             console.log(index,JSON.stringify(content))
             if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
-                var isOk = index === 'update' ? await content.update(resetLink) : 
+                var result = index === 'update' ? await content.update(resetLink) : 
                 index === 'create' ? await content.create() : await Device.postMany(content)
-                if(isOk){
+                if(Object.keys(result).length !== 0){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                    this.$store.dispatch('building/setbuildingdevices',await Device.get())
+                    this.$store.dispatch('building/setDevice')
+                    this.$socket.sendMsg('device', index, result)
                     await this.getBuildingDevicesManage()
                     this.innerVisible = false
                     this.excelVisible = false
-                    var data = await Device.get()
-                    this.$socket.sendMsg('device','dataupdate',data)
-                    if(index == 'create'){
-                        this.$refs.dialogform.insertSuccess('deviceSelect')
-                    }
+                    // var data = await Device.get()
+                    // // this.$socket.sendMsg('device','dataupdate',data)
+                    // if(index == 'create'){
+                    //     this.$refs.dialogform.insertSuccess('deviceSelect')
+                    // }
                 }else{
                     this.$message.error('網路編號不可重複') 
                 }
-            }else if(index === 'selectData' && window.child && window.child.open){
-                switch (content) {
-                    case 'deviceTypeSelect':
-                        this.dialogSelect = await DeviceType.get()    
-                        break;
-                    case 'contactunitSelect':
-                        this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())    
-                        break;
-                    case 'setting':
-                        this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
-                        break;
-                }
-            }else{
+            }
+            // else if(index === 'selectData' && window.child && window.child.open){
+            //     switch (content) {
+            //         case 'deviceTypeSelect':
+            //             this.dialogSelect = await DeviceType.get()    
+            //             break;
+            //         case 'contactunitSelect':
+            //             this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())    
+            //             break;
+            //         case 'setting':
+            //             this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
+            //             break;
+            //     }
+            // }
+            else{
                 this.innerVisible = false
                 this.excelVisible = false
             }
@@ -245,6 +255,10 @@ export default {
             }else if(this.$route.query.type !== undefined && this.$route.query.type == 'device'){
                 await this.handleBlock('','empty','')
             }
+        },
+        async searchChange(index){
+            this.searchType = index
+            await this.resettablelistQueryParams(false)
         }
     }
 }

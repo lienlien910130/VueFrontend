@@ -385,9 +385,7 @@ class MaintainManagement extends Parent {
     }
     static async getAllSearchPage (data){
         var data = await api.device.apiGetMaintainAllSearchPages(data).then(response => {
-            console.log(JSON.stringify(response))
-            response.result = response.result.sort((x,y) => x.id - y.id)
-            .map(item=>{ return new MaintainManagement(item)})
+            response.result = response.result.map(item=>{ return new MaintainManagement(item)})
             return response
         }).catch(error=>{
             return []
@@ -396,8 +394,7 @@ class MaintainManagement extends Parent {
     }
     static async getSearchPage(maintainListId,data){
         var data = await api.device.apiGetMaintainSearchPages(maintainListId,data).then(response => {
-            response.result = response.result.sort((x,y) => x.id - y.id)
-            .map(item=>{ return new MaintainManagement(item)})
+            response.result = response.result.map(item=>{ return new MaintainManagement(item)})
             return response
         }).catch(error=>{
             return []

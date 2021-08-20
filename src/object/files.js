@@ -12,7 +12,6 @@ class Files extends Parent {
         this.uploadUserID = uploadUserID
         this.targetModule = targetModule
         this.targetID = targetID
-        return this
     }
 
     getID(){ return this.id }
@@ -34,14 +33,14 @@ class Files extends Parent {
         })
         return data
     }
-    async image(){
-        var data = await api.files.apiGetImage(this.id).then(response => {
-            return response
-        }).catch(error=>{
-            return []
-        })
-        return data
-    }
+    // async image(){
+    //     var data = await api.files.apiGetImage(this.id).then(response => {
+    //         return response
+    //     }).catch(error=>{
+    //         return []
+    //     })
+    //     return data
+    // }
     static async delete(id){
         var data = await api.files.apiDeleteFile(id).then(async(response) => {
             return true
@@ -50,8 +49,17 @@ class Files extends Parent {
         })
         return data
     }
-    static async get(fileId){
-        var data = await api.files.apiGetFloorImage(fileId).then(response => {
+    // static async get(fileId){
+    //     console.log('TODO=>修改api')
+    //     var data = await api.files.apiGetImage(fileId).then(response => {
+    //         return response
+    //     }).catch(error=>{
+    //         return []
+    //     })
+    //     return data        
+    // }
+    static async getImage(fileId){
+        var data = await api.files.apiGetImage(fileId).then(response => {
             return response
         }).catch(error=>{
             return []

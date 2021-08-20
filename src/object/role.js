@@ -6,7 +6,7 @@ class Role extends Parent {
     constructor (data) {
         super(data)
         const { name,  description, status, sort, removable, linkAccessAuthorities } = data
-        var accessAuthorities = linkAccessAuthorities.map(item=>{ return new AccessAuthority(item)})
+        var accessAuthorities = linkAccessAuthorities !== undefined ? linkAccessAuthorities.map(item=>{ return new AccessAuthority(item)}) : []
         this.name = name
         this.description = description
         this.status = status
@@ -18,22 +18,22 @@ class Role extends Parent {
         return new Role(data)
     }
     async update(){
-        var temp = JSON.parse(JSON.stringify(this))
-        temp.name = '{Check}'+temp.name
-        var data = await api.authority.apiPatchRoleAuthority(temp).then(async(response) => {
-            return true
+        // var temp = JSON.parse(JSON.stringify(this))
+        // temp.name = '{Check}'+temp.name
+        var data = await api.authority.apiPatchRoleAuthority(this).then(async(response) => {
+            return new Role(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
     async create(){
-        var temp = JSON.parse(JSON.stringify(this))
-        temp.name = '{Check}'+temp.name
-        var data = await api.authority.apiPostRoleAuthority(temp).then(response => {
-            return true
+        // var temp = JSON.parse(JSON.stringify(this))
+        // temp.name = '{Check}'+temp.name
+        var data = await api.authority.apiPostRoleAuthority(this).then(response => {
+            return new Role(response.result)
         }).catch(error=>{
-            return false
+            return {}
         })
         return data
     }
@@ -49,6 +49,7 @@ class Role extends Parent {
     async getAccess(type){
         if(type == 'role'){
             var data = await api.authority.apiGetAccountAuthorityByRole(this.id).then(response => {
+                console.log(JSON.stringify(response))
                 var array = []
                 response.result.sort((x,y) => x.id - y.id).forEach(item=>{
                     array.push(item.id)
@@ -132,6 +133,15 @@ class Role extends Parent {
         })
         return data
     }
+    // static async getMainMenuAuthority(mainMenuId){
+    //     var data = await api.authority.apiGetAccountAuthorityByMenu(mainMenuId).then(response => {
+    //         console.log(JSON.stringify(response))
+    //         return true
+    //     }).catch(error=>{
+    //         return false
+    //     })
+    //     return data
+    // }
     static async updateAccessAuthority(data){
         var data = await api.authority.apiPutAuthorityByRole(data).then(async(response) => {
             return true

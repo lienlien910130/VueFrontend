@@ -65,20 +65,20 @@ const actions = {
       })
     })
   },
-  getInfo({ commit, state }) {
+  async getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      user.apiGetUserInfo().then(response => {
+      user.apiGetUserInfo().then(async(response) => {
         if (!response) {
           reject('登入失敗，請重新登入')
         }
-        const { account, name, linkRoles, linkBuildings } = response.result[0]
-        var roles = linkRoles.map(item=>{ return new Role(item)})
+        const { id, account, name, linkRoles, linkBuildings } = response.result[0]
+        var roles = linkRoles !== undefined ? linkRoles.map(item=>{ return new Role(item)})  : [] 
         var buildingarray = linkBuildings.map(item=>{ return new Building(item)})
         commit('SET_ACCOUNT', account)
         commit('SET_NAME', name)
         commit('SET_ROLES', roles)
-        store.dispatch('building/setBuildingList',buildingarray)
-        resolve(roles)
+        store.dispatch('building/setBuildingList', id == '1' ? await Building.get() : buildingarray)
+        resolve()
       }).catch(error => {
         reject(error)
       })

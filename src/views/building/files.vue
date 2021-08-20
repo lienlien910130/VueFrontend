@@ -337,7 +337,7 @@ export default {
             var data 
             if(filename == 'png' || filename == 'jpeg' 
             || filename == 'jpg'){
-                data = await file.image()
+                data = await Files.getImage(file.getID())
                 this.type = 'image'
             }else {
                 data = await file.download()

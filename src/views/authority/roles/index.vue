@@ -38,7 +38,7 @@
 </template>
 <script>
 import { blockmixin, dialogmixin, sharemixin, excelmixin } from '@/mixin/index'
-import { Menu, Role } from '@/object/index'
+import { AccessAuthority, Menu, Role } from '@/object/index'
 
 export default {
     mixins:[sharemixin,blockmixin,dialogmixin,excelmixin],
@@ -75,6 +75,7 @@ export default {
     watch:{
         menu:{
             handler:async function(){
+  
                 await this.setMenuRoleAccess()
             },
             immediate:true
@@ -90,6 +91,10 @@ export default {
                 { name:'編輯',icon:'el-icon-edit',status:'open'},
                 { name:'分配權限',icon:'el-icon-magic-stick',status:'distribution'}
             ]
+            if(this.role_record == 0){
+                this.$store.dispatch('building/setroles')
+                this.$store.dispatch('record/saveRoleRecord',1)
+            }
         },
         async resetlistQueryParams(){
             this.listQueryParams = {
@@ -114,7 +119,7 @@ export default {
                 }
                 for (let children of item.getLink()){
                     for (let obj of children.getAccessAuthorities()){
-                        this.accessAuthority.push(obj)
+                         this.accessAuthority.push(obj)
                     }
                 }
             }
@@ -143,9 +148,14 @@ export default {
                 var isOk = await content.delete()
                 if(isOk){
                     this.$message('刪除成功')
-                    this.$store.dispatch('permission/setmenu',await  Menu.get())
-                    this.$store.dispatch('building/setroles',await Role.get())
-                    await this.resetlistQueryParams()
+                    // this.$store.dispatch('permission/setmenu',await  Menu.get())
+                    // this.$store.dispatch('building/setroles')
+                    if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
+                        this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+                    }
+                    this.$store.dispatch('building/setroles')
+                    this.$socket.sendMsg('roles','delete',content.getID())
+                    await this.getAllRole()
                 }else{
                     this.$message.error('系統錯誤')
                 }
@@ -174,16 +184,20 @@ export default {
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title , index, JSON.stringify(content))
             if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
-                var isOk = index === 'update' ? await content.update() : 
+                var result = index === 'update' ? await content.update() : 
                 index === 'create' ? await content.create() : await Role.postMany(content)
-                if(isOk){
+                if(Object.keys(result).length !== 0){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                    this.$store.dispatch('permission/setmenu',await  Menu.get())
-                    this.$store.dispatch('building/setroles',await Role.get())
+                    this.$store.dispatch('building/setroles')
+                    // index === 'update' ?
+                    // this.$store.dispatch('building/updateRole', result ) : this.$store.dispatch('building/addRole', result)
+                    this.$socket.sendMsg('roles', index , result)
+                    // this.$store.dispatch('permission/setmenu',await  Menu.get())
+                    
                     await this.getAllRole()
-                    if(index == 'create'){
-                        this.$refs.dialogform.insertSuccess('roleSelect')
-                    }
+                    // if(index == 'create'){
+                    //     this.$refs.dialogform.insertSuccess('roleSelect')
+                    // }
                     this.innerVisible = false
                     this.excelVisible = false
                 }else{
@@ -249,7 +263,8 @@ export default {
                 isOk = await Role.updateAccessAuthority(updateArray)
                 if(isOk){
                     this.$message('更新成功')
-                    this.$store.dispatch('permission/setmenu',await Menu.get())
+                    // this.$store.dispatch('permission/setmenu',await Menu.get())
+                    // this.$socket.sendMsg('menus', 'reset' , await Menu.get())
                     await this.getAllRole()
                     this.authorityVisible = false
                 }else{

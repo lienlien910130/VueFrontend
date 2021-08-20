@@ -13,9 +13,19 @@ export default {
                 'buildingcontactunit',
                 'buildingroles',
                 'buildingarray',
+                'buildingfloorOfHouse',
+                'buildingdeviceType',
                 'deviceType',
                 'device',
-                'fullscreen'
+                'fullscreen',
+                'role_record',
+                'menu_record',
+                'setting_record',
+                'floorOfHouse_record',
+                'householder_record',
+                'device_record',
+                'contactunit_record',
+                'deviceType_record'
             ]),
             dataStr(){ //日期
                 return function (a,b) {
