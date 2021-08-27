@@ -26,11 +26,10 @@ class UsageOfFloor extends Parent {
     clone(data){
         return new UsageOfFloor(data)
     }
-    async update(){
+    async update(floorId){
         var temp = JSON.parse(JSON.stringify(this))
         temp.houseNumber = '{Check}'+temp.houseNumber 
-        var data = await api.building.apiPatchFloorOfHouse(temp).then(async(response) => {
-            console.log(JSON.stringify(response))
+        var data = await api.building.apiPatchFloorOfHouse(floorId,temp).then(async(response) => {
             return new UsageOfFloor(response.result)
         }).catch(error=>{
             return {}
@@ -139,7 +138,6 @@ class UsageOfFloor extends Parent {
     }
     static async getAll(){
         var data = await api.building.apiGetBuildingOfHouse().then(response => {
-            console.log(JSON.stringify(response))
             var result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new UsageOfFloor(item)})
             return result
@@ -170,9 +168,10 @@ class UsageOfFloor extends Parent {
     }
     static async postMany(floorId,data){
         var data = await api.building.apiPostFloorOfHouses(floorId,data).then(response => {
-            return true
+            response.result = response.result.map(item=>{ return new UsageOfFloor(item)})
+            return response
         }).catch(error=>{
-            return false
+            return []
         })
         return data
     }

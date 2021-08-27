@@ -343,27 +343,26 @@ class DeviceAddressManagement extends Parent {
             return data
         }
     }
-    static async postMany(data, isPLC = null){
-        if(isPLC == null){
-            var data = await api.device.apiPostDevicesAddresses(data).then(response => {
-                return true
-            }).catch(error=>{
-                return false
-            })
-            return data
-        }else{
-            var data = await api.device.apiPostDevicesPLCAddresses(data).then(response => {
-                return true
-            }).catch(error=>{
-                return false
-            })
-            return data
-        }
-    }
+    // static async postMany(data, isPLC = null){
+    //     if(isPLC == null){
+    //         var data = await api.device.apiPostDevicesAddresses(data).then(response => {
+    //             return true
+    //         }).catch(error=>{
+    //             return false
+    //         })
+    //         return data
+    //     }else{
+    //         var data = await api.device.apiPostDevicesPLCAddresses(data).then(response => {
+    //             return true
+    //         }).catch(error=>{
+    //             return false
+    //         })
+    //         return data
+    //     }
+    // }
     static async batchInsert(deviceId,data,isPLC = null){
         if(isPLC == null){
             var data = await api.device.apiPostDevicesAddressesBatchInsert(deviceId,data).then(response => {
-                console.log(JSON.stringify(response))
                 return true
             }).catch(error=>{
                 return false
@@ -371,7 +370,6 @@ class DeviceAddressManagement extends Parent {
             return data
         }else{
             var data = await api.device.apiPostDevicesPLCAddressesBatchInsert(deviceId,data).then(response => {
-                console.log(JSON.stringify(response))
                 return true
             }).catch(error=>{
                 return false

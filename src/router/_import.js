@@ -24,8 +24,8 @@ const map = {
     'roleSetting':()=>import('@/views/authority/roles/index.vue'),
     'accountSetting':()=>import('@/views/authority/users/index.vue'),
 
-    'emergencyResponse':()=> import('@/views/emergency/marshalling/index.vue'),
-    'classType':()=> import('@/views/emergency/classtype/index.vue'),
+    'selfDefenseFireMarshallingMgmt':()=> import('@/views/emergency/marshalling/index.vue'),
+    'protectionGroupMgmt':()=> import('@/views/emergency/classtype/index.vue'),
     'process':()=> import('@/views/emergency/process/index.vue'),
     'instruction':()=> import('@/views/emergency/instruction/index.vue'),
 

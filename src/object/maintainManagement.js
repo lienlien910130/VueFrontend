@@ -167,14 +167,14 @@ class MaintainManagementList extends Parent {
         })
         return data
     }
-    static async postMany(data){
-        var data = await api.device.apiPostMaintainsLists(data).then(response => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    }
+    // static async postMany(data){
+    //     var data = await api.device.apiPostMaintainsLists(data).then(response => {
+    //         return true
+    //     }).catch(error=>{
+    //         return false
+    //     })
+    //     return data
+    // }
     static async getAllLack(){
         var data = await api.device.apiGetInspectionListByMaintain().then(response => {
             return response.result.sort(function(x,y){

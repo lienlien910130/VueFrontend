@@ -22,9 +22,9 @@ class Account extends Parent {
         return new Account(data)
     }
     async update(){
-        // var temp = JSON.parse(JSON.stringify(this))
-        // temp.account = '{Check}'+temp.account
-        var data = await api.authority.apiPutAccountAuthority(this).then(async(response) => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.account = '{Check}'+temp.account
+        var data = await api.authority.apiPutAccountAuthority(temp).then(async(response) => {
             return true
         }).catch(error=>{
             return false
@@ -32,9 +32,9 @@ class Account extends Parent {
         return data
     }
     async create(){
-        // var temp = JSON.parse(JSON.stringify(this))
-        // temp.account = '{Check}'+temp.account
-        var data = await api.authority.apiPostAccountAuthority(this).then(response => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.account = '{Check}'+temp.account
+        var data = await api.authority.apiPostAccountAuthority(temp).then(response => {
             return true
         }).catch(error=>{
             return false
@@ -125,9 +125,10 @@ class Account extends Parent {
     }
     static async postMany(data){
         var data = await api.authority.apiPostAccountAuthorities(data).then(response => {
-            return true
+            response.result = response.result.map(item=>{ return new Account(item)})
+            return response
         }).catch(error=>{
-            return false
+            return []
         })
         return data
     }

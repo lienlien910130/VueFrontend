@@ -6,7 +6,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { Building, Contactunit, Device, DeviceType, Floors, Role, UsageOfFloor, User } from './object'
+import { Building, Contactunit, Device, DeviceAddressManagement, DeviceType, Floors, Role, UsageOfFloor, User } from './object'
 
 export default {
   name: 'App',
@@ -57,6 +57,9 @@ export default {
                   case 'deviceType':
                     this.handleDeviceType(data.SendType, data.Data.Content)
                     break;
+                  case 'deviceAddress':
+                    this.handleDeviceAddress(data.SendType, data.Data.Content)
+                    break;
                 }
           }
           
@@ -80,7 +83,9 @@ export default {
       }else if(index == 'delete'){
         this.$store.dispatch('building/deleteRole',content)
       }else if(index == 'create'){
-        this.$store.dispatch('building/addRole', new Role(content))
+        this.$store.dispatch('building/addRole', new Array(new Role(content)))
+      }else if(index == 'uploadExcelSave'){
+        this.$store.dispatch('building/addRole', content.map(item=>{ return new Role(item)}))
       }
     },
     handleMenus(index,content){
@@ -135,7 +140,9 @@ export default {
       }else if(index == 'delete'){
         this.$store.dispatch('building/deleteContactunit',content)
       }else if(index == 'create'){
-        this.$store.dispatch('building/addContactunit', new Contactunit(content))
+        this.$store.dispatch('building/addContactunit',new Array(new Contactunit(content)))
+      }else if(index == 'uploadExcelSave'){
+        this.$store.dispatch('building/addContactunit', content.map(item=>{ return new Contactunit(item)}))
       }
     },
     handleHouseHolder(index,content){
@@ -145,7 +152,9 @@ export default {
       }else if(index == 'delete'){
         this.$store.dispatch('building/deleteHouseHolder',content)
       }else if(index == 'create'){
-        this.$store.dispatch('building/addHouseHolder', new User(content))
+        this.$store.dispatch('building/addHouseHolder', new Array(new User(content)))
+      }else if(index == 'uploadExcelSave'){
+        this.$store.dispatch('building/addHouseHolder', content.map(item=>{ return new User(item)}))
       }
     },
     handleFloorOfHouse(index,content){
@@ -155,7 +164,9 @@ export default {
       }else if(index == 'delete'){
         this.$store.dispatch('building/deleteFloorOfHouse',content)
       }else if(index == 'create'){
-        this.$store.dispatch('building/addFloorOfHouse', new UsageOfFloor(content))
+        this.$store.dispatch('building/addFloorOfHouse', new Array(new UsageOfFloor(content)))
+      }else if(index == 'uploadExcelSave'){
+        this.$store.dispatch('building/addFloorOfHouse', content.map(item=>{ return new UsageOfFloor(item)}))
       }
     },
     handleDevice(index,content){
@@ -165,7 +176,9 @@ export default {
       }else if(index == 'delete'){
         this.$store.dispatch('building/deleteDevice',content)
       }else if(index == 'create'){
-        this.$store.dispatch('building/addDevice', new Device(content))
+        this.$store.dispatch('building/addDevice', new Array(new Device(content)))
+      }else if(index == 'uploadExcelSave'){
+        this.$store.dispatch('building/addDevice', content.map(item=>{ return new Device(item)}))
       }
     },
     handleDeviceType(index,content){
@@ -175,9 +188,21 @@ export default {
       }else if(index == 'delete'){
         this.$store.dispatch('building/deleteDeviceType',content)
       }else if(index == 'create'){
-        this.$store.dispatch('building/addDeviceType', new DeviceType(content))
+        this.$store.dispatch('building/addDeviceType', new Array(new DeviceType(content)))
+      }else if(index == 'uploadExcelSave'){
+        this.$store.dispatch('building/addDeviceType', content.map(item=>{ return new DeviceType(item)}))
       }
     },
+    handleDeviceAddress(index,content){
+      console.log('handleDeviceAddress',index,content)
+      if(index == 'update'){
+        this.$store.dispatch('building/updateAddressManagement', new DeviceAddressManagement(content))
+      }else if(index == 'delete'){
+        this.$store.dispatch('building/deleteAddressManagement',content)
+      }else if(index == 'create'){
+        this.$store.dispatch('building/addAddressManagement', new Array(new DeviceAddressManagement(content)))
+      }
+    }
   }
     
 }

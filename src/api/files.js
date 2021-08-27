@@ -5,7 +5,7 @@ const files = {
     getUid(){ return store.getters.id},
     getBid(){ return store.getters.buildingid},
 
-    apiGetAllFiles(data){ return req('post','/fileManager/'+this.getBid()+'/ss', null, data, true)  },
+    apiGetAllFiles(data){ return req('post','/fileManager/ss', this.getBid(), data, true)  },
 
     //大樓檔案
     apiGetBuildingFiles(){ return req('get','/index/'+this.getBid()+'/filesList') } ,

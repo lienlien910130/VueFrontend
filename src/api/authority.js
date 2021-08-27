@@ -29,30 +29,30 @@ const authority = {
     //權限管理
     // apiGetAccessAuthority(accessAuthorityId){ return req('get','/accessAuthoritySetting/'+accessAuthorityId) },
     apiGetMainMenuAccessAuthority(mainMenuId){ return req('get','/accessAuthoritySetting/mainMenu/'+mainMenuId) },
-    apiPostAccessAuthority(data){ return req('post','/accessAuthoritySetting', this.getBid(), data) },
-    apiPatchAccessAuthority(data){ return req('patch','/accessAuthoritySetting', this.getBid(), data) },
+    apiPostAccessAuthority(mainMenuId,data){ return req('post','/accessAuthoritySetting/check',mainMenuId, data) },
+    apiPatchAccessAuthority(mainMenuId,data){ return req('patch','/accessAuthoritySetting/check',mainMenuId, data) },
     apiDeleteAccessAuthority(accessAuthorityId){ return req('delete','/accessAuthoritySetting/'+accessAuthorityId) },
     // apiGetCheckAccessAuthority(){ return req('get','/accessAuthoritySetting/checkAssign') },
-    apiPostAccessAuthorities(data){ 
+    apiPostAccessAuthorities(mainMenuId,data){ 
         data.forEach(element => {
-            element.parentId = this.getBid()
+            element.parentId = mainMenuId
         })
-        return req('post','/accessAuthoritySetting/s', null, data) 
+        return req('post','/accessAuthoritySetting/check/s', null, data) 
     },
 
     //角色管理
     apiGetAllRole(){ return req('get','/index/default/roles') },
     // apiGetAllRoleAuthority(){ return req('get','/roleSetting/a') },
     apiGetRoleAuthority(roleId){ return req('get','/roleSetting/'+roleId) },
-    apiPostRoleAuthority(data){ return req('post','/roleSetting', this.getBid(), data) },
-    apiPatchRoleAuthority(data){ return req('patch','/roleSetting', this.getBid(), data) },
+    apiPostRoleAuthority(data){ return req('post','/roleSetting/check', this.getBid(), data) },
+    apiPatchRoleAuthority(data){ return req('patch','/roleSetting/check', this.getBid(), data) },
     apiDeleteRoleAuthority(roleId){ return req('delete','/roleSetting/'+roleId) },
     apiGetRoleAuthoritySearchPages(data){ return req('post','/roleSetting/ss', this.getBid(), data)  },
     apiPostRoleAuthorities(data){ 
         data.forEach(element => {
             element.parentId = this.getBid()
         })
-        return req('post','/roleSetting/s', null, data) 
+        return req('post','/roleSetting/check/s', null, data) 
     },
     //角色取得權限管理
     apiGetAccountAuthorityByRole(roleId){ return req('get','/roleSetting/accessAuthorities/r/'+roleId) },
@@ -64,16 +64,16 @@ const authority = {
     //帳號管理
     apiGetAllAccountAuthority(){ return req('get','/accountSetting/a') },
     apiGetAccountAuthority(accountId){ return req('get','/accountSetting/'+accountId) },
-    apiPostAccountAuthority(data){ return req('post','/accountSetting', this.getBid(), data) },
+    apiPostAccountAuthority(data){ return req('post','/accountSetting/check', this.getBid(), data) },
     // apiPatchAccountAuthority(data){ return req('patch','/accountSetting/check',data) },
-    apiPutAccountAuthority(data){ return req('put','/accountSetting', this.getBid(), data) },
+    apiPutAccountAuthority(data){ return req('put','/accountSetting/check', this.getBid(), data) },
     apiDeleteAccountAuthority(accountId){ return req('delete','/accountSetting/'+accountId) },
     apiGetAccountAuthoritySearchPages(data){ return req('post','/accountSetting/ss', this.getBid(), data, true)  },
     apiPostAccountAuthorities(data){ 
         data.forEach(element => {
             element.parentId = this.getBid()
         })
-        return req('post','/accountSetting/s', null, data) 
+        return req('post','/accountSetting/check/s', null, data) 
     },
     //帳號取得權限管理
     apiGetAccountAuthorityByAccount(roleId){ return req('get','/accountSetting/accessAuthorities/'+roleId) },

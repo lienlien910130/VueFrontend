@@ -123,17 +123,15 @@ export default {
                     }
                     this.$socket.sendMsg('deviceType', index , result)
                     await this.getBuildingDevicesType()
-                    // if(index == 'create'){
-                    //     this.$refs.dialogform.insertSuccess('deviceTypeSelect')
-                    // }
                     this.innerVisible = false
                 }else{
                     this.$message.error('系統錯誤')
                 }
             }else if(index === 'uploadExcelSave'){
-                var isOk = await DeviceType.postMany(content)
-                if(isOk){
+                var result = await DeviceType.postMany(content)
+                if(result.length){
                     this.$message('新增成功')
+                    this.$socket.sendMsg('deviceType', index , result)
                     await this.getBuildingDevicesType()
                     this.excelVisible = false
                 }else{

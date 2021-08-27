@@ -119,7 +119,7 @@ export default {
             return this.listQueryParams.pageIndex || 1
         },
         limit: function() {
-            return this.listQueryParams.pageSize || 100
+            return this.listQueryParams.pageSize || 30
         },
         total: function() {
             return this.listQueryParams.total || 0
@@ -173,7 +173,7 @@ export default {
             currentPage:'1',
             listQueryParams:{
                 pageIndex: 1,
-                pageSize: 100,
+                pageSize: 30,
                 total:0
             }
         }
@@ -181,7 +181,7 @@ export default {
     watch:{
         fullscreen:{
                 handler:async function(){
-                    this.fullscreen == true ? this.filesheight = '730px' : this.filesheight = '600px'
+                    this.fullscreen == true ? this.filesheight = '730px' : this.filesheight = '700px'
                 },
                 immediate:true
         }
@@ -196,7 +196,7 @@ export default {
         resetlistQueryParams(){
             this.listQueryParams = {
                 pageIndex: 1,
-                pageSize: 100,
+                pageSize: 30,
                 total:0
             }
         },
@@ -407,6 +407,9 @@ export default {
         async handleCurrentChange(val) {
             this.listQueryParams.pageIndex = val
             await this.init()
+        },
+        async changeTable(value){
+            this.isTable = value
         }
     }
 }
@@ -416,7 +419,7 @@ export default {
 .block-wrapper-files {
     background: #fff;
     padding: 15px 15px;
-    height: 720px;
+    height: 100%;
     .icon{
         cursor: pointer;
     }

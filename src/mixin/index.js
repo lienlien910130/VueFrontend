@@ -6,6 +6,7 @@ import sharemixin from "./sharemixin";
 import dialogmixin from "./dialogmixin";
 import excelmixin from "./excelmixin";
 import tablemixin from "./tablemixin";
+import flowmixin from "./flowmixin"
 
 export{
     blockmixin,
@@ -13,5 +14,6 @@ export{
     sharemixin,
     dialogmixin,
     excelmixin,
-    tablemixin
+    tablemixin,
+    flowmixin
 }

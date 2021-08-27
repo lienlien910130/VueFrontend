@@ -69,10 +69,10 @@
                         value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </span>
-                <!-- 設備清單-設備種類 / 設備(火警總機/PLC)關聯點位選取關聯的 / 點位選取設備 (limit-1) 
+                <!--  設備(火警總機/PLC)關聯點位選取關聯的 / 點位選取設備 (limit-1) 
                 設備 / 廠商 / 角色 / 建築物 / 門牌 / 住戶 下拉選單 (多)-->
                 <el-select
-                    v-else-if="item.format =='deviceTypeSelect' || item.format == 'assignFireDeviceSelect' ||
+                    v-else-if="item.format == 'assignFireDeviceSelect' ||
                     item.format == 'assignPLCDeviceSelect'
                     || item.format == 'addressdeviceSelect' || item.format == 'deviceSelect' || 
                     item.format =='contactunitSelect' || 
@@ -83,7 +83,7 @@
                     v-model="temp[item.prop]"
                     filterable
                     multiple
-                    :multiple-limit=" item.format =='deviceTypeSelect' || item.format == 'assignFireDeviceSelect' ||
+                    :multiple-limit="item.format == 'assignFireDeviceSelect' ||
                     item.format == 'assignPLCDeviceSelect'
                     || item.format == 'addressdeviceSelect' || item.format == 'maintainListSelect' || 
                     item.format == 'floorOfHouseSelect' || item.format == 'contactunitSelect' || item.format == 'deviceSelect' ? 1 : 0 "
@@ -98,6 +98,27 @@
                         :label="item.format =='maintainListSelect' ? obj.getName() : obj.label"
                         :value="obj"
                         :disabled="item.format =='addressdeviceSelect' || item.format == 'usageOfFloorUserInfo' ? obj.disabled : false "
+                        >
+                        </el-option>  
+                </el-select>
+                <!-- 設備種類 -->
+                <el-select
+                    v-else-if="item.format =='deviceTypeSelect'"
+                    v-model="temp[item.prop]"
+                    filterable
+                    multiple
+                    :multiple-limit="1"
+                    value-key="id"
+                    placeholder="請選擇"
+                    style="width:100%"
+                    :disabled="dialogStatus == 'create' ? false : true"
+                    @change="checkMode($event, item.format)"
+                    >
+                        <el-option
+                        v-for="(obj,index) in selectfilter(item.format)"
+                        :key="index"
+                        :label="obj.label"
+                        :value="obj"
                         >
                         </el-option>  
                 </el-select>
@@ -126,10 +147,10 @@
                 v-else-if="item.format == 'protocolMode'"
                 v-model="temp[item.prop]" 
                 @change="changeprotocolMode">
-                    <el-radio v-if="title !== 'deviceAddressManagement'" :label="0">皆無</el-radio>
-                    <el-radio :label="1">{{ title !== 'deviceAddressManagement' ? '監視' : '接收' }}</el-radio>
+                    <el-radio :label="0">皆無</el-radio>
+                    <el-radio :label="1">接收</el-radio>
                     <el-radio :label="2">控制</el-radio>
-                    <el-radio v-if="title !== 'deviceAddressManagement'" :label="3">皆有</el-radio>
+                    <el-radio :label="3">皆有</el-radio>
                 </el-radio-group>
                 <!-- 網路編號 -->
                 <el-input v-else-if="item.format =='internetNumber'"
@@ -410,7 +431,7 @@ export default {
                             }
                             return this.buildingdevices.filter(item => 
                             item.getLinkType().getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' && 
-                            item.getInternetNumber() !== null).map(v => {
+                            item.getInternetNumber() !== null && item.getInternetNumber() !== '' && item.getInternetNumber() !== undefined).map(v => {
                                 this.$set(v, 'value', v.getID()) 
                                 this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
                                 this.$set(v, 'id', v.getID()) 
@@ -423,7 +444,7 @@ export default {
                             }
                             return this.buildingdevices.filter(item => 
                             item.getLinkType().getFullType() == 'nDeviceTypeList.OE.OE_ProgrammableLogicController' && 
-                            item.getInternetNumber() !== null).map(v => {
+                            item.getInternetNumber() !== null && item.getInternetNumber() !== '' && item.getInternetNumber() !== undefined).map(v => {
                                 this.$set(v, 'value', v.getID()) 
                                 this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
                                 this.$set(v, 'id', v.getID()) 
@@ -541,8 +562,7 @@ export default {
             maintainListID:'',
             disable:true,
             //originalProtocolMode:'',
-            originalDeviceType:'',
-            originalInternet:'',
+            originalInternet:null,
             commitUserInfoArray:[]
         }
     },
@@ -563,17 +583,17 @@ export default {
                     var value = changeDeviceFullType(fullType,true,false)
                     this.fulltypevalue = [value,fullType]
                 }
-                if(this.title == 'deviceAddressManagement'){
+                if(this.title == 'deviceAddressManagement' || this.title == 'devicePLCAddressManagement'){
                     this.originalProtocolMode = JSON.parse(JSON.stringify(this.temp['protocolMode']))
                 }
                 if(this.title == 'equipment'){
-                    this.originalDeviceType = this.temp.getLinkType().clone(this.temp.getLinkType())
                     var type = this.temp.getLinkType().getFullType()
                     if(type == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
                     type == 'nDeviceTypeList.OE.OE_ProgrammableLogicController'){
-                        this.originalInternet = JSON.parse(JSON.stringify(this.temp['internetNumber']))
-                         this.disable = false
-                        }
+                        this.originalInternet = this.temp['internetNumber'] !== undefined ? 
+                            JSON.parse(JSON.stringify(this.temp['internetNumber'])) : null
+                        this.disable = false
+                    }
                 }
                 if(this.title == 'committee'){
                     var usage = this.temp.getLinkUsageOfFloors()
@@ -616,28 +636,23 @@ export default {
             }
         },
         // 設備清單-設備種類選項
-        // 點位-火警總機選項
         // 管委會-選擇住戶
+        // 點位-指定設備
         checkMode(value,format){
-            // console.log(this.title, format)
-            console.log(this.title == 'deviceAddressManagement' && format == 'assignFireDeviceSelect' || format == 'assignPLCDeviceSelect')
-            console.log(format == 'assignPLCDeviceSelect')
             if(value.length){
                if(this.title == 'equipment' && format == 'deviceTypeSelect'){
                     if(value[0].getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
                     value[0].getFullType() == 'nDeviceTypeList.OE.OE_ProgrammableLogicController'){
                         this.disable = false
-                    }
-               }else if(this.title == 'deviceAddressManagement' && format == 'assignFireDeviceSelect' || format == 'assignPLCDeviceSelect'){
-                   console.log('assignPLCDeviceSelectassignPLCDeviceSelect')
-                    if(value[0].getInternetNumber() == null){
-                        this.disable = false
-                        this.temp['internet'] = null
+                        this.$emit('handleChangeConfig',true)
                     }else{
-                        this.temp['internet'] = value[0].getInternetNumber()
-                        this.disable = true
+                        this.$emit('handleChangeConfig',false)
                     }
-               }else if(this.title == 'committee' && format == 'floorOfHouseSelect'){
+               }
+               else if(format == 'assignFireDeviceSelect' || format == 'assignPLCDeviceSelect'){
+                    this.temp['internet'] = value[0].getInternetNumber()
+               }
+               else if(this.title == 'committee' && format == 'floorOfHouseSelect'){
                     this.disable = false
                     var data = []
                     value[0].getLinkUsers().forEach(element => {
@@ -653,13 +668,12 @@ export default {
                 if(this.title == 'equipment' && format == 'deviceTypeSelect'){
                     this.disable = true
                     this.temp['internetNumber'] = null
-                    // this.temp['protocolMode'] = 0
-                    // this.temp['systemUnUseMode'] = 0
-                }else if(this.title == 'deviceAddressManagement' && format == 'assignFireDeviceSelect' || format == 'assignPLCDeviceSelect'){
-
-                    this.disable = true
+                    this.$emit('handleChangeConfig',false)
+                }
+                else if(format == 'assignFireDeviceSelect' || format == 'assignPLCDeviceSelect'){
                     this.temp['internet'] = null
-                }else if(this.title == 'committee' && format == 'floorOfHouseSelect'){
+                }
+                else if(this.title == 'committee' && format == 'floorOfHouseSelect'){
                     this.disable = true
                     this.temp['linkUsers'] = []
                 }
@@ -690,22 +704,6 @@ export default {
             return (restaurant) => {
                 return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
             }
-        },
-        //傳遞父子視窗資料
-        insertSuccess(type){
-            // if(window.opener !== undefined && window.opener !== null){
-            //     window.opener.postMessage(type, window.location)
-            // }
-        },
-        receiveMessage(event) { //子視窗傳來的
-            //event.origin是指發送的消息源，一定要進行驗證！！！
-            // if (event.origin !== "http://localhost:9528")return
-            // if(event.data == 'userInfo' || event.data == 'deviceTypeSelect' || 
-            // event.data == 'contactunitSelect' ||  event.data == 'floorOfHouseSelect' ||
-            // event.data == 'inspectionSelect' || event.data == 'deviceSelect' ||
-            // event.data == 'roleSelect' || event.data == 'setting'){
-            //     this.$emit('handleDialog',this.title, 'selectData' , event.data)
-            // }
         },
         openWindows(format){
             var routeData
@@ -806,9 +804,9 @@ export default {
                         }
                         //設備更新時判斷有沒有更新控制模式&設備種類
                         if(this.title == 'equipment' && status == 'update'){ 
-                            //var resetLink = this.originalDeviceType.getFullType()  !== this.temp.getLinkType().getFullType() 
                             //var protocolMode = this.originalProtocolMode !== this.temp['protocolMode']
-                            var internet = this.originalInternet !== this.temp['internetNumber']
+                            var inter = this.temp['internetNumber'] !== undefined ? this.temp['internetNumber'] : null
+                            var internet = this.originalInternet !== inter
                             if(internet == true){
                                 this.$confirm('更換【網路編號】將會重置關聯的點位，是否要更新【網路編號】?', 
                                 '提示', {

@@ -67,6 +67,10 @@ export default {
             },
             changeOptionName(){ //設定名稱
                 return function (value) {
+                    if(this.setting_record == 0){
+                        this.$store.dispatch('building/setoptions')
+                        this.$store.dispatch('record/saveSettingRecord',1)
+                    }
                     if(value !== null){
                         let _array = this.buildingoptions.filter((item, index) => 
                             item.id == value 

@@ -75,7 +75,6 @@ export default {
     watch:{
         menu:{
             handler:async function(){
-  
                 await this.setMenuRoleAccess()
             },
             immediate:true
@@ -186,22 +185,25 @@ export default {
             if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
                 var result = index === 'update' ? await content.update() : 
                 index === 'create' ? await content.create() : await Role.postMany(content)
-                if(Object.keys(result).length !== 0){
+                var condition = index !== 'uploadExcelSave' ? Object.keys(result).length !== 0 : result.result.length !== 0
+                if(condition){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('building/setroles')
-                    // index === 'update' ?
-                    // this.$store.dispatch('building/updateRole', result ) : this.$store.dispatch('building/addRole', result)
-                    this.$socket.sendMsg('roles', index , result)
-                    // this.$store.dispatch('permission/setmenu',await  Menu.get())
-                    
+                    this.$socket.sendMsg('roles', index , index !== 'uploadExcelSave' ? result: result.result)
                     await this.getAllRole()
-                    // if(index == 'create'){
-                    //     this.$refs.dialogform.insertSuccess('roleSelect')
-                    // }
                     this.innerVisible = false
                     this.excelVisible = false
                 }else{
-                    this.$message.error('角色名稱不可重複')
+                    if(index !== 'uploadExcelSave'){
+                        this.$message.error('角色名稱已存在，請重新輸入')
+                    }
+                }
+                if(index == 'uploadExcelSave' && result.repeatDataList !== undefined){
+                    var list = []
+                    result.repeatDataList.forEach(item=>{
+                        list.push(item.name)
+                    })
+                    this.$message.error('【'+list.toString()+'】角色已存在，請重新上傳')
                 }
             }else if(index === 'authoritycreate'){
                 var array = this.originalRoleAccessAuthority

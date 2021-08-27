@@ -30,7 +30,9 @@ class Building extends Parent {
         return new Building(data)
     }
     async create(){
-        var data = await api.building.apiPostBuilding(this).then(response => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.buildingName = '{Check}'+temp.buildingName
+        var data = await api.building.apiPostBuilding(temp).then(response => {
             return new Building(response.result)
         }).catch(error=>{
             return {}
@@ -38,7 +40,9 @@ class Building extends Parent {
         return data
     }
     async update(){
-        var data = await api.building.apiPatchBuildingInfo(this).then(async(response) => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.buildingName = '{Check}'+temp.buildingName
+        var data = await api.building.apiPatchBuildingInfo(temp).then(async(response) => {
             return new Building(response.result)
         }).catch(error=>{
             return {}
@@ -223,7 +227,8 @@ class Building extends Parent {
     }
     static async postMany(data){
         var data = await api.building.apiPostBuildings(data).then(response => {
-            return response.result
+            response.result = response.result.map(item=>{ return new Building(item)})
+            return response
         }).catch(error=>{
             return []
         })

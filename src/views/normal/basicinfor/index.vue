@@ -617,55 +617,40 @@ export default {
     async onContactUnitActions(index, content){
       var result = index === 'update' ? await content.update() : 
         index === 'create' ? await content.create() : await Contactunit.postMany(content)
-      if(Object.keys(result).length !== 0){
+      var condition = index !== 'uploadExcelSave' ? Object.keys(result).length !== 0 : result.result.length !== 0
+      if(condition){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           this.$store.dispatch('building/setContactunit')
-          this.$socket.sendMsg('contactUnit', index , result)
+          this.$socket.sendMsg('contactUnit', index , index !== 'uploadExcelSave' ? result: result.result)
           await this.getContactunitList()
-          // if(index == 'create'){
-          //   this.$refs.dialogform.insertSuccess('contactunitSelect')
-          // }
           this.innerVisible = false
       }else{
-          this.$message.error('該公司名稱已存在，請重新輸入')
+          if(index !== 'uploadExcelSave'){
+            this.$message.error('該公司名稱已存在，請重新輸入')
+          }
       }
-      //  if(index !== 'cancel' && index !== 'selectData'){
-      //   var result = index === 'update' ? await content.update() : 
-      //   index === 'create' ? await content.create() : await Contactunit.postMany(content)
-      //   if(Object.keys(result).length !== 0){
-      //     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-      //     this.$store.dispatch('building/setContactunit')
-      //     this.$socket.sendMsg('contactUnit', index , result)
-      //     await this.getContactunitList()
-      //     // if(index == 'create'){
-      //     //   this.$refs.dialogform.insertSuccess('contactunitSelect')
-      //     // }
-      //     this.innerVisible = false
-      //   }else{
-      //     this.$message.error('該公司名稱已存在，請重新輸入')
-      //   }
-      // }
-      // else if(index == 'selectData'){
-      //   this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
-      // }
-      // else{
-      //   this.innerVisible = false
-      // }
+      if(index == 'uploadExcelSave' && result.repeatDataList !== undefined){
+        var list = []
+        result.repeatDataList.forEach(item=>{
+          list.push(item.name)
+        })
+        this.$message.error('【'+list.toString()+'】公司名稱已存在，請重新上傳')
+      }
     },
     async onFloorOfHouseActions(index, content){
       if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
         var result = 
-            index === 'update' ? await content.update() :
+            index === 'update' ? await content.update(this.selectFloor.getID()) :
             index === 'create' ? 
               await content.create(this.selectFloor.getID()) : 
               await UsageOfFloor.postMany(this.selectFloor.getID(),content)
-        
-        if(Object.keys(result).length !== 0){
+        var condition = index !== 'uploadExcelSave' ? Object.keys(result).length !== 0 : result.result.length !== 0
+        if(condition){
           index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
           //this.$store.dispatch('building/setHouseHolders') //門牌有選擇住戶 住戶會更新居住的樓層
           //this.$socket.sendMsg('houseHolder', 'update' , result)
           this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
-          this.$socket.sendMsg('floorOfHouse', index , result)
+          this.$socket.sendMsg('floorOfHouse', index , index !== 'uploadExcelSave' ? result: result.result)
           this.innerVisible = false
           if(this.selectFloor !== null && this.activeFloor == 'IN'){
             await this.getFloorOfHouseList()
@@ -673,19 +658,21 @@ export default {
           if(this.activeName == 'MC' && index === 'update'){ //重整管委會
             await this.getManagementList()
           }
-          // if(index == 'create'){
-          //   this.$refs.dialogform.insertSuccess('floorOfHouseSelect')
-          // }
         }else{
-          this.$message.error('戶號不可重複')
+          if(index !== 'uploadExcelSave'){
+            this.$message.error('戶號已存在，請重新輸入')
+          }
+        }
+        if(index == 'uploadExcelSave' && result.repeatDataList !== undefined){
+          var list = []
+          result.repeatDataList.forEach(item=>{
+            list.push(item.houseNumber)
+          })
+          this.$message.error('【'+list.toString()+'】戶號已存在，請重新上傳')
         }
       }else if(index === 'createfile'){
         await this.handleFilesUpload('createfile','floorOfHouse',content)
-      }
-      // else if(index == 'selectData'){
-      //   this.$store.dispatch('building/setbuildingusers',await User.get())
-      // }
-      else if(index == 'deletefile'){
+      }else if(index == 'deletefile'){
         await this.handleFilesUpload('deletefile','floorOfHouse',content)
       }
     },
@@ -727,14 +714,20 @@ export default {
           this.$message.error('該身份證已存在，請重新輸入')
         }
       }else if(index === 'uploadExcelSave'){
-        var isOk = await User.postMany(content)
-        if(isOk){
+        var result = await User.postMany(content)
+        if(result.result.length !== 0){
           this.$message('新增成功')
           this.$store.dispatch('building/setHouseHolders')
+          this.$socket.sendMsg('houseHolder', index , result.result)
           await this.getUserList()
           this.excelVisible = false
-        }else{
-          this.$message.error('系統錯誤')
+        }
+        if(result.repeatDataList !== undefined){
+          var list = []
+          result.repeatDataList.forEach(item=>{
+            list.push(item.name)
+          })
+          this.$message.error('【'+list.toString()+'】姓名已存在，請重新上傳')
         }
       }
       // else{

@@ -11,7 +11,6 @@ class DeviceType extends Parent {
         this.brand = brand
         this.productId = productId
         this.certificationNumber = certificationNumber
-        
     }
     clone(data){
         return new DeviceType(data)
@@ -77,8 +76,7 @@ class DeviceType extends Parent {
             fullType :'',
             brand :'',
             productId :'',
-            certificationNumber :'',
-            protocolMode:0
+            certificationNumber :''
         })
     }
     static getTableConfig(){
@@ -169,9 +167,10 @@ class DeviceType extends Parent {
     }
     static async postMany(data){
         var data = await api.device.apiPostDevicesTypes(data).then(response => {
-            return true
+            response.result = response.result.map(item=>{ return new DeviceType(item)})
+            return response.result 
         }).catch(error=>{
-            return false
+            return []
         })
         return data
     }

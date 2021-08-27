@@ -165,11 +165,8 @@ export default {
                 this.$message("新增成功")
                 await this.getOptions()
                 this.$socket.sendMsg('setting', 'create' , result)
-                // if(window.opener !== undefined && window.opener !== null){
-                //     window.opener.postMessage('setting', window.location)
-                // }
             }else{
-                this.$message.error('不可重複新增')
+                this.$message.error('該名稱已存在，請重新輸入')
             }
         },
         async UpdateData(content){
@@ -181,7 +178,7 @@ export default {
                 await this.getOptions()
                 this.$socket.sendMsg('setting', 'update' , result)
             }else{
-                this.$message.error('不可重複新增')
+                this.$message.error('該名稱已存在，請重新輸入')
             }
         },
         async DeleteData(content){

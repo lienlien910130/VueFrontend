@@ -20,6 +20,13 @@ export const constantRoutes = [
     component: () => import('@/views/graphic/components/EquipmentType.vue'),
     hidden: true
   },
+  // {
+  //   path: '/process',
+  //   name: 'Process',
+  //   meta: { title: '應變流程', icon: 'icon', needLogin: true},
+  //   component: () => import('@/views/emergency/process/index.vue'),
+  //   hidden: false
+  // },
   {
     path: '/',
     component: Layout,
@@ -116,7 +123,8 @@ export const mercuryfireRoutes = [
       }
     ],
     hidden: true
-  }
+  },
+  
 ]
 export const notfound = [
   { path: '*', redirect: '/404', hidden: true }

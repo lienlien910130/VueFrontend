@@ -158,24 +158,26 @@ export default {
                         element.linkMainMenus = [{id : this.selectId}]
                     })
                 }
-                var isOk = index === 'update' ? await content.update() : 
-                index === 'create' ? await content.create() : await AccessAuthority.postMany(content)
-                if(isOk){
+                var result = index === 'update' ? await content.update(this.selectId) : 
+                index === 'create' ? await content.create(this.selectId) : await AccessAuthority.postMany(this.selectId,content)
+                var condition = index !== 'uploadExcelSave' ? result == true : result.result.length !== 0
+                if(condition){
                     index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     this.$socket.sendMsg('menus', 'reset', '')
                     this.$store.dispatch('permission/setmenu',await  Menu.get())
-                    // var array = await AccessAuthority.get(this.selectId)
-                    // this.blockData = array.result
                     this.innerVisible = false
                     this.excelVisible = false
                 }else{
                     this.$message.error('系統錯誤')
                 }
-            }
-            // else if(index == 'selectData'){
-            //     this.$store.dispatch('building/setroles')
-            // }
-            else{
+                if(index == 'uploadExcelSave' && result.repeatDataList !== undefined){
+                    var list = []
+                    result.repeatDataList.forEach(item=>{
+                        list.push(item.name)
+                    })
+                    this.$message.error('【'+list.toString()+'】權限已存在，請重新上傳')
+                }
+            }else{
                 this.innerVisible = false
                 this.excelVisible = false
             }

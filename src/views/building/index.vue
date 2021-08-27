@@ -318,18 +318,18 @@ export default {
       if(title === 'building'){
         if(index === 'create'){
           var result = await content.create()
-          this.floorsArray = []
-          await this.crefloor('up',content.floorsOfAboveGround,result.id)
-          await this.crefloor('down',content.floorsOfUnderground,result.id)
-          var isOk = await this.postFloor(result.id)
-          if(isOk){
-            this.$message('新增成功')
+          if(Object.keys(result).length !== 0){
+            this.floorsArray = []
+            await this.crefloor('up',content.floorsOfAboveGround,result.getID())
+            await this.crefloor('down',content.floorsOfUnderground,result.getID())
+            var isOk = await this.postFloor(result.getID())
+            isOk == true ? this.$message('新增成功') : this.$message.error('新增樓層有誤') 
             this.$store.dispatch('building/setBuildingList',await Building.get())
             this.$socket.sendMsg('building', 'create' , result)
             await this.getAllBuilding()
             this.innerVisible = false
           }else{
-            this.$message.error('系統錯誤') 
+            this.$message.error('該建築物名稱已存在，請重新輸入') 
           }
         }else if(index === 'update'){
           var result = await content.update()
@@ -344,41 +344,41 @@ export default {
             await this.getAllBuilding()
             this.innerVisible = false
           }else{
-            this.$message.error('系統錯誤') 
+            this.$message.error('該建築物名稱已存在，請重新輸入') 
           }
         }else if(index === 'uploadExcelSave'){
-          var buildingarray = await Building.postMany(content)
-          var isOk
-          for(let item of buildingarray){
-            this.floorsArray = []
-            await this.crefloor('up',item.floorsOfAboveGround)
-            await this.crefloor('down',item.floorsOfUnderground)
-            isOk = await this.postFloor(item.id)
-          }
-          if(isOk){
+          var result = await Building.postMany(content)
+          if(result.result.length !== 0){
+            var isOk
+            var updateList = []
+            for(let item of result.result){
+              this.floorsArray = []
+              await this.crefloor('up',item.floorsOfAboveGround)
+              await this.crefloor('down',item.floorsOfUnderground)
+              isOk = await this.postFloor(item.id)
+              if(isOk == false){
+                updateList.push(item.buildingName)
+              }
+            }
             this.$message('新增成功')
             this.$store.dispatch('building/setBuildingList',await Building.get())
             this.$socket.sendMsg('building', 'set' , await Building.get())
             await this.getAllBuilding()
             this.innerVisible = false
-          }else{
-            this.$message.error('系統錯誤') 
+            if(updateList.length !== 0){
+              this.$message.error('【'+updateList.toString()+'】建築物的樓層新增有誤')
+            }
+          }
+          if(result.repeatDataList !== undefined){
+            var list = []
+            result.repeatDataList.forEach(item=>{
+                list.push(item.buildingName)
+            })
+            this.$message.error('【'+list.toString()+'】建築物名稱已存在，請重新上傳')
           }
         }else if(index === 'createfile' || index === 'deletefile'){
           await this.handleUpload(this.building,index,content)
-        }
-        // else if(index === 'selectData'){
-        //   if(this.innerVisible == true && this.building !== null){
-        //     var userlist = await User.getOfBuildingID(this.building.getID())
-        //     this.dialogSelect = userlist.map(v => {
-        //           this.$set(v, 'value', v.getID()) 
-        //           this.$set(v, 'label', v.getName()) 
-        //           this.$set(v, 'id', v.getID()) 
-        //           return v
-        //     })
-        //   }
-        // }
-        else{
+        }else{
           this.innerVisible = false
           this.excelVisible = false
           this.uploadVisible = false

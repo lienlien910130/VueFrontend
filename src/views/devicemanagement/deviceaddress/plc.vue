@@ -56,7 +56,7 @@ export default {
                 { name:'多筆資料新增',icon:'el-icon-document',status:'manyempty'},
                 { name:'單筆新增資料',icon:'el-icon-circle-plus-outline',status:'empty'},
                 { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
-                { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}
+                // { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}
             ]
             this.tableConfig = DeviceAddressManagement.getPLCTableConfig()
             //await this.getBuildingDevicePLCAddressManagement()
@@ -102,6 +102,7 @@ export default {
                     if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
                         this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
                     }
+                    this.$socket.sendMsg('deviceAddress', index, content.getID())
                     await this.getBuildingDevicePLCAddressManagement()
                     // await this.resetlistQueryParams()
                 }else{
@@ -148,16 +149,18 @@ export default {
                     await DeviceAddressManagement.batchInsert(deviceId,content,true)
                 if(Object.keys(result).length !== 0 || result == true){
                     this.$message('新增成功')
+                    this.$socket.sendMsg('deviceAddress', index, result)
                     await this.getBuildingDevicePLCAddressManagement()
                     this.innerVisible = false
                 }else{
-                    this.$message.error('系統錯誤')
+                     this.$message.error('點位已存在，請重新輸入')
                 }
             }else if(index == 'update'){
                 delete content.linkAssignDevices
                 var result = await content.update(title == 'openDialog' ? true : false,true) 
                 if(Object.keys(result).length !== 0){
                     this.$message('更新成功') 
+                    this.$socket.sendMsg('deviceAddress', index, result)
                     await this.getBuildingDevicePLCAddressManagement()
                     this.innerVisible = false
                     if(title == 'openDialog'){
@@ -166,26 +169,9 @@ export default {
                         await this.handleBlock(this.title,'open',data)
                     }
                 }else{
-                    this.$message.error('系統錯誤')
+                    this.$message.error('點位已存在，請重新輸入')
                 }
-            }else if(index == 'uploadExcelSave'){
-                var isOk = await DeviceAddressManagement.postMany(content,true)
-                if(isOk){
-                    this.$message('新增成功')
-                    await this.getBuildingDevicePLCAddressManagement()
-                    this.excelVisible = false
-                }else{
-                    this.$message.error('系統錯誤')
-                }
-            }
-            // else if(index == 'selectData'){
-            //     switch (content) {
-            //         case 'deviceSelect':
-            //             this.$store.dispatch('building/setbuildingdevices',await Device.get())   
-            //             break;
-            //     }
-            // }
-            else{
+            }else{
                 this.innerVisible = false
                 this.excelVisible = false
             }
@@ -193,7 +179,7 @@ export default {
         async changeTable(value){
             this.isTable = value
             if(this.$route.query.type !== undefined && 
-                    this.$route.query.type == 'address' && this.$route.query.obj !== '' ){
+                    this.$route.query.type == 'plc' && this.$route.query.obj !== '' ){
                 var data = await DeviceAddressManagement.getOfID(this.$route.query.obj ,true)
                 await this.handleBlock('','open',data)
             }

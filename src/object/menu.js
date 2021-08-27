@@ -52,29 +52,12 @@ class Menu extends Parent {
             return data
         }else{
             var data = await api.authority.apiPostSubMainMenu(mainMenuId,this).then(response => {
-                console.log(JSON.stringify(response))
                 return true
             }).catch(error=>{
                 return false
             })
             return data
         }
-        
-        // if(mainMenuId == null){
-        //     var data = await api.authority.apiPostLevelOneMainMenuAuthority(this).then(response => {
-        //         return true
-        //     }).catch(error=>{
-        //         return false
-        //     })
-        //     return data
-        // }else{
-        //     var data = await api.authority.apiPostLevelTwoMainMenuAuthority(mainMenuId,this).then(response => {
-        //         return true
-        //     }).catch(error=>{
-        //         return false
-        //     })
-        //     return data
-        // }
     }
     async delete(){
         var data = await api.authority.apiDeleteMainMenuAuthority(this.id).then(async(response) => {

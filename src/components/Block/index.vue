@@ -722,7 +722,7 @@ export default {
                         'nDeviceTypeList.OE.OE_ProgrammableLogicController'
                     this.deviceSelectArray = this.buildingdevices.filter(item => 
                         item.getLinkType().getFullType() == type && 
-                        item.getInternetNumber() !== null).map(v => {
+                        item.getInternetNumber() !== null && item.getInternetNumber() !== '' && item.getInternetNumber() !== undefined).map(v => {
                             this.$set(v, 'value', v.getID()) 
                             this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
                             this.$set(v, 'id', v.getID()) 

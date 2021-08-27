@@ -1,30 +1,21 @@
 import Parent from './parent'
 import api from '@/api'
 
-class Contactunit extends Parent {
+class SelfDefenseFireMarshallingMgmt extends Parent {
     constructor (data) {
         super(data)
-        const { type, name, contactNumber, cellPhoneNumber, faxNumber, email, address,
-            note, collaborate, hide  } = data
+        const { name, classType  } = data
         this.name = name 
-        this.type = type 
-        this.contactNumber = contactNumber 
-        this.cellPhoneNumber = cellPhoneNumber
-        this.faxNumber = faxNumber 
-        this.email = email 
-        this.address = address
-        this.note = note 
-        this.collaborate = collaborate
-        this.hide = hide
+        this.classType = classType 
     }
     clone(data){
-        return new Contactunit(data)
+        return new SelfDefenseFireMarshallingMgmt(data)
     }
     async update(){
         var temp = JSON.parse(JSON.stringify(this))
         temp.name = '{Check}'+temp.name
-        var data = await api.building.apiPatchContactUnit(temp).then(async(response) => {
-            return new Contactunit(response.result)
+        var data = await api.emergency.apiPatchProtectionGroupMgmt(temp).then(async(response) => {
+            return new SelfDefenseFireMarshallingMgmt(response.result)
         }).catch(error=>{
             return {}
         })
@@ -33,15 +24,15 @@ class Contactunit extends Parent {
     async create(){
         var temp = JSON.parse(JSON.stringify(this))
         temp.name = '{Check}'+temp.name
-        var data = await api.building.apiPostContactUnit(temp).then(response => {
-            return new Contactunit(response.result)
+        var data = await api.emergency.apiPostProtectionGroupMgmt(temp).then(response => {
+            return new SelfDefenseFireMarshallingMgmt(response.result)
         }).catch(error=>{
             return {}
         })
         return data
     }
     async delete(){
-        var data = await api.building.apiDeleteContactUnit(this.id).then(async(response) => {
+        var data = await api.emergency.apiDeleteProtectionGroupMgmt(this.id).then(async(response) => {
             return true
         }).catch(error=>{
             return false
@@ -52,18 +43,10 @@ class Contactunit extends Parent {
         return this.name
     }
     static empty(){
-        return new Contactunit({
+        return new SelfDefenseFireMarshallingMgmt({
             id:'',
             name :'',
-            type :'',
-            contactNumber :'',
-            cellPhoneNumber :'',
-            faxNumber :'',
-            email :'',
-            address :'',
-            note :'',
-            collaborate :true,
-            hide :false
+            classType :'',
         })
     }
     static getTableConfig(){
@@ -129,17 +112,17 @@ class Contactunit extends Parent {
        ]
     }
     static async get (){
-        var data = await api.building.apiGetContactUnit().then(response => {
-            var result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Contactunit(item) })
-            return result
-        }).catch(error=>{
-            return []
-        })
-        return data
+        // var data = await api.emergency.apiGetContactUnit().then(response => {
+        //     var result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Contactunit(item) })
+        //     return result
+        // }).catch(error=>{
+        //     return []
+        // })
+        // return data
     }
     static async getSearchPage(data){
-        var data = await api.building.apiGetContactUnitSearchPages(data).then(response => {
-            response.result = response.result.map(item=>{ return new Contactunit(item)})
+        var data = await api.emergency.apiGetProtectionGroupMgmtSearchPages(data).then(response => {
+            response.result = response.result.map(item=>{ return new SelfDefenseFireMarshallingMgmt(item)})
             return response
         }).catch(error=>{
             return []
@@ -147,9 +130,9 @@ class Contactunit extends Parent {
         return data
     }
     static async postMany(data){
-        var data = await api.building.apiPostContactUnits(data).then(response => {
-            response.result = response.result.map(item=>{ return new Contactunit(item)})
-            return response
+        var data = await api.emergency.apiPostProtectionGroupMgmts(data).then(response => {
+            response.result = response.result.map(item=>{ return new SelfDefenseFireMarshallingMgmt(item)})
+            return response.result
         }).catch(error=>{
             return []
         })
@@ -157,4 +140,4 @@ class Contactunit extends Parent {
     }
 }
 
-export default Contactunit
+export default SelfDefenseFireMarshallingMgmt

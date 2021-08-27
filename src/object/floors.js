@@ -25,6 +25,7 @@ class Floors extends Parent {
     }
     async update(buildingId){
         var data = await api.building.apiPatchFloors(buildingId, this).then(async(response) => {
+            console.log(JSON.stringify(response))
             return new Floors(response.result)
         }).catch(error=>{
             return {}
@@ -139,6 +140,7 @@ class Floors extends Parent {
     }
     static async create (buildingId,data){
         var data = await api.building.apiPostFloors(buildingId,data).then(response => {
+            console.log(JSON.stringify(response))
             return true
         }).catch(error=>{
             return false

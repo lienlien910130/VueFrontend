@@ -37,9 +37,8 @@ class Device extends Parent {
     }
     async update(resetLink){
         var temp = JSON.parse(JSON.stringify(this))
-        if(temp.internetNumber !== '' )  temp.internetNumber = '{Check}'+temp.internetNumber  
+        if(temp.internetNumber !== null &&  temp.internetNumber !== undefined)  temp.internetNumber = '{Check}'+temp.internetNumber  
         var data = await api.device.apiPatchDevicesManagement(temp,resetLink).then(async(response) => {
-            console.log(JSON.stringify(response))
             return new Device(response.result)
         }).catch(error=>{
             return {}
@@ -48,9 +47,8 @@ class Device extends Parent {
     }
     async create(){
         var temp = JSON.parse(JSON.stringify(this))
-        if(temp.internetNumber !== '' )   temp.internetNumber = '{Check}'+temp.internetNumber 
+        if(temp.internetNumber !== null &&  temp.internetNumber !== undefined)   temp.internetNumber = '{Check}'+temp.internetNumber 
         var data = await api.device.apiPostDevicesManagement(temp).then(response => {
-            console.log(JSON.stringify(response))
             return new Device(response.result)
         }).catch(error=>{
             return {}
@@ -77,13 +75,9 @@ class Device extends Parent {
     }
     async getDeviceAddresss(data,type){
         data.id = this.id
-        data.internetNumber = this.internetNumber !== '' ? this.internetNumber : null
-        data.linkDeviceTypes = [
-            { fullType: this.getLinkType().getFullType() }
-        ]
+        data.internetNumber = this.internetNumber !== '' && this.internetNumber !== null ? this.internetNumber : null
         if(type == 'fire'){
             var data = await api.device.apiGetLinkDeviceAddresss(data).then(response => {
-                console.log(JSON.stringify(response))
                 response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceAddressManagement(item) })
                 return response
             }).catch(error=>{
@@ -92,7 +86,6 @@ class Device extends Parent {
             return data
         }else{
             var data = await api.device.apiGetLinkDevicePLCAddresss(data).then(response => {
-                console.log(JSON.stringify(response))
                 response.result = response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceAddressManagement(item) })
                 return response
             }).catch(error=>{
@@ -135,7 +128,7 @@ class Device extends Parent {
         return name
     }
     getInternetNumber(){
-        return this.internetNumber
+        return this.internetNumber !== null ? this.internetNumber : null
     }
     static empty(){
         return new Device({
@@ -180,7 +173,7 @@ class Device extends Parent {
             {
                 label: '網路編號',
                 prop: 'internetNumber',format:'internetNumber',
-                mandatory:false,isHidden:true,
+                mandatory:false,message:'請輸入網路編號',isHidden:true,
                 isSearch:true,maxlength:'5',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
@@ -300,9 +293,10 @@ class Device extends Parent {
     }
     static async postMany(data){
         var data = await api.device.apiPostDevicesManagements(data).then(response => {
-            return true
+            response.result = response.result.map(item=>{ return new Device(item)})
+            return response
         }).catch(error=>{
-            return false
+            return []
         })
         return data
     }

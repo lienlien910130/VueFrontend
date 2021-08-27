@@ -9,14 +9,6 @@ let Setting = {
         })
         return data
     },
-    // getOption: async function(optionId){
-    //     var data = await api.setting.apiGetOptionById(optionId).then(response => {
-    //         return response.result
-    //     }).catch(error=>{
-    //         return []
-    //     })
-    //     return data
-    // },
     postOption: async function(data){
         var temp = JSON.parse(JSON.stringify(data))
         temp.textName = '{Check}'+temp.textName
@@ -46,14 +38,6 @@ let Setting = {
             return false
         })
         return data
-    },
-//     checkOption:async function(data){
-//         var data = await api.setting.apiCheckOption(data).then(response => {
-//             return true
-//         }).catch(error=>{
-//             return false
-//         })
-//         return data
-//     }
+    }
  }
 export default Setting

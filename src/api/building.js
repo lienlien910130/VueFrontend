@@ -6,11 +6,11 @@ const building = {
     //基本資料
     apiGetBuilding(){ return req('get','/index/buildings/a') } , //取得所有建築物
     apiGetBuildingInfo(){ return req('get','/index/buildings/'+this.getBid()) } , //取得該建築物的基本資料
-    apiPostBuilding(data){ return req('post','/index/buildings', null, data) },
-    apiPatchBuildingInfo(data){ return req('patch','/index/buildings', null, data) }, //修改建築物資料
+    apiPostBuilding(data){ return req('post','/index/check', null, data) },
+    apiPatchBuildingInfo(data){ return req('patch','/index/check', null, data) }, //修改建築物資料
     apiDeleteBuilding(buildingId){ return req('delete','/index/buildings/'+buildingId) },
     apiGetBuildingSearchPages(data){ return req('post','index/buildings/ss', null, data, true)  },
-    apiPostBuildings(data){ return req('post','index/buildings/s', null, data) },    
+    apiPostBuildings(data){ return req('post','index/check/s', null, data) },    
     
     //管委會
     apiGetCommittee(){ return req('get','/basic/communityManagementCommittee/'+this.getBid()+'/a') },
@@ -33,12 +33,12 @@ const building = {
     apiPatchContactUnit(data){ return req('patch','/basic/contactUnit/check',this.getBid(),data) },
     apiDeleteContactUnit(contactunitId){ return req('delete','/basic/contactUnit/'+contactunitId) },
     apiGetContactUnitSearchPages(data){ return req('post','/basic/contactUnit/ss', this.getBid(), data, true)  },
-    apiPostContactUnits(data){ 
-        data.forEach(element => {
+    apiPostContactUnits(data){
+        data.forEach(element=>{
             element.parentId = this.getBid()
         })
-        return req('post','​/basic​/contactUnit​/check​/s', null, data) 
-    },    
+        return req('post','/basic/contactUnit/check/s',null,data)
+    },   
     
     //樓層
     apiGetFloors(){ return req('get','/index/a/floors') },
@@ -52,34 +52,34 @@ const building = {
     apiGetBuildingOfHouse(){ return req('get','/basic/usageOfFloors/a') },
     apiGetFloorOfHouse(floorId){ return req('get','/basic/usageOfFloors/'+floorId+'/a') },
     // apiGetHouse(usageOfFloorId){ return req('get','/basic/usage-of-floors/'+usageOfFloorId) },
-    apiPostFloorOfHouse(floorId, data){ return req('post','/basic​/usageOfFloors/check', floorId, data) },
-    apiPatchFloorOfHouse(data){ return req('patch','/basic/usageOfFloors/check', this.getBid(), data) },
+    apiPostFloorOfHouse(floorId,data){ return req('post','/basic/usageOfFloors/check',floorId,data)},
+    apiPatchFloorOfHouse(floorId,data){ return req('patch','/basic/usageOfFloors/check',floorId,data) },
     apiDeleteFloorOfHouse(floorofhouseId){ return req('delete','/basic/usageOfFloors/'+floorofhouseId) },
     apiGetFloorOfHouseSearchPages(floorId, data){ return req('post','/basic/usageOfFloors/floors/ss', floorId, data)  },
-    apiPostFloorOfHouses(floorId,data){ 
-        data.forEach(element => {
+    apiPostFloorOfHouses(floorId,data){
+        data.forEach(element =>{
             element.parentId = floorId
         })
-        return req('post','/basic​/usageOfFloors/check​/s', null, data) 
-    },    
+        return req('post','/basic/usageOfFloors/check/s',null,data)
+    },  
     //門牌底下的使用者資料
     // apiGetFloorOfHouseUser(floorofhouseId){ return req('get','/basic/usageOfFloors/'+floorofhouseId+'/house-holders') },
     // apiPostFloorOfHouseUser(floorofhouseId,data){ return req('post','/basic/usageOfFloors/'+floorofhouseId+'/house-holders',data) },
     //住戶資料
     // apiGetAllBuildingOfUser(){ return req('get','/index/a/house-holders') },
-    apiGetBuildingOfUser(buildingId){ return req('get','/index/'+buildingId+'/a/houseHolders​') },
+    apiGetBuildingOfUser(buildingId){ return req('get','/index/'+buildingId+'/a/houseHolders')},
     apiGetUser(){ return req('get','/index/a/houseHolders')},
     // apiGetUser(userId){ return req('get','/basic/house-holders/'+userId) },
     apiPostUser(data){ return req('post','/basic/houseHolders/check',this.getBid(),data)},
     apiPatchUser(data){ return req('patch','/basic/houseHolders/check',this.getBid(),data)},
     apiDeleteUser(userId){ return req('delete','/basic/houseHolders/'+userId)},
     apiGetUserSearchPages(data){ return req('post','/basic/houseHolders/ss',this.getBid(),data,true)},
-    apiPostUsers(data){ 
-        data.forEach(element => {
+    apiPostUsers(data){
+        data.forEach(element=>{
             element.parentId = this.getBid()
         })
-        return req('post','​/basic​/houseHolders​​/check​/s', null, data) 
-    },    
+        return req('post','/basic/houseHolders/check/s',null,data)
+    }  
     
 }
 

@@ -113,7 +113,9 @@ const actions = {
     commit('SET_ROLES', data)
   },
   addRole({ commit }, content){
-    state.roles.push(content)
+    content.forEach(element => {
+      state.roles.push(element)
+    })
   },
   updateRole({ commit }, content){
     var index = state.roles.findIndex((item) => {
@@ -170,7 +172,9 @@ const actions = {
     commit('SET_BUILDINGCONTACTUNIT', data)
   },
   addContactunit({ commit }, content){
-    state.buildingcontactunit.push(content)
+    content.forEach(element => {
+      state.buildingcontactunit.push(element)
+    })
   },
   updateContactunit({ commit }, content){
     var index = state.buildingcontactunit.findIndex((item) => {
@@ -192,7 +196,9 @@ const actions = {
     commit('SET_BUILDINGUSERS', data)
   },
   addHouseHolder({ commit }, content){
-    state.buildingusers.push(content)
+    content.forEach(element => {
+      state.buildingusers.push(element)
+    })
   },
   updateHouseHolder({ commit }, content){
     var index = state.buildingusers.findIndex((item) => {
@@ -214,7 +220,9 @@ const actions = {
     commit('SET_BUILDINGFLOOROFHOUSE', data)
   },
   addFloorOfHouse({ commit }, content){
-    state.buildingfloorOfHouse.push(content)
+    content.forEach(element => {
+      state.buildingfloorOfHouse.push(element)
+    })
   },
   updateFloorOfHouse({ commit }, content){
     var index = state.buildingfloorOfHouse.findIndex((item) => {
@@ -236,7 +244,9 @@ const actions = {
     commit('SET_BUILDINGDEVICES', data)
   },
   addDevice({ commit }, content){
-    state.buildingdevices.push(content)
+    content.forEach(element => {
+      state.buildingdevices.push(element)
+    })
   },
   updateDevice({ commit }, content){
     var index = state.buildingdevices.find((item) => {
@@ -258,7 +268,9 @@ const actions = {
     commit('SET_DEVICETYPE', data)
   },
   addDeviceType({ commit }, content){
-    state.buildingdeviceType.push(content)
+    content.forEach(element => {
+      state.buildingdeviceType.push(element)
+    })
   },
   updateDeviceType({ commit }, content){
     var index = state.buildingdeviceType.find((item) => {
@@ -280,7 +292,9 @@ const actions = {
     commit('SET_ADDRESSMANAGEMENT', data)
   },
   addAddressManagement({ commit }, content){
-    state.buildingaddress.push(content)
+    content.forEach(element => {
+      state.buildingaddress.push(element)
+    })
   },
   updateAddressManagement({ commit }, content){
     var index = state.buildingaddress.find((item) => {
@@ -296,63 +310,6 @@ const actions = {
     })
     commit('SET_ADDRESSMANAGEMENT', obj)
   },
-  // setbuildingoptions({ commit }, buildingoptions) {
-  //   return new Promise((resolve, reject) => {
-  //       commit('SET_BUILDINGOPTIONS', buildingoptions)
-  //       resolve()
-  //   })
-  // },
-  
-
-  // async getroles({ commit }) { //從網頁資料庫取出來儲存在store上
-  //   let roles = await idb.getValue('roles')
-  //   var array = roles.map(item=>{ return new Role(item)})
-  //   commit('SET_ROLES', array)
-  // },
-  
- 
-  // async getBuildingList({ commit }) { //從網頁資料庫取出來儲存在store上
-  //   let list = await idb.getValue('BuildingInfo')
-  //   commit('SET_BUILDINGLIST', list)
-  // },
- 
-  // async getbuildinginfo({ commit }) { //從網頁資料庫取出來儲存在store上
-  //   let buildinginfo = await idb.getValue('buildingInfo')
-  //   var array = buildinginfo.map(item=>{ return new Building(item)})
-  //   commit('SET_BUILDINGINFO', array)
-  // },
- 
-
- 
-  // async getbuildingoptions({ commit }) { //從網頁資料庫取出來儲存在store上
-  //   let buildingoptions = await idb.getValue('buildingOptions')
-  //   commit('SET_BUILDINGOPTIONS', buildingoptions)
-  // },
-  
-  // async getbuildingcontactunit({ commit }) { //從網頁資料庫取出來儲存在store上
-  //   let buildingcontactunit = await idb.getValue('buildingContactunit')
-  //   var array = buildingcontactunit.map(item=>{ return new Contactunit(item)})
-  //   commit('SET_BUILDINGCONTACTUNIT', array)
-  // },
-  
-  // async getbuildingusers({ commit }) { //從網頁資料庫取出來儲存在store上
-  //   let buildingusers = await idb.getValue('buildingUsers')
-  //   var array = buildingusers.map(item=>{ return new User(item)})
-  //   commit('SET_BUILDINGUSERS', array)
-  // },
-  
-  // async getbuildingdevices({ commit }) { //從網頁資料庫取出來儲存在store上
-  //   let buildingdevices = await idb.getValue('buildingDevices')
-  //   var array = buildingdevices.map(item=>{ return new Device(item)})
-  //   commit('SET_BUILDINGDEVICES', array)
-  // },
-  
-  // async getbuildingfloors({ commit }) { //從網頁資料庫取出來儲存在store上
-  //   let buildingfloors = await idb.getValue('buildingFloors')
-  //   var array = buildingfloors.map(item=>{ return new Floors(item)})
-  //   commit('SET_BUILDINGFLOORS', array)
-  // },
-  
   setDefaultDeviceType({ commit }, deviceType) {
     return new Promise((resolve, reject) => {
         commit('SET_DEFAULTDEVICETYPE', deviceType)

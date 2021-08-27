@@ -170,22 +170,28 @@ export default {
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,content)
-            if(index !== 'cancel' && index !== 'selectData'){
-                var isOk = index === 'update' ? await content.update() : 
+            if(index !== 'cancel'){
+                var result = index === 'update' ? await content.update() : 
                 index === 'create' ? await content.create() : await Account.postMany(content)
-                if(isOk){
+                var condition = index !== 'uploadExcelSave' ? result == true : result.result.length !== 0
+                if(condition){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     await this.getAllAccount()
                     this.innerVisible = false
                     this.excelVisible = false
                 }else{
-                    this.$message.error('該帳號已存在，請重新輸入')
+                    if(index !== 'uploadExcelSave'){
+                        this.$message.error('該帳號已存在，請重新輸入')
+                    }
                 }
-            }
-            // else if(index == 'selectData'){
-            //     this.$store.dispatch('building/setroles')
-            // }
-            else{
+                if(index == 'uploadExcelSave' && result.repeatDataList !== undefined){
+                    var list = []
+                    result.repeatDataList.forEach(item=>{
+                        list.push(item.account)
+                    })
+                    this.$message.error('【'+list.toString()+'】帳號已存在，請重新上傳')
+                }
+            }else{
                 this.innerVisible = false
                 this.excelVisible = false
                 this.authorityVisible = false

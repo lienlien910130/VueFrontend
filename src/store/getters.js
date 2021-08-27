@@ -50,6 +50,8 @@ const getters = {
   device_record: state => state.record.device_record,
   contactunit_record: state => state.record.contactunit_record,
   deviceType_record: state => state.record.deviceType_record,
-  addressManagement_record :state => state.record.addressManagement_record
+  addressManagement_record :state => state.record.addressManagement_record,
+
+  
 }
 export default getters

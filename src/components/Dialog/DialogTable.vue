@@ -251,7 +251,6 @@ export default {
             this.$emit('clickPagination','clickPagination', this.tablelistQueryParams)
         },
         tabChange(){
-            console.log(this.activeName)
             this.$emit('searchChange',this.activeName)
         }
     }

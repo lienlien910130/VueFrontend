@@ -100,7 +100,7 @@ service.interceptors.response.use(
     resetLoading()
       if(error) {
           //成功發出請求且收到resp，但有error
-          alert(error)
+        //   alert(error)
           console.log(error.response.status,error.response)
           errorHandle(error.response.status,error)
           return Promise.reject(error)

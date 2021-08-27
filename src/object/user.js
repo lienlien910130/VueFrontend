@@ -60,12 +60,6 @@ class User extends Parent {
     getUsageOfFloor(){
         return this.usageOfFloor
     }
-    // getNameOfHouse(){
-    //     var house = this.linkUsageOfFloors!== undefined && 
-    //     this.linkUsageOfFloors.length !== 0 ? '-'+
-    //         this.linkUsageOfFloors[0].houseNumber : ''
-    //      return this.name + house
-    // }
     static empty(){
         return new User({
             id:'',
@@ -146,9 +140,10 @@ class User extends Parent {
     }
     static async postMany(data){
         var data = await api.building.apiPostUsers(data).then(response => {
-            return true
+            response.result = response.result.map(item=>{ return new User(item)})
+            return response
         }).catch(error=>{
-            return false
+            return []
         })
         return data
     }

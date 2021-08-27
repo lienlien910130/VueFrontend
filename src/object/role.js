@@ -18,9 +18,9 @@ class Role extends Parent {
         return new Role(data)
     }
     async update(){
-        // var temp = JSON.parse(JSON.stringify(this))
-        // temp.name = '{Check}'+temp.name
-        var data = await api.authority.apiPatchRoleAuthority(this).then(async(response) => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.name = '{Check}'+temp.name
+        var data = await api.authority.apiPatchRoleAuthority(temp).then(async(response) => {
             return new Role(response.result)
         }).catch(error=>{
             return {}
@@ -28,9 +28,9 @@ class Role extends Parent {
         return data
     }
     async create(){
-        // var temp = JSON.parse(JSON.stringify(this))
-        // temp.name = '{Check}'+temp.name
-        var data = await api.authority.apiPostRoleAuthority(this).then(response => {
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.name = '{Check}'+temp.name
+        var data = await api.authority.apiPostRoleAuthority(temp).then(response => {
             return new Role(response.result)
         }).catch(error=>{
             return {}
@@ -127,9 +127,11 @@ class Role extends Parent {
     }
     static async postMany(data){
         var data = await api.authority.apiPostRoleAuthorities(data).then(response => {
-            return true
+            console.log(JSON.stringify(response))
+            response.result = response.result.map(item=>{ return new Role(item)})
+            return response
         }).catch(error=>{
-            return false
+            return []
         })
         return data
     }

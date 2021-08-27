@@ -21,16 +21,20 @@ class AccessAuthority extends Parent {
     clone(data){
         return new AccessAuthority(data)
     }
-    async update(){
-        var data = await api.authority.apiPatchAccessAuthority(this).then(async(response) => {
+    async update(mainMenuId){
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.action = '{Check}'+temp.action
+        var data = await api.authority.apiPatchAccessAuthority(mainMenuId,temp).then(async(response) => {
             return true
         }).catch(error=>{
             return false
         })
         return data
     }
-    async create(){
-        var data = await api.authority.apiPostAccessAuthority(this).then(response => {
+    async create(mainMenuId){
+        var temp = JSON.parse(JSON.stringify(this))
+        temp.action = '{Check}'+temp.action
+        var data = await api.authority.apiPostAccessAuthority(mainMenuId,temp).then(response => {
             return true
         }).catch(error=>{
             return false
@@ -119,9 +123,10 @@ class AccessAuthority extends Parent {
     //     })
     //     return data
     // }
-    static async postMany(data){
-        var data = await api.authority.apiPostAccessAuthorities(data).then(response => {
-            return true
+    static async postMany(mainMenuId,data){
+        var data = await api.authority.apiPostAccessAuthorities(mainMenuId,data).then(response => {
+            response.result = response.result.sort((x,y) => x.sort - y.sort).map(item=>{ return new AccessAuthority(item)})
+            return response
         }).catch(error=>{
             return false
         })

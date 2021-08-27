@@ -24,7 +24,8 @@
         ref="dialogform"
         v-if="innerVisible === true"
         v-bind="dialogAttrs"
-        v-on:handleDialog="handleDialog"></DialogForm>
+        v-on:handleDialog="handleDialog"
+        v-on:handleChangeConfig="handleChangeConfig"></DialogForm>
 
         <DialogTable 
         ref="dialogtable"
@@ -122,7 +123,8 @@ export default {
             var data =  await this.selectdevice.getDeviceAddresss(this.tablelistQueryParams,this.searchType)
             this.tableTitle = 'deviceaddress'
             this.isHasHeaderButtons = false
-            this.dialogtableConfig= this.searchType == 'fire' ? DeviceAddressManagement.getTableConfig() : DeviceAddressManagement.getPLCTableConfig()
+            this.dialogtableConfig= this.searchType == 'fire' ? 
+                DeviceAddressManagement.getTableConfig() : DeviceAddressManagement.getPLCTableConfig()
             this.dialogtableConfig.shift()
             this.tableData = data.result
             this.tablelistQueryParams.total = data.totalPageCount
@@ -130,10 +132,13 @@ export default {
                 { name:'檢視',icon:'el-icon-view',status:'openaddress'}
             ]
         },
+        handleChangeConfig(isMandatory){
+            this.dialogConfig[2].mandatory = isMandatory
+        },
         async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
             this.dialogData = []
-            this.dialogConfig = this.tableConfig
+            this.dialogConfig = Device.getTableConfig()
             this.dialogTitle = this.title
             this.dialogButtonsName = []
             if(index === 'open'){
@@ -190,38 +195,33 @@ export default {
         async handleDialog(resetLink ,index, content){ //Dialog相關操作
             console.log(index,JSON.stringify(content))
             if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
+                if(content.internetNumber == ''){
+                    content.internetNumber = null
+                }
                 var result = index === 'update' ? await content.update(resetLink) : 
                 index === 'create' ? await content.create() : await Device.postMany(content)
+                // var condition = index !== 'uploadExcelSave' ? Object.keys(result).length !== 0 : result.result.length !== 0
                 if(Object.keys(result).length !== 0){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('building/setDevice')
-                    this.$socket.sendMsg('device', index, result)
+                    this.$socket.sendMsg('device', index, index !== 'uploadExcelSave' ? result: result.result)
                     await this.getBuildingDevicesManage()
                     this.innerVisible = false
                     this.excelVisible = false
-                    // var data = await Device.get()
-                    // // this.$socket.sendMsg('device','dataupdate',data)
-                    // if(index == 'create'){
-                    //     this.$refs.dialogform.insertSuccess('deviceSelect')
-                    // }
                 }else{
-                    this.$message.error('網路編號不可重複') 
+                    this.$message.error('網路編號已存在，請重新輸入')
+                    // if(index !== 'uploadExcelSave'){
+                    //     this.$message.error('網路編號已存在，請重新輸入')
+                    // }
                 }
-            }
-            // else if(index === 'selectData' && window.child && window.child.open){
-            //     switch (content) {
-            //         case 'deviceTypeSelect':
-            //             this.dialogSelect = await DeviceType.get()    
-            //             break;
-            //         case 'contactunitSelect':
-            //             this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())    
-            //             break;
-            //         case 'setting':
-            //             this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
-            //             break;
-            //     }
-            // }
-            else{
+                // if(index == 'uploadExcelSave' && result.repeatDataList !== undefined){
+                //     var list = []
+                //     result.repeatDataList.forEach(item=>{
+                //         list.push(item.name)
+                //     })
+                //     this.$message.error('【'+list.toString()+'】設備的網路編號已存在，請重新上傳')
+                // }
+            }else{
                 this.innerVisible = false
                 this.excelVisible = false
             }
@@ -232,7 +232,10 @@ export default {
                 var routeData = this.$router.resolve({ path: '/normal/maintenance',query:{ type:'maintain',obj:content.getID() } })
                 window.open(routeData.href, '_blank')
             }else if(index == 'openaddress'){
-                var routeData = this.$router.resolve({ path: '/equipment/address',query:{ type:'address',obj:content.getID() } })
+                var routeData = this.$router.resolve({ path: '/deviceaddress/index',query:{ type:'address',obj:content.getID() } })
+                window.open(routeData.href, '_blank')
+            }else if(index == 'openplcaddress'){
+                var routeData = this.$router.resolve({ path: '/deviceaddress/plc',query:{ type:'plc',obj:content.getID() } })
                 window.open(routeData.href, '_blank')
             }else if(index == 'clickPagination'){
                 this.tablelistQueryParams = content
@@ -243,6 +246,7 @@ export default {
                 }
             }else{
                 this.tableVisible = false
+                this.searchType = 'fire'
             }
         },
         async changeTable(value){
@@ -259,6 +263,9 @@ export default {
         async searchChange(index){
             this.searchType = index
             await this.resettablelistQueryParams(false)
+            this.tablebuttonsName = [
+                { name:'檢視',icon:'el-icon-view',status:'openplcaddress'}
+            ]
         }
     }
 }
