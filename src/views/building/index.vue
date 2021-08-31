@@ -394,6 +394,9 @@ export default {
       this.dialogButtonsName = []
       //index === 'createfloor'
       if(index === 'updatefloor'){
+        this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'updatefloor'},
+          { name:'取消',type:'info',status:'cancelfloor'}]
         var floorsArray = []
         floorsArray.push(content)
         var result = await content.update(this.building.getID())
@@ -409,7 +412,7 @@ export default {
             await this.getFloorList()
             this.innerVisible = false
         }else{
-          this.$message.error('系統錯誤') 
+          this.$message.error('該樓層名稱已存在，請重新輸入') 
         }
       }else if(index === 'createfile' || index === 'deletefile'){
         await this.handleUpload(this.floor,index,content)

@@ -43,8 +43,8 @@ const building = {
     //樓層
     apiGetFloors(){ return req('get','/index/a/floors') },
     // apiGetFloor(floorId){ return req('get','/basic/floors/'+floorId) },
-    apiPostFloors(buildingId,data){ return req('post','/index/floors', buildingId, data) },
-    apiPatchFloors(buildingId,data){ return req('patch','/index/floors', buildingId, data) },
+    apiPostFloors(buildingId,data){ return req('post','/index/floors/check', buildingId, data) },
+    apiPatchFloors(buildingId,data){ return req('patch','/index/floors/check', buildingId, data) },
     apiDeleteFloors(floorId){ return req('delete','/index/floors/'+floorId) },
     apiGetFloorSearchPages(buildingId, data){ return req('post','/index/a/floors/ss', buildingId, data)  },
     

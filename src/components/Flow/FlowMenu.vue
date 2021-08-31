@@ -84,21 +84,21 @@
                                 // 自定义覆盖样式
                                 style: {}
                             }, {
-                                id: '14',
+                                id: '16',
                                 type: 'optionEvents',
                                 name: '選項',
                                 ico: 'el-icon-more-outline',
                                 // 自定义覆盖样式
                                 style: {}
                             }, {
-                                id: '15',
+                                id: '17',
                                 type: 'countDown',
                                 name: '倒數',
                                 ico: 'el-icon-time',
                                 // 自定义覆盖样式
                                 style: {}
                             }, {
-                                id: '16',
+                                id: '18',
                                 type: 'end',
                                 name: '結束',
                                 ico: 'el-icon-bangzhu',

@@ -2,7 +2,7 @@
   <div class="operate-menu">
     <ul class="left">
       <li
-        @click.stop="handleMiddleMenu('upper-step')"
+        @click.stop="handleOperateMenu('upper-step')"
         :class="[middleSelectType === 'upper-step' ? 'active' : '']"
       >
         <el-tooltip class="item" effect="dark" content="上一步" placement="bottom">
@@ -10,7 +10,7 @@
         </el-tooltip>
       </li>
       <li
-        @click.stop="handleMiddleMenu('next-step')"
+        @click.stop="handleOperateMenu('next-step')"
         :class="[middleSelectType === 'next-step' ? 'active' : '']"
       >
         <el-tooltip class="item" effect="dark" content="下一步" placement="bottom">
@@ -18,35 +18,7 @@
         </el-tooltip>
       </li>
       <li
-        @click.stop="handleMiddleMenu('drag-drop')"
-        :class="[middleSelectType === 'drag-drop' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="拖曳" placement="bottom">
-          <i class="el-icon-rank"></i>
-        </el-tooltip>
-      </li>
-      <!-- <li>
-        <Dropdown trigger="click">
-          <Icon type="md-git-network" />
-          <div class="svg-icon" v-html="selectLineSvg"></div>
-          <DropdownMenu slot="list">
-            <DropdownItem @click.stop.native="handleMiddleMenu('connection', 'Bezier')">
-              <div class="svg-icon" v-html="BezierSvg"></div
-            ></DropdownItem>
-            <DropdownItem @click.stop.native="handleMiddleMenu('connection', 'Flowchart')">
-              <div class="svg-icon" v-html="FlowchartSvg"></div
-            ></DropdownItem>
-            <DropdownItem @click.stop.native="handleMiddleMenu('connection', 'Straight')">
-              <div class="svg-icon" v-html="StraightSvg"></div
-            ></DropdownItem>
-            <DropdownItem @click.stop.native="handleMiddleMenu('connection', 'StateMachine')">
-              <div class="svg-icon" v-html="StateMachineSvg"></div
-            ></DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
-      </li> -->
-      <li
-        @click.stop="handleMiddleMenu('enlarge')"
+        @click.stop="handleOperateMenu('enlarge')"
         :class="[middleSelectType === 'enlarge' ? 'active' : '']"
       >
         <el-tooltip class="item" effect="dark" content="放大" placement="bottom">
@@ -54,17 +26,25 @@
         </el-tooltip>
       </li>
       <li
-        @click.stop="handleMiddleMenu('narrow')"
+        @click.stop="handleOperateMenu('narrow')"
         :class="[middleSelectType === 'narrow' ? 'active' : '']"
       >
         <el-tooltip class="item" effect="dark" content="縮小" placement="bottom">
           <i class="el-icon-zoom-out"></i>
         </el-tooltip>
       </li>
+      <li
+        @click.stop="handleOperateMenu('delete')"
+        :class="[middleSelectType === 'clear' ? 'active' : '']"
+      >
+        <el-tooltip class="item" effect="dark" content="刪除" placement="bottom">
+          <i class="el-icon-delete"></i>
+        </el-tooltip>
+      </li>
     </ul>
     <ul class="right">
       <li
-        @click.stop="handleMiddleMenu('import')"
+        @click.stop="handleOperateMenu('import')"
         :class="[middleSelectType === 'import' ? 'active' : '']"
       >
         <el-tooltip class="item" effect="dark" content="載入檔案" placement="bottom">
@@ -72,39 +52,23 @@
         </el-tooltip>
       </li>
       <li
-        @click.stop="handleMiddleMenu('export')"
+        @click.stop="handleOperateMenu('export')"
         :class="[middleSelectType === 'export' ? 'active' : '']"
       >
         <el-tooltip class="item" effect="dark" content="下載檔案" placement="bottom">
           <i class="el-icon-download"></i>
         </el-tooltip>
       </li>
-      <!-- <li
-        @click.stop="handleMiddleMenu('restore')"
-        :class="[middleSelectType === 'restore' ? 'active' : '']"
-      >
-        <Tooltip content="还原视图" placement="bottom">
-          <Icon type="md-locate" />
-        </Tooltip>
-      </li> -->
       <li
-        @click.stop="handleMiddleMenu('view-code')"
+        @click.stop="handleOperateMenu('view-code')"
         :class="[middleSelectType === 'view-code' ? 'active' : '']"
       >
         <el-tooltip class="item" effect="dark" content="查看json數據" placement="bottom">
           <i class="el-icon-more"></i>
         </el-tooltip>
       </li>
-      <!-- <li
-        @click.stop="handleMiddleMenu('reset')"
-        :class="[middleSelectType === 'reset' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="重置" placement="bottom">
-          <i class="el-icon-more"></i>
-        </el-tooltip>
-      </li> -->
       <li
-        @click.stop="handleMiddleMenu('save')"
+        @click.stop="handleOperateMenu('save')"
         :class="[middleSelectType === 'save' ? 'active' : '']"
       >
         <el-tooltip class="item" effect="dark" content="儲存數據" placement="bottom">
@@ -112,11 +76,11 @@
         </el-tooltip>
       </li>
       <li
-        @click.stop="handleMiddleMenu('clear')"
+        @click.stop="handleOperateMenu('clear')"
         :class="[middleSelectType === 'clear' ? 'active' : '']"
       >
         <el-tooltip class="item" effect="dark" content="清空" placement="bottom">
-          <i class="el-icon-delete"></i>
+          <i class="el-icon-document-delete"></i>
         </el-tooltip>
       </li>
     </ul>
@@ -132,9 +96,9 @@ export default {
     }
   },
   methods: {
-    handleMiddleMenu(type) {
+    handleOperateMenu(type) {
       this.middleSelectType = type
-      this.$emit('handleMiddleMenu',type)
+      this.$emit('handleOperateMenu',type)
     }
   },
 };

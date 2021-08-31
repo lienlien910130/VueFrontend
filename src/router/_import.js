@@ -26,7 +26,8 @@ const map = {
 
     'selfDefenseFireMarshallingMgmt':()=> import('@/views/emergency/marshalling/index.vue'),
     'protectionGroupMgmt':()=> import('@/views/emergency/classtype/index.vue'),
-    'process':()=> import('@/views/emergency/process/index.vue'),
+    'process':()=> import('@/components/Flow/panel.vue'),
+    // 'process':()=> import('@/views/emergency/process/index.vue'),
     'instruction':()=> import('@/views/emergency/instruction/index.vue'),
 
 }

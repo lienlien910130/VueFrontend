@@ -1,181 +1,190 @@
 <template>
-    <!-- @click.stop="handleSelectNode(node)" -->
-  <div
-    class="node-warp"
-    @contextmenu.prevent.stop="$emit('context-menu', $event)"
-    @mousedown="handlerMousedown(node)"
-    @click.stop="handlerMouseUp(node)"
-  >
-    <div v-if="node.type === 'start-node'" class="item-node menu-start-node">
-      {{ node.name }}
-    </div>
-    <div v-else-if="node.type === 'end-node'" class="item-node menu-end-node">
-      {{ node.name }}
-    </div>
-    <div v-else-if="node.type === 'in-node'" class="item-node menu-in-node">
-      {{ node.name }}
-    </div>
-    <div v-else-if="node.type === 'out-node'" class="item-node menu-out-node">
-      {{ node.name }}
-    </div>
-    <div v-else-if="node.type === 'cog-node'" class="item-node menu-cog-node">
-      <div>
-        <Icon :type="node.icon" />
-        <span> {{ node.name }}</span>
-      </div>
-      <p>相关配置内容</p>
-    </div>
-    <div v-else-if="node.type === 'codepen-node'" class="item-node menu-codepen-node">
-      <div>
-        <Icon :type="node.icon" />
-        <span> {{ node.name }}</span>
-      </div>
-      <p>相关配置内容</p>
-    </div>
-    <div v-else-if="node.type === 'pulse-node'" class="item-node menu-pulse-node">
-      <div>
-        <div>
-          <Icon :type="node.icon" /> <span> {{ node.name }}</span>
+    <div
+            ref="node"
+            :style="nodeContainerStyle"
+            @click="clickNode"
+            @mouseup="changeNodeSite"
+            :class="nodeContainerClass"
+    >
+        <div class="ef-node-left"></div>
+        <div class="ef-node-left-ico flow-node-drag">
+            <i 
+            :class="nodeIcoClass"
+            ></i>
         </div>
-        <Icon type="md-power" />
-      </div>
-      <p>
-        <span>执行状态：正在监听...</span>
-        <span>98%</span>
-      </p>
+        <div class="ef-node-text" :show-overflow-tooltip="true">
+            {{node.name}}
+        </div>
+        <div class="ef-node-right-ico">
+            <i class="el-icon-circle-check el-node-state-success" v-show="node.state === 'success'"></i>
+            <i class="el-icon-circle-close el-node-state-error" v-show="node.state === 'error'"></i>
+            <i class="el-icon-warning-outline el-node-state-warning" v-show="node.state === 'warning'"></i>
+            <i class="el-icon-loading el-node-state-running" v-show="node.state === 'running'"></i>
+        </div>
     </div>
-    <div v-else>此节点无效</div>
-  </div>
 </template>
+
 <script>
-export default {
-  name: "FlowNode",
-  props: ["node"],
-  mounted() {
-    let jspInit = this.$store.state.jspInit;
-    this.$nextTick(() => {
-      jspInit.draggable(this.node.id);
-    });
-  },
-  methods: {
-    handlerMouseUp(node) {
-      let nodeEle = document.getElementById(node.id);
-      let { top, left } = nodeEle.style;
-      let x = left.slice(0, left.length - 2) * 1;
-      let y = top.slice(0, top.length - 2) * 1;
-      if (node.x !== x && node.y !== y) {
-        let flowData = this.$store.state.flowData;
-        flowData.nodes.forEach((item) => {
-          if (item.id === node.id) {
-            item.x = x;
-            item.y = y;
-          }
-        });
-        this.$store.commit("setFlowStepData", flowData);
-      }
-    },
-    handlerMousedown(node) {
-      if (this.$store.state.flowMenuObj.type === "drag-drop") {
-        document.getElementsByClassName("item-node").forEach((ele) => {
-          ele.classList.remove("active");
-        });
-        let nodeEle = document.getElementById(node.id);
-        nodeEle.getElementsByClassName("item-node")[0].classList.add("active");
-        this.$store.commit("setSelectContent", { type: "node", data: node });
-      }
-    },
-  },
-};
+    export default {
+      name:'FlowNode',
+        props: {
+            node: Object,
+            activeElement: Object
+        },
+        data() {
+            return {}
+        },
+        computed: {
+            nodeContainerClass() {
+                return {
+                    'ef-node-container': true,
+                    'ef-node-active': this.activeElement.type == 'node' ? this.activeElement.nodeId === this.node.id : false
+                }
+            },
+            // 节点容器样式
+            nodeContainerStyle() {
+                return {
+                    top: this.node.top,
+                    left: this.node.left
+                }
+            },
+            nodeIcoClass() {
+                var nodeIcoClass = {}
+                nodeIcoClass[this.node.ico] = true
+                // 添加该class可以推拽连线出来，viewOnly 可以控制节点是否运行编辑
+                nodeIcoClass['flow-node-drag'] = this.node.viewOnly ? false : true
+                return nodeIcoClass
+            }
+        },
+        methods: {
+            clickNode() {
+                this.$emit('clickNode', this.node)
+            },
+            changeNodeSite() {
+                if (this.node.left == this.$refs.node.style.left && this.node.top == this.$refs.node.style.top) {
+                    return;
+                }
+                this.$emit('changeNodeSite', {
+                    nodeId: this.node.id,
+                    left: this.$refs.node.style.left,
+                    top: this.$refs.node.style.top,
+                })
+            },
+            handleNodeConnection(type){
+                this.$emit('handleNodeConnection',this.node,type)
+            }
+        }
+    }
 </script>
 
-<style scoped lang="scss">
-.node-warp {
-  position: absolute;
-  user-select: none;
-  > div {
-    background: #abc7ff31;
-    border: 1px solid #abc7ff;
-  }
-  .active {
-    border: 1px dashed #409eff;
-  }
-  i {
-    font-size: 16px;
-  }
-}
-.menu-start-node {
-  width: 100px;
-  padding: 12px 18px;
-  border-radius: 30px;
-  text-align: center;
-}
-.menu-end-node {
-  width: 100px;
-  padding: 12px 18px;
-  text-align: center;
-}
-.menu-in-node {
-  padding: 0;
-  width: 60px;
-  height: 60px;
-  text-align: center;
-  line-height: 60px;
-}
-.menu-out-node {
-  padding: 0;
-  width: 65px;
-  height: 65px;
-  border-radius: 100%;
-  line-height: 60px;
-  text-align: center;
+<style lang="scss" scoped>
+
+/*节点的最外层容器*/
+.ef-node-container {
+    position: absolute;
+    display: flex;
+    width: 170px;
+    height: 32px;
+    border: 1px solid #E0E3E7;
+    border-radius: 5px;
+    background-color: #fff;
 }
 
-.menu-cog-node {
-  padding: 5px 10px;
-  width: 240px;
-  > div {
-    font-size: 14px;
-  }
-  > p {
-    font-size: 12px;
-    margin-top: 2px;
-    color: #999;
-  }
+.ef-node-container:hover {
+    /* 设置移动样式*/
+    cursor: move;
+    background-color: #F0F7FF;
+    /*box-shadow: #1879FF 0px 0px 12px 0px;*/
+    background-color: #F0F7FF;
+    border: 1px dashed #1879FF;
 }
-.menu-codepen-node {
-  width: 240px;
-  > div {
-    font-size: 14px;
-    padding: 8px;
-    background: cornflowerblue;
-    color: cornsilk;
-  }
-  > p {
-    padding: 10px;
-    font-size: 12px;
-    margin-top: 2px;
-    color: #999;
-  }
-}
-.menu-pulse-node {
-  width: 240px;
 
-  > div {
-    font-size: 14px;
-    padding: 8px;
-    background: cornflowerblue;
-    color: cornsilk;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  > p {
-    padding: 10px;
-    font-size: 12px;
-    margin-top: 2px;
-    color: #999;
-    display: flex;
-    justify-content: space-between;
-  }
+/*节点激活样式*/
+.ef-node-active {
+    background-color: #F0F7FF;
+    /*box-shadow: #1879FF 0px 0px 12px 0px;*/
+    background-color: #F0F7FF;
+    border: 1px solid #1879FF;
 }
+
+/*节点左侧的竖线*/
+.ef-node-left {
+    width: 4px;
+    background-color: #1879FF;
+    border-radius: 4px 0 0 4px;
+}
+
+/*节点左侧的图标*/
+.ef-node-left-ico {
+    line-height: 32px;
+    margin-left: 8px;
+}
+
+.ef-node-left-ico:hover {
+    /* 设置拖拽的样式 */
+    cursor: crosshair;
+}
+
+/*节点显示的文字*/
+.ef-node-text {
+    color: #565758;
+    font-size: 12px;
+    line-height: 32px;
+    margin-left: 8px;
+    width: 100px;
+    /* 设置超出宽度文本显示方式*/
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+/*节点右侧的图标*/
+.ef-node-right-ico {
+    line-height: 32px;
+    position: absolute;
+    right: 5px;
+    color: #84CF65;
+    cursor: default;
+}
+
+/*節點狀態樣式*/
+
+.el-node-state-success {
+    line-height: 32px;
+    position: absolute;
+    right: 5px;
+    color: #84CF65;
+    cursor: default;
+}
+
+.el-node-state-error {
+    line-height: 32px;
+    position: absolute;
+    right: 5px;
+    color: #F56C6C;
+    cursor: default;
+}
+
+.el-node-state-warning {
+    line-height: 32px;
+    position: absolute;
+    right: 5px;
+    color: #E6A23C;
+    cursor: default;
+}
+
+.el-node-state-running {
+    line-height: 32px;
+    position: absolute;
+    right: 5px;
+    color: #84CF65;
+    cursor: default;
+}
+
+.ef-drop-hover{
+    border: 1px dashed #1879FF;
+}
+
+
 </style>

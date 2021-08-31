@@ -119,7 +119,7 @@ export default {
                 allowLoopback: true,
                 maxConnections: -1,
                 onMaxConnections: function (info, e) {
-                    console.log(`超过了最大值连线: ${info.maxConnections}`)
+                    console.log(`超過了最大連線數: ${info.maxConnections}`)
                 }
             },
             // 参考 https://www.cnblogs.com/mq0036/p/7942139.html
