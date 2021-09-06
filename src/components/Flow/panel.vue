@@ -20,18 +20,23 @@
                 @mouseup="mouseupHandler"
                 @mousemove="mousemoveHandler"
             >
-                <div class="view-scale">縮放：{{ parseInt(viewScale * 100) }}%</div>
+                <!-- <div class="view-scale">縮放：{{ parseInt(viewScale * 100) }}%</div> -->
+                <div class="view-scale">節點數量：{{ data.nodeList !== undefined ? data.nodeList.length : '0' }}</div> 
                 <div
                 :class="['flow-content', 'grid', dragMove.isDown ? 'flow-grab' : null]"
-                @mousewheel="mousewheelHandler"
+                
                 :style="{
                     transform: `scale(${viewScale})`,
                     transformOrigin: `${scalePosition.x}px ${scalePosition.y}px`,
                     left: dragMove.left + 'px',
-                    top: dragMove.top + 'px',
+                    top: dragMove.top + 'px'
                 }"
                 >
-                <div class="flow-area">
+                <!-- @mousewheel="mousewheelHandler"
+                 transformOrigin: `${scalePosition.x}px ${scalePosition.y}px`,
+                    left: dragMove.left + 'px',
+                    top: dragMove.top + 'px', -->
+                <div class="flow-area" ref="flowarea">
                     <template v-for="node in data.nodeList">
                         <FlowNode
                                 :id="node.id"
@@ -76,30 +81,52 @@
                 flowVisible: true, //用於銷毀節點&連線
                 loadFlowFinish: false, //繪製節點&連線是否完成
                 flowInfoVisible: false, //數據檢視視窗
-                data: {},
-                activeElement: {
-                    type: undefined,
-                    nodeId: undefined,
-                    sourceId: undefined,
-                    targetId: undefined
-                },
-                isMouseDownStop: false,
-                dragMove: {
+                data: {
                     offsetX: -3000,
                     offsetY: -3000,
                     name:"",
                     nodeList: [],
                     lineList: []
                 },
-                 viewScale: 1,
+                activeElement: {
+                    type: undefined,
+                    nodeId: undefined,
+                    sourceId: undefined,
+                    targetId: undefined
+                },
+                selsectNode:{},
+                copyNode:{},
+                pasteElement:{
+                    left:0,
+                    top:0
+                },
+                isMouseDownStop: false,
+                dragMove: {
+                    offsetX: -3000,
+                    offsetY: -3000
+                },
+                viewScale: 1,
                 scalePosition: {
                     x: 0,
                     y: 0,
                 },
-                 mousePosition: {
+                mousePosition: {
                     x: 0,
                     y: 0,
                 },
+                //步骤缓存
+                flowStepData: [],
+                stepIndex: 0,
+                //上一步下一步
+                state:{
+                    offsetX: -3000,
+                    offsetY: -3000,
+                    name:"",
+                    nodeList: [],
+                    lineList: []
+                }, //狀態
+                undo:[], //之前的步驟
+                redo:[],
             }
         },
         mixins: [flowmixin],
@@ -114,11 +141,40 @@
         components: {
             draggable
         },
+        created(){
+            this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
+        },
         mounted() {
-            this.jsPlumb = jsp.jsPlumb.getInstance()
+            this.jsPlumb = jsp.jsPlumb.getInstance({ Container: "zll-index" })
             this.$nextTick(() => {
-                this.dataReload(this.dragMove)
+                this.dataReload({
+                    offsetX: -3000,
+                    offsetY: -3000,
+                    name:"",
+                    nodeList: [],
+                    lineList: []
+                })
             })
+            document.onkeydown = async(e) => {
+                if (e.keyCode == 46) {
+                    this.deleteElement()
+                }
+                if(e.keyCode == 67 && e.ctrlKey){
+                    this.copy()
+                }
+                if(e.keyCode == 86 && e.ctrlKey){
+                    this.paste()
+                }
+                if(e.keyCode == 90 && e.ctrlKey){ //上一步 Z
+                    this.doUndo()
+                }
+                if(e.keyCode == 89 && e.ctrlKey){ //下一步 y
+                    this.doRedo()
+                }
+                if(e.keyCode == 83 && e.ctrlKey){ //存檔 s
+                    
+                }
+            }
         },
         methods: {
             mousedownHandler(e) {
@@ -138,49 +194,49 @@
                 this.dragMove = { ...this.dragMove, ...{ isDown: false } }
             },
             mousemoveHandler(e) {
-                let event = window.event || e;
-                let offsetX = event.layerX ? event.layerX : event.offsetX;
-                let offsetY = event.layerY ? event.layerY : event.offsetY;
-                this.mousePosition = { x: offsetX, y: offsetY };
-                let { downPosition, originalPosition, isDown } = this.dragMove;
+                let event = window.event || e
+                let offsetX = event.layerX ? event.layerX : event.offsetX
+                let offsetY = event.layerY ? event.layerY : event.offsetY
+                this.mousePosition = { x: offsetX, y: offsetY }
+                let { downPosition, originalPosition, isDown } = this.dragMove
                 if (isDown) {
-                    let top = originalPosition.top + (event.y - downPosition.y);
-                    let left = originalPosition.left + (event.x - downPosition.x);
-                    this.dragMove.top = top;
-                    this.dragMove.left = left;
+                    let top = originalPosition.top + (event.y - downPosition.y)
+                    let left = originalPosition.left + (event.x - downPosition.x)
+                    this.dragMove.top = top
+                    this.dragMove.left = left
                 }
             },
-            mousewheelHandler(e) {
-                let event = window.event || e;
-                if (event.wheelDelta) { //ie、google
-                    if (event.wheelDelta > 0) {
-                        this.setZoom("enlarge");
-                    }
-                    if (event.wheelDelta < 0) {
-                        this.setZoom("narrow");
-                    }
-                } else if (event.detail) { //fox
-                    if (event.detail > 0) {
-                        this.setZoom("narrow");
-                    }
-                    if (event.detail < 0) {
-                        this.setZoom("enlarge");
-                    }
-                }
-                this.scalePosition = {
-                    x: event.layerX ? event.layerX : event.offsetX,
-                    y: event.layerY ? event.layerY : event.offsetY,
-                }
-            },
-            setZoom(mark) {
-                let viewScale = this.viewScale;
-                if (mark === "enlarge") {
-                    viewScale = viewScale > 1.5 ? viewScale : viewScale + 0.05;
-                } else if (mark === "narrow") {
-                    viewScale = viewScale < 0.5 ? viewScale : viewScale - 0.05;
-                }
-                this.viewScale = viewScale;
-            },
+            // mousewheelHandler(e) {
+            //     let event = window.event || e
+            //     if (event.wheelDelta) { //ie、google
+            //         if (event.wheelDelta > 0) {
+            //             this.setZoom("enlarge")
+            //         }
+            //         if (event.wheelDelta < 0) {
+            //             this.setZoom("narrow")
+            //         }
+            //     } else if (event.detail) { //fox
+            //         if (event.detail > 0) {
+            //             this.setZoom("narrow")
+            //         }
+            //         if (event.detail < 0) {
+            //             this.setZoom("enlarge")
+            //         }
+            //     }
+            //     this.scalePosition = {
+            //         x: event.layerX ? event.layerX : event.offsetX,
+            //         y: event.layerY ? event.layerY : event.offsetY
+            //     }
+            // },
+            // setZoom(mark) {
+            //     let viewScale = this.viewScale;
+            //     if (mark === "enlarge") {
+            //         viewScale = viewScale > 1.5 ? viewScale : viewScale + 0.05
+            //     } else if (mark === "narrow") {
+            //         viewScale = viewScale < 0.5 ? viewScale : viewScale - 0.05
+            //     }
+            //     this.viewScale = viewScale
+            // },
             getUUID() {
                 return Math.random().toString(36).substr(3, 10)
             },
@@ -226,6 +282,7 @@
                         let to = evt.target.id
                         if (this.loadFlowFinish) {
                             this.data.lineList.push({from: from, to: to})
+                            this.saveState()
                         }
                     })
                     // 刪除線的回調  beforeDetach:刪除線前的回調
@@ -236,8 +293,8 @@
                             }
                             return true
                         })
+                        this.saveState()
                     })
-                    this.jsPlumb.setContainer(this.$refs.efContainer)
                 })
             },
             dataReload(data) {
@@ -252,6 +309,11 @@
                             top: offsetY,
                             left: offsetX,
                         }
+                    }else{
+                        this.dragMove = {
+                            top: '-3000px',
+                            left: '-3000px'
+                        }
                     }
                     this.$nextTick(() => {
                         this.jsPlumb = jsPlumb.getInstance()
@@ -264,29 +326,31 @@
             // 繪製json
             loadEasyFlow() {
                 // 初始化節點
-                for (var i = 0; i < this.data.nodeList.length; i++) {
-                    let node = this.data.nodeList[i]
-                    this.jsPlumb.makeSource(node.id, lodash.merge(this.jsplumbSourceOptions, {}))
-                    this.jsPlumb.makeTarget(node.id, this.jsplumbTargetOptions)
-                    this.jsPlumb.draggable(node.id, {
-                        containment: 'parent',
-                        stop: function (el) {
-                            console.log('拖拽结束: ', el)
-                        }
-                    })
+                if(this.data.nodeList !== undefined){
+                    for(let node of this.data.nodeList){
+                        this.jsPlumb.makeSource(node.id, lodash.merge(this.jsplumbSourceOptions, {}))
+                        this.jsPlumb.makeTarget(node.id, this.jsplumbTargetOptions)
+                        this.jsPlumb.draggable(node.id, {
+                            containment: 'parent',
+                            stop: function (el) {
+                                this.pasteElement = { left:0, top:0}
+                            }
+                        })
+                    }
                 }
                 // 初始化連線
-                for (var i = 0; i < this.data.lineList.length; i++) {
-                    let line = this.data.lineList[i]
-                    var connParam = {
-                        source: line.from,
-                        target: line.to,
-                        label: line.label ? line.label : '',
-                        connector: line.connector ? line.connector : '',
-                        anchors: line.anchors ? line.anchors : undefined,
-                        paintStyle: line.paintStyle ? line.paintStyle : undefined,
+                if(this.data.lineList !== undefined){
+                    for(let line of this.data.lineList){
+                        var connParam = {
+                            source: line.from,
+                            target: line.to,
+                            label: line.label ? line.label : '',
+                            connector: line.connector ? line.connector : '',
+                            anchors: line.anchors ? line.anchors : undefined,
+                            paintStyle: line.paintStyle ? line.paintStyle : undefined,
+                        }
+                        this.jsPlumb.connect(connParam, this.jsplumbConnectOptions)
                     }
-                    this.jsPlumb.connect(connParam, this.jsplumbConnectOptions)
                 }
                 this.$nextTick(function () {
                     this.loadFlowFinish = true
@@ -294,8 +358,7 @@
             },
             // 是否具有该线
             hasLine(from, to) {
-                for (var i = 0; i < this.data.lineList.length; i++) {
-                    var line = this.data.lineList[i]
+                for(let line of this.data.lineList){
                     if (line.from === from && line.to === to) {
                         return true
                     }
@@ -338,6 +401,8 @@
                 this.activeElement.type = 'node'
                 this.activeElement.nodeId = node.id
                 this.$refs.nodeForm.nodeInit(this.data, node.id)
+                this.selsectNode = lodash.cloneDeep(node)
+                this.pasteElement = { left:0, top:0}
             },
             // 改變節點位置
             changeNodeSite(data) {
@@ -358,7 +423,7 @@
                 // 计算是否拖入到容器中
                 if (left < containerRect.x || left > containerRect.width + containerRect.x || top < containerRect.y || 
                 containerRect.y > containerRect.y + containerRect.height) {
-                    this.$message.error("请把节点拖入到画布中")
+                    this.$message.error("請把節點拖曳到畫面中")
                     return
                 }
                 // left = left - containerRect.x + efContainer.scrollLeft
@@ -369,16 +434,46 @@
                 left -= 85
                 top -= 16
                 var nodeId = this.getUUID()
-                // 动态生成名字
-                var origName = nodeMenu.name
-                var nodeName = origName
+                var nodeName = this.countNodeName(nodeMenu.name)
+                var node = {
+                    id: nodeId,
+                    name: nodeName,
+                    type: nodeMenu.type,
+                    left: left + 'px',
+                    top: top + 'px',
+                    ico: nodeMenu.ico,
+                    state: 'default',
+                    message:'',
+                    linkRoles:[],
+                    linkAccounts:[],
+                    linkOptions:[]
+                }
+                console.log(JSON.stringify(this.data))
+                this.data.nodeList.push(node)
+                var self = this
+                this.$nextTick(function () {
+                    
+                    this.jsPlumb.makeSource(nodeId, this.jsplumbSourceOptions)
+                    this.jsPlumb.makeTarget(nodeId, this.jsplumbTargetOptions)
+                    this.jsPlumb.draggable(nodeId, {
+                        containment: 'parent',
+                        stop: function (el) {
+                            this.pasteElement = { left:0, top:0}
+                            self.saveState()
+                        }
+                    })
+                    self.saveState()
+                })
+            },
+            countNodeName(originalName){
+                var nodeName = originalName
                 var index = 1
-                while (index < 10000) {
+                while (index < 100000 && this.data.nodeList !== undefined) {
                     var repeat = false
                     for (var i = 0; i < this.data.nodeList.length; i++) {
                         let node = this.data.nodeList[i]
                         if (node.name === nodeName) {
-                            nodeName = origName + index
+                            nodeName = originalName + index
                             repeat = true
                         }
                     }
@@ -388,70 +483,52 @@
                     }
                     break
                 }
-                var node = {
-                    id: nodeId,
-                    name: nodeName,
-                    type: nodeMenu.type,
-                    left: left + 'px',
-                    top: top + 'px',
-                    ico: nodeMenu.ico,
-                    state: 'success'
-                }
-                /**
-                 * 这里可以进行业务判断、是否能够添加该节点
-                 */
-                this.data.nodeList.push(node)
-                this.$nextTick(function () {
-                    this.jsPlumb.makeSource(nodeId, this.jsplumbSourceOptions)
-                    this.jsPlumb.makeTarget(nodeId, this.jsplumbTargetOptions)
-                    this.jsPlumb.draggable(nodeId, {
-                        containment: 'parent',
-                        stop: function (el) {
-                            // 拖拽节点结束后的对调
-                            console.log('拖拽结束: ', el)
-                        }
-                    })
-                })
+                return nodeName
             },
             //畫布操作
             handleOperateMenu(operate){
               switch(operate){
-                case 'upper-step':
-                  break;
-                case 'next-step':
-                  break;
-                case 'enlarge':
-                  break;
-                case 'narrow':
-                  break;
+                case 'upper-step': //上一步
+                    this.doUndo()
+                    break;
+                case 'next-step': //下一步
+                    this.doRedo()
+                    break;
+                // case 'enlarge':
+                //   break;
+                // case 'narrow':
+                //   break;
                 case 'delete':
-                  this.deleteElement()
-                  break;
+                    this.deleteElement()
+                    break;
                 case 'import':
-                  this.$refs.inputFile.click()
-                  break;
+                    this.$refs.inputFile.click()
+                    break;
                 case 'export':
-                  this.downloadData()
-                  break;
+                    this.downloadData()
+                    break;
                 case 'view-code':
-                  this.dataInfo()
-                  break;
+                    this.dataInfo()
+                    break;
                 case 'save':
                   //儲存檔案&儲存節點
-                  break;
+                    break;
                 case 'clear':
-                    this.dataReload({
+                    this.data = {
                         offsetX: -3000,
                         offsetY: -3000,
                         name:"",
                         nodeList: [],
                         lineList: []
-                    })
+                    }
+                    this.state = lodash.cloneDeep(this.data)
                     this.dragMove = {
                         top: -3000,
                         left: -3000,
                     }
-                  break;
+                    this.jsPlumb.deleteEveryEndpoint()
+                    this.jsPlumb.deleteEveryConnection()
+                    break;
               }
             },
             // 刪除節點or線
@@ -463,16 +540,11 @@
                         type: 'warning',
                         closeOnClickModal: false
                     }).then(() => {
-                        this.data.nodeList = this.data.nodeList.filter(function (node) {
-                            if (node.id === nodeId) {
-                                // 伪删除，将节点隐藏，否则会导致位置错位
-                                // node.show = false
-                                return false
-                            }
-                            return true
-                        })
+                        this.data.nodeList = this.data.nodeList.filter(item => { return item.id !== this.activeElement.nodeId})
                         this.$nextTick(function () {
-                            this.jsPlumb.removeAllEndpoints(nodeId)
+                            this.jsPlumb.deleteConnectionsForElement(this.activeElement.nodeId)
+                            this.jsPlumb.removeAllEndpoints(this.activeElement.nodeId)
+                            this.saveState()
                         })
                     }).catch(() => {
                     })
@@ -489,6 +561,8 @@
                         this.jsPlumb.deleteConnection(conn)
                     }).catch(() => {
                     })
+                } else {
+                    this.$message.error('請選擇要刪除的節點或線')
                 }
             },
             // 檢視數據
@@ -519,7 +593,108 @@
               uploadFile(this.$refs.inputFile, (content) => {
                 this.dataReload(JSON.parse(content))
               })
-            }
+            },
+            copy(){
+                this.copyNode = lodash.cloneDeep(this.selsectNode)
+            },
+            paste(){
+                if(this.activeElement.type == 'line'){
+                    this.$message.error('請勿複製線')
+                    return false
+                }else if(Object.keys(this.selsectNode).length == 0){
+                    this.$message.error('請選擇節點並複製')
+                    return false
+                }
+                this.copyNode = lodash.cloneDeep(this.selsectNode)
+                this.copyNode.id = this.getUUID()
+                this.copyNode.name = this.countNodeName(this.copyNode.name)
+                var left, top
+                if(this.pasteElement.left == 0 && this.pasteElement.top == 0){
+                    left = parseInt(this.copyNode.left.replace("px","")) + 8
+                    top = parseInt(this.copyNode.top.replace("px","")) + 8
+                }else{
+                    left = this.pasteElement.left +8
+                    top = this.pasteElement.top +8
+                }
+                this.pasteElement.left = left
+                this.pasteElement.top = top
+                this.copyNode.left = left + 'px'
+                this.copyNode.top = top +'px'
+                this.data.nodeList.push(this.copyNode)
+                this.$nextTick(function () {
+                    this.jsPlumb.makeSource(this.copyNode.id, this.jsplumbSourceOptions)
+                    this.jsPlumb.makeTarget(this.copyNode.id, this.jsplumbTargetOptions)
+                    this.jsPlumb.draggable(this.copyNode.id, {
+                        containment: 'parent'
+                    })
+                })
+            },
+            saveState(){ //儲存畫布狀態：物件有編輯/物件刪除/傳給父元件(貼上/初始化物件/圖例/矩形/文字/多邊)
+                if(JSON.stringify(this.data) === JSON.stringify(this.state)) return  
+                this.undo.push(this.state)
+                this.state = lodash.cloneDeep(this.data)
+                this.redo = []
+                console.log(JSON.stringify(this.state))
+            },
+            doUndo() { //上一步
+                if (this.undo.length === 0) {
+                    this.$message.error('目前沒有動作可復原')
+                    return
+                }
+                let lastJSON = this.undo.pop() // 取出 undo 最後一筆資料讀取
+                this.redo.push(this.state) // 在做上一步時把目前狀態 push 到 redo 陣列
+                this.state = lastJSON // 換成上一步的狀態
+                this.data = lodash.cloneDeep(this.state)
+                this.jsPlumb.deleteEveryEndpoint()
+                this.jsPlumb.deleteEveryConnection()
+                this.repaintEverything()
+                //this.loadEasyFlow()
+                console.log(JSON.stringify(this.data))
+            },
+            doRedo () { //下一步
+                if (this.redo.length === 0) {
+                    this.$message.error('目前沒有動作可復原')
+                    return
+                }
+                let lastJSON = this.redo.pop()
+                this.undo.push(this.state)
+                this.state = lastJSON
+                this.data = lodash.cloneDeep(this.state)
+                this.jsPlumb.deleteEveryEndpoint()
+                this.jsPlumb.deleteEveryConnection()
+                this.repaintEverything()
+                // this.loadEasyFlow()
+                console.log(JSON.stringify(this.data))
+            },
+            // doUndo(){
+            //     console.log(this.stepIndex)
+            //     if (this.stepIndex > 0) {
+            //         this.stepIndex = this.stepIndex - 1
+            //         this.data = this.flowStepData[this.stepIndex]
+            //         this.jsPlumb.deleteEveryEndpoint()
+            //         this.jsPlumb.deleteEveryConnection()
+            //         this.loadEasyFlow()
+            //     }else {
+            //         this.$message({
+            //             message: '沒有上一步可回復',
+            //             type: 'warning'
+            //         })
+            //     }
+            // },
+            // doRedo(){
+            //     if (this.stepIndex < this.flowStepData.length - 1) {
+            //         this.stepIndex = this.stepIndex + 1
+            //         this.data = this.flowStepData[this.stepIndex]
+            //         this.jsPlumb.deleteEveryEndpoint()
+            //         this.jsPlumb.deleteEveryConnection()
+            //         this.loadEasyFlow()
+            //     }else {
+            //         this.$message({
+            //             message: '沒有下一步可回復',
+            //             type: 'warning'
+            //         })
+            //     }
+            // }
         }
     }
 </script>
@@ -634,10 +809,13 @@ main {
     z-index: 5;
   }
 }
+
 .flow-area {
   width: 100%;
   height: 100%;
   position: relative;
   z-index: 10;
 }
+
+
 </style>

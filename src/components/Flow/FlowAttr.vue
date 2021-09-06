@@ -1,11 +1,12 @@
 <template>
     <div>
         <div class="ef-node-form">
-            <div class="ef-node-form-header">
-                编辑
-            </div>
+            
             <div class="ef-node-form-body">
                 <el-form :model="node" ref="dataForm" label-width="80px" v-show="type === 'node'">
+                    <el-form-item label="ID">
+                        <el-input v-model="node.id" :disabled="true"></el-input>
+                    </el-form-item>
                     <el-form-item label="類型">
                         <el-input v-model="node.type" :disabled="true"></el-input>
                     </el-form-item>
@@ -14,6 +15,12 @@
                     </el-form-item>
                     <el-form-item label="圖標">
                         <el-input v-model="node.ico"></el-input>
+                    </el-form-item>
+                    <el-form-item label="left座標">
+                        <el-input v-model="node.left" :disabled="true"></el-input>
+                    </el-form-item>
+                    <el-form-item label="top座標">
+                        <el-input v-model="node.top" :disabled="true"></el-input>
                     </el-form-item>
                     <el-form-item label="狀態">
                         <el-select v-model="node.state" placeholder="請選擇" @change="save">
@@ -24,6 +31,44 @@
                                 :value="item.state">
                             </el-option>
                         </el-select>
+                    </el-form-item>
+                    <el-form-item label="角色">
+                        <el-select 
+                        v-model="node.linkRoles" 
+                        placeholder="請選擇" 
+                        filterable
+                        value-key="id" 
+                        @change="filterAccount">
+                            <el-option
+                                v-for="(item,index) in selectfilter('roleSelect')"
+                                :key="index"
+                                :label="item.label"
+                                :value="item">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="人員">
+                        <el-select 
+                        v-model="node.linkAccounts" 
+                        placeholder="請選擇" 
+                        filterable
+                        multiple
+                        value-key="id" 
+                        @change="save">
+                            <el-option
+                                v-for="(item,index) in accountArray"
+                                :key="index"
+                                :label="item.label"
+                                :value="item">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="訊息">
+                        <el-input 
+                        v-model="node.message" 
+                        type="textarea" 
+                        :autosize="{ minRows: 4, maxRows: 6}"
+                        @input="save"></el-input>
                     </el-form-item>
                 </el-form>
 
@@ -39,6 +84,7 @@
 </template>
 
 <script>
+    import { mapGetters } from 'vuex'
     import { cloneDeep } from 'lodash'
 
     export default {
@@ -46,7 +92,7 @@
             return {
                 visible: true,
                 // node 或 line
-                type: 'node',
+                type: null,
                 node: {},
                 line: {},
                 data: {},
@@ -65,7 +111,34 @@
                 }, {
                     state: 'running',
                     label: '運行中'
-                }]
+                }],
+                accountArray:[]
+            }
+        },
+        computed:{
+            ...mapGetters([
+                'buildingroles',
+                'role_record',
+                'account',
+                'account_record'
+            ]),
+            selectfilter(){
+                return function (value) {
+                    if(value !== null ){
+                        if(this.role_record == 0){
+                            this.$store.dispatch('building/setroles')
+                            this.$store.dispatch('record/saveRoleRecord',1)
+                        }
+                        return this.buildingroles.map(v => {
+                            this.$set(v, 'value', v.getID()) 
+                            this.$set(v, 'label', v.getName()) 
+                            this.$set(v, 'id', v.getID()) 
+                            return v
+                        })
+                    }else{
+                        return ""
+                    }
+                }  
             }
         },
         methods: {
@@ -95,8 +168,23 @@
                         node.top = this.node.top
                         node.ico = this.node.ico
                         node.state = this.node.state
+                        node.message = this.node.message
+                        node.linkRoles = this.node.linkRoles
+                        node.linkAccounts = this.node.linkAccounts
                         this.$emit('repaintEverything')
                     }
+                })
+            },
+            filterAccount(value){
+                this.save()
+                this.accountArray = []
+                if(this.account_record == 0){
+                    this.$store.dispatch('building/setaccounts')
+                    this.$store.dispatch('record/saveAccountRecord',1)
+                }
+                this.account.filter(item =>{
+                    var rolename = item.getRolesName()
+                    return rolename.indexOf(value.name) !== -1
                 })
             }
         }

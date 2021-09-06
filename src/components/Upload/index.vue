@@ -154,6 +154,7 @@ export default {
         files:{
             handler:async function(){
                 this.filescopy = this.files.map(item=>{ return item.clone(item) })
+                this.deleteItem = []
             },
             immediate:true
         },
@@ -343,6 +344,7 @@ export default {
                         })
                     }else{
                         this.$emit('handleFilesUpload','deletefile',this.title,this.deleteItem)
+
                     }
                 })
             }

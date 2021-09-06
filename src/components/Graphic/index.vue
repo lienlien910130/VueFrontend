@@ -1260,7 +1260,7 @@ export default {
     },
     doUndo() { //上一步
       if (this.undo.length === 0) {
-        this.$$message.error('目前沒有動作可復原')
+        this.$message.error('目前沒有動作可復原')
         return
       }
       let lastJSON = this.undo.pop() // 取出 undo 最後一筆資料讀取
@@ -1273,7 +1273,7 @@ export default {
     },
     doRedo () { //下一步
       if (this.redo.length === 0) {
-        this.$$message.error('目前沒有動作可復原')
+        this.$message.error('目前沒有動作可復原')
         return
       }
       let lastJSON = this.redo.pop()

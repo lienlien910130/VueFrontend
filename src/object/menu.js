@@ -21,7 +21,6 @@ class Menu extends Parent {
         this.linkMainMenus = mainMenu
         this.linkAccessAuthorities = accessAuthority
     }
-
     clone(data){
         return new Menu(data)
     }
@@ -69,6 +68,9 @@ class Menu extends Parent {
     }
     getName(){
         return this.name
+    }
+    getCode(){
+        return this.code
     }
     getLink(){
         return this.linkMainMenus

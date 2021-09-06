@@ -29,13 +29,13 @@ const authority = {
     //權限管理
     // apiGetAccessAuthority(accessAuthorityId){ return req('get','/accessAuthoritySetting/'+accessAuthorityId) },
     apiGetMainMenuAccessAuthority(mainMenuId){ return req('get','/accessAuthoritySetting/mainMenu/'+mainMenuId) },
-    apiPostAccessAuthority(mainMenuId,data){ return req('post','/accessAuthoritySetting/check',mainMenuId, data) },
-    apiPatchAccessAuthority(mainMenuId,data){ return req('patch','/accessAuthoritySetting/check',mainMenuId, data) },
+    apiPostAccessAuthority(data){ return req('post','/accessAuthoritySetting/check',this.getBid(), data) },
+    apiPatchAccessAuthority(data){ return req('patch','/accessAuthoritySetting/check',this.getBid(), data) },
     apiDeleteAccessAuthority(accessAuthorityId){ return req('delete','/accessAuthoritySetting/'+accessAuthorityId) },
     // apiGetCheckAccessAuthority(){ return req('get','/accessAuthoritySetting/checkAssign') },
-    apiPostAccessAuthorities(mainMenuId,data){ 
+    apiPostAccessAuthorities(data){ 
         data.forEach(element => {
-            element.parentId = mainMenuId
+            element.parentId = this.getBid()
         })
         return req('post','/accessAuthoritySetting/check/s', null, data) 
     },
@@ -64,15 +64,15 @@ const authority = {
     //帳號管理
     apiGetAllAccountAuthority(){ return req('get','/accountSetting/a') },
     apiGetAccountAuthority(accountId){ return req('get','/accountSetting/'+accountId) },
-    apiPostAccountAuthority(data){ return req('post','/accountSetting/check', this.getBid(), data) },
+    apiPostAccountAuthority(data){ return req('post','/accountSetting/check',null, data) },
     // apiPatchAccountAuthority(data){ return req('patch','/accountSetting/check',data) },
-    apiPutAccountAuthority(data){ return req('put','/accountSetting/check', this.getBid(), data) },
+    apiPutAccountAuthority(data){ return req('put','/accountSetting/check', null, data) },
     apiDeleteAccountAuthority(accountId){ return req('delete','/accountSetting/'+accountId) },
-    apiGetAccountAuthoritySearchPages(data){ return req('post','/accountSetting/ss', this.getBid(), data, true)  },
+    apiGetAccountAuthoritySearchPages(data){ return req('post','/accountSetting/ss', null, data, true)  },
     apiPostAccountAuthorities(data){ 
-        data.forEach(element => {
-            element.parentId = this.getBid()
-        })
+        // data.forEach(element => {
+        //     element.parentId = this.getBid()
+        // })
         return req('post','/accountSetting/check/s', null, data) 
     },
     //帳號取得權限管理

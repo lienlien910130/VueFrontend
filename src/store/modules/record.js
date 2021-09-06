@@ -10,7 +10,8 @@ const getDefaultState = () => {
       setting_record: 0,
       floorOfHouse_record: 0,
       householder_record: 0,
-      addressManagement_record: 0
+      addressManagement_record: 0,
+      account_record: 0
     }
   }
   
@@ -22,6 +23,9 @@ const getDefaultState = () => {
     },
     SET_ROLECORD: (state, record) => {
       state.role_record = record
+    },
+    SET_ACCOUNTCORD: (state, record) => {
+      state.account_record = record
     },
     SET_MENUCORD: (state, record) => {
         state.menu_record = record
@@ -55,6 +59,9 @@ const getDefaultState = () => {
 const actions = {
     saveRoleRecord({ commit } ,data){
       commit('SET_ROLECORD', data)
+    },
+    saveAccountRecord({ commit } ,data){
+      commit('SET_ACCOUNTCORD', data)
     },
     saveSettingRecord({ commit } ,data){
       commit('SET_SETTINGCORD', data)

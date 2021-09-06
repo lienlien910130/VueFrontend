@@ -136,7 +136,7 @@ export default {
             console.log(title ,index,JSON.stringify(content))
             if(index == 'createmany' || index == 'create' ){
                 var deviceId = content.linkAssignDevices[0].getID()
-                delete content.linkAssignDevices
+                //delete content.linkAssignDevices
                 if(index == 'createmany'){
                     delete content.linkDevices
                     delete content.systemUsed

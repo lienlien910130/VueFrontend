@@ -96,7 +96,7 @@ class DeviceAddressManagement extends Parent {
             number :'',
             status:'',
             systemUsed:false,
-            protocolMode:1,
+            protocolMode:0,
             linkDevices:[],
             linkAssignDevices:[]
         })
@@ -150,7 +150,7 @@ class DeviceAddressManagement extends Parent {
                 label:'火警總機' , 
                 prop:'linkAssignDevices',
                 format:'assignFireDeviceSelect', 
-                mandatory:false,message:'請選擇火警總機',type:'array',typemessage:'',
+                mandatory:true,message:'請選擇火警總機',type:'array',typemessage:'',
                 isHidden:true,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
             },

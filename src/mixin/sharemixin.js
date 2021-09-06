@@ -21,7 +21,9 @@ export default {
             'wsmsg',
             'wsuserId',
             'menuAuthority',
-            'role_record'
+            'role_record',
+            'account',
+            'account_record'
         ]),
         TimeOptions(){ //設定名稱
             return function (value) {

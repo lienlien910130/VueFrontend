@@ -10,6 +10,7 @@ class AccessAuthority extends Parent {
         var mainMenu = linkMainMenus !== undefined ? linkMainMenus.map(item=>{ return new Menu(item)}) : []
         var roles = linkRoles !== undefined ? linkRoles.map(item=>{ return new Role(item)})  : []      
         this.name = name 
+        this.class = data.class
         this.description = description 
         this.status = status 
         this.sort = sort 
@@ -21,20 +22,22 @@ class AccessAuthority extends Parent {
     clone(data){
         return new AccessAuthority(data)
     }
-    async update(mainMenuId){
+    async update(){
         var temp = JSON.parse(JSON.stringify(this))
+        temp.class = '{Check}'+temp.class
         temp.action = '{Check}'+temp.action
-        var data = await api.authority.apiPatchAccessAuthority(mainMenuId,temp).then(async(response) => {
+        var data = await api.authority.apiPatchAccessAuthority(temp).then(async(response) => {
             return true
         }).catch(error=>{
             return false
         })
         return data
     }
-    async create(mainMenuId){
+    async create(){
         var temp = JSON.parse(JSON.stringify(this))
+        temp.class = '{Check}'+temp.class
         temp.action = '{Check}'+temp.action
-        var data = await api.authority.apiPostAccessAuthority(mainMenuId,temp).then(response => {
+        var data = await api.authority.apiPostAccessAuthority(temp).then(response => {
             return true
         }).catch(error=>{
             return false
@@ -63,6 +66,7 @@ class AccessAuthority extends Parent {
         return new AccessAuthority({
             id:'',
             name :'',
+            class:'',
             description :'',
             status :true,
             sort :0,
@@ -123,8 +127,8 @@ class AccessAuthority extends Parent {
     //     })
     //     return data
     // }
-    static async postMany(mainMenuId,data){
-        var data = await api.authority.apiPostAccessAuthorities(mainMenuId,data).then(response => {
+    static async postMany(data){
+        var data = await api.authority.apiPostAccessAuthorities(data).then(response => {
             response.result = response.result.sort((x,y) => x.sort - y.sort).map(item=>{ return new AccessAuthority(item)})
             return response
         }).catch(error=>{

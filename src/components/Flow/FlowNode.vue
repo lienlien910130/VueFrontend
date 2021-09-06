@@ -96,7 +96,7 @@
     background-color: #F0F7FF;
     /*box-shadow: #1879FF 0px 0px 12px 0px;*/
     background-color: #F0F7FF;
-    border: 1px dashed #1879FF;
+    border: 2px dashed #1879FF;
 }
 
 /*节点激活样式*/
@@ -110,7 +110,7 @@
 /*节点左侧的竖线*/
 .ef-node-left {
     width: 4px;
-    background-color: #1879FF;
+    background-color: #0075a9;
     border-radius: 4px 0 0 4px;
 }
 
@@ -128,7 +128,7 @@
 /*节点显示的文字*/
 .ef-node-text {
     color: #565758;
-    font-size: 12px;
+    font-size: 16px;
     line-height: 32px;
     margin-left: 8px;
     width: 100px;

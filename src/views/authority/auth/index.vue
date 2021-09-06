@@ -46,7 +46,8 @@ export default {
         return{
             //tree
             treeData:[],
-            selectId:null
+            selectId:null,
+            classCode:''
         }
     },
     computed: {
@@ -87,6 +88,7 @@ export default {
         },
         async handleTreeNode(node,data){
             this.selectId = data.getID()
+            this.classCode = data.getCode()
             var array = await AccessAuthority.get(this.selectId)
             this.blockData = array.result
         },
@@ -158,8 +160,9 @@ export default {
                         element.linkMainMenus = [{id : this.selectId}]
                     })
                 }
-                var result = index === 'update' ? await content.update(this.selectId) : 
-                index === 'create' ? await content.create(this.selectId) : await AccessAuthority.postMany(this.selectId,content)
+                content.class = this.classCode
+                var result = index === 'update' ? await content.update() : 
+                index === 'create' ? await content.create() : await AccessAuthority.postMany(content)
                 var condition = index !== 'uploadExcelSave' ? result == true : result.result.length !== 0
                 if(condition){
                     index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
@@ -168,7 +171,7 @@ export default {
                     this.innerVisible = false
                     this.excelVisible = false
                 }else{
-                    this.$message.error('系統錯誤')
+                    this.$message.error('該權限已存在，請重新輸入')
                 }
                 if(index == 'uploadExcelSave' && result.repeatDataList !== undefined){
                     var list = []

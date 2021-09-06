@@ -17,7 +17,7 @@
           <i class="el-icon-refresh-right"></i>
         </el-tooltip>
       </li>
-      <li
+      <!-- <li
         @click.stop="handleOperateMenu('enlarge')"
         :class="[middleSelectType === 'enlarge' ? 'active' : '']"
       >
@@ -32,7 +32,7 @@
         <el-tooltip class="item" effect="dark" content="縮小" placement="bottom">
           <i class="el-icon-zoom-out"></i>
         </el-tooltip>
-      </li>
+      </li> -->
       <li
         @click.stop="handleOperateMenu('delete')"
         :class="[middleSelectType === 'clear' ? 'active' : '']"
@@ -132,6 +132,9 @@ export default {
         }
       }
     }
+  }
+  .left {
+    padding-left: 0px;
   }
   ::v-deep .ivu-tooltip {
     display: flex;

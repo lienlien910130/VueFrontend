@@ -6,7 +6,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { Building, Contactunit, Device, DeviceAddressManagement, DeviceType, Floors, Role, UsageOfFloor, User } from './object'
+import { Account, Building, Contactunit, Device, DeviceAddressManagement, DeviceType, Floors, Role, UsageOfFloor, User } from './object'
 
 export default {
   name: 'App',
@@ -25,13 +25,25 @@ export default {
     wsmsg:{
       handler:async function(){
           var data = JSON.parse(this.wsmsg.data)
-          if(data.Data.Id !== this.wsuserId && data.DataType == 'building'){ //不是自己傳送的訊息 && 建築物清單不須判斷是否有選擇建築物
-            this.handleBuilding(data.SendType, data.Data.Bid, data.Data.Content)
-          }else if(data.Data.Id !== this.wsuserId && data.Data.Bid == this.buildingid){ //不是自己傳送的 && 判斷是否有選擇建築物=更動的建築物
+          if(data.Data.Id !== this.wsuserId){
+            if(data.DataType == 'building' || data.DataType == 'account'){
+              switch(data.DataType){
+                case 'building':
+                  this.handleBuilding(data.SendType, data.Data.Bid, data.Data.Content)
+                  break;
+                case 'account':
+                  this.handleAccount(data.SendType, data.Data.Content)
+                  break;
+              }
+              
+            }else if(data.Data.Bid == this.buildingid){
               console.log('收到別人的訊息!', data.DataType)
                 switch(data.DataType){
                   case 'roles':
                     this.handleRoles(data.SendType, data.Data.Content)
+                    break;
+                  case 'account':
+                    this.handleAccount(data.SendType, data.Data.Content)
                     break;
                   case 'menus':
                     this.handleMenus(data.SendType, data.Data.Content)
@@ -61,15 +73,14 @@ export default {
                     this.handleDeviceAddress(data.SendType, data.Data.Content)
                     break;
                 }
+            }
           }
-          
       },
       immediate:true
     }
   },
   methods: {
     initsocket(){
-      //this.localSocket()
       if ("WebSocket" in window){
         this.$socket.initWebSocket()
       }else{
@@ -86,6 +97,18 @@ export default {
         this.$store.dispatch('building/addRole', new Array(new Role(content)))
       }else if(index == 'uploadExcelSave'){
         this.$store.dispatch('building/addRole', content.map(item=>{ return new Role(item)}))
+      }
+    },
+    handleAccount(index,content){
+      console.log('handleAccount',index,content)
+      if(index == 'update'){
+        this.$store.dispatch('building/updateAccount', new Account(content))
+      }else if(index == 'delete'){
+        this.$store.dispatch('building/deleteAccount',content)
+      }else if(index == 'create'){
+        this.$store.dispatch('building/addAccount', new Array(new Account(content)))
+      }else if(index == 'uploadExcelSave'){
+        this.$store.dispatch('building/addAccount', content.map(item=>{ return new Account(item)}))
       }
     },
     handleMenus(index,content){
@@ -399,245 +422,19 @@ background-color:rgb(147, 180 , 197);
 }
 
 
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            border-radius: 4px;
-            background: #E0E3E7;
-            height: 20px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background-color: transparent;
-        }
-
-/*画布容器*/
-#efContainer {
-    position: relative;
-    overflow: scroll;
-    flex: 1;
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
 
-/*顶部工具栏*/
-.ef-tooltar {
-    padding-left: 10px;
-    box-sizing: border-box;
-    height: 42px;
-    line-height: 42px;
-    z-index: 3;
-    border-bottom: 1px solid #DADCE0;
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: #E0E3E7;
+  height: 20px;
 }
 
-.jtk-overlay {
-    cursor: pointer;
-    color: #4A4A4A;
-}
-
-
-/*节点菜单*/
-.ef-node-pmenu {
-    cursor: pointer;
-    height: 32px;
-    line-height: 32px;
-    width: 225px;
-    display: block;
-    font-weight: bold;
-    color: #4A4A4A;
-    padding-left: 5px;
-}
-
-.ef-node-pmenu:hover {
-    background-color: #E0E0E0;
-}
-
-.ef-node-menu-li {
-    color: #565758;
-    width: 150px;
-    border: 1px dashed #E0E3E7;
-    margin: 5px 0 5px 0;
-    padding: 5px;
-    border-radius: 5px;
-    padding-left: 8px;
-}
-
-.ef-node-menu-li:hover {
-    /* 设置移动样式*/
-    cursor: move;
-    background-color: #F0F7FF;
-    border: 1px dashed #1879FF;
-    border-left: 4px solid #1879FF;
-    padding-left: 5px;
-}
-
-.ef-node-menu-ul {
-    list-style: none;
-    padding-left: 20px
-}
-
-/*节点的最外层容器*/
-.ef-node-container {
-    position: absolute;
-    display: flex;
-    width: 170px;
-    height: 32px;
-    border: 1px solid #E0E3E7;
-    border-radius: 5px;
-    background-color: #fff;
-}
-
-.ef-node-container:hover {
-    /* 设置移动样式*/
-    cursor: move;
-    background-color: #F0F7FF;
-    /*box-shadow: #1879FF 0px 0px 12px 0px;*/
-    background-color: #F0F7FF;
-    border: 1px dashed #1879FF;
-}
-
-/*节点激活样式*/
-.ef-node-active {
-    background-color: #F0F7FF;
-    /*box-shadow: #1879FF 0px 0px 12px 0px;*/
-    background-color: #F0F7FF;
-    border: 1px solid #1879FF;
-}
-
-/*节点左侧的竖线*/
-.ef-node-left {
-    width: 4px;
-    background-color: #1879FF;
-    border-radius: 4px 0 0 4px;
-}
-
-/*节点左侧的图标*/
-.ef-node-left-ico {
-    line-height: 32px;
-    margin-left: 8px;
-}
-
-.ef-node-left-ico:hover {
-    /* 设置拖拽的样式 */
-    cursor: crosshair;
-}
-
-/*节点显示的文字*/
-.ef-node-text {
-    color: #565758;
-    font-size: 12px;
-    line-height: 32px;
-    margin-left: 8px;
-    width: 100px;
-    /* 设置超出宽度文本显示方式*/
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-}
-
-/*节点右侧的图标*/
-.ef-node-right-ico {
-    line-height: 32px;
-    position: absolute;
-    right: 5px;
-    color: #84CF65;
-    cursor: default;
-}
-
-/*节点的几种状态样式*/
-.el-node-state-success {
-    line-height: 32px;
-    position: absolute;
-    right: 5px;
-    color: #84CF65;
-    cursor: default;
-}
-
-.el-node-state-error {
-    line-height: 32px;
-    position: absolute;
-    right: 5px;
-    color: #F56C6C;
-    cursor: default;
-}
-
-.el-node-state-warning {
-    line-height: 32px;
-    position: absolute;
-    right: 5px;
-    color: #E6A23C;
-    cursor: default;
-}
-
-.el-node-state-running {
-    line-height: 32px;
-    position: absolute;
-    right: 5px;
-    color: #84CF65;
-    cursor: default;
-}
-
-
-/*node-form*/
-.ef-node-form-header {
-    height: 32px;
-    border-top: 1px solid #dce3e8;
-    border-bottom: 1px solid #dce3e8;
-    background: #F1F3F4;
-    color: #000;
-    line-height: 32px;
-    padding-left: 12px;
-    font-size: 14px;
-}
-
-.ef-node-form-body {
-    margin-top: 10px;
-    padding-right: 10px;
-    padding-bottom: 20px;
-}
-
-/* 连线中的label 样式*/
-.jtk-overlay.flowLabel:not(.aLabel) {
-    padding: 4px 10px;
-    background-color: white;
-    color: #565758 !important;
-    border: 1px solid #E0E3E7;
-    border-radius: 5px;
-}
-
-/* label 为空的样式 */
-.emptyFlowLabel {
-}
-
-
-.ef-dot {
-    background-color: #1879FF;
-    border-radius: 10px;
-}
-
-.ef-dot-hover {
-    background-color: red;
-}
-
-.ef-rectangle {
-    background-color: #1879FF;
-}
-
-.ef-rectangle-hover {
-    background-color: red;
-}
-
-.ef-img {
-}
-
-.ef-img-hover {
-}
-
-
-.ef-drop-hover{
-    border: 1px dashed #1879FF;
+::-webkit-scrollbar-track {
+  background-color: transparent;
 }
 
 </style>

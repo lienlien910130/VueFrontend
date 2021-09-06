@@ -38,6 +38,7 @@ const getters = {
   buildingdeviceType: state => state.building.buildingdeviceType,
   buildingaddress: state => state.building.buildingaddress,
   deviceType : state => state.building.deviceType,
+  account: state => state.building.account,
 
   json: state => state.graphic.json,
   
@@ -51,7 +52,7 @@ const getters = {
   contactunit_record: state => state.record.contactunit_record,
   deviceType_record: state => state.record.deviceType_record,
   addressManagement_record :state => state.record.addressManagement_record,
-
+  account_record:state => state.record.account_record,
   
 }
 export default getters

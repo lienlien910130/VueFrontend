@@ -2,7 +2,7 @@ import  {
   getBuildingid,setBuildingid,removeBuildingid
  }  from '../../utils/auth'
 import idb from '../../utils/indexedDB'
-import { Device, User, Contactunit, Floors, Building, Role, Setting, UsageOfFloor, DeviceType, DeviceAddressManagement } from '@/object/index'
+import { Device, User, Contactunit, Floors, Building, Role, Setting, UsageOfFloor, DeviceType, DeviceAddressManagement, Account } from '@/object/index'
 
 // 個人資料
 const getDefaultState = () => {
@@ -19,7 +19,8 @@ const getDefaultState = () => {
     buildingfloorOfHouse:[],
     buildingdeviceType:[],
     buildingaddress:[],
-    deviceType:[]
+    deviceType:[],
+    account:[]
   }
 }
 
@@ -67,6 +68,9 @@ const mutations = {
   },
   SET_ADDRESSMANAGEMENT: (state, buildingaddress) => {
     state.buildingaddress = buildingaddress
+  },
+  SET_ACCOUNT: (state, account) => {
+    state.account = account
   }
 }
 
@@ -130,6 +134,30 @@ const actions = {
         return item.id !== id
     })
     commit('SET_ROLES', obj)
+  },
+  //帳號-正在選取的建築物才更新
+  async setaccounts({ commit }) { 
+    var data =  await Account.get()
+    commit('SET_ACCOUNT', data)
+  },
+  addAccount({ commit }, content){
+    content.forEach(element => {
+      state.account.push(element)
+    })
+  },
+  updateAccount({ commit }, content){
+    var index = state.account.findIndex((item) => {
+      return item.id === content.id
+    })
+    if(index !== -1){
+      state.account[index] = content
+    }
+  },
+  deleteAccount({ commit }, id){
+    var obj = state.account.filter((item) => {
+        return item.id !== id
+    })
+    commit('SET_ACCOUNT', obj)
   },
   //設定-正在選取的建築物才更新
   async setoptions({ commit }, data = null){
@@ -310,6 +338,7 @@ const actions = {
     })
     commit('SET_ADDRESSMANAGEMENT', obj)
   },
+  //預設設備種類
   setDefaultDeviceType({ commit }, deviceType) {
     return new Promise((resolve, reject) => {
         commit('SET_DEFAULTDEVICETYPE', deviceType)
