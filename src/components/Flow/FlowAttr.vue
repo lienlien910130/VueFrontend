@@ -3,7 +3,7 @@
         <div class="ef-node-form">
             
             <div class="ef-node-form-body">
-                <el-form :model="node" ref="dataForm" label-width="80px" v-show="type === 'node'">
+                <el-form :model="node" ref="dataForm" label-width="80px" v-show="type === 'node'" @submit.native.prevent>
                     <el-form-item label="ID">
                         <el-input v-model="node.id" :disabled="true"></el-input>
                     </el-form-item>
@@ -72,9 +72,13 @@
                     </el-form-item>
                 </el-form>
 
-                <el-form :model="line" ref="dataForm" label-width="80px" v-show="type === 'line'">
+                <el-form :model="line" ref="dataForm" label-width="80px" v-show="type === 'line'" @submit.native.prevent>
                     <el-form-item label="備註">
-                        <el-input v-model="line.label" @input="saveLine"></el-input>
+                        <el-input v-model="line.label"  
+                        ></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" icon="el-icon-check" @click="saveLine">保存</el-button>
                     </el-form-item>
                 </el-form>
             </div>

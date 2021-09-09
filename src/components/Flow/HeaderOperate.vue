@@ -4,6 +4,7 @@
       <li
         @click.stop="handleOperateMenu('upper-step')"
         :class="[middleSelectType === 'upper-step' ? 'active' : '']"
+        :disable="true"
       >
         <el-tooltip class="item" effect="dark" content="上一步" placement="bottom">
           <i class="el-icon-refresh-left"></i>
@@ -35,7 +36,7 @@
       </li> -->
       <li
         @click.stop="handleOperateMenu('delete')"
-        :class="[middleSelectType === 'clear' ? 'active' : '']"
+        :class="[middleSelectType === 'delete' ? 'active' : '']"
       >
         <el-tooltip class="item" effect="dark" content="刪除" placement="bottom">
           <i class="el-icon-delete"></i>
@@ -92,13 +93,17 @@ export default {
   name: "HeaderOperate",
   data() {
     return {
-      middleSelectType: "drag-drop"  //操作
+      middleSelectType: "drag-drop",  //操作
+      disable:false
     }
   },
   methods: {
     handleOperateMenu(type) {
       this.middleSelectType = type
       this.$emit('handleOperateMenu',type)
+    },
+    setDisable(disable){
+      this.disable = disable
     }
   },
 };

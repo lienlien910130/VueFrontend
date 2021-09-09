@@ -1,5 +1,4 @@
 import { mapGetters } from 'vuex'
-import { removeDuplicates } from '@/utils/index'
 import moment from 'moment'
 export default {
     computed: {
@@ -23,7 +22,8 @@ export default {
             'menuAuthority',
             'role_record',
             'account',
-            'account_record'
+            'account_record',
+            'floor_record'
         ]),
         TimeOptions(){ //設定名稱
             return function (value) {
@@ -74,7 +74,8 @@ export default {
             selectSetting:[], //儲存篩選資料
             isTable:true,
             filterArray:[],
-            exportExcelData:[]
+            exportExcelData:[],
+            selectArray:[]
         }
     },
     methods: {

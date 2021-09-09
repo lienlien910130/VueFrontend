@@ -5,8 +5,8 @@ import Device from './device'
 class DeviceAddressManagement extends Parent {
     constructor (data) {
         super(data)
-        const { internet, system, address, number, status, systemUsed, protocolMode,
-            valueType, value, linkDevices  } = data
+        const { internet, system, address, number, status, systemUsed, protocolMode, valueType, value,
+             floorsId, linkDevices  } = data
         var devices = linkDevices !== undefined ?
         linkDevices.map(item=>{ return new Device(item) }) :[]
         this.internet = internet
@@ -16,8 +16,9 @@ class DeviceAddressManagement extends Parent {
         this.status = status
         this.systemUsed = systemUsed
         this.protocolMode = parseInt(protocolMode)
-        this.valueType = valueType
+        this.floorsId = floorsId
         this.value = value
+        this.valueType = valueType
         this.linkDevices = devices
     }
     clone(data){
@@ -30,14 +31,14 @@ class DeviceAddressManagement extends Parent {
         temp.address = '{Check}'+temp.address
         temp.number = '{Check}'+temp.number
         if(isPLC == null){
-            var data = await api.device.apiPatchDevicesAddress(resetLink,temp).then(async(response) => {
+            var data = await api.device.apiPutDevicesAddress(resetLink,temp).then(async(response) => {
                 return new DeviceAddressManagement(response.result)
             }).catch(error=>{
                 return {}
             })
             return data
         }else{
-            var data = await api.device.apiPatchDevicesPLCAddress(resetLink,temp).then(async(response) => {
+            var data = await api.device.apiPutDevicesPLCAddress(resetLink,temp).then(async(response) => {
                 return new DeviceAddressManagement(response.result)
             }).catch(error=>{
                 return {}
@@ -97,6 +98,9 @@ class DeviceAddressManagement extends Parent {
             status:'',
             systemUsed:false,
             protocolMode:0,
+            floorsId:null,
+            valueType:'',
+            value:'',
             linkDevices:[],
             linkAssignDevices:[]
         })
@@ -110,6 +114,14 @@ class DeviceAddressManagement extends Parent {
                 mandatory:true,message:'請選擇火警總機',type:'array',typemessage:'',
                 isHidden:true,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
+            },
+            { 
+                label:'樓層' , 
+                prop:'floorsId',
+                format:'floorSelect', 
+                mandatory:true,message:'請選擇樓層',type:'string',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
             {
                 label: '網路編號',
@@ -154,10 +166,18 @@ class DeviceAddressManagement extends Parent {
                 isHidden:true,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
             },
+            { 
+                label:'樓層' , 
+                prop:'floorsId',
+                format:'floorSelect', 
+                mandatory:true,message:'請選擇樓層',type:'string',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+            },
              {
                  label: '網路編號',
                  prop: 'internet',format:'internetNumber',
-                 mandatory:true, message:'請輸入網路編號',isHidden:false,maxlength:'5',
+                 mandatory:true, message:'請輸入網路編號',isHidden:true,maxlength:'5',
                  pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                  isSearch:true,placeholder:'請輸入網路編號',
                  isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
@@ -227,10 +247,18 @@ class DeviceAddressManagement extends Parent {
                 isHidden:true,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
             },
+            { 
+                label:'樓層' , 
+                prop:'floorsId',
+                format:'floorSelect', 
+                mandatory:true,message:'請選擇樓層',type:'string',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+            },
              {
                  label: '網路編號',
                  prop: 'internet',format:'internetNumber',
-                 mandatory:true, message:'請輸入網路編號',isHidden:false,maxlength:'5',
+                 mandatory:true, message:'請輸入網路編號',isHidden:true,maxlength:'5',
                  isSearch:true,placeholder:'請輸入網路編號',
                  isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
              },
@@ -325,6 +353,7 @@ class DeviceAddressManagement extends Parent {
     static async getSearchPage(data,isPLC = null){
         if(isPLC == null){
             var data = await api.device.apiGetDevicesAddressSearchPages(data).then(response => {
+                console.log(JSON.stringify( response.result))
                 response.result = response.result.sort((x,y) => x.id - y.id)
                 .map(item=>{ return new DeviceAddressManagement(item)})
                 return response
@@ -373,6 +402,25 @@ class DeviceAddressManagement extends Parent {
                 return true
             }).catch(error=>{
                 return false
+            })
+            return data
+        }
+    }
+    static async updateMany(data,isPLC = null){
+        if(isPLC == null){
+            var data = await api.device.apiPatchDevicesAddress(data).then(async(response) => {
+                response.result = response.result.map(item=>{ return new DeviceAddressManagement(item)})
+                return response
+            }).catch(error=>{
+                return []
+            })
+            return data
+        }else{
+            var data = await api.device.apiPatchDevicesPLCAddress(data).then(async(response) => {
+                response.result = response.result.map(item=>{ return new DeviceAddressManagement(item)})
+                return response
+            }).catch(error=>{
+                return []
             })
             return data
         }

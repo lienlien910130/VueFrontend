@@ -9,14 +9,12 @@
               v-bind="floorselectAttrs" 
               v-on:handleSelect="handleSelect">
             </Select>
-            <el-button-group>
-              <el-button v-if="type =='view'" type="primary" @click="changeType('edit')" :disabled="disabled">編輯</el-button>
-              <el-button v-else type="primary" @click="changeType('view')">關閉編輯</el-button>
-              <el-button type="primary" @click="resetCanvas()" :disabled="disabled">復原位置</el-button>
-              <el-button type="primary" @click="saveCanvasToImage()" :disabled="disabled">匯出圖片</el-button>
-              <el-button type="primary" :disabled="disabled">歷史紀錄</el-button>
-              <el-button type="primary" :disabled="disabled" @click="redirect('address')">點位設定</el-button>
-            </el-button-group>
+            <el-button v-if="type =='view'" type="primary" size="mini" @click="changeType('edit')" :disabled="disabled">編輯</el-button>
+            <el-button v-else type="primary" size="mini" @click="changeType('view')">關閉編輯</el-button>
+            <el-button type="primary" size="mini" @click="resetCanvas()" :disabled="disabled">復原位置</el-button>
+            <el-button type="primary" size="mini" @click="saveCanvasToImage()" :disabled="disabled">匯出圖片</el-button>
+            <el-button type="primary" size="mini" :disabled="disabled">歷史紀錄</el-button>
+            <el-button type="primary" size="mini" :disabled="disabled" @click="redirect('address')">點位一覽</el-button>
             <el-popover
               placement="left-start"
               title="快捷鍵"
@@ -37,22 +35,21 @@
                 <p class="tipck">11.【Ctrl】+【Y】：下一步</p>
                 <p class="tipck">12.【Delete】：刪除</p>
                 <p class="tipck">13.【Insert】：下載圖片</p>
-                <!-- <el-button slot="reference" type="primary" :disabled="disabled">快捷鍵</el-button> -->
-                <i class="el-icon-warning" slot="reference" :disabled="disabled" style="font-size:30px"></i>
+                <el-button slot="reference" type="primary" size="mini" :disabled="disabled">快捷鍵</el-button>
+                <!-- <i class="el-icon-warning" slot="reference" :disabled="disabled" style="font-size:30px"></i> -->
             </el-popover>
-            <el-checkbox-group 
-            v-model="checkList" :disabled="disabled"
-            style="display:inline-block" @change="changeViewBlock">
-              <el-checkbox label="未分類" border></el-checkbox>
-              <el-checkbox label="警戒區" border></el-checkbox>
-              <el-checkbox label="防護區" border></el-checkbox>
-              <el-checkbox label="放射區" border></el-checkbox>
-              <el-checkbox label="撒水區" border></el-checkbox>
-            </el-checkbox-group>
           </el-col>
           <el-col :xs="24" :sm="24" :md="24" :lg="12">
-            <div class="collapse-wrapper" >
-                  
+            <div style="float:right">
+                <el-checkbox-group 
+                v-model="checkList" :disabled="disabled"
+                style="display:inline-block" @change="changeViewBlock">
+                  <el-checkbox label="未分類" border></el-checkbox>
+                  <el-checkbox label="警戒區" border></el-checkbox>
+                  <el-checkbox label="防護區" border></el-checkbox>
+                  <el-checkbox label="放射區" border></el-checkbox>
+                  <el-checkbox label="撒水區" border></el-checkbox>
+                </el-checkbox-group>
             </div>
           </el-col>
         </el-row>
@@ -67,16 +64,16 @@
             </el-col>
           </el-row>
           <el-row>
-            <!-- <el-col :xs="24" :sm="24" :md="24" :lg="16">
+            <el-col :xs="24" :sm="24" :md="24" :lg="16">
               <div class="collapse-wrapper" >
-                <TableIndex
+                <GraphicTable
                   :list-query-params.sync="listQueryParams"
                   v-bind="tableAttrs"
                   v-on="tableEvent">
-                </TableIndex>
+                </GraphicTable>
               </div>
-            </el-col> -->
-            <el-col :xs="24" :sm="24" :md="24" :lg="8">
+            </el-col>
+            <!-- <el-col :xs="24" :sm="24" :md="24" :lg="8">
               <div class="wrapper">
                 <ObjectList
                   ref="objectList"
@@ -85,7 +82,7 @@
                   v-on:sendActionToCanvas="sendActionToCanvas">
                 </ObjectList>
               </div>
-            </el-col>
+            </el-col> -->
           </el-row>
          </div>
       </div>
@@ -94,9 +91,7 @@
 
 <script>
 import idb from '@/utils/indexedDB'
-import { formatTime } from '@/utils/index.js'
 import sharemixin  from '@/mixin/sharemixin'
-import Device from '@/object/device'
 
 export default {
     mixins:[sharemixin],
@@ -116,7 +111,8 @@ export default {
               type:this.type,
               checkList:this.checkList,
               floor:this.floor,
-              actionObj:this.actionObj
+              actionObj:this.actionObj,
+              pointarray:this.pointarray
             }
       },
       graphicEvent(){
@@ -153,6 +149,7 @@ export default {
     },
     data() {
         return {
+          pointarray:[], //樓層點位列表
           checkList:[], //區域選擇
           floor:null, //正在開啟的樓層
           selectData:[], //樓層選單
@@ -180,12 +177,12 @@ export default {
         }
     },
     watch: {
-      buildingfloors:{
-        handler:async function(){
-          this.selectData = this.buildingfloors
-        },
-        immediate:true
-      },
+      // buildingfloors:{
+      //   handler:async function(){
+      //     this.selectData = this.buildingfloors
+      //   },
+      //   immediate:true
+      // },
       // wsmsg:{
       //   handler:async function(){
       //       var data = JSON.parse(this.wsmsg.data)
@@ -245,7 +242,16 @@ export default {
     },
     methods:{
       async init(){
-
+        if(this.floor_record == 0){
+          await this.$store.dispatch('building/setFloors')
+          await this.$store.dispatch('record/saveFloorRecord',1)
+        }
+        this.selectData = this.buildingfloors.map(v => {
+          this.$set(v, 'value', v.getID()) 
+          this.$set(v, 'label', v.getName()) 
+          this.$set(v, 'id', v.getID()) 
+          return v
+        })
       },
       async clickPagination(){
           this.tableData = this.origindata.filter(
@@ -295,8 +301,8 @@ export default {
         }
         this.type = 'view'
         this.floor = content
+        this.pointarray = [] //儲存樓層點位
         var obj = await this.floor.getGraphicFiles()
-        console.log(obj)
         if(content.getImageID() == null){
             this.disabled = true
             this.changeType('view')
@@ -375,15 +381,13 @@ export default {
   padding: 0 20px 5px;
   background-color: rgb(209, 226, 236);
   position: relative;
-  min-height: calc(100vh - 155px);
-  max-height: calc(100vh - 155px);
+  min-height: calc(100vh - 50px);
   overflow-y: auto;
   overflow-x: hidden;
 
   .block-wrapper {
     background: #fff;
     padding: 0px 5px 10px;
-    margin-bottom: 32px;
   }
 
 }
@@ -392,9 +396,8 @@ i{
 }
 .collapse-wrapper{
     background: snow;
-    padding: 15px;
-    height: 100px;
-    margin-bottom:5px;
+    padding: 8px;
+    height: 200px;
     overflow-x:hidden;
     overflow-y:auto;
 }

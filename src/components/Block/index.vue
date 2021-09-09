@@ -244,6 +244,10 @@
                                     {{ item.getDevicesName() }}
                                 </span>
 
+                                 <span v-else-if="option.format == 'floorSelect' " >
+                                    {{ changeFloorName(item[option.prop]) }}
+                                </span>
+
                                 <span v-else-if="option.format == 'deviceTypeSelect' "
                                 @click="clickMessageBox('設備種類',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
@@ -390,11 +394,15 @@
                                              {{ scope.row.getDevicesName() }}
                                         </span>
 
-                                        <span v-else-if="item.format == 'equipmentDeviceSelect' " 
+                                        <span v-else-if="item.format == 'floorSelect' " >
+                                             {{ changeFloorName(scope.row[item.prop]) }}
+                                        </span>
+
+                                        <!-- <span v-else-if="item.format == 'equipmentDeviceSelect' " 
                                         @click="clickMessageBox('設備資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
                                              {{ scope.row.getDevicesName() }}
-                                        </span>
+                                        </span> -->
 
                                         <span v-else-if="item.format == 'contactunitSelect' " 
                                         @click="clickMessageBox('廠商資料',item.format,scope.row[item.prop])"
@@ -438,7 +446,7 @@
                             fixed="right"
                             label="操作"
                             v-if="title !== 'address'"
-                            width="150px"
+                            width="180px"
                             >
                                 <template slot="header">
                                     <!-- 檔案上傳&檔案下載&新增資料 -->
@@ -518,6 +526,7 @@
 import { computedmixin } from '@/mixin/index'
 import { Device, DeviceType, Contactunit, User, UsageOfFloor, Role, Building, InspectionLacks } from '@/object/index'
 import moment from 'moment'
+import lodash from 'lodash'
 
 export default {
     mixins:[computedmixin],
@@ -720,14 +729,14 @@ export default {
                     var type = this.title == 'deviceAddressManagement' ? 
                         'nDeviceTypeList.AE.AE_FireDetectorCentralControl' : 
                         'nDeviceTypeList.OE.OE_ProgrammableLogicController'
-                    this.deviceSelectArray = this.buildingdevices.filter(item => 
+                    this.deviceSelectArray = lodash.cloneDeep(this.buildingdevices.filter(item => 
                         item.getLinkType().getFullType() == type && 
                         item.getInternetNumber() !== null && item.getInternetNumber() !== '' && item.getInternetNumber() !== undefined).map(v => {
                             this.$set(v, 'value', v.getID()) 
-                            this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
+                            this.$set(v, 'label', '【網路編號：'+v.getInternetNumber()+'】'+v.getOnlyName()) 
                             this.$set(v, 'id', v.getID()) 
                             return v
-                    })
+                    }))
                     if(this.deviceSelectArray.length !== 0){
                         this.deviceIdSelect = this.deviceSelectArray[0]
                         this.searchDevice()
@@ -974,6 +983,13 @@ export default {
                     }).catch(() => {
                     })
                 }
+            } else if(status === 'setfloors'){
+                if(this.selectArray.length == 0){
+                    this.$message.error('請勾選要設定的點位')
+                }else{
+                    console.log()
+                    this.$emit('handleBlock', this.title , status , this.selectArray)
+                }
             }else {
                 if(this.title == 'maintain'){
                     this.$emit('handleDialog', this.title , status , row)
@@ -1106,19 +1122,19 @@ export default {
             this.$emit('update:listQueryParams', this.listQueryParams)
             this.$emit('clickPagination')
         },
-        selectfilter(value){
-            var type = value == 'fire' ? 
-                'nDeviceTypeList.AE.AE_FireDetectorCentralControl' : 
-                'nDeviceTypeList.OE.OE_ProgrammableLogicController'
-            return this.buildingdevices.filter(item => 
-                item.getLinkType().getFullType() == type && 
-                item.getInternetNumber() !== null).map(v => {
-                    this.$set(v, 'value', v.getID()) 
-                    this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
-                    this.$set(v, 'id', v.getID()) 
-                     return v
-            })
-        },
+        // selectfilter(value){
+        //     var type = value == 'fire' ? 
+        //         'nDeviceTypeList.AE.AE_FireDetectorCentralControl' : 
+        //         'nDeviceTypeList.OE.OE_ProgrammableLogicController'
+        //     return this.buildingdevices.filter(item => 
+        //         item.getLinkType().getFullType() == type && 
+        //         item.getInternetNumber() !== null).map(v => {
+        //             this.$set(v, 'value', v.getID()) 
+        //             this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
+        //             this.$set(v, 'id', v.getID()) 
+        //              return v
+        //     })
+        // },
         change(){
             this.$emit('changeTable',!this.isTable)
         },
@@ -1126,6 +1142,11 @@ export default {
             this.listQueryParams.internet = this.deviceIdSelect.getInternetNumber()
             this.$emit('update:listQueryParams', this.listQueryParams)
             this.$emit('clickPagination')
+        },
+        //清空selectArray
+        clearSelectArray(){
+            this.selectArray = []
+            this.$refs.tableData.clearSelection()
         }
     }
 }

@@ -42,7 +42,8 @@ const device = {
     // apiGetDevicesAddress(){ return req('get','/deviceAddressManagement/a') },
     apiGetDevicesAddress(deviceAddressId){ return req('get','/deviceAddressManagement/'+deviceAddressId) },
     apiPostDevicesAddress(deviceId,data){ return req('post','/deviceAddressManagement/check', deviceId, data) }, //單點新增
-    apiPatchDevicesAddress(resetLink,data){ return req('put','/deviceAddressManagement/check/'+resetLink, this.getBid(), data) },
+    apiPutDevicesAddress(resetLink,data){ return req('put','/deviceAddressManagement/check/'+resetLink, this.getBid(), data) },
+    apiPatchDevicesAddress(data){ return req('patch','/deviceAddressManagement/s', this.getBid(), data) },
     apiDeleteDevicesAddress(deviceAddressId){ return req('delete','/deviceAddressManagement/'+deviceAddressId+'/true') },
     apiGetDevicesAddressSearchPages(data){ return req('post','/deviceAddressManagement/ss', null, data)  },
     apiPostDevicesAddresses(data){ 
@@ -57,7 +58,8 @@ const device = {
     //點位設定-PLC
     apiGetDevicesPLCAddress(deviceAddressId){ return req('get','/devicePlcAddressManagement/'+deviceAddressId) },
     apiPostDevicesPLCAddress(deviceId,data){ return req('post','/devicePlcAddressManagement/check', deviceId, data) }, //單點新增
-    apiPatchDevicesPLCAddress(resetLink,data){ return req('put','/devicePlcAddressManagement/check/'+resetLink, this.getBid(), data) },
+    apiPutDevicesPLCAddress(resetLink,data){ return req('put','/devicePlcAddressManagement/check/'+resetLink, this.getBid(), data) },
+    apiPatchDevicesPLCAddress(data){ return req('patch','/devicePlcAddressManagement/s', this.getBid(), data) },
     apiDeleteDevicesPLCAddress(deviceAddressId){ return req('delete','/devicePlcAddressManagement/'+deviceAddressId+'/true') },
     apiGetDevicesPLCAddressSearchPages(data){ return req('post','/devicePlcAddressManagement/ss', null, data)  },
     apiPostDevicesPLCAddresses(data){ 

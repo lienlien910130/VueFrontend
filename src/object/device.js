@@ -300,14 +300,14 @@ class Device extends Parent {
         })
         return data
     }
-    static async updateAddress(data){
-        var data = await api.device.apiPatchDevicesAddress(data).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    }
+    // static async updateAddress(data){
+    //     var data = await api.device.apiPutDevicesAddress(data).then(async(response) => {
+    //         return true
+    //     }).catch(error=>{
+    //         return false
+    //     })
+    //     return data
+    // }
     static async updatefromGraphic(data){
         var data = await api.device.apiPatchGraphicDevices(data).then(async(response) => {
             return true

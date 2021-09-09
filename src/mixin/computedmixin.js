@@ -10,6 +10,7 @@ export default {
                 'buildingdevices',
                 'buildingoptions',
                 'buildingusers',
+                'buildingfloors',
                 'buildingcontactunit',
                 'buildingroles',
                 'buildingarray',
@@ -25,7 +26,8 @@ export default {
                 'householder_record',
                 'device_record',
                 'contactunit_record',
-                'deviceType_record'
+                'deviceType_record',
+                'floor_record'
             ]),
             dataStr(){ //日期
                 return function (a,b) {
@@ -95,6 +97,21 @@ export default {
                     }
                     return ''
                 } 
+            },
+            changeFloorName(){
+                return function (value) {
+                    if(this.floor_record == 0){
+                        this.$store.dispatch('building/setFloors')
+                        this.$store.dispatch('record/saveFloorRecord',1)
+                    }
+                    if(value !== null){
+                        let _array = this.buildingfloors.filter((item, index) => 
+                            item.id == value 
+                        )
+                        return _array.length !== 0 ? _array[0].floor : ''
+                    }
+                    return ""
+                }
             },
             stringToBr(){
                 return function (a) {

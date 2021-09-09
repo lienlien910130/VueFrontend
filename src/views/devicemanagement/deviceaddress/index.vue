@@ -34,6 +34,7 @@
 <script>
 import { blockmixin, dialogmixin, sharemixin, excelmixin } from '@/mixin/index'
 import { Device, DeviceAddressManagement } from '@/object/index'
+import lodash from 'lodash'
 
 export default {
     name:'DeviceAddressManagement',
@@ -52,9 +53,10 @@ export default {
             this.title = 'deviceAddressManagement'
             this.headerButtonsName = [
                 { name:'多筆刪除',icon:'el-icon-delete',status:'deleteMany'},
+                { name:'設定樓層',icon:'el-icon-position',status:'setfloors'},
                 { name:'多筆更新',icon:'el-icon-edit',status:'updateMany'},
-                { name:'多筆資料新增',icon:'el-icon-document',status:'manyempty'},
-                { name:'單筆新增資料',icon:'el-icon-circle-plus-outline',status:'empty'},
+                { name:'多筆新增',icon:'el-icon-document',status:'manyempty'},
+                { name:'單筆新增',icon:'el-icon-circle-plus-outline',status:'empty'},
                 { name:'匯出檔案',icon:'el-icon-download',status:'exportExcel'},
                 // { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}
             ]
@@ -78,11 +80,11 @@ export default {
         async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
             this.dialogData = []
-            this.dialogConfig = DeviceAddressManagement.getTableConfig()
+            this.dialogConfig = lodash.cloneDeep(DeviceAddressManagement.getTableConfig())
             this.dialogTitle = this.title
             this.dialogButtonsName = []
             if(index === 'open'){
-                this.dialogConfig[0].isEdit = false
+                this.dialogConfig.shift()
                 this.dialogStatus = 'update'
                 if(content.length !== undefined){ //代表不是外傳近來的
                     content.forEach(item=>{
@@ -130,6 +132,16 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'create'
+            }else if(index === 'setfloors'){
+                var array = []
+                array.push(this.dialogConfig[1])
+                this.dialogConfig = array
+                this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'floorsupdate'},
+                { name:'取消',type:'info',status:'cancelfloor'}]
+                this.dialogStatus = 'update'
+                this.innerVisible = true
+                this.selectArray = lodash.cloneDeep(content)
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
@@ -169,9 +181,28 @@ export default {
                 }else{
                     this.$message.error('點位已存在，請重新輸入')
                 }
+            }else if(index == 'floorsupdate'){
+                var updateData = []
+                this.selectArray.forEach(item=>{
+                    updateData.push({
+                        id:item.id,
+                        floorsId:content.floorsId
+                    })
+                })
+                var result = await DeviceAddressManagement.updateMany(updateData)
+                if(Object.keys(result).length !== 0){
+                    this.$message('更新成功') 
+                    this.$socket.sendMsg('deviceAddress', index, result)
+                    await this.getBuildingDeviceAddressManagement()
+                    this.innerVisible = false
+                    this.$refs.block.clearSelectArray()
+                }else{
+                    this.$message.error('樓層更新錯誤')
+                }
             }else{
                 this.innerVisible = false
                 this.excelVisible = false
+                this.$refs.block.clearSelectArray()
             }
         },
         async changeTable(value){

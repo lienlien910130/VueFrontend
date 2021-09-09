@@ -63,8 +63,9 @@
 </template>
 
 <script>
-    import draggable from 'vuedraggable'
-    import jsp from 'jsplumb'
+   
+    // import jsp from 'jsplumb'
+    import '@/utils/jsplumb'
     import { flowmixin } from '@/mixin/index'
     import lodash from 'lodash'
     import { uploadFile } from '@/utils'
@@ -96,10 +97,9 @@
                 },
                 selsectNode:{},
                 copyNode:{},
-                pasteElement:{
-                    left:0,
-                    top:0
-                },
+                pasteElement:{left:0,top:0},
+                startDragpos:{left:0,top:0},
+                endDragpos:{left:0,top:0},
                 isMouseDownStop: false,
                 dragMove: {
                     offsetX: -3000,
@@ -127,6 +127,8 @@
                 }, //狀態
                 undo:[], //之前的步驟
                 redo:[],
+                isUndoRedoing: false //判斷是不是在做上一步&下一步，是的話則刪除線不儲存狀態
+
             }
         },
         mixins: [flowmixin],
@@ -138,14 +140,11 @@
                 }
             }
         },
-        components: {
-            draggable
-        },
         created(){
             this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
         },
         mounted() {
-            this.jsPlumb = jsp.jsPlumb.getInstance({ Container: "zll-index" })
+            this.jsPlumb = jsPlumb.getInstance({ Container: "zll-index" })
             this.$nextTick(() => {
                 this.dataReload({
                     offsetX: -3000,
@@ -245,7 +244,7 @@
                     // 默認配置
                     this.jsPlumb.importDefaults(this.jsplumbSetting)
                     this.jsPlumb.setSuspendDrawing(false, true)
-                    this.loadEasyFlow() // 繪製json
+                    this.loadFlow() // 繪製json
                     //點擊線-傳遞資訊到右側
                     this.jsPlumb.bind('click', (conn, originalEvent) => {
                         this.activeElement.type = 'line'
@@ -257,7 +256,7 @@
                             label: conn.getLabel()
                         })
                     })
-                    // 連線前的判斷
+                    // 連線前的判斷：需判斷該連線是否已存在
                     this.jsPlumb.bind("beforeDrop", (evt) => {
                         let from = evt.sourceId
                         let to = evt.targetId
@@ -276,24 +275,31 @@
                         this.$message.success('連接成功')
                         return true
                     })
-                    // 連線
+                    // 連線：需判斷data-lineList是否已存在
                     this.jsPlumb.bind("connection", (evt) => {
-                        let from = evt.source.id
-                        let to = evt.target.id
-                        if (this.loadFlowFinish) {
-                            this.data.lineList.push({from: from, to: to})
+                        let lineId = evt.connection.id
+                        let from = evt.sourceId
+                        let to = evt.targetId
+                        let isExist = this.data.lineList.findIndex((item) => {
+                            return item.from === from && item.to === to
+                        })
+                        if (this.loadFlowFinish && isExist <0) {
+                            this.data.lineList.push({id:lineId, from: from, to: to})
                             this.saveState()
-                        }
+                        }  
                     })
-                    // 刪除線的回調  beforeDetach:刪除線前的回調
+                    // 刪除線的回調：若使用deleteEveryConnection，有幾條線就會呼叫幾次
                     this.jsPlumb.bind("connectionDetached", (evt) => {
                         this.data.lineList = this.data.lineList.filter(function (line) {
-                            if (line.from == evt.sourceId && line.to == evt.targetId) {
+                            if (line.id == evt.connection.id) {
                                 return false
                             }
                             return true
                         })
-                        this.saveState()
+                        //正在執行上一步下一步時不儲存
+                        if(this.isUndoRedoing == false){
+                            this.saveState()
+                        }
                     })
                 })
             },
@@ -316,7 +322,8 @@
                         }
                     }
                     this.$nextTick(() => {
-                        this.jsPlumb = jsPlumb.getInstance()
+                        //this.jsPlumbInit()
+                        this.jsPlumb = jsPlumb.getInstance({ Container: "zll-index" })
                         this.$nextTick(() => {
                             this.jsPlumbInit()
                         })
@@ -324,8 +331,9 @@
                 })
             },
             // 繪製json
-            loadEasyFlow() {
+            loadFlow() {
                 // 初始化節點
+                var self = this
                 if(this.data.nodeList !== undefined){
                     for(let node of this.data.nodeList){
                         this.jsPlumb.makeSource(node.id, lodash.merge(this.jsplumbSourceOptions, {}))
@@ -334,13 +342,14 @@
                             containment: 'parent',
                             stop: function (el) {
                                 this.pasteElement = { left:0, top:0}
+                                self.saveState()
                             }
                         })
                     }
                 }
                 // 初始化連線
                 if(this.data.lineList !== undefined){
-                    for(let line of this.data.lineList){
+                    this.data.lineList.forEach(line => {
                         var connParam = {
                             source: line.from,
                             target: line.to,
@@ -350,10 +359,12 @@
                             paintStyle: line.paintStyle ? line.paintStyle : undefined,
                         }
                         this.jsPlumb.connect(connParam, this.jsplumbConnectOptions)
-                    }
+                    })
                 }
                 this.$nextTick(function () {
                     this.loadFlowFinish = true
+                    //this.jsPlumb.setSuspendDrawing(false, true)
+                    this.saveState()
                 })
             },
             // 是否具有该线
@@ -372,19 +383,25 @@
             //右邊傳來的事件
             // 設置線的備註
             setLineLabel(from, to, label) {
+                console.log('label',label)
                 var conn = this.jsPlumb.getConnections({
                     source: from,
                     target: to
                 })[0]
-                if (!label || label === '') {
-                    conn.removeClass('flowLabel')
-                    conn.addClass('emptyFlowLabel')
-                } else {
-                    conn.addClass('flowLabel')
-                }
-                conn.setLabel({
-                    label: label,
+                this.$nextTick(()=>{
+                    console.log(!label || label === '')
+                    if (!label || label === '') {
+                        conn.removeClass('flowLabel')
+                        conn.addClass('emptyFlowLabel')
+                    } else {
+                        conn.addClass('flowLabel')
+                    }
+                    conn.setLabel({
+                        label: label
+                    })
+                   
                 })
+                
                 this.data.lineList.forEach(function (line) {
                     if (line.from == from && line.to == to) {
                         line.label = label
@@ -448,11 +465,9 @@
                     linkAccounts:[],
                     linkOptions:[]
                 }
-                console.log(JSON.stringify(this.data))
                 this.data.nodeList.push(node)
                 var self = this
                 this.$nextTick(function () {
-                    
                     this.jsPlumb.makeSource(nodeId, this.jsplumbSourceOptions)
                     this.jsPlumb.makeTarget(nodeId, this.jsplumbTargetOptions)
                     this.jsPlumb.draggable(nodeId, {
@@ -599,7 +614,7 @@
             },
             paste(){
                 if(this.activeElement.type == 'line'){
-                    this.$message.error('請勿複製線')
+                    this.$message.error('請勿複製線，請選擇節點並複製')
                     return false
                 }else if(Object.keys(this.selsectNode).length == 0){
                     this.$message.error('請選擇節點並複製')
@@ -627,74 +642,65 @@
                     this.jsPlumb.draggable(this.copyNode.id, {
                         containment: 'parent'
                     })
+                    this.saveState()
                 })
             },
-            saveState(){ //儲存畫布狀態：物件有編輯/物件刪除/傳給父元件(貼上/初始化物件/圖例/矩形/文字/多邊)
+            saveState(){ //儲存狀態：新增節點/刪除節點/新增線/刪除線/拖曳節點
                 if(JSON.stringify(this.data) === JSON.stringify(this.state)) return  
                 this.undo.push(this.state)
                 this.state = lodash.cloneDeep(this.data)
                 this.redo = []
-                console.log(JSON.stringify(this.state))
+                console.log('saveState',JSON.stringify(this.state))
             },
             doUndo() { //上一步
                 if (this.undo.length === 0) {
                     this.$message.error('目前沒有動作可復原')
                     return
                 }
+                this.isUndoRedoing = true
+                this.$refs.operate.setDisable(true)
                 let lastJSON = this.undo.pop() // 取出 undo 最後一筆資料讀取
+                console.log('doUndo',JSON.stringify(lastJSON))
                 this.redo.push(this.state) // 在做上一步時把目前狀態 push 到 redo 陣列
                 this.state = lastJSON // 換成上一步的狀態
-                this.data = lodash.cloneDeep(this.state)
                 this.jsPlumb.deleteEveryEndpoint()
                 this.jsPlumb.deleteEveryConnection()
-                this.repaintEverything()
-                //this.loadEasyFlow()
-                console.log(JSON.stringify(this.data))
+                this.data = lodash.cloneDeep(this.state)
+                if(this.data.lineList !== undefined){
+                    this.data.lineList.forEach(line => {
+                        var connParam = {
+                            source: line.from,
+                            target: line.to,
+                            label: line.label ? line.label : '',
+                            connector: line.connector ? line.connector : '',
+                            anchors: line.anchors ? line.anchors : undefined,
+                            paintStyle: line.paintStyle ? line.paintStyle : undefined,
+                        }
+                        this.jsPlumb.connect(connParam, this.jsplumbConnectOptions)
+                    })
+                }
+                this.$nextTick(function () {
+                    this.jsPlumb.setSuspendDrawing(false, true)
+                    this.isUndoRedoing = false
+                    this.$refs.operate.setDisable(false)
+                })
             },
             doRedo () { //下一步
                 if (this.redo.length === 0) {
                     this.$message.error('目前沒有動作可復原')
                     return
                 }
+                this.isUndoRedoing = true
+                 this.$refs.operate.setDisable(true)
                 let lastJSON = this.redo.pop()
+                console.log('doRedo',JSON.stringify(lastJSON))
                 this.undo.push(this.state)
                 this.state = lastJSON
-                this.data = lodash.cloneDeep(this.state)
                 this.jsPlumb.deleteEveryEndpoint()
                 this.jsPlumb.deleteEveryConnection()
-                this.repaintEverything()
-                // this.loadEasyFlow()
-                console.log(JSON.stringify(this.data))
-            },
-            // doUndo(){
-            //     console.log(this.stepIndex)
-            //     if (this.stepIndex > 0) {
-            //         this.stepIndex = this.stepIndex - 1
-            //         this.data = this.flowStepData[this.stepIndex]
-            //         this.jsPlumb.deleteEveryEndpoint()
-            //         this.jsPlumb.deleteEveryConnection()
-            //         this.loadEasyFlow()
-            //     }else {
-            //         this.$message({
-            //             message: '沒有上一步可回復',
-            //             type: 'warning'
-            //         })
-            //     }
-            // },
-            // doRedo(){
-            //     if (this.stepIndex < this.flowStepData.length - 1) {
-            //         this.stepIndex = this.stepIndex + 1
-            //         this.data = this.flowStepData[this.stepIndex]
-            //         this.jsPlumb.deleteEveryEndpoint()
-            //         this.jsPlumb.deleteEveryConnection()
-            //         this.loadEasyFlow()
-            //     }else {
-            //         this.$message({
-            //             message: '沒有下一步可回復',
-            //             type: 'warning'
-            //         })
-            //     }
-            // }
+                this.data = lodash.cloneDeep(this.state)
+                this.dataReload(this.data)
+            }
         }
     }
 </script>
@@ -720,7 +726,7 @@
     border-bottom: 1px solid #eee;
   }
   .flow-menu {
-    width: 280px;
+    width: 200px;
   }
   .middle {
     flex: 1;

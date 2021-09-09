@@ -83,10 +83,10 @@ export default {
                 { name:'編輯',icon:'el-icon-edit',status:'open'},
                 { name:'查看權限',icon:'el-icon-view',status:'distribution'}
             ]
-            if(this.account_record == 0){
-                this.$store.dispatch('building/setaccounts')
-                this.$store.dispatch('record/saveAccountRecord',1)
-            }
+            // if(this.account_record == 0){
+            //     this.$store.dispatch('building/setaccounts')
+            //     this.$store.dispatch('record/saveAccountRecord',1)
+            // }
         },
         async setMenuRoleAccess(){
             this.accessAuthority = []

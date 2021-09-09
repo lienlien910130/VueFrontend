@@ -26,8 +26,9 @@ module.exports = {
       errors: true
     },
     // https: {
-    //   key: fs.readFileSync(`${__dirname}/src/assets/https/localhost-key.pem`),
-    //   cert: fs.readFileSync(`${__dirname}/src/assets/https/localhost.pem`)
+    //   key: fs.readFileSync(`${__dirname}/src/assets/https/private.key`),
+    //   cert: fs.readFileSync(`${__dirname}/src/assets/https/certificate.crt`),
+    //   ca: fs.readFileSync(`${__dirname}/src/assets/https/ca_bundle.crt`)
     // },
     proxy: {
       // change xxx-api/login => mock/login

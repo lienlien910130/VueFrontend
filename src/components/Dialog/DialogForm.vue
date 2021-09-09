@@ -101,6 +101,22 @@
                         >
                         </el-option>  
                 </el-select>
+                <!-- 點位選擇樓層 -->
+                <el-select
+                    v-else-if="item.format =='floorSelect'"
+                    v-model="temp[item.prop]"
+                    filterable
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                        <el-option
+                        v-for="(obj,index) in selectfilter(item.format)"
+                        :key="index"
+                        :label="obj.label"
+                        :value="obj.id"
+                        >
+                        </el-option>  
+                </el-select>
                 <!-- 設備種類 -->
                 <el-select
                     v-else-if="item.format =='deviceTypeSelect'"
@@ -402,8 +418,8 @@ export default {
                     switch(value){
                         case 'deviceSelect': 
                             if(this.device_record == 0){
-                                    this.$store.dispatch('building/setDevice')
-                                    this.$store.dispatch('record/saveDeviceRecord',1)
+                               this.$store.dispatch('building/setDevice')
+                                this.$store.dispatch('record/saveDeviceRecord',1)
                             }
                             return this.buildingdevices.map(v => {
                                 this.$set(v, 'value', v.getID()) 
@@ -411,9 +427,20 @@ export default {
                                 this.$set(v, 'id', v.getID()) 
                                 return v
                             })
+                        case 'floorSelect': 
+                            if(this.floor_record == 0){
+                                    this.$store.dispatch('building/setFloors')
+                                    this.$store.dispatch('record/saveFloorRecord',1)
+                            }
+                            return this.buildingfloors.map(v => {
+                                this.$set(v, 'value', v.getID()) 
+                                this.$set(v, 'label', v.getName()) 
+                                this.$set(v, 'id', v.getID()) 
+                                return v
+                            })
                         case 'addressdeviceSelect':
                             if(this.device_record == 0){
-                                    this.$store.dispatch('building/setDevice')
+                                  this.$store.dispatch('building/setDevice')
                                     this.$store.dispatch('record/saveDeviceRecord',1)
                             }
                             return this.buildingdevices.filter(item => 
@@ -780,7 +807,6 @@ export default {
         },
         //子傳父窗口
         handleClickOption(status){
-            console.log('handleClickOption',status)
             if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                 this.temp['checkStartDate'] = this.rangevalue[0]
                 this.temp['checkEndDate'] = this.rangevalue[1]

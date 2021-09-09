@@ -1,7 +1,12 @@
 <template>
   <div class="maintenancePlanAdd">
-    <el-row :gutter="16" class="row">
-      <el-col :xs="24" :sm="24" :md="24" :lg="formvalue"
+    <el-row :gutter="16" class="row" style="height:620px">
+      <el-col :xs="24" :sm="24" :md="24" :lg="canvasvalue" style="overflow:auto">
+        <div ref="canvasdiv" class="canvasdiv" >
+          <canvas id="canvas"></canvas>
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="24" :md="24" :lg="formvalue" style="height:100%;overflow:auto"
       >
         <div>
           <el-form :inline="this.sidebar.opened === true"  class="form-inline" label-position="left">
@@ -45,17 +50,29 @@
                   type="warning"
                   center
                   :closable="false"
-                  show-icon>
+                  show-icon
+                  style="margin-bottom:5px">
                 </el-alert>
-                <el-form-item label="圖層標題" >
+                <el-form-item label="名稱" label-width="90px" >
                   <el-input v-model="objectName"  
-                  placeholder="請輸入標題" 
+                  placeholder="請輸入名稱" 
                   @input="sendLabelChange"
                   :disabled="isTextBox == null"
                   ></el-input>
                 </el-form-item>
-                <el-form-item label="區塊類型" >
-                   <el-select v-model="blockType" placeholder="請選擇" @change="sendBlockChange"
+                <el-form-item v-if="isImage == true" label="點位"  label-width="90px" >
+                  <el-select  v-model="addressId" placeholder="請選擇選位" @change="sendDeviceChange" filterable>
+                    <el-option
+                      v-for="(item,index) in devicearray"
+                      :key="index"
+                      :label="item.getLinkType().getSelectName()+'-'+item.getOnlyName()"
+                      :value="item.getID()"
+                      :disabled="item.SystemUsed()">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="區塊" label-width="90px" >
+                   <el-select v-model="blockType" placeholder="請選擇區塊類型" @change="sendBlockChange"
                    :disabled="isTextBox == null">
                     <el-option
                       v-for="item in options"
@@ -65,50 +82,39 @@
                     </el-option>
                   </el-select>
                 </el-form-item>
-                <!-- <el-form-item v-if="isImage == true" label="點位">
-                   <el-select v-model="addressId" placeholder="請選擇" @change="sendDeviceChange" filterable>
-                    <el-option
-                      v-for="(item,index) in devicearray"
-                      :key="index"
-                      :label="item.getLinkType().getSelectName()+'-'+item.getOnlyName()"
-                      :value="item.getID()"
-                      :disabled="item.SystemUsed()">
-                    </el-option>
-                  </el-select>
-                </el-form-item> -->
-                <el-form-item v-if="isTextBox == true" label="字體大小">
+                <el-form-item v-if="isTextBox == true" label="字體大小" label-width="90px" >
                   <el-input-number v-model="fontsize" controls-position="right" :min="8" :max="72"
                   style="width:100%" @change="changeAttributes('fontsize')"></el-input-number>
                 </el-form-item>
-                <el-form-item v-if="isTextBox == false" label="透明度" >
+                <el-form-item v-if="isTextBox == false" label="透明度" label-width="90px" >
                   <el-input-number v-model="opacity" controls-position="right" :min="0" :max="100"
                   style="width:100%" @change="changeAttributes('opacity')"></el-input-number>
                 </el-form-item>
-                <el-form-item v-if="isTextBox == false" label="邊框線條" >
+                <el-form-item v-if="isTextBox == false" label="邊框線條" label-width="90px" >
                   <el-select v-model="strokeDash"  placeholder="請選擇" @change="changeAttributes('strokeDash')">
                     <el-option label="無邊框" value="-1"></el-option>
                     <el-option label="實心線" value="0"></el-option>
                     <el-option label="虛線" value="1"></el-option>
                   </el-select>
                 </el-form-item>
-                <el-form-item v-if="isTextBox == false" label="邊框寬度" >
+                <el-form-item v-if="isTextBox == false" label="邊框寬度" label-width="90px" >
                   <el-input-number 
                   v-model="strokeWidth" 
                   controls-position="right" :min="0" :max="10"
                   style="width:100%"
                   @change="changeAttributes('strokeWidth')"></el-input-number>
                 </el-form-item>
-                <el-form-item v-if="isTextBox == true" label="字體顏色" >
+                <el-form-item v-if="isTextBox == true" label="字體" label-width="90px" >
                   <el-color-picker v-model="fontcolor" 
                   show-alpha 
                   :predefine="predefineColors" @change="changeAttributes('fontcolor')"></el-color-picker>
                 </el-form-item>
-                <el-form-item v-if="isTextBox == false" label="填充顏色" >
+                <el-form-item v-if="isTextBox == false" label="填充" label-width="90px" >
                   <el-color-picker v-model="fillcolor" 
                   show-alpha 
                   :predefine="predefineColors" @change="changeAttributes('fillcolor')"></el-color-picker>
                 </el-form-item>
-                <el-form-item v-if="isTextBox == false" label="邊框顏色" >
+                <el-form-item v-if="isTextBox == false" label="邊框" label-width="90px" >
                   <el-color-picker v-model="strokecolor" 
                   show-alpha 
                   :predefine="predefineColors" @change="changeAttributes('strokecolor')"></el-color-picker>
@@ -116,12 +122,27 @@
           </el-form>
         </div>
       </el-col>
-      <el-col :xs="24" :sm="24" :md="24" :lg="canvasvalue">
-        <div ref="canvasdiv" class="canvasdiv" >
-          <canvas id="canvas"></canvas>
-        </div>
-      </el-col>
     </el-row>
+
+    <div v-if="infovisible" id="addressInfo" class="addressInfo" draggable="true" :style="{ left: addressDiv.x +'px'  , top:addressDiv.y +'px'}">
+      <el-row style="background-color:gray">
+        <span>點位資訊</span>
+        <i class="el-icon-circle-close" style="float:right;" @click="disableVisible"></i>
+      </el-row>
+      
+      <el-table
+        style="width: 100%"
+        :data="getValues"
+        :show-header="false"
+      >
+        <el-table-column
+          v-for="(item, index) in getHeaders"
+          :key="index"
+          :prop="item"
+        >
+        </el-table-column>
+      </el-table>
+    </div>
   </div>
 </template>
 
@@ -146,7 +167,13 @@ export default {
     actionObj:{
       type: Object,
       default: null
-    }
+    },
+    pointarray: {
+      type: Array,
+      default: function() {
+        return []
+      }
+    },
   },
   computed: {
      ...mapGetters([
@@ -158,15 +185,23 @@ export default {
       if (this.sidebar.opened === true) {
         return 24
       } else {
-        return 3
+        return 4
       }
     },
     canvasvalue() {
       if (this.sidebar.opened === true) {
         return 24
       } else {
-        return 21
+        return 20
       }
+    },
+    getHeaders() {
+      return this.addressInfo.reduce((pre, cur, index) => pre.concat(`value${index}`), ['title'])
+    },
+    getValues() {
+      return this.headers.map(item => {
+        return this.addressInfo.reduce((pre, cur, index) => Object.assign(pre, {['value' + index]: cur[item.prop]}), {'title': item.label,});
+      })
     }
   },
   data() {
@@ -263,15 +298,31 @@ export default {
       state:'', //狀態
       undo:[], //之前的步驟
       redo:[],
+      //點位資訊
+      addressDiv:{x:0,y:0},
+      infovisible:false,
+      headers: [
+        {
+          prop: 'date',
+          label: '日期',
+        },
+        {
+          prop: 'name',
+          label: '姓名',
+        },
+        {
+          prop: 'address',
+          label: '地址',
+        },
+      ],
+      addressInfo:[{
+        date: '2016-05-02',
+        name: '王小虎',
+        address: '123'
+      }]
     }
   },
   watch: {
-      buildingdevices:{
-          handler:async function(){
-            this.devicearray = this.buildingdevices.map(item=>{ return item.clone(item) })
-          },
-          immediate:true
-      },
       type:{
           handler:async function(){
             if(this.type === 'edit'){
@@ -302,8 +353,8 @@ export default {
   mounted() {
     this.canvas = new fabric.Canvas("canvas")
     //this.$store.state.graphic.json  this.$refs.canvasdiv.clientWidth
-    this.canvas.setWidth(1550)
-    this.canvas.setHeight(800)
+    this.canvas.setWidth(1500)
+    this.canvas.setHeight(600)
     this.canvas.skipTargetFind = true
     this.canvas.selection = false
     this.canvas.selectionBorderColor ="red"
@@ -370,6 +421,7 @@ export default {
         this.mousewheel(e)
       }
     }
+    
   },
   methods: {
     //父元件傳來的事件
@@ -518,6 +570,9 @@ export default {
     },
     //選取 刪除物件
     selectioncreatedandupdated(e){ //畫面顯示選取到的物件的屬性狀況
+      console.log(e)
+      this.addressDiv = {x:e.e.offsetX,y:e.e.offsetY}
+      // this.infovisible = true
       var items = this.canvas.getActiveObjects()
       this.isImage = false
       this.isTextBox = null
@@ -551,6 +606,7 @@ export default {
           this.srcId = items[0].srcId
           this.addressId = items[0].addressId
         }
+
       }
       items.forEach(item=>{
         item.set({borderColor:'#fbb802',cornerColor:'#fbb802',cornerSize: 10,transparentCorners: false})
@@ -1337,7 +1393,9 @@ export default {
         easing: fabric.util.ease.easeInSine
       })
     },
-    
+    disableVisible(){
+      this.infovisible = false
+    }
   }
 }
 </script>
@@ -1353,7 +1411,7 @@ export default {
   height: 100%;
 
   .canvasdiv{
-    width: 1550px;
+    width: 1500px;
     margin: auto;
     text-align: center;
     margin-top: 10px;
@@ -1429,10 +1487,30 @@ input {
     background: rgb(194, 193, 193);
   }
 }
+
 .dialog{
   margin-top: 307px;
   .el-dialog{
     margin: 0px 0px 0px 0px;
+  }
+}
+
+.addressInfo{
+  position: absolute;
+  z-index:99;
+  border: 1px dotted black;
+  text-align: center;
+  cursor: move;
+  span{
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 18px;
+    width: 100%;
+  }
+  i{
+    font-size: 20px;
+    cursor:pointer;
+    float: right;
   }
 }
 </style>

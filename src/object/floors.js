@@ -121,6 +121,7 @@ class Floors extends Parent {
     }
     static async get (){
         var data = await api.building.apiGetFloors().then(response => {
+            console.log(JSON.stringify(response))
             var result = response.result.sort((x,y) => x.sort - y.sort)
             .map(item=>{ return new Floors(item)})
             return result
