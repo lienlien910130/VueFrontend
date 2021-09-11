@@ -7,8 +7,8 @@ class Account extends Parent {
     constructor (data) {
         super(data)
         const { account,  password, name, description, status, removable, linkRoles,linkBuildings } = data
-        var roles = linkRoles.map(item=>{ return new Role(item)})
-        var buildings = linkBuildings.map(item=>{ return new Building(item)})
+        var roles = linkRoles !== undefined ? linkRoles.map(item=>{ return new Role(item)}) : []
+        var buildings = linkBuildings !== undefined ? linkBuildings.map(item=>{ return new Building(item)}) : []
         this.account = account
         this.password = password
         this.name = name 

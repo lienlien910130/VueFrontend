@@ -67,7 +67,8 @@ const state = {
   menuNoLevel:[],
   routes: [],
   addRoutes: [],
-  needreload: false
+  needreload: false,
+  navbarButton:false
 }
 
 const mutations = {
@@ -89,6 +90,9 @@ const mutations = {
   },
   SET_NEEDRELOAD: (state, needreload) => {
     state.needreload = needreload
+  },
+  SET_NAVBARBUTTONVISIBLE: (state, isvisible) => {
+    state.navbarButton = isvisible
   }
 }
 
@@ -146,6 +150,12 @@ const actions = {
   setneedreload({ commit }, needreload) { 
     return new Promise((resolve, reject) => {
       commit('SET_NEEDRELOAD', needreload)
+      resolve()
+    })
+  },
+  setnavbarButton({ commit }, isVisible) { 
+    return new Promise((resolve, reject) => {
+      commit('SET_NAVBARBUTTONVISIBLE', isVisible)
       resolve()
     })
   },

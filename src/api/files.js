@@ -57,6 +57,7 @@ const files = {
     apiPostGraphicFile(floorId,data){ 
         return req('upload','/drawingControl/'+this.getUid()+'/buildings/'+this.getBid()+'/floors/'+floorId+'/supervisoryControlSystems/file', null,
         data) },
+    
 
     //共用方法 刪除/下載
     apiDeleteFile(data){ return req('post','/public/fileDelete', null, data) },

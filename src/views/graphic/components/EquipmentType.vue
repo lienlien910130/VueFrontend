@@ -98,7 +98,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .leftcontent{
-    height:400px;
+    height:500px;
     overflow: auto;
     width: 100%;
     

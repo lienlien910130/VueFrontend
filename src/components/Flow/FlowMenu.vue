@@ -1,6 +1,15 @@
 <template>
     <div class="flow-menu" ref="tool">
-        <div v-for="menu  in  menuList" :key="menu.id">
+        <div v-for="menu  in  processArray" :key="menu.id" style="height:300px;overflow:auto">
+            <span class="ef-node-pmenu" @click="menu.open = !menu.open">
+              <i :class="{'el-icon-caret-bottom': menu.open,'el-icon-caret-right': !menu.open}"></i>&nbsp;{{menu.name}}</span>
+            <ul v-show="menu.open" class="ef-node-menu-ul">
+                <li v-for="subMenu in menu.children" class="ef-node-menu-li" :key="subMenu.id" >
+                    {{subMenu.name}}
+                </li>
+            </ul>
+        </div>
+        <div v-for="menu  in  menuArray" :key="menu.id">
             <span class="ef-node-pmenu" @click="menu.open = !menu.open">
               <i :class="{'el-icon-caret-bottom': menu.open,'el-icon-caret-right': !menu.open}"></i>&nbsp;{{menu.name}}</span>
             <ul v-show="menu.open" class="ef-node-menu-ul">
@@ -24,6 +33,99 @@
 
     export default {
         name:'FlowMenu',
+        props:{
+            processArray: {
+                type: Array,
+                default: function () {
+                    return [
+                        {
+                            id: 'p',
+                            type: 'group',
+                            name: '流程圖清單',
+                            ico: 'el-icon-video-play',
+                            open: true,
+                            //children 還有下一層是該班別的所有流程圖
+                            children: [
+                                {id:'1a23',name:'滅火班'}, {id:'5456',name:'避難引導班'}
+                            ]
+                        }
+                        
+                    ]
+                }
+            },
+            menuArray: {
+                type: Array,
+                default: function () {
+                    return [
+                    {
+                        id: '1',
+                        type: 'group',
+                        name: '節點資料',
+                        ico: 'el-icon-video-play',
+                        open: true,
+                        children: [
+                            {
+                                id: '11',
+                                type: 'start',
+                                name: '起點',
+                                ico: 'el-icon-bell',
+                                style: {}
+                            }, {
+                                id: '12',
+                                type: 'voiceBroadcast',
+                                name: '語音廣播',
+                                ico: 'el-icon-mic',
+                                style: {}
+                            }, {
+                                id: '13',
+                                type: 'mobilePush',
+                                name: '手機推播',
+                                ico: 'el-icon-mobile-phone',
+                                style: {}
+                            }, {
+                                id: '14',
+                                type: 'linePush',
+                                name: 'Line推播',
+                                ico: 'el-icon-chat-line-round',
+                                style: {}
+                            }, {
+                                id: '15',
+                                type: 'messagePush',
+                                name: '簡訊推播',
+                                ico: 'el-icon-message',
+                                style: {}
+                            }, {
+                                id: '16',
+                                type: 'optionEvents',
+                                name: '選項',
+                                ico: 'el-icon-more-outline',
+                                style: {}
+                            },
+                            {
+                                id: '17',
+                                type: 'otherflow',
+                                name: '流程圖',
+                                ico: 'el-icon-paperclip',
+                                style: {}
+                            }, {
+                                id: '18',
+                                type: 'countDown',
+                                name: '倒數',
+                                ico: 'el-icon-time',
+                                style: {}
+                            }, {
+                                id: '19',
+                                type: 'end',
+                                name: '結束',
+                                ico: 'el-icon-bangzhu',
+                                style: {}
+                            }
+                        ]
+                    }
+                    ]
+                }
+            },
+        },
         data() {
             return {
                 activeNames: '1',
@@ -40,74 +142,6 @@
                 },
                 // 默认打开的左侧菜单的id
                 defaultOpeneds: ['1'],
-                menuList: [
-                    {
-                        id: '1',
-                        type: 'group',
-                        name: '節點資料',
-                        ico: 'el-icon-video-play',
-                        open: true,
-                        children: [
-                            {
-                                id: '11',
-                                type: 'start',
-                                name: '起點',
-                                ico: 'el-icon-bell',
-                                // 自定义覆盖样式
-                                style: {}
-                            }, {
-                                id: '12',
-                                type: 'voiceBroadcast',
-                                name: '語音廣播',
-                                ico: 'el-icon-mic',
-                                // 自定义覆盖样式
-                                style: {}
-                            }, {
-                                id: '13',
-                                type: 'mobilePush',
-                                name: '手機推播',
-                                ico: 'el-icon-mobile-phone',
-                                // 自定义覆盖样式
-                                style: {}
-                            }, {
-                                id: '14',
-                                type: 'linePush',
-                                name: 'Line推播',
-                                ico: 'el-icon-chat-line-round',
-                                // 自定义覆盖样式
-                                style: {}
-                            }, {
-                                id: '15',
-                                type: 'messagePush',
-                                name: '簡訊推播',
-                                ico: 'el-icon-message',
-                                // 自定义覆盖样式
-                                style: {}
-                            }, {
-                                id: '16',
-                                type: 'optionEvents',
-                                name: '選項',
-                                ico: 'el-icon-more-outline',
-                                // 自定义覆盖样式
-                                style: {}
-                            }, {
-                                id: '17',
-                                type: 'countDown',
-                                name: '倒數',
-                                ico: 'el-icon-time',
-                                // 自定义覆盖样式
-                                style: {}
-                            }, {
-                                id: '18',
-                                type: 'end',
-                                name: '結束',
-                                ico: 'el-icon-bangzhu',
-                                // 自定义覆盖样式
-                                style: {}
-                            }
-                        ]
-                    }
-                ],
                 nodeMenu: {}
             }
         },
@@ -132,8 +166,8 @@
         methods: {
             // 根据类型获取左侧菜单对象
             getMenuByType(type) {
-                for (let i = 0; i < this.menuList.length; i++) {
-                    let children = this.menuList[i].children;
+                for (let i = 0; i < this.menuArray.length; i++) {
+                    let children = this.menuArray[i].children;
                     for (let j = 0; j < children.length; j++) {
                         if (children[j].type === type) {
                             return children[j]

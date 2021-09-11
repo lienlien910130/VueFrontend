@@ -79,7 +79,8 @@
                     item.format =='roleSelect' ||  
                     item.format =='buildingSelect' || 
                     item.format == 'floorOfHouseSelect'
-                    || item.format =='userInfo' || item.format == 'maintainListSelect' || item.format == 'usageOfFloorUserInfo' "
+                    || item.format =='userInfo' || item.format == 'maintainListSelect' || item.format == 'usageOfFloorUserInfo' ||
+                    item.format == 'processList' "
                     v-model="temp[item.prop]"
                     filterable
                     multiple
@@ -101,7 +102,7 @@
                         >
                         </el-option>  
                 </el-select>
-                <!-- 點位選擇樓層 -->
+                <!-- 點位選擇樓層-->
                 <el-select
                     v-else-if="item.format =='floorSelect'"
                     v-model="temp[item.prop]"
@@ -113,6 +114,22 @@
                         v-for="(obj,index) in selectfilter(item.format)"
                         :key="index"
                         :label="obj.label"
+                        :value="obj.id"
+                        >
+                        </el-option>  
+                </el-select>
+                <!-- 班別選擇預設流程圖 -->
+                <el-select
+                    v-else-if="item.format =='contingencyProcessSelect' || item.format == 'marshallingMgmtSelect' "
+                    v-model="temp[item.prop]"
+                    filterable
+                    placeholder="請選擇"
+                    style="width:100%"
+                    >
+                        <el-option
+                        v-for="(obj,index) in selectfilter(item.format)"
+                        :key="index"
+                        :label="obj.name"
                         :value="obj.id"
                         >
                         </el-option>  
@@ -138,20 +155,20 @@
                         >
                         </el-option>  
                 </el-select>
-                <!-- 管委會的住戶選擇 -->
+                <!-- 管委會的住戶選擇/消防編組細項選擇角色的帳號 -->
                 <el-select
-                    v-else-if="item.format =='commitUserInfo'"
+                    v-else-if="item.format =='commitUserInfo' || item.format == 'accountSelect'"
                     v-model="temp[item.prop]"
                     filterable
                     multiple
-                    :multiple-limit="1"
+                    :multiple-limit="item.format =='commitUserInfo' ? 1 : 0 "
                     value-key="id"
                     placeholder="請選擇"
                     style="width:100%"
                     :disabled="disable"
                     >
                         <el-option
-                        v-for="(obj,index) in commitUserInfoArray"
+                        v-for="(obj,index) in item.format =='commitUserInfo' ? commitUserInfoArray : accountArray"
                         :key="index"
                         :label="obj.getName()"
                         :value="obj"
@@ -313,19 +330,9 @@
                 type="textarea"
                 show-word-limit>
                 </el-input>
-
                 <span v-else-if="item.format =='inspectionLackStatus'">
                     請至維護保養修改進度
                 </span>
-
-                <!-- <div v-else-if="item.format =='openmaintain' ">
-                    <Table 
-                        :list-query-params.sync="listQueryParams"
-                        v-bind="tableAttrs" 
-                        v-on="tableEvent">
-                    </Table>  
-                </div> -->
-                
                 <el-input v-else
                 v-model="temp[item.prop]" 
                 :maxlength="item.maxlength"
@@ -360,6 +367,7 @@ import computedmixin from '@/mixin/computedmixin'
 import Setting from '@/object/setting'
 import { changeDeviceFullType } from '@/utils/index'
 import constant from '@/constant/index'
+import { SelfDefenseFireMarshalling } from '@/object'
 
 export default {
     name:'DialogForm',
@@ -565,6 +573,10 @@ export default {
                             return this.deviceType
                         case 'address':
                             return constant.AreaCode
+                        case 'contingencyProcessSelect': 
+                            return this.temp['linkContingencyProcess']
+                        case 'marshallingMgmtSelect':
+                            return this.selectData
                     }
                 }else{
                     return ""
@@ -590,11 +602,12 @@ export default {
             disable:true,
             //originalProtocolMode:'',
             originalInternet:null,
-            commitUserInfoArray:[]
+            commitUserInfoArray:[],
+            accountArray:[]
         }
     },
     methods: {
-        init(){
+        async init(){
             // window.addEventListener("message", this.receiveMessage, false)
             if(this.dialogData.length){
                 this.activeName = this.dialogData[0].getID()
@@ -604,16 +617,13 @@ export default {
                         this.rangevalue = [this.dialogData[0]['checkStartDate'],
                         this.dialogData[0]['checkEndDate']]
                     }
-                }
-                if(this.title == 'devicetype'){
+                }else if(this.title == 'devicetype'){
                     var fullType = this.dialogData[0]['fullType']
                     var value = changeDeviceFullType(fullType,true,false)
                     this.fulltypevalue = [value,fullType]
-                }
-                if(this.title == 'deviceAddressManagement' || this.title == 'devicePLCAddressManagement'){
+                }else if(this.title == 'deviceAddressManagement' || this.title == 'devicePLCAddressManagement'){
                     this.originalProtocolMode = JSON.parse(JSON.stringify(this.temp['protocolMode']))
-                }
-                if(this.title == 'equipment'){
+                }else if(this.title == 'equipment'){
                     var type = this.temp.getLinkType().getFullType()
                     if(type == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
                     type == 'nDeviceTypeList.OE.OE_ProgrammableLogicController'){
@@ -621,8 +631,7 @@ export default {
                             JSON.parse(JSON.stringify(this.temp['internetNumber'])) : null
                         this.disable = false
                     }
-                }
-                if(this.title == 'committee'){
+                }else if(this.title == 'committee'){
                     var usage = this.temp.getLinkUsageOfFloors()
                     var data = []
                     if(usage.length){
@@ -640,6 +649,19 @@ export default {
                         const set = new Set()
                         this.commitUserInfoArray = data.filter(item => !set.has(item.id) ? set.add(item.id) : false)
                     }   
+                }else if(this.title == 'selfDefenseFireMarshallingMgmt'){
+                    var roles = this.temp.getLinkRole()
+                    var data = []
+                    if(roles.length){
+                        for(let item of roles){
+                            var account = await SelfDefenseFireMarshalling.getAccountByRole(item.id)
+                            account.forEach(acc => {
+                                data.push(acc)
+                            })
+                        }
+                        const set = new Set()
+                        this.accountArray = data.filter(item => !set.has(item.id) ? set.add(item.id) : false)
+                    }
                 }
             }
             this.$nextTick(() => {
@@ -665,7 +687,8 @@ export default {
         // 設備清單-設備種類選項
         // 管委會-選擇住戶
         // 點位-指定設備
-        checkMode(value,format){
+        // 消防編組細項-選擇角色時要撈出account清單
+        async checkMode(value,format){
             if(value.length){
                if(this.title == 'equipment' && format == 'deviceTypeSelect'){
                     if(value[0].getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
@@ -680,7 +703,6 @@ export default {
                     this.temp['internet'] = value[0].getInternetNumber()
                }
                else if(this.title == 'committee' && format == 'floorOfHouseSelect'){
-                    this.disable = false
                     var data = []
                     value[0].getLinkUsers().forEach(element => {
                         data.push(element)
@@ -690,6 +712,19 @@ export default {
                     })
                     const set = new Set()
                     this.commitUserInfoArray = data.filter(item => !set.has(item.id) ? set.add(item.id) : false)
+                    this.disable = false
+               }
+               else if(this.title == 'selfDefenseFireMarshallingMgmt' && format == 'roleSelect'){
+                    var data = []
+                    for(let item of value){
+                        var account = await SelfDefenseFireMarshalling.getAccountByRole(item.id)
+                        account.forEach(acc => {
+                            data.push(acc)
+                        })
+                    }
+                    const set = new Set()
+                    this.accountArray = data.filter(item => !set.has(item.id) ? set.add(item.id) : false)
+                    this.disable = false
                }
             }else{
                 if(this.title == 'equipment' && format == 'deviceTypeSelect'){
@@ -704,6 +739,10 @@ export default {
                     this.disable = true
                     this.temp['linkUsers'] = []
                 }
+                else if(this.title == 'selfDefenseFireMarshallingMgmt' && format == 'roleSelect'){
+                    this.disable = true
+                    this.temp['linkAccountList'] = []
+               }
             }
         },
         changeprotocolMode(value){

@@ -6,7 +6,7 @@ import files from '@/api/files'
 import report from '@/api/report'
 import setting from '@/api/setting'
 import authority from '@/api/authority'
-import emergency from '@/api/emergency'
+import selfDefenseFireMarshalling from '@/api/selfDefenseFireMarshalling'
 
 export default {    
   user,
@@ -16,5 +16,5 @@ export default {
   report,
   setting,
   authority,
-  emergency
+  selfDefenseFireMarshalling
 }

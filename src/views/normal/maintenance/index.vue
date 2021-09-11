@@ -239,7 +239,7 @@ export default {
                 this.maintainList = content
                 this.dialogData.push(content)
                 this.dialogConfig = this.tableConfig
-                await this.getMaintain()
+                //await this.getMaintain()
                 this.dialogButtonsName = [
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
@@ -337,7 +337,7 @@ export default {
             }
         },
         async handleMaintain(index, content){
-            console.log(this.isTable,index,content)
+            console.log(index,content)
             this.dialogData = []
             this.dialogTitle = 'maintain'
             this.dialogConfig = MaintainManagement.getTableConfig()
@@ -469,24 +469,7 @@ export default {
                 }else{
                  this.$message.error('系統錯誤')
                 }
-            }
-            // else if(index === 'selectData'){
-            //     switch (content) {
-            //         case 'deviceSelect':
-            //             this.$store.dispatch('building/setbuildingdevices',await Device.get())   
-            //             break;
-            //         case 'contactunitSelect':
-            //             this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())    
-            //             break;
-            //         case 'inspectionSelect':
-            //             this.dialogSelect = new Array(await MaintainManagementList.getAllLack())
-            //             break;
-            //         case 'setting':
-            //             this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
-            //             break;
-            //     }
-            // }
-            else if(index === 'clickPagination'){
+            }else if(index === 'clickPagination'){
                 this.tablelistQueryParams = content
                 await this.getMaintain()
             }

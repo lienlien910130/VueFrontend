@@ -9,6 +9,7 @@ const getters = {
   menuNoLevel: state => state.permission.menuNoLevel,
   needreload: state => state.permission.needreload,
   permission_routes: state => state.permission.routes,
+  navbarButton: state => state.permission.navbarButton,
 
   token: state => state.user.token,
   level: state => state.user.level,

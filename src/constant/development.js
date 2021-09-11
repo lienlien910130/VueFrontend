@@ -18,40 +18,52 @@ export default {
         {id:'14',name:'待確認14',type:'x',sort:'14'}
     ],
     Equipment:[
-        {id:'1',name:'火災表示',imgSrc:require("../assets/equipment/1.png")},
+        //滅火設備
         {id:'2',name:'室內消防栓設備',imgSrc:require("../assets/equipment/2.png")},
+        {id:'9',name:'室外消防栓設備',imgSrc:require("../assets/equipment/9.png")},
         {id:'3',name:'自動撒水設備',imgSrc:require("../assets/equipment/3.png")},
-        {id:'4',name:'水霧滅火設備',imgSrc:require("../assets/equipment/4.png")},
         {id:'5',name:'泡沫滅火設備',imgSrc:require("../assets/equipment/5.png")},
+        {id:'4',name:'水霧滅火設備',imgSrc:require("../assets/equipment/4.png")},
         {id:'6',name:'惰性氣體滅火設備',imgSrc:require("../assets/equipment/6.png")},
         {id:'7',name:'鹵化烴滅火設備',imgSrc:require("../assets/equipment/7.png")},
         {id:'8',name:'乾粉滅火設備',imgSrc:require("../assets/equipment/8.png")},
-        {id:'9',name:'室外消防栓設備',imgSrc:require("../assets/equipment/9.png")},
-        {id:'10',name:'偵煙式探測器',imgSrc:require("../assets/equipment/10.png")},
-        {id:'11',name:'光電式分離型探測器',imgSrc:require("../assets/equipment/11.png")},
-        {id:'12',name:'高壓氣體慶儲存場所',imgSrc:require("../assets/equipment/12.png")},
-        {id:'13',name:'公共危險物品儲存場所',imgSrc:require("../assets/equipment/13.png")},
-        {id:'14',name:'感熱式探測器',imgSrc:require("../assets/equipment/14.png")},
-        {id:'15',name:'火焰式探測器',imgSrc:require("../assets/equipment/15.png")},
-        {id:'16',name:'火警發信機',imgSrc:require("../assets/equipment/16.png")},
+        //報警設備 
+        {id:'33',name:'火警授信總機',imgSrc:require("../assets/equipment/33.png")},
         {id:'17',name:'瓦斯漏氣檢知器',imgSrc:require("../assets/equipment/17.png")},
-        {id:'18',name:'緊急電話',imgSrc:require("../assets/equipment/18.png")},
         {id:'19',name:'緊急廣播設備',imgSrc:require("../assets/equipment/19.png")},
-        {id:'20',name:'避難引導燈具',imgSrc:require("../assets/equipment/20.png")},
-        {id:'21',name:'排煙口',imgSrc:require("../assets/equipment/21.png")},
-        {id:'22',name:'加壓送水裝置',imgSrc:require("../assets/equipment/22.png")},
-        {id:'23',name:'防火門',imgSrc:require("../assets/equipment/23.png")},
+        {id:'16',name:'火警發信機',imgSrc:require("../assets/equipment/16.png")},
+        //防火設備
         {id:'24',name:'防火捲門',imgSrc:require("../assets/equipment/24.png")},
+        {id:'23',name:'防火門',imgSrc:require("../assets/equipment/23.png")},
+        //防煙設備
         {id:'25',name:'防煙垂壁',imgSrc:require("../assets/equipment/25.png")},
-        {id:'26',name:'特別安全梯排煙口進風口',imgSrc:require("../assets/equipment/26.png")},
+        //建築設備-少機械換氣/空調/電扶梯
+        {id:'29',name:'緊急升降機',imgSrc:require("../assets/equipment/29.png")},
+        //搶救設備-少消防專用蓄水池/緊急發電機
         {id:'27',name:'自然排煙窗',imgSrc:require("../assets/equipment/27.png")},
-        {id:'28',name:'防火閘門',imgSrc:require("../assets/equipment/28.png")},
-        {id:'29',name:'緊急昇降機',imgSrc:require("../assets/equipment/29.png")},
         {id:'30',name:'連結送水口',imgSrc:require("../assets/equipment/30.png")},
         {id:'31',name:'緊急電源插座設備',imgSrc:require("../assets/equipment/31.png")},
         {id:'32',name:'無線電通信輔助設備',imgSrc:require("../assets/equipment/32.png")},
-        {id:'33',name:'防災中心',imgSrc:require("../assets/equipment/33.png")},
+        //避難設備-少緊急照明
+        {id:'20',name:'避難引導燈具',imgSrc:require("../assets/equipment/20.png")},
+        //其他設備-少緊急門鎖/監視攝影機/PLC
+        
+
+        {id:'1',name:'火災表示',imgSrc:require("../assets/equipment/1.png")},
+        {id:'12',name:'高壓氣體慶儲存場所',imgSrc:require("../assets/equipment/12.png")},
+        {id:'13',name:'公共危險物品儲存場所',imgSrc:require("../assets/equipment/13.png")},
+        {id:'18',name:'緊急電話',imgSrc:require("../assets/equipment/18.png")},
+        {id:'21',name:'排煙口',imgSrc:require("../assets/equipment/21.png")},
+        {id:'22',name:'加壓送水裝置',imgSrc:require("../assets/equipment/22.png")},
+        {id:'26',name:'特別安全梯排煙口進風口',imgSrc:require("../assets/equipment/26.png")},
+        {id:'28',name:'防火閘門',imgSrc:require("../assets/equipment/28.png")},
         {id:'34',name:'排煙機',imgSrc:require("../assets/equipment/34.png")},
+        {id:'10',name:'偵煙式探測器',imgSrc:require("../assets/equipment/10.png")},
+        {id:'11',name:'光電式分離型探測器',imgSrc:require("../assets/equipment/11.png")},
+        {id:'14',name:'感熱式探測器',imgSrc:require("../assets/equipment/14.png")},
+        {id:'15',name:'火焰式探測器',imgSrc:require("../assets/equipment/15.png")},
+        
+
     ],
     AreaCode:[
         {

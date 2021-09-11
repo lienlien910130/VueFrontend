@@ -19,6 +19,7 @@ import Role from "./role";
 import Setting from "./setting";
 import UsageOfFloor from "./usageOfFloor";
 import User from "./user";
+import { SelfDefenseFireMarshalling, SelfDefenseFireMarshallingMgmt, ContingencyProcess } from "./selfDefenseFireMarshalling";
 
 export{
     AccessAuthority,
@@ -41,5 +42,8 @@ export{
     Role,
     Setting,
     UsageOfFloor,
-    User
+    User,
+    SelfDefenseFireMarshalling,
+    SelfDefenseFireMarshallingMgmt,
+    ContingencyProcess
 }

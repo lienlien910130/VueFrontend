@@ -140,7 +140,7 @@
                             return v
                         })
                     }else{
-                        return ""
+                        return []
                     }
                 }  
             }

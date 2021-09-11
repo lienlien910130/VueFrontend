@@ -402,15 +402,6 @@ export default {
     overflow-y:auto;
   }
 
-  .dashboard-wrapper{
-    background: #fff;
-    padding: 5px 16px 0;
-    margin-bottom: 32px;
-    height: 450px;
-    overflow-x:hidden;
-    overflow-y:auto;
-  }
-
 
 .infinite-list-wrapper {
     height:1000px; // 1. 指定高度

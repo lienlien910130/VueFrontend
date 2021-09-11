@@ -6,6 +6,7 @@ import Device from './device'
 import Contactunit from './contactunit'
 import InspectionLacks from './inspectionLacks'
 
+//大項
 class MaintainManagementList extends Parent {
  
     constructor (data) {
@@ -189,6 +190,7 @@ class MaintainManagementList extends Parent {
     }
 }
 
+//細項
 class MaintainManagement extends Parent {
     constructor (data) {
         super(data)

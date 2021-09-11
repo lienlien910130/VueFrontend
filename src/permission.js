@@ -18,7 +18,8 @@ router.beforeEach(async(to, from, next) => {
   document.title = `${to.meta.title == null ? `載入中` : to.meta.title } - 智慧消防管理平台`
   const hasToken = getToken()
   const buildingID = getBuildingid()
-  
+  await store.dispatch('permission/setnavbarButton', to.name == 'process') //為了在navbar顯示返回的button
+  var toMenu = to.name
     if (hasToken) { //已經登入過了
       if (to.path === '/login') {
         // if is logged in, redirect to the home page
@@ -31,7 +32,8 @@ router.beforeEach(async(to, from, next) => {
             await store.dispatch('permission/setmenu',await  Menu.get())
             await store.dispatch('permission/setneedreload', false)
           }
-          var menuarray = store.getters.menuNoLevel.filter(item=> item.code == to.name)
+          if(to.name == 'process'){ toMenu = 'selfDefenseFireMarshalling'  }
+          var menuarray = store.getters.menuNoLevel.filter(item=> item.code == toMenu)
           if(menuarray.length !== 0){
             await store.dispatch('permission/setmenuId', menuarray[0].getID()) //儲存要進入的頁面ID
             await store.dispatch('permission/setmenuAuthority', menuarray[0].getAccessAuthorities()) //儲存要進入的頁面權限

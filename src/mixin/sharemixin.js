@@ -51,7 +51,9 @@ export default {
           handler:async function(){
               if(this.buildingid !== undefined){
                   await this.init()
-                  this.device == 'desktop' ? this.changeTable(true) : this.changeTable(false)
+                  this.device != 'desktop' ? this.changeTable(false) : 
+                  this.title == 'maintain' || this.title == 'selfDefenseFireMarshalling' ? 
+                    this.changeTable(false) : this.changeTable(true)
               }
           },
           immediate:true
@@ -64,7 +66,9 @@ export default {
         // },
         device:{
             handler:async function(){
-                this.device == 'desktop' ? this.changeTable(true) : this.changeTable(false)
+                console.log(this.title)
+                this.device != 'desktop' ? this.changeTable(false) : 
+                    this.changeTable(true)
             }
         }
     },

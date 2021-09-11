@@ -70,6 +70,18 @@
                                         <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
                                             {{ scope.row.getInspectionLackName() }}
                                         </span>
+                                        <span v-else-if="scope.column.property == 'linkAccountList'"> 
+                                            {{ scope.row.getAccountName() }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'linkRoles'"> 
+                                            {{ scope.row.getRolesName() }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'linkContingencyProcess'"> 
+                                            {{ scope.row.getProcessName() }}
+                                        </span>
+                                        <span v-else-if="scope.column.property == 'defaultContingencyProcessId'"> 
+                                            {{ scope.row.getDefaultProcessName() }}
+                                        </span>
                                         <span v-else-if="scope.column.property == 'systemUsed'"> 
                                             {{ scope.row[item.prop] == true ? '已設置' : '未設置' }}
                                         </span>
@@ -193,7 +205,7 @@ export default {
                 this.title == 'inspectionlack' || 
                 this.title == 'devicemaintain' || 
                 this.title == 'deviceaddress' ||
-                this.title == 'publicsafelack' || this.title == 'listOfMaintain'){
+                this.title == 'publicsafelack' || this.title == 'listOfMaintain' || this.title == 'listOfMgmt'){
                     return "1400px"
                 }
                 return "1000px"
@@ -218,7 +230,8 @@ export default {
                 inspectionlack:'檢修申報缺失項目',
                 publicsafelack:'公安申報缺失項目',
                 listOfMaintain:'維護保養細項',
-                floor:'樓層'
+                floor:'樓層',
+                listOfMgmt:'班別'
             },
             activeName:'fire'
         }

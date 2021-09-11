@@ -175,6 +175,28 @@
                 }
             }
         },
+        beforeDestroy(){
+            document.onkeydown = async(e) => {
+                if (e.keyCode == 46) {
+                    return false
+                }
+                if(e.keyCode == 67 && e.ctrlKey){
+                    return false
+                }
+                if(e.keyCode == 86 && e.ctrlKey){
+                    return false
+                }
+                if(e.keyCode == 90 && e.ctrlKey){ //上一步 Z
+                    return false
+                }
+                if(e.keyCode == 89 && e.ctrlKey){ //下一步 y
+                    return false
+                }
+                if(e.keyCode == 83 && e.ctrlKey){ //存檔 s
+                    return false
+                }
+            }
+        },
         methods: {
             mousedownHandler(e) {
                 let event = window.event || e;

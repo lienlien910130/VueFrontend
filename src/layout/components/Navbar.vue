@@ -1,6 +1,9 @@
 <template>
   <div class="navbar">
     <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+   <div v-if="backVisible" @click="backTo">
+     <i class="el-icon-caret-left hamburger-container">返回自衛消防編組</i>
+   </div>
    
     <!-- <div class="left-menu">
       <router-link to="/">
@@ -81,20 +84,8 @@
 
 import { mapGetters } from 'vuex'
 import { formatTime } from '@/utils/index.js'
-import Contactunit from '@/object/contactunit'
-import Device from '@/object/device'
-import Building from '@/object/building'
-import Floors from '@/object/floors'
-import Setting from '@/object/setting'
-import User from '@/object/user'
-import Hamburger from '@/components/Hamburger'
 
 export default {
-  components: {
-    Select: () => import('@/components/Select/index.vue'),
-    Screenfull: () => import('@/components/Screenfull'),
-    Hamburger
-  },
   computed: {
     ...mapGetters([
       'sidebar',
@@ -105,7 +96,8 @@ export default {
       'buildingarray',
       'roles',
       'buildinginfo',
-      'buildingid'
+      'buildingid',
+      'navbarButton'
     ]),
     selectAttrs() {
       return {
@@ -147,6 +139,12 @@ export default {
         },
         immediate:true
       },
+      navbarButton:{
+        handler:async function(){
+          this.backVisible = this.navbarButton
+        },
+        immediate:true
+      },
   },
   beforeDestroy() { 
     if (this.timer) 
@@ -158,10 +156,14 @@ export default {
     return {
       selectData:[],
       date: new Date(),
-      buildingName:'請選擇建築物'
+      buildingName:'請選擇建築物',
+      backVisible:false
     }
   },
   methods: {
+    backTo(){
+      this.$router.push({name:'selfDefenseFireMarshalling'})
+    },
     handleTo(){
       this.$router.push('/building')
     },
@@ -187,11 +189,6 @@ export default {
           this.$store.dispatch('record/saveContactunitRecord', 0)
           this.$store.dispatch('record/saveDeviceTypeRecord', 0)
           this.$store.dispatch('record/saveAddressManagementRecord', 0)
-          // this.$store.dispatch('building/setbuildingusers',await User.get())
-          // this.$store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
-          // this.$store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
-          // this.$store.dispatch('building/setbuildingdevices',await Device.get())
-          // this.$store.dispatch('building/setbuildingfloors',await Floors.get())
           this.$router.push('/')
           console.log('Navbardone')
           this.$store.dispatch('app/openSideBar')

@@ -27,9 +27,9 @@ const getDefaultState = () => {
     SET_ACCOUNTCORD: (state, record) => {
       state.account_record = record
     },
-    SET_MENUCORD: (state, record) => {
-        state.menu_record = record
-    },
+    // SET_MENUCORD: (state, record) => {
+    //     state.menu_record = record
+    // },
     SET_CONTACTUNITCORD: (state, record) => {
         state.contactunit_record = record
     },

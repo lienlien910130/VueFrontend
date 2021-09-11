@@ -5,11 +5,6 @@
             <el-col 
                 v-if="isTable == true"
                 :xs="24" :sm="24" :md="24" :lg="24">
-                <!-- <div class="searchdiv">
-                    <el-col :xs="24" :sm="3" :md="3" :lg="3" class="text">
-                        <span>查詢條件</span>
-                    </el-col>
-                </div> -->
                     <el-input 
                     v-if="hasSearch == true"
                     placeholder="請輸入內容，多條件搜尋請依左側'勾選條件'依序輸入值並以'逗號'區隔" 
@@ -44,7 +39,6 @@
                         @click="change">
                             <span> 檢視大項 </span>                  
                     </el-button>
-                    <!-- 火警總機&plc搜尋 -->
                     <el-select
                         v-if="title == 'deviceAddressManagement' || title == 'devicePLCAddressManagement'"
                         v-model="deviceIdSelect"
@@ -66,35 +60,7 @@
             </el-col>
             <el-col v-else
                 :xs="24" :sm="24" :md="24" :lg="24">
-                <el-collapse v-model="activeNames">
-                    <!-- <el-collapse-item title="關鍵字搜尋" name="1">
-                        <el-select
-                        v-if="hasSearch == true"
-                        v-model="inputSelect"
-                        filterable
-                        multiple
-                        value-key="id"
-                        placeholder="請選擇關鍵字查詢欄位"
-                        style="width:100%"
-                        collapse-tags
-                        clearable 
-                        >
-                            <el-option
-                            v-for="(item,index) in inputSelectChange()"
-                            :key="index"
-                            :label="item.label"
-                            :value="item.prop"
-                            >
-                            </el-option>  
-                        </el-select>
-                        <el-input 
-                        v-if="hasSearch == true"
-                        placeholder="請輸入關鍵字，多條件搜尋請依上方'勾選條件'依序輸入值並以'逗號'區隔" 
-                        v-model="inputSearch" class="input-with-select" style="width:100%" clearable
-                        @clear="clearInputSearch" @keyup.enter.native="handleSearchWord"
-                        >
-                        </el-input>
-                    </el-collapse-item> -->
+                <!-- <el-collapse v-model="activeNames">
                     <el-collapse-item title="篩選條件搜尋" name="1">
                         <el-cascader
                         v-model="filterSearch"
@@ -108,10 +74,10 @@
                         style="width:100%"
                         >
                         </el-cascader>
-                        <!-- <el-button icon="el-icon-search" 
+                        <el-button icon="el-icon-search" 
                         circle
                         @click="handleFilterSearch"
-                        ></el-button> -->
+                        ></el-button> 
                     </el-collapse-item>
                     <el-collapse-item title="資料排序" name="3">
                         <el-select 
@@ -147,9 +113,9 @@
                           <el-button icon="el-icon-caret-bottom" 
                           circle
                           @click="sortChange({prop:sortValue,order:'descending'})"
-                          ></el-button> -->
+                          ></el-button> 
                     </el-collapse-item>
-                </el-collapse>
+                </el-collapse> -->
                     <el-button
                         v-if="title == 'maintain' || title == 'maintainList'"
                         class="filter-item" 
@@ -289,7 +255,8 @@
                             :key="index"
                             >
                             <el-button
-                            :type="button.status == 'open' ? 'primary' : 
+                            :type="button.type !== undefined ? button.type : 
+                            button.status == 'open' ? 'primary' : 
                             button.status == 'delete' ? 'info' : 
                             button.status == 'openfiles' ? 'danger' : 'warning'"
                             @click="handleClickOption(button.status,item)"
@@ -668,6 +635,8 @@ export default {
                 return { height : '150px'}
             }else if(this.title == 'building'){
                 return { height : '345px'}
+            }else if(this.title == 'selfDefenseFireMarshalling'){
+                return { height : '30px'}
             }
         },
         FirstheightChange(){
@@ -695,6 +664,8 @@ export default {
                 return { height : '210px'}
             }else if(this.title == 'building'){
                 return { height : '405px'}
+            }else if(this.title == 'selfDefenseFireMarshalling'){
+                return { height : '90px'}
             }
         },
         page: function() {
@@ -721,6 +692,7 @@ export default {
         },
         title:{
             handler:async function(){
+                //點位的地方需要設定設備清單
                 if(this.title == 'deviceAddressManagement' || this.title == 'devicePLCAddressManagement'){
                     if(this.device_record == 0){
                         await this.$store.dispatch('building/setDevice')
@@ -1208,7 +1180,7 @@ export default {
 }
 .dashboard-wrapper{
     background-color: rgb(219,231,237);
-    padding: 5px 15px 15px 15px;
+    padding: 5px 8px 15px 8px;
     margin-top: 10px;
     margin-bottom: 10px;
     
