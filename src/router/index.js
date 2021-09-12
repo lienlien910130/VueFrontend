@@ -20,13 +20,18 @@ export const constantRoutes = [
     component: () => import('@/views/graphic/components/EquipmentType.vue'),
     hidden: true
   },
-  // {
-  //   path: '/process',
-  //   name: 'Process',
-  //   meta: { title: '應變流程', icon: 'icon', needLogin: true},
-  //   component: () => import('@/views/emergency/process/index.vue'),
-  //   hidden: false
-  // },
+  {
+    path: '/process',
+    component: Layout,
+    redirect: '/process',
+    children: [{
+      path: 'index',
+      name: 'process',
+      component: () => import('@/views/emergency/process/index.vue'),
+      meta: { title: '應變流程', icon: 'icon', needLogin: true }
+    }],
+    hidden: true
+  },
   {
     path: '/',
     component: Layout,
@@ -92,22 +97,6 @@ export const constantRoutes = [
   //     }
   //   ]
   // },
-  // {
-  //   path: '/emergency',
-  //   component: Layout,
-  //   redirect: '/emergency/aaa',
-  //   name: 'sys-EmergencyResponse',
-  //   meta: { title: '緊急應變', icon: 'icon', needLogin: true  },
-  //   children: [
-  //     {
-  //       path: 'aaa',
-  //       name: 'Aaa',
-  //       component: () => import('@/views/emergency/aaa/index.vue'),
-  //       meta: { title: 'aaa', icon: 'icon', needLogin: true  }
-  //     },
-  //   ]
-  // },
-  
 ]
 export const mercuryfireRoutes = [
   {

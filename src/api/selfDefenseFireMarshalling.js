@@ -31,11 +31,11 @@ const selfDefenseFireMarshalling = {
     },
     //細項的流程資料 p:細項
     apiGetContingencyProcess(mgmtId){ return req('get','/selfDefenseFireMarshalling/ContingencyProcessMgmt/'+mgmtId+'/a') },
-    apiPostContingencyProcess(mgmtId,data){ return req('post','/selfDefenseFireMarshalling/ContingencyProcessMgmt/check',mgmtId,data) }, 
-    apiPatchContingencyProcess(mgmtId,data){ return req('patch','/selfDefenseFireMarshalling/ContingencyProcessMgmt/check',mgmtId,data) },
+    apiPostContingencyProcess(mgmtId,data){ return req('post','/selfDefenseFireMarshalling/ContingencyProcessMgmt',mgmtId,data) }, 
+    apiPatchContingencyProcess(data){ return req('patch','/selfDefenseFireMarshalling/ContingencyProcessMgmt',null,data) },
     apiDeleteContingencyProcess(processId){ return req('delete','/selfDefenseFireMarshalling/ContingencyProcessMgmt/'+processId) },
-    apiGetContingencyProcessSearchPages(mgmtId,data){ 
-        return req('post','/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/ss', mgmtId, data)  },
+    //apiGetContingencyProcessSearchPages(mgmtId,data){ 
+    //    return req('post','/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/ss', mgmtId, data)  },
     //用流程圖ID取得檔案JSON
     apiGetContingencyProcessJson(processId){ return req('get','/selfDefenseFireMarshalling/ContingencyProcessMgmt/'+processId+'/f') },
     //儲存流程圖檔案    

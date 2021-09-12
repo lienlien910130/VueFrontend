@@ -6,7 +6,11 @@
   >
     <div class="flow-menu">
       <div class="section">
-        <FlowMenu @addNode="addNode" ref="nodeMenu"/>
+        <FlowMenu 
+            ref="nodeMenu" 
+            v-bind="flowMenuAttrs"
+            v-on="flowMenuEvent"
+        />
       </div>
     </div>
     <div class="middle">
@@ -58,22 +62,34 @@
     </div>
     <FlowInfo v-if="flowInfoVisible" ref="flowInfo" :data="data"></FlowInfo>
     <input type="file" ref="inputFile" @change="handleExportFile" style="display: none" />
-  </div>
+    
+    <DialogForm 
+            ref="dialogform"
+            v-if="innerVisible === true"
+            v-bind="dialogAttrs"
+            v-on:handleDialog="handleDialog"></DialogForm>
 
+    <DialogTable 
+        ref="dialogtable"
+        v-if="tableVisible === true"
+        v-bind="tableAttrs"
+        v-on:handleTableClick="handleTableClick"></DialogTable>
+  </div>
+    
 </template>
 
 <script>
-   
     // import jsp from 'jsplumb'
     import '@/utils/jsplumb'
-    import { sharemixin,flowmixin } from '@/mixin/index'
+    import { sharemixin,flowmixin,tablemixin,dialogmixin } from '@/mixin/index'
     import lodash from 'lodash'
     import { uploadFile } from '@/utils'
-import { ContingencyProcess, SelfDefenseFireMarshalling } from '@/object'
+    import { ContingencyProcess, SelfDefenseFireMarshalling } from '@/object'
 
     export default {
         data() {
             return {
+                title:'',
                 flowList:[
                     { id:'1', name:'流程B'},
                     { id:'0', name:'流程A'},
@@ -128,12 +144,86 @@ import { ContingencyProcess, SelfDefenseFireMarshalling } from '@/object'
                 }, //狀態
                 undo:[], //之前的步驟
                 redo:[],
-                isUndoRedoing: false //判斷是不是在做上一步&下一步，是的話則刪除線不儲存狀態
-
+                isUndoRedoing: false, //判斷是不是在做上一步&下一步，是的話則刪除線不儲存狀態
+                //傳給左側流程圖清單&節點
+                processArray:[],
+                nodeArray:[
+                        {
+                            id: '1',
+                            type: 'group',
+                            name: '節點資料',
+                            ico: 'el-icon-video-play',
+                            open: true,
+                            children: [
+                                {
+                                    id: '11',
+                                    type: 'start',
+                                    name: '起點',
+                                    ico: 'el-icon-bell'
+                                }, {
+                                    id: '12',
+                                    type: 'voiceBroadcast',
+                                    name: '語音廣播',
+                                    ico: 'el-icon-mic'
+                                }, {
+                                    id: '13',
+                                    type: 'mobilePush',
+                                    name: '手機推播',
+                                    ico: 'el-icon-mobile-phone'
+                                }, {
+                                    id: '14',
+                                    type: 'linePush',
+                                    name: 'Line推播',
+                                    ico: 'el-icon-chat-line-round'
+                                }, {
+                                    id: '15',
+                                    type: 'messagePush',
+                                    name: '簡訊推播',
+                                    ico: 'el-icon-message'
+                                }, {
+                                    id: '16',
+                                    type: 'optionEvents',
+                                    name: '選項',
+                                    ico: 'el-icon-more-outline'
+                                },
+                                {
+                                    id: '17',
+                                    type: 'otherflow',
+                                    name: '流程圖',
+                                    ico: 'el-icon-paperclip'
+                                }, {
+                                    id: '18',
+                                    type: 'countDown',
+                                    name: '倒數',
+                                    ico: 'el-icon-time'
+                                }, {
+                                    id: '19',
+                                    type: 'end',
+                                    name: '結束',
+                                    ico: 'el-icon-bangzhu'
+                                }
+                            ]
+                        }
+                ],
+                processId:null
             }
         },
-        mixins: [sharemixin,flowmixin],
+        mixins: [sharemixin,flowmixin,tablemixin,dialogmixin],
         computed:{
+            flowMenuAttrs(){
+                return{
+                    processId:this.processId,
+                    processArray:this.processArray,
+                    nodeArray:this.nodeArray
+                }
+            },
+            flowMenuEvent(){
+                return{
+                    changeProcess:this.getJsonFile,
+                    addNode:this.addNode,
+                    openEditDialog:this.openEditDialog
+                }
+            },
             flowEvent(){
                 return{
                     changeNodeSite:this.changeNodeSite,
@@ -146,31 +236,14 @@ import { ContingencyProcess, SelfDefenseFireMarshalling } from '@/object'
         },
         async mounted() {
             this.jsPlumb = jsPlumb.getInstance({ Container: "zll-index" })
-            //pa=>顯示所有流程圖，載入傳入的大項的所有班別=>顯示在左側可以選=>預設是第一筆的第一個流程圖=>沒有的話就載入空的
-            //pv=>新建立的流程圖，傳入新建入的processid=>載入空的
-            if(this.$route.query.type == 'pa' && this.$route.query.l !== undefined){
-                
-                this.$nextTick(async() => {
-                    var processArray = await SelfDefenseFireMarshalling.getProcess(this.$route.query.l)
-                    console.log(processArray)
-                    this.dataReload({
-                        offsetX: -3000,
-                        offsetY: -3000,
-                        name:"",
-                        nodeList: [],
-                        lineList: []
-                    })
-                })
+            //取得預設節點資料
+            //pa=>預設載入第一個
+            if(this.$route.query.l !== undefined){
+                //取得所有流程圖
+                this.processArray = await SelfDefenseFireMarshalling.getProcess(this.$route.query.l)
+                await this.getJsonFile(this.processArray[0].getID())
             }else{
-                this.$nextTick(() => {
-                    this.dataReload({
-                        offsetX: -3000,
-                        offsetY: -3000,
-                        name:"",
-                        nodeList: [],
-                        lineList: []
-                    })
-                })
+                this.$message.error('尚未選擇自衛消防編組')
             }
             document.onkeydown = async(e) => {
                 if (e.keyCode == 46) {
@@ -217,6 +290,7 @@ import { ContingencyProcess, SelfDefenseFireMarshalling } from '@/object'
         },
         methods: {
             async init(){
+                this.title = 'contingencyProcess'
             },
             async changeTable(){
             },
@@ -546,49 +620,53 @@ import { ContingencyProcess, SelfDefenseFireMarshalling } from '@/object'
             },
             //畫布操作
             async handleOperateMenu(operate){
-              switch(operate){
-                case 'upper-step': //上一步
-                    this.doUndo()
-                    break;
-                case 'next-step': //下一步
-                    this.doRedo()
-                    break;
-                // case 'enlarge':
-                //   break;
-                // case 'narrow':
-                //   break;
-                case 'delete':
-                    this.deleteElement()
-                    break;
-                case 'import':
-                    this.$refs.inputFile.click()
-                    break;
-                case 'export':
-                    this.downloadData()
-                    break;
-                case 'view-code':
-                    this.dataInfo()
-                    break;
-                case 'save':
-                    await this.saveFile()
-                    break;
-                case 'clear':
-                    this.data = {
-                        offsetX: -3000,
-                        offsetY: -3000,
-                        name:"",
-                        nodeList: [],
-                        lineList: []
-                    }
-                    this.state = lodash.cloneDeep(this.data)
-                    this.dragMove = {
-                        top: -3000,
-                        left: -3000,
-                    }
-                    this.jsPlumb.deleteEveryEndpoint()
-                    this.jsPlumb.deleteEveryConnection()
-                    break;
-              }
+                if(this.processId == null){
+                    this.$message.error('尚未選擇自衛消防編組')
+                    return false
+                }
+                switch(operate){
+                    case 'upper-step': //上一步
+                        this.doUndo()
+                        break;
+                    case 'next-step': //下一步
+                        this.doRedo()
+                        break;
+                    // case 'enlarge':
+                    //   break;
+                    // case 'narrow':
+                    //   break;
+                    case 'delete':
+                        this.deleteElement()
+                        break;
+                    case 'import':
+                        this.$refs.inputFile.click()
+                        break;
+                    case 'export':
+                        this.downloadData()
+                        break;
+                    case 'view-code':
+                        this.dataInfo()
+                        break;
+                    case 'save':
+                        await this.saveFile()
+                        break;
+                    case 'clear':
+                        this.data = {
+                            offsetX: -3000,
+                            offsetY: -3000,
+                            name:"",
+                            nodeList: [],
+                            lineList: []
+                        }
+                        this.state = lodash.cloneDeep(this.data)
+                        this.dragMove = {
+                            top: -3000,
+                            left: -3000,
+                        }
+                        this.jsPlumb.deleteEveryEndpoint()
+                        this.jsPlumb.deleteEveryConnection()
+                        break;
+                }
             },
             // 刪除節點or線
             deleteElement() {
@@ -746,14 +824,99 @@ import { ContingencyProcess, SelfDefenseFireMarshalling } from '@/object'
                 this.dataReload(this.data)
             },
             async saveFile(){
-                var pid = this.$route.query.p
                 var str = JSON.stringify(this.data)
-                const fileContent = new File([str], pid+'.txt', { type: '' })
+                const fileContent = new File([str], this.processId+'.txt', { type: '' })
                 const formData = new FormData()
                 formData.append('file', fileContent)
-                var isOk = await ContingencyProcess.saveJson(pid,formData )
+                var isOk = await ContingencyProcess.saveJson(this.processId,formData )
                 if(isOk){
                     this.$message('儲存成功')
+                }else{
+                    this.$message.error('系統錯誤')
+                }
+            },
+            async getJsonFile(pid = null){ //讀取指定的process ID取得JSON，載入流程圖
+                var json = await ContingencyProcess.getJson(pid)
+                console.log('getJsonFile',pid,json)
+                this.processId = pid
+                this.$nextTick(() => {
+                    this.dataReload({
+                        offsetX: -3000,
+                        offsetY: -3000,
+                        name:"",
+                        nodeList: [],
+                        lineList: []
+                    })
+                })
+                // this.$nextTick(() => {
+                //      this.dataReload(json檔案)
+                // })
+            },
+            openEditDialog(){ //打開編輯流程圖資料的視窗
+                this.dialogtableConfig = ContingencyProcess.getTableConfig()
+                this.dialogtableConfig.shift()
+                this.tableTitle = 'contingencyProcess'
+                this.tableData = lodash.cloneDeep(this.processArray)
+                this.tableheaderButtonsName = [
+                    { name:'新增資料',icon:'el-icon-circle-plus-outline',status:'empty'}
+                ]
+                this.hasPagination = false
+                this.tablebuttonsName = [
+                    { name:'刪除',icon:'el-icon-delete',status:'delete'},
+                    { name:'編輯',icon:'el-icon-edit',status:'open'}
+                ]
+                this.tableVisible = true
+            },
+            //流程圖資料編輯事件
+            async handleTableClick(index, content){
+                console.log(index,content)
+                this.dialogData = []
+                this.dialogConfig = ContingencyProcess.getTableConfig()
+                this.dialogTitle = this.title
+                if(index == 'cancel'){
+                    this.tableVisible = false
+                }else if(index == 'delete'){
+                    var isDelete = await ContingencyProcess.delete(content.getID())
+                    if(isDelete){
+                        this.$message('刪除成功')
+                        this.processArray = await SelfDefenseFireMarshalling.getProcess(this.$route.query.l)
+                        this.tableData = lodash.cloneDeep(this.processArray)
+                    }else{
+                        this.$message.error('系統錯誤')
+                    }
+                }else if(index == 'open'){
+                    this.dialogConfig.shift()
+                    this.dialogData.push(content)
+                    this.dialogButtonsName = [
+                    { name:'儲存',type:'primary',status:'update'},
+                    { name:'取消',type:'info',status:'cancel'}]
+                    this.innerVisible = true
+                    this.dialogStatus = 'update'
+                }else if(index == 'empty'){
+                    this.dialogSelect = await SelfDefenseFireMarshalling.getOfIDMarshallingMgmt(this.$route.query.l)
+                    this.dialogButtonsName = [
+                        { name:'儲存',type:'primary',status:'create'},
+                        { name:'取消',type:'info',status:'cancel'}]
+                    this.innerVisible = true
+                    this.dialogStatus = 'create'
+                }
+            },
+            async handleDialog(title ,index, content){
+                console.log(title,index,content)
+                if(index == 'update' || index == 'create'){
+                    var isOk = index == 'update' ? 
+                            await ContingencyProcess.update(content) : 
+                            await  ContingencyProcess.create(content)
+                    if(isOk){
+                        index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
+                        this.processArray = await SelfDefenseFireMarshalling.getProcess(this.$route.query.l)
+                        this.tableData = lodash.cloneDeep(this.processArray)
+                        this.innerVisible = false
+                    }else{
+                        this.$message.error('系統錯誤')
+                    }
+                }else{
+                    this.innerVisible = false
                 }
             }
         }

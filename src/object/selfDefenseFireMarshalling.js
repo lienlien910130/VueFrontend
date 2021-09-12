@@ -106,6 +106,16 @@ class SelfDefenseFireMarshalling extends Parent {
         })
         return data
     }
+    static async getOfIDMarshallingMgmt(id){ //功能同getMarshallingMgmt，開給process使用
+        var data = await api.selfDefenseFireMarshalling.apiGetFireMarshallingMgmt(id).then(response => {
+            var array = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new SelfDefenseFireMarshallingMgmt(item) })
+            return array
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
 }
 //細項
 class SelfDefenseFireMarshallingMgmt extends Parent {
@@ -244,24 +254,6 @@ class ContingencyProcess extends Parent {
     clone(data){
         return new ContingencyProcess(data)
     }
-    async update(mgmtId){
-        var temp = JSON.parse(JSON.stringify(data))
-        temp.name = '{Check}'+temp.name 
-        var data = await api.selfDefenseFireMarshalling.apiPatchContingencyProcess(mgmtId,temp).then(async(response) => {
-            return new ContingencyProcess(response.result)
-        }).catch(error=>{
-            return {}
-        })
-        return data
-    }
-    async delete(){
-        var data = await api.selfDefenseFireMarshalling.apiDeleteContingencyProcess(this.id).then(async(response) => {
-            return true
-        }).catch(error=>{
-            return false
-        })
-        return data
-    }
     getName(){
         return this.name
     }
@@ -290,17 +282,35 @@ class ContingencyProcess extends Parent {
     }
     static async create(data){
         var mgmtId = data.selfDefenseFireMarshallingMgmt
-        var temp = JSON.parse(JSON.stringify(data))
-        temp.name = '{Check}'+temp.name 
-        var data = await api.selfDefenseFireMarshalling.apiPostContingencyProcess(mgmtId,temp).then(response => {
-            return response.result.id
+        // var temp = JSON.parse(JSON.stringify(data))
+        // temp.name = '{Check}'+temp.name 
+        var data = await api.selfDefenseFireMarshalling.apiPostContingencyProcess(mgmtId,data).then(response => {
+            return true
         }).catch(error=>{
-            return null
+            return false
         })
         return data
     }
-    static async getSearchPage(mgmtId,data){
-        var data = await api.selfDefenseFireMarshalling.apiGetContingencyProcessSearchPages(mgmtId,data).then(response => {
+    static async update(data){
+        // var temp = JSON.parse(JSON.stringify(data))
+        // temp.name = '{Check}'+temp.name 
+        var data = await api.selfDefenseFireMarshalling.apiPatchContingencyProcess(data).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
+    static async delete(id){
+        var data = await api.selfDefenseFireMarshalling.apiDeleteContingencyProcess(id).then(async(response) => {
+            return true
+        }).catch(error=>{
+            return false
+        })
+        return data
+    }
+    static async get(mgmtId){
+        var data = await api.selfDefenseFireMarshalling.apiGetContingencyProcess(mgmtId).then(response => {
             response.result = response.result.map(item=>{ return new ContingencyProcess(item)})
             return response
         }).catch(error=>{

@@ -90,9 +90,9 @@ export default {
             this.buttonsName = [
                 { name:'刪除',icon:'el-icon-delete',status:'delete', type:'info'},
                 { name:'編輯',icon:'el-icon-edit',status:'open', type:'primary'},
-                { name:'建立流程',icon:'el-icon-folder-opened',status:'contingencyProcessMgmtCreate', type:'warning'},
+                // { name:'建立流程',icon:'el-icon-folder-opened',status:'contingencyProcessMgmtCreate', type:'warning'},
                 { name:'檢視流程',icon:'el-icon-folder-opened',status:'contingencyProcessMgmt', type:'danger'},
-                { name:'班別',icon:'el-icon-folder-opened',status:'openMgmt', type:'success'}
+                { name:'班別',icon:'el-icon-folder-opened',status:'openMgmt', type:'warning'}
             ]
             //await this.getMarshallingList()
         },
@@ -118,7 +118,6 @@ export default {
             this.listQueryParams.total = data.totalPageCount
         },
         async getMarshallingMgmt(){ //取得指定消防編組的細項
-            console.log(this.marshallingList)
             var data = await SelfDefenseFireMarshallingMgmt.getSearchPage(this.marshallingList.getID(),
             this.tablelistQueryParams)
             this.tableTitle = 'listOfMgmt'
@@ -159,18 +158,20 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'create'
-            }else if(index === 'contingencyProcessMgmtCreate'){ //建立流程圖
-                this.dialogConfig = ContingencyProcess.getTableConfig()
-                this.dialogSelect = await content.getMarshallingMgmt()
-                this.dialogButtonsName = [
-                { name:'儲存',type:'primary',status:'createProcess'},
-                { name:'取消',type:'info',status:'cancel'}]
-                this.innerVisible = true
-                this.dialogStatus = 'create'
-            }else if(index === 'contingencyProcessMgmt'){
+            }
+            // else if(index === 'contingencyProcessMgmtCreate'){ //建立流程圖
+            //     this.dialogConfig = ContingencyProcess.getTableConfig()
+            //     this.dialogSelect = await content.getMarshallingMgmt() //選擇大項的所有班別
+            //     this.dialogButtonsName = [
+            //     { name:'儲存',type:'primary',status:'createProcess'},
+            //     { name:'取消',type:'info',status:'cancel'}]
+            //     this.innerVisible = true
+            //     this.dialogStatus = 'create'
+            // }
+            else if(index === 'contingencyProcessMgmt'){
                 var processArray = await SelfDefenseFireMarshalling.getProcess(this.marshallingList.getID())
                 if(processArray.length){
-                    this.$router.push({ path: '/emergency/process',query:{ type:'pa', l:this.marshallingList.getID() } })
+                    this.$router.push({ path: '/process/index',query:{ l:this.marshallingList.getID() } })
                 }else{
                     this.$message.error('尚未有班別的流程圖可檢視')
                 }
@@ -198,16 +199,19 @@ export default {
                     }else{
                         this.$message.error('系統錯誤')
                     }
-                }else if(index === 'createProcess'){ //大項建立流程圖
-                    var process = await  ContingencyProcess.create(content)
-                    if(process !== null){
-                        this.innerVisible = false
-                        this.$message('新增成功')
-                        this.$router.push({ path: '/emergency/process',query:{ type:'pv', p:process, l:this.marshallingList.getID() } })
-                    }else{
-                        this.$message.error('流程圖名稱已存在，請重新輸入')
-                    }
-                }else{
+                }
+                // else if(index === 'createProcess'){ //大項建立流程圖
+                //     var process = await  ContingencyProcess.create(content)
+                //     if(process !== null){
+                //         this.innerVisible = false
+                //         this.$message('新增成功')
+                //         this.$router.push(
+                //             { path: '/process/index',query:{ type:'pv', p:process, l:this.marshallingList.getID() } })
+                //     }else{
+                //         this.$message.error('流程圖名稱已存在，請重新輸入')
+                //     }
+                // }
+                else{
                     this.innerVisible = false
                 }
             }
@@ -283,11 +287,11 @@ export default {
         async changeTable(value){
             this.isTable = value
             await this.resetlistQueryParams()
-            if(this.$route.query.type !== undefined && 
-                    this.$route.query.type == 'maintain' && this.$route.query.obj !== '' ){
-                var data = await MaintainManagement.getOfID(this.$route.query.obj )
-                await this.handleMaintain('open',data)
-            }
+            // if(this.$route.query.type !== undefined && 
+            //         this.$route.query.type == 'maintain' && this.$route.query.obj !== '' ){
+            //     var data = await MaintainManagement.getOfID(this.$route.query.obj )
+            //     await this.handleMaintain('open',data)
+            // }
         }
     }
 }

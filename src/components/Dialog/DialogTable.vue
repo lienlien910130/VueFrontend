@@ -93,6 +93,9 @@
                                             @click="handleTableClick('image',scope.row)" 
                                             style="cursor: pointer;font-size:25px"></i>
                                         </span>
+                                        <!-- <span v-else-if="scope.column.property == 'name' && title == 'contingencyProcess'">
+                                            <el-input v-model="scope.row[item.prop]" ></el-input>
+                                        </span> -->
                                         <span v-else>{{  scope.row[item.prop] }}</span>
                                 </template>
                         </el-table-column>
@@ -132,7 +135,7 @@
                             </template>
                         </el-table-column>
                 </el-table>
-                <div  class="pagination-container">
+                <div v-if="hasPagination" class="pagination-container">
                     <el-pagination
                         background
                         layout="total, sizes, prev, pager, next, jumper"
@@ -194,6 +197,10 @@ export default {
         },
         tablelistQueryParams: {
             type: Object
+        },
+        hasPagination:{
+            type: Boolean,
+            default: true
         }
     },
     computed:{
@@ -201,14 +208,10 @@ export default {
             if (this.$store.state.app.device === 'mobile') {
                 return "90%"
             } else {
-                if(this.title == 'maintainList' || 
-                this.title == 'inspectionlack' || 
-                this.title == 'devicemaintain' || 
-                this.title == 'deviceaddress' ||
-                this.title == 'publicsafelack' || this.title == 'listOfMaintain' || this.title == 'listOfMgmt'){
-                    return "1400px"
+                if(this.title == 'floor' || this.title == 'contingencyProcess'){
+                    return "700px"
                 }
-                return "1000px"
+                return "1400px"
             }
         },
         page: function() {
@@ -231,7 +234,8 @@ export default {
                 publicsafelack:'公安申報缺失項目',
                 listOfMaintain:'維護保養細項',
                 floor:'樓層',
-                listOfMgmt:'班別'
+                listOfMgmt:'班別',
+                contingencyProcess:'流程圖'
             },
             activeName:'fire'
         }
@@ -248,7 +252,11 @@ export default {
                     this.$emit('handleTableClick',index , row)
                 }).catch(() => {})
             }else{
-                this.$emit('handleTableClick',index , row)
+                if(this.title == 'contingencyProcess' && index == 'update'){
+                    this.$emit('handleTableClick',index , this.tableData)
+                }else{
+                    this.$emit('handleTableClick',index , row)
+                }
             }
         },
         // 改變翻頁組件中每頁數據總數
@@ -260,10 +268,9 @@ export default {
         // 跳到當前是第幾頁
         handleCurrentChange(val) {
             this.tablelistQueryParams.pageIndex = val
-            //this.$emit('update:tablelistQueryParams', this.tablelistQueryParams)
             this.$emit('clickPagination','clickPagination', this.tablelistQueryParams)
         },
-        tabChange(){
+        tabChange(){ //設備查看點位那邊才會用到
             this.$emit('searchChange',this.activeName)
         }
     }

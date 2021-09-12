@@ -1,7 +1,6 @@
 <template>
     <div>
         <div class="ef-node-form">
-            
             <div class="ef-node-form-body">
                 <el-form :model="node" ref="dataForm" label-width="80px" v-show="type === 'node'" @submit.native.prevent>
                     <el-form-item label="ID">
@@ -37,6 +36,7 @@
                         v-model="node.linkRoles" 
                         placeholder="請選擇" 
                         filterable
+                        multiple
                         value-key="id" 
                         @change="filterAccount">
                             <el-option
@@ -71,7 +71,6 @@
                         @input="save"></el-input>
                     </el-form-item>
                 </el-form>
-
                 <el-form :model="line" ref="dataForm" label-width="80px" v-show="type === 'line'" @submit.native.prevent>
                     <el-form-item label="備註">
                         <el-input v-model="line.label"  
@@ -90,6 +89,7 @@
 <script>
     import { mapGetters } from 'vuex'
     import { cloneDeep } from 'lodash'
+    import { SelfDefenseFireMarshalling } from '@/object'
 
     export default {
         data() {
@@ -122,9 +122,7 @@
         computed:{
             ...mapGetters([
                 'buildingroles',
-                'role_record',
-                'account',
-                'account_record'
+                'role_record'
             ]),
             selectfilter(){
                 return function (value) {
@@ -179,17 +177,23 @@
                     }
                 })
             },
-            filterAccount(value){
+            async filterAccount(value){
                 this.save()
-                this.accountArray = []
-                if(this.account_record == 0){
-                    this.$store.dispatch('building/setaccounts')
-                    this.$store.dispatch('record/saveAccountRecord',1)
+                var account = []
+                for(let role of value){
+                    var result = await SelfDefenseFireMarshalling.getAccountByRole(role.getID())
+                    result.forEach(element => {
+                        account.push(element)
+                    })
                 }
-                this.account.filter(item =>{
-                    var rolename = item.getRolesName()
-                    return rolename.indexOf(value.name) !== -1
-                })
+                const set = new Set()
+                this.accountArray = 
+                    account.filter(item => !set.has(item.id) ? set.add(item.id) : false).map(v => {
+                        this.$set(v, 'value', v.getID()) 
+                        this.$set(v, 'label', v.getName()) 
+                        this.$set(v, 'id', v.getID()) 
+                        return v
+                    })
             }
         }
     }

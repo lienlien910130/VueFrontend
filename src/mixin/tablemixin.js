@@ -10,7 +10,8 @@ export default {
             buttonsName: this.tablebuttonsName,
             config: this.dialogtableConfig,
             isHasHeaderButtons:this.isHasHeaderButtons,
-            tablelistQueryParams:this.tablelistQueryParams
+            tablelistQueryParams:this.tablelistQueryParams,
+            hasPagination:this.hasPagination
         }
     }
   },
@@ -34,7 +35,8 @@ export default {
           pageIndex: 1,
           pageSize: 10,
           total:0
-        }
+        },
+        hasPagination: true
     }
   }
 }
