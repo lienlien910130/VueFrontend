@@ -20,6 +20,7 @@ const getDefaultState = () => {
     buildingdeviceType:[],
     buildingaddress:[],
     deviceType:[],
+    deviceTypeNoLevel:[],
     account:[]
   }
 }
@@ -62,6 +63,9 @@ const mutations = {
   },
   SET_DEFAULTDEVICETYPE: (state, deviceType) => {
     state.deviceType = deviceType
+  },
+  SET_DEFAULTDEVICETYPENOLEVEL: (state, deviceType) => {
+    state.deviceTypeNoLevel = deviceType
   },
   SET_DEVICETYPE: (state, deviceType) => {
     state.buildingdeviceType = deviceType
@@ -342,6 +346,30 @@ const actions = {
   setDefaultDeviceType({ commit }, deviceType) {
     return new Promise((resolve, reject) => {
         commit('SET_DEFAULTDEVICETYPE', deviceType)
+        var data = []
+        deviceType.forEach(item=>{
+          var v = item.value
+          item.children.forEach(children=>{
+            var c = children.value
+            data.push({
+              value:children.value,
+              label:children.label,
+              typelabel:item.label,
+              typevalue:[v]
+            })
+            if(children.children !== undefined){
+              children.children.forEach(element=>{
+                data.push({
+                  value:element.value,
+                  label:element.label,
+                  typelabel:item.label+'/'+children.label,
+                  typevalue:[ v , c]
+                })
+              })
+            }
+          })
+        })
+        commit('SET_DEFAULTDEVICETYPENOLEVEL',data)
         resolve()
     })
   },

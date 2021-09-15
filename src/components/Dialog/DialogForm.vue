@@ -365,7 +365,7 @@
 <script>
 import computedmixin from '@/mixin/computedmixin'
 import Setting from '@/object/setting'
-import { changeDeviceFullType } from '@/utils/index'
+import { changeDefaultFullType } from '@/utils/index'
 import constant from '@/constant/index'
 import { SelfDefenseFireMarshalling } from '@/object'
 
@@ -619,8 +619,9 @@ export default {
                     }
                 }else if(this.title == 'devicetype'){
                     var fullType = this.dialogData[0]['fullType']
-                    var value = changeDeviceFullType(fullType,true,false)
-                    this.fulltypevalue = [value,fullType]
+                    var obj = changeDefaultFullType(fullType)
+                    obj.typevalue.push(fullType)
+                    this.fulltypevalue = obj.typevalue
                 }else if(this.title == 'deviceAddressManagement' || this.title == 'devicePLCAddressManagement'){
                     this.originalProtocolMode = JSON.parse(JSON.stringify(this.temp['protocolMode']))
                 }else if(this.title == 'equipment'){

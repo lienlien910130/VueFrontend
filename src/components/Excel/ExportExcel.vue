@@ -37,7 +37,7 @@
 <script>
 import moment from 'moment'
 import { mapGetters } from 'vuex'
-import { changeDeviceFullType } from '@/utils/index'
+import { changeDefaultFullType } from '@/utils/index'
 
 export default {
   name: 'ExportExcel',
@@ -109,8 +109,8 @@ export default {
               return moment(v[j.prop]).format(j.format)
             }
           } else if (j.format == 'fullType'){
-            var label = changeDeviceFullType(v[j.prop],true,true)
-            return label
+            var obj = changeDefaultFullType(this.fullType)
+            return obj.typelabel
           } else if (typeof v[j.prop] == 'object') {
             if(v[j.prop] !== null){
               return v[j.prop].map(item => item.getName())

@@ -46,8 +46,7 @@ const service = axios.create({
     baseURL: 'http://192.168.88.65:49119',
     timeout: 20000, 
     headers: { 
-        'Content-Type': 'application/json; charset=utf-8;',
-        'Content-Security-Policy':'upgrade-insecure-requests'
+        'Content-Type': 'application/json; charset=utf-8;'
     }
 })
 

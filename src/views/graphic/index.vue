@@ -92,6 +92,7 @@
 <script>
 import idb from '@/utils/indexedDB'
 import sharemixin  from '@/mixin/sharemixin'
+import DrawingControl from '@/object/drawingControl'
 
 export default {
     mixins:[sharemixin],
@@ -149,6 +150,7 @@ export default {
     },
     data() {
         return {
+          codeContentId:null,
           pointarray:[], //樓層點位列表
           checkList:[], //區域選擇
           floor:null, //正在開啟的樓層
@@ -302,15 +304,17 @@ export default {
         this.type = 'view'
         this.floor = content
         this.pointarray = [] //儲存樓層點位
+        var data = await DrawingControl.getOfFloor(this.floor.getID())
         var obj = await this.floor.getGraphicFiles()
+        this.codeContentId = obj.id
         if(content.getImageID() == null){
             this.disabled = true
             this.changeType('view')
-            this.$refs.graphic.loadBackgroundImage(obj,'')
+            this.$refs.graphic.loadBackgroundImage(obj.codeContent,'')
         }else{
             this.disabled = false
             var data = await idb.loadCacheImage((content.getImageID()))
-            this.$refs.graphic.loadBackgroundImage(obj,data)
+            this.$refs.graphic.loadBackgroundImage(obj.codeContent,data)
         }
         //this.$socket.sendMsg(this.id,'enterGraphic',this.floor.getID())
         if(device !== null){
@@ -333,22 +337,23 @@ export default {
         this.objectList = val
       },
       sendActionToLayer(index,val){ //圖控上面選取/刪除物件
-        if(index == 'del'){
-          this.$refs.objectList.objectDelete(val)
-        }else{
-          this.$refs.objectList.objectSelect(val)
-        }
+        // if(index == 'del'){
+        //   this.$refs.objectList.objectDelete(val)
+        // }else{
+        //   this.$refs.objectList.objectSelect(val)
+        // }
       },
       sendLabelChange(id,objname){ //圖控更新標題，圖層須連動更新
-        this.$refs.objectList.updateNodeLabel([id,objname])
+        //this.$refs.objectList.updateNodeLabel([id,objname])
       },
       sendBlcokChange(id,objname,blocktype){ //圖控更新區塊類型，圖層須連動更新
-        this.$refs.objectList.updateNodeLevel([id,objname,blocktype])
+        //this.$refs.objectList.updateNodeLevel([id,objname,blocktype])
       },
       sendObjectRedoUndoToLayer(val){//圖控上一步下一步，圖層須連動更新
-        this.$refs.objectList.redoundo(val)
+        //this.$refs.objectList.redoundo(val)
       },
-      async sendFloorGraphicFile(state,array){ //儲存圖控檔案，同步更新設備資訊
+      async sendFloorGraphicFile(state,array){ //儲存圖控檔案，同步更新點位有無被設置
+        console.log(state)
         var str = JSON.stringify(state)
         const fileContent = new File([str], this.floor.getID()+'.txt', { type: '' })
         const formData = new FormData()
@@ -360,6 +365,8 @@ export default {
           //   this.$store.dispatch('building/setbuildingdevices',await Device.get())
           // }
           this.$message('儲存成功')
+        }else{
+          this.$message.error('系統錯誤')
         }
       },
       //畫面

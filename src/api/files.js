@@ -49,13 +49,13 @@ const files = {
         return req('upload','/maintainListManagement/maintainManagement/'+this.getUid()+'/maintains/list/'+maintainId+'/fileUpload', null, data) } ,
 
     //用圖控檔案id找資料
-    apiGetFileIdToGraphicFile(supervisoryControlSystemId){ 
-        return req('get','/drawingControl/'+supervisoryControlSystemId+'/supervisoryControlSystems/file') },
+    // apiGetFileIdToGraphicFile(supervisoryControlSystemId){ 
+    //     return req('get','/drawingControl/'+supervisoryControlSystemId+'/supervisoryControlSystems/file') },
     //用樓層id找資料
     apiGetFloorIdToGraphicFile(floorId){ 
         return req('get','/drawingControl/floors/'+floorId+'/supervisoryControlSystems') },
     apiPostGraphicFile(floorId,data){ 
-        return req('upload','/drawingControl/'+this.getUid()+'/buildings/'+this.getBid()+'/floors/'+floorId+'/supervisoryControlSystems/file', null,
+        return req('upload','/drawingControl/'+this.getUid()+'/floors/'+floorId+'/supervisoryControlSystems/file', null,
         data) },
     
 

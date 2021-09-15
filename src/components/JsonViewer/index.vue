@@ -1,6 +1,7 @@
 <template>
     <el-dialog
             title="JSON數據"
+            top="5vh"
             :visible.sync="dialogVisible"
             width="70%"
     >
@@ -21,7 +22,7 @@
     require("codemirror/mode/javascript/javascript.js")
 
     export default {
-        name:'FlowInfo',
+        name:'JsonViewer',
         props: {
             data: Object,
         },

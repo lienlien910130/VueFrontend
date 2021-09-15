@@ -15,7 +15,7 @@
     </div>
     <div class="middle">
         <header>
-            <HeaderOperate ref="operate" @handleOperateMenu="handleOperateMenu" />
+            <HeaderOperate ref="operate" :operateMenu="operateMenu" @handleOperateMenu="handleOperateMenu" />
         </header>
         <div class="section" ref="section">
             <main
@@ -60,7 +60,9 @@
     <div class="flow-attr">
        <FlowAttr ref="nodeForm" @setLineLabel="setLineLabel" @repaintEverything="repaintEverything"></FlowAttr>
     </div>
-    <FlowInfo v-if="flowInfoVisible" ref="flowInfo" :data="data"></FlowInfo>
+
+
+    <JsonViewer v-if="flowInfoVisible" ref="flowInfo" :data="data"></JsonViewer>
     <input type="file" ref="inputFile" @change="handleExportFile" style="display: none" />
     
     <DialogForm 
@@ -83,12 +85,13 @@
     import '@/utils/jsplumb'
     import { sharemixin,flowmixin,tablemixin,dialogmixin } from '@/mixin/index'
     import lodash from 'lodash'
-    import { uploadFile } from '@/utils'
+    import { uploadFile, getUUID } from '@/utils'
     import { ContingencyProcess, SelfDefenseFireMarshalling } from '@/object'
-
+    import constant from '@/constant/development';
     export default {
         data() {
             return {
+                operateMenu:constant.ProcessMenu,
                 title:'',
                 flowList:[
                     { id:'1', name:'流程B'},
@@ -158,7 +161,7 @@
                                 {
                                     id: '11',
                                     type: 'start',
-                                    name: '起點',
+                                    name: '探測器動作',
                                     ico: 'el-icon-bell'
                                 }, {
                                     id: '12',
@@ -182,22 +185,31 @@
                                     ico: 'el-icon-message'
                                 }, {
                                     id: '16',
+                                    type: 'messageBroadcast',
+                                    name: '通知',
+                                    ico: 'el-icon-warning-outline'
+                                }, {
+                                    id: '17',
                                     type: 'optionEvents',
                                     name: '選項',
                                     ico: 'el-icon-more-outline'
-                                },
-                                {
-                                    id: '17',
+                                }, {
+                                    id: '18',
                                     type: 'otherflow',
                                     name: '流程圖',
                                     ico: 'el-icon-paperclip'
                                 }, {
-                                    id: '18',
+                                    id: '19',
                                     type: 'countDown',
                                     name: '倒數',
                                     ico: 'el-icon-time'
                                 }, {
-                                    id: '19',
+                                    id: '20',
+                                    type: 'optionEventsResult',
+                                    name: '選項結果',
+                                    ico: 'el-icon-position'
+                                }, {
+                                    id: '21',
                                     type: 'end',
                                     name: '結束',
                                     ico: 'el-icon-bangzhu'
@@ -241,7 +253,7 @@
             if(this.$route.query.l !== undefined){
                 //取得所有流程圖
                 this.processArray = await SelfDefenseFireMarshalling.getProcess(this.$route.query.l)
-                await this.getJsonFile(this.processArray[0].getID())
+                await this.getJsonFile(this.processArray.length ? this.processArray[0].getID() : null)
             }else{
                 this.$message.error('尚未選擇自衛消防編組')
             }
@@ -354,9 +366,7 @@
             //     }
             //     this.viewScale = viewScale
             // },
-            getUUID() {
-                return Math.random().toString(36).substr(3, 10)
-            },
+
             jsPlumbInit() {
                 this.jsPlumb.ready(() => {
                     // 默認配置
@@ -568,7 +578,7 @@
                 // 居中
                 left -= 85
                 top -= 16
-                var nodeId = this.getUUID()
+                var nodeId = getUUID()
                 var nodeName = this.countNodeName(nodeMenu.name)
                 var node = {
                     id: nodeId,
@@ -743,7 +753,7 @@
                     return false
                 }
                 this.copyNode = lodash.cloneDeep(this.selsectNode)
-                this.copyNode.id = this.getUUID()
+                this.copyNode.id = getUUID()
                 this.copyNode.name = this.countNodeName(this.copyNode.name)
                 var left, top
                 if(this.pasteElement.left == 0 && this.pasteElement.top == 0){
@@ -836,21 +846,35 @@
                 }
             },
             async getJsonFile(pid = null){ //讀取指定的process ID取得JSON，載入流程圖
-                var json = await ContingencyProcess.getJson(pid)
-                console.log('getJsonFile',pid,json)
-                this.processId = pid
-                this.$nextTick(() => {
-                    this.dataReload({
-                        offsetX: -3000,
-                        offsetY: -3000,
-                        name:"",
-                        nodeList: [],
-                        lineList: []
+                if(pid !== null){
+                    var result = await ContingencyProcess.getJson(pid)
+                    this.processId = pid
+                    if(result.codeContent !== undefined){
+                        this.$nextTick(() => {
+                            this.dataReload(JSON.parse(result.codeContent))
+                        })
+                    }else{
+                        this.$nextTick(() => {
+                            this.dataReload({
+                                offsetX: -3000,
+                                offsetY: -3000,
+                                name:"",
+                                nodeList: [],
+                                lineList: []
+                            })
+                        })
+                    }
+                }else{
+                    this.$nextTick(() => {
+                        this.dataReload({
+                            offsetX: -3000,
+                            offsetY: -3000,
+                            name:"",
+                            nodeList: [],
+                            lineList: []
+                        })
                     })
-                })
-                // this.$nextTick(() => {
-                //      this.dataReload(json檔案)
-                // })
+                }
             },
             openEditDialog(){ //打開編輯流程圖資料的視窗
                 this.dialogtableConfig = ContingencyProcess.getTableConfig()
@@ -922,6 +946,7 @@
         }
     }
 </script>
+
 <style lang="scss" scoped>
 .index {
   display: flex;

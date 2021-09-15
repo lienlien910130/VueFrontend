@@ -1,6 +1,101 @@
 <template>
   <div class="maintenancePlanAdd">
-    <el-row :gutter="16" class="row" style="height:620px">
+    <div class="middle">
+        <header>
+            <HeaderOperate  
+            ref="operate" 
+            :operateMenu="operateMenu" 
+            @handleOperateMenu="handleOperateMenu" />
+        </header>
+        <div class="section" ref="section">
+            <div ref="canvasdiv" class="canvasdiv" >
+              <canvas 
+                id="canvas"
+              ></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="flow-attr">
+        <el-form class="form-inline" label-position="left" style="padding:8px">
+                <el-alert
+                  v-if="isSave == true"
+                  title="請先存檔後再離開畫面"
+                  type="warning"
+                  center
+                  :closable="false"
+                  show-icon
+                  style="margin-bottom:5px">
+                </el-alert>
+                <el-form-item label="名稱" label-width="70px" >
+                  <el-input v-model="objectName"  
+                  placeholder="請輸入名稱" 
+                  @input="sendLabelChange"
+                  :disabled="isTextBox == null"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item v-if="isImage == true" label="點位"  label-width="70px" >
+                  <el-select  v-model="addressId" placeholder="請選擇選位" @change="sendDeviceChange" filterable style="width:100%">
+                    <el-option
+                      v-for="(item,index) in devicearray"
+                      :key="index"
+                      :label="item.getLinkType().getSelectName()+'-'+item.getOnlyName()"
+                      :value="item.getID()"
+                      :disabled="item.SystemUsed()">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="區塊" label-width="70px" >
+                   <el-select 
+                   v-model="blockType" placeholder="請選擇區塊類型" @change="sendBlockChange"
+                   :disabled="isTextBox == null" style="width:100%">
+                    <el-option
+                      v-for="item in options"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item v-if="isTextBox == true" label="大小" label-width="70px" >
+                  <el-input-number v-model="fontsize" controls-position="right" :min="8" :max="72"
+                  style="width:100%" @change="changeAttributes('fontsize')"></el-input-number>
+                </el-form-item>
+                <el-form-item v-if="isTextBox == false" label="透明度" label-width="70px" >
+                  <el-input-number v-model="opacity" controls-position="right" :min="0" :max="100"
+                  style="width:100%" @change="changeAttributes('opacity')"></el-input-number>
+                </el-form-item>
+                <el-form-item v-if="isTextBox == false" label="線條" label-width="70px" >
+                  <el-select v-model="strokeDash"  placeholder="請選擇" @change="changeAttributes('strokeDash')" style="width:100%">
+                    <el-option label="無邊框" value="-1"></el-option>
+                    <el-option label="實心線" value="0"></el-option>
+                    <el-option label="虛線" value="1"></el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item v-if="isTextBox == false" label="寬度" label-width="70px" >
+                  <el-input-number 
+                  v-model="strokeWidth" 
+                  controls-position="right" :min="0" :max="10"
+                  style="width:100%"
+                  @change="changeAttributes('strokeWidth')"></el-input-number>
+                </el-form-item>
+                <el-form-item v-if="isTextBox == true" label="顏色" label-width="70px" >
+                  <el-color-picker v-model="fontcolor" 
+                  show-alpha 
+                  :predefine="predefineColors" @change="changeAttributes('fontcolor')"></el-color-picker>
+                </el-form-item>
+                <el-form-item v-if="isTextBox == false" label="填充" label-width="70px" >
+                  <el-color-picker v-model="fillcolor" 
+                  show-alpha 
+                  :predefine="predefineColors" @change="changeAttributes('fillcolor')"></el-color-picker>
+                </el-form-item>
+                <el-form-item v-if="isTextBox == false" label="邊框" label-width="70px" >
+                  <el-color-picker v-model="strokecolor" 
+                  show-alpha 
+                  :predefine="predefineColors" @change="changeAttributes('strokecolor')"></el-color-picker>
+                </el-form-item>
+        </el-form>
+    </div>
+    <!-- <el-row :gutter="16" class="row" style="height:620px">
       <el-col :xs="24" :sm="24" :md="24" :lg="canvasvalue" style="overflow:auto">
         <div ref="canvasdiv" class="canvasdiv" >
           <canvas id="canvas"></canvas>
@@ -122,7 +217,7 @@
           </el-form>
         </div>
       </el-col>
-    </el-row>
+    </el-row> -->
 
     <div v-if="infovisible" id="addressInfo" class="addressInfo" draggable="true" :style="{ left: addressDiv.x +'px'  , top:addressDiv.y +'px'}">
       <el-row style="background-color:gray">
@@ -143,13 +238,17 @@
         </el-table-column>
       </el-table>
     </div>
+
+    <JsonViewer v-if="jsonInfoVisible" ref="jsonInfo" :data="jsondata"></JsonViewer>
+
   </div>
 </template>
 
 <script>
-import constant from '../../../src/constant'
+import constant from '@/constant/development'
 import { mapGetters } from 'vuex'
-
+import { getUUID } from '@/utils'
+import { initAligningGuidelines } from '@/utils/aligning'
 
 export default {
   name: "Graphic",
@@ -173,7 +272,7 @@ export default {
       default: function() {
         return []
       }
-    },
+    }
   },
   computed: {
      ...mapGetters([
@@ -181,20 +280,6 @@ export default {
         'sidebar',
         'buildingdevices'
     ]),
-    formvalue() {
-      if (this.sidebar.opened === true) {
-        return 24
-      } else {
-        return 4
-      }
-    },
-    canvasvalue() {
-      if (this.sidebar.opened === true) {
-        return 24
-      } else {
-        return 20
-      }
-    },
     getHeaders() {
       return this.addressInfo.reduce((pre, cur, index) => pre.concat(`value${index}`), ['title'])
     },
@@ -206,6 +291,7 @@ export default {
   },
   data() {
     return {
+      operateMenu:constant.GraphicMenuView,
       hasAnimationStarted:false,
       setPointObj:null,
       updateArray:[],
@@ -281,6 +367,7 @@ export default {
       lastMovePos:{x:0, y:0},
       relativeMouseX: 0, //表示相对的鼠标位移，用来记录画布的绝对移动距离
       relativeMouseY: 0, //表示相对的鼠标位移，用来记录画布的绝对移动距离
+      move:false,
       //多邊形
       polygonMode: false,//polygon 相关参数
       pointArray: [],
@@ -291,7 +378,6 @@ export default {
       //複製貼上
       clipboard:null,
       //客製化的元素
-      objid:0,
       blockType: '未分類',
       objectName:'', //圖層標題
       //上一步下一步
@@ -319,7 +405,9 @@ export default {
         date: '2016-05-02',
         name: '王小虎',
         address: '123'
-      }]
+      }],
+      jsonInfoVisible:false,
+      jsondata:[]
     }
   },
   watch: {
@@ -328,10 +416,12 @@ export default {
             if(this.type === 'edit'){
               this.canvas.skipTargetFind = false
               this.canvas.selection = true
+              this.operateMenu = constant.GraphicMenuEdit
             }else{
               this.doDrawing = false
               this.canvas.skipTargetFind = true
               this.canvas.selection = false
+              this.operateMenu = constant.GraphicMenuView
             }
           },
           immediate:true
@@ -352,7 +442,6 @@ export default {
   },
   mounted() {
     this.canvas = new fabric.Canvas("canvas")
-    //this.$store.state.graphic.json  this.$refs.canvasdiv.clientWidth
     this.canvas.setWidth(1500)
     this.canvas.setHeight(600)
     this.canvas.skipTargetFind = true
@@ -360,6 +449,7 @@ export default {
     this.canvas.selectionBorderColor ="red"
     this.canvas.selectionLineWidth = 2
     this.canvas.selectionDashArray = [5, 5]
+    initAligningGuidelines(this.canvas)
     this.canvas.on("drop", this.drop)
     this.canvas.on("dragover", this.drag)
     this.canvas.on("dragenter", this.drag)
@@ -374,12 +464,13 @@ export default {
     this.canvas.on("object:moving",(e) => {
         this.canvas.skipTargetFind = true
     })
+    // this.canvas.on("object:moved", this.isEditChange(true))
     //添加消息接收函數
     window.addEventListener("message", this.receiveMessage, false)
 
     document.onkeydown = async(e) => {
       if (e.keyCode == 46) {
-        await this.deleteObj()
+        this.deleteObj()
       }
       if (e.keyCode == 45 && e.altKey) {
         this.saveImg()
@@ -421,7 +512,6 @@ export default {
         this.mousewheel(e)
       }
     }
-    
   },
   methods: {
     //父元件傳來的事件
@@ -513,12 +603,11 @@ export default {
                     top: object[i].top,
                     left: object[i].left,
                     visible: false,
-                    // opacity: object[i].opacity
-                    opacity: object[i].addressId !== '' && object[i].addressId !== undefined ? 
-                    1 : object[i].opacity
+                    opacity: 1,
+                    hasControls:false
                   }) 
                   self.canvas.add(image)
-                  self.addCustomize(image,original[i].id,original[i].objectName,original[i].blockType,
+                  self.addCustomize(image,original[i].objId,original[i].objectName,original[i].blockType,
                   original[i].srcId,original[i].addressId)
                 }).catch((err)=>{
                     console.log(err)  
@@ -526,7 +615,7 @@ export default {
               }else{
                 object[i].visible = false
                 self.canvas.add(object[i])
-                self.addCustomize(object[i],original[i].id,original[i].objectName,original[i].blockType,
+                self.addCustomize(object[i],original[i].objId,original[i].objectName,original[i].blockType,
                 original[i].srcId,original[i].addressId)
               }
             }
@@ -568,9 +657,8 @@ export default {
       this.saveCanvasState()
       this.canvas.renderAll()
     },
-    //選取 刪除物件
+    //選取 刪除 移動物件
     selectioncreatedandupdated(e){ //畫面顯示選取到的物件的屬性狀況
-      console.log(e)
       this.addressDiv = {x:e.e.offsetX,y:e.e.offsetY}
       // this.infovisible = true
       var items = this.canvas.getActiveObjects()
@@ -630,11 +718,20 @@ export default {
       this.addressId = ''
       this.$emit('sendActionToLayer','sel',null)
     },
-    async deleteObj() { //圖控刪除物件
+    deleteObj() { //圖控刪除物件
       var item = this.canvas.getActiveObjects()
-      if(item.length !== 0){
-        await this.$emit('sendActionToLayer','del',item)
-      }
+      if(item.length == 0){
+        this.$message.error('請選擇要刪除的物件')
+        return false
+      } 
+      item.forEach(obj => {
+        this.canvas.remove(obj)
+      })
+      this.saveCanvasState()
+      this.canvas.renderAll()
+      // if(item.length !== 0){
+      //   await this.$emit('sendActionToLayer','del',item)
+      // }
     },
     //座標相關調整
     getX(o) {
@@ -693,6 +790,7 @@ export default {
       this.canvas.renderAll()
     },
     mousedown(e) { //移動畫布
+      console.log(this.canvas.skipTargetFind , this.canvas.selection)
       window.event.stopPropagation()
       window.event.preventDefault()
       this.mouseFrom.x = this.getX(e)
@@ -734,6 +832,7 @@ export default {
     },
     mousemove(e) {
         if (this.canvas.getActiveObjects().length === 0 && this.panning && e && e.e) { //移動畫布
+            this.move = true
             let deltaX = 0
             let deltaY = 0
             if (this.lastMovePos.x) {
@@ -780,6 +879,7 @@ export default {
       this.mouseTo.x = this.getX(e)
       this.mouseTo.y = this.getY(e)
       this.panning = false //移動畫布
+      this.move = false
       if(this.type !== 'edit'){
         return
       }
@@ -840,7 +940,8 @@ export default {
           top: this.getY(e) - this.imgSource[2]*0.05,
           left: this.getX(e) - this.imgSource[1]*0.05,
           visible:true,
-          opacity:0.5
+          opacity:1,
+          hasControls:false
         })
         this.canvas.add(image)
         this.addCustomize(image,null,this.imgSource[5],null,this.imgSource[0])
@@ -1201,43 +1302,12 @@ export default {
         console.log(JSON.stringify(this.updateArray))
       }
     },
-    // async checkDevicePointChange(){
-    //   this.devicepoint = this.devicepoint.replace(/[^\d]/g,'')
-    //   if(this.devicepoint.length == 10){
-    //     this.canvas.getActiveObject().set({ devicepoint: this.devicepoint })
-    //     this.canvas.getActiveObject().set({ opacity: 1 })
-    //     this.isEditChange(true)
-    //     this.setPointObj = this.canvas.getActiveObject()
-    //     await this.sendDevicePointChange(this.deviceId,this.devicepoint)
-    //   }
-    // },
-    // async sendDevicePointChange(objId,point){
-    //   var systemNumber = point.substr(0,2)
-    //   var circuitNumber = point.substr(3,3)
-    //   var address = point.slice(5)
-    //   var index = this.updateArray.findIndex(d => d.id === objId && d.systemUsed == true)
-    //   if(index !== -1){ 
-    //     this.updateArray[index].systemNumber = systemNumber
-    //     this.updateArray[index].circuitNumber = circuitNumber
-    //     this.updateArray[index].address = address
-    //   }else{
-    //     var data = { //新
-    //       id:objId,
-    //       systemUsed:true,
-    //       linkFloors:[{id:this.floor.getID()}],
-    //       systemNumber:systemNumber,
-    //       circuitNumber:circuitNumber,
-    //       address:address
-    //     }
-    //     this.updateArray.push(data)
-    //   }
-    // },
     //儲存相關
     addCustomize(canvasObject, id = null, objectname = null, blocktype = null, srcId = null, addressId = null){ //新增客製化元素：貼上/初始化物件/圖例/矩形/文字/多邊
         canvasObject.toObject = (function (toObject) {
             return function () {
                 return fabric.util.object.extend(toObject.call(this), {
-                    id: this.objid,
+                    objId: this.objd,
                     objectName: this.objectName,
                     blockType: this.blockType,
                     srcId:this.srcId,
@@ -1245,7 +1315,7 @@ export default {
                 })
             }
         })(canvasObject.toObject)
-        canvasObject.set("id",id == null ? this.objid++ : id)
+        canvasObject.set("objId",id == null ? getUUID() : id)
         canvasObject.set("objectName",objectname !== null ? objectname : this.objectName == '' ?  
         (new Date()).getTime() : this.objectName) //+'_'+ (new Date()).getTime()
         canvasObject.set("blockType",blocktype == null ? this.blockType : blocktype)
@@ -1262,7 +1332,7 @@ export default {
       this.state = this.canvas.toJSON()
       this.redo = []
     },
-    isEditChange(val){ //是否編輯圖控：貼上/上一步/下一步/新增物件(圖例/矩形/文字/多邊)/屬性修改
+    isEditChange(val){ //是否編輯圖控：貼上/上一步/下一步/新增物件(圖例/矩形/文字/多邊)/屬性修改//移動
       this.isSave = val
       this.$emit('sendSaveToSelect',val)
     },
@@ -1327,7 +1397,7 @@ export default {
         this.isEditChange(true)
       })
     },
-    doRedo () { //下一步
+    doRedo() { //下一步
       if (this.redo.length === 0) {
         this.$message.error('目前沒有動作可復原')
         return
@@ -1395,6 +1465,69 @@ export default {
     },
     disableVisible(){
       this.infovisible = false
+    }, 
+    //操作列
+    async handleOperateMenu(operate){
+      switch(operate){
+        case '': case 'text': case 'rectangle': case 'polygon':
+          this.drawTypeChange(operate)
+          break;
+        case 'icon':
+          this.openLegendWindows()
+          break;
+        case 'upper-step':
+          this.doUndo()
+          break;
+        case 'next-step':
+          this.doRedo()
+          break;
+        case 'delete':
+          this.deleteObj()
+          break;
+        case 'resetlocation':
+          this.resetCanvas()
+          break;
+        case 'move':
+
+          break;
+        case 'export':
+          this.jsondata = this.canvas.toJSON()
+          var datastr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.jsondata, null, '\t'));
+          var downloadAnchorNode = document.createElement('a')
+          downloadAnchorNode.setAttribute("href", datastr);
+          downloadAnchorNode.setAttribute("download", 'data.json')
+          downloadAnchorNode.click();
+          downloadAnchorNode.remove();
+          this.$message.success("正在下載，請稍後...")
+          break;
+        case 'view-code':
+          this.jsonInfoVisible = true
+          this.jsondata = this.canvas.toJSON()
+          this.$nextTick(function () {
+              this.$refs.jsonInfo.init()
+          })
+          break;
+        case 'save':
+          await this.saveCanvasFile()
+          break;
+        case 'saveImage':
+          this.saveImg()
+          break;
+        case 'clear':
+          this.$confirm('確定要清除畫布嗎?', '提示', {
+            confirmButtonText: '確定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            var items = this.canvas.getObjects()
+            for(let obj of items){
+              this.canvas.remove(obj)
+            }
+            this.saveCanvasState()
+            this.canvas.renderAll()
+          }).catch(() => {})
+          break;
+      }
     }
   }
 }
@@ -1409,17 +1542,33 @@ export default {
 .maintenancePlanAdd{
   width: 100%;
   height: 100%;
-
+  display: flex;
+  > div {
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    border-bottom: 1px solid #eee;
+  }
+  .section {
+    flex: 1;
+  }
   .canvasdiv{
     width: 1500px;
     margin: auto;
     text-align: center;
-    margin-top: 10px;
   }
-
   canvas {  
     border: 1px dashed black;
   }
+  .flow-attr {
+    width: 100%;
+  }
+
 }
 img,
 input {

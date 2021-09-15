@@ -39,6 +39,7 @@ const getters = {
   buildingdeviceType: state => state.building.buildingdeviceType,
   buildingaddress: state => state.building.buildingaddress,
   deviceType : state => state.building.deviceType,
+  deviceTypeNoLevel: state => state.building.deviceTypeNoLevel,
   account: state => state.building.account,
 
   json: state => state.graphic.json,

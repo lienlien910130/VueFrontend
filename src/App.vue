@@ -415,6 +415,7 @@ background-color:rgb(147, 180 , 197);
     color: #565758 !important;
     border: 1px solid #E0E3E7;
     border-radius: 5px;
+    font-size: 12px;
 }
 
 /* label 为空的样式 */

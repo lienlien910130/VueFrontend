@@ -1,6 +1,6 @@
 import Parent from './parent'
 import api from '@/api'
-import { changeDeviceFullType } from '@/utils/index'
+import { changeDefaultFullType } from '@/utils/index'
 
 class DeviceType extends Parent {
     constructor (data) {
@@ -44,8 +44,8 @@ class DeviceType extends Parent {
         this.name = typeName
     }
     getType(){ //設備種類轉化
-        var label = changeDeviceFullType(this.fullType,true,true)
-        return label
+        var obj = changeDefaultFullType(this.fullType)
+        return obj.typelabel
     }
     getName(){
         return this.name

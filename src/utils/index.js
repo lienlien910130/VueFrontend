@@ -108,22 +108,10 @@ export function removeDuplicates(originalArray, prop) {
   return newArray
 }
 
-//取得外層的名稱或值
-export function changeDeviceFullType(fullType,isFirst,isLabel){
-  var label = ''
-  store.getters.deviceType.forEach(item=>{
-    var array = item.children.filter((obj,index)=>{
-      return obj.value == fullType
-    })
-    if(array.length !== 0){
-      if(isFirst == true){
-        label = isLabel == true ? item.label : item.value
-      }else{
-        label = isLabel == true ? array[0].label : array[0].value
-      }
-    }
-  })
-  return label
+export function changeDefaultFullType(fullType){
+  return store.getters.deviceTypeNoLevel.filter(item=>{
+    return item.value == fullType
+  })[0]
 }
 
 export function uploadFile(input, callBack){
@@ -155,6 +143,10 @@ export function uploadFile(input, callBack){
 	} else {
 		console.error('文件讀取失敗！')
 	}
+}
+
+export function getUUID() {
+  return Math.random().toString(36).substr(3, 10)
 }
 
 // /**

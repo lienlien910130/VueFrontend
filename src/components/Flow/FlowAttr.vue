@@ -12,7 +12,7 @@
                     <el-form-item label="名稱">
                         <el-input v-model="node.name" @input="save"></el-input>
                     </el-form-item>
-                    <el-form-item label="圖標">
+                    <!-- <el-form-item label="圖標">
                         <el-input v-model="node.ico"></el-input>
                     </el-form-item>
                     <el-form-item label="left座標">
@@ -20,7 +20,7 @@
                     </el-form-item>
                     <el-form-item label="top座標">
                         <el-input v-model="node.top" :disabled="true"></el-input>
-                    </el-form-item>
+                    </el-form-item> -->
                     <el-form-item label="狀態">
                         <el-select v-model="node.state" placeholder="請選擇" @change="save">
                             <el-option
@@ -67,7 +67,7 @@
                         <el-input 
                         v-model="node.message" 
                         type="textarea" 
-                        :autosize="{ minRows: 4, maxRows: 6}"
+                        :autosize="{ minRows: 8, maxRows: 12}"
                         @input="save"></el-input>
                     </el-form-item>
                 </el-form>
@@ -89,7 +89,7 @@
 <script>
     import { mapGetters } from 'vuex'
     import { cloneDeep } from 'lodash'
-    import { SelfDefenseFireMarshalling } from '@/object'
+    import { Role, SelfDefenseFireMarshalling } from '@/object'
 
     export default {
         data() {
@@ -144,7 +144,7 @@
             }
         },
         methods: {
-            nodeInit(data, id) {
+            async nodeInit(data, id) {
                 this.type = 'node'
                 this.data = data
                 data.nodeList.filter((node) => {
@@ -152,6 +152,8 @@
                         this.node = cloneDeep(node)
                     }
                 })
+                this.node.linkRoles = this.node.linkRoles.map(item=> { return new Role(item)})
+                await this.filterAccount(this.node.linkRoles)
             },
             lineInit(line) {
                 this.type = 'line'

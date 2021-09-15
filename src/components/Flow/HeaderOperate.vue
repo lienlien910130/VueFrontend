@@ -2,9 +2,18 @@
   <div class="operate-menu">
     <ul class="left">
       <li
+        v-for="item in operateMenu.left"
+        @click.stop="handleOperateMenu(item.type)"
+        :class="[middleSelectType === item.type ? 'active' : '']"
+      >
+        <el-tooltip class="item" effect="dark" :content="item.name" placement="bottom">
+          <i :class="item.icon"></i>
+        </el-tooltip>
+      </li>
+
+      <!-- <li
         @click.stop="handleOperateMenu('upper-step')"
         :class="[middleSelectType === 'upper-step' ? 'active' : '']"
-        :disable="true"
       >
         <el-tooltip class="item" effect="dark" content="上一步" placement="bottom">
           <i class="el-icon-refresh-left"></i>
@@ -17,7 +26,7 @@
         <el-tooltip class="item" effect="dark" content="下一步" placement="bottom">
           <i class="el-icon-refresh-right"></i>
         </el-tooltip>
-      </li>
+      </li> -->
       <!-- <li
         @click.stop="handleOperateMenu('enlarge')"
         :class="[middleSelectType === 'enlarge' ? 'active' : '']"
@@ -34,17 +43,28 @@
           <i class="el-icon-zoom-out"></i>
         </el-tooltip>
       </li> -->
-      <li
+      <!-- <li
         @click.stop="handleOperateMenu('delete')"
         :class="[middleSelectType === 'delete' ? 'active' : '']"
       >
         <el-tooltip class="item" effect="dark" content="刪除" placement="bottom">
           <i class="el-icon-delete"></i>
         </el-tooltip>
-      </li>
+      </li> -->
     </ul>
     <ul class="right">
       <li
+        v-for="item in operateMenu.right"
+        @click.stop="handleOperateMenu(item.type)"
+        :class="[middleSelectType === item.type ? 'active' : '' ]"
+        :disable="true"
+      >
+        <el-tooltip class="item" effect="dark" :content="item.name" placement="bottom">
+          <i :class="item.icon"></i>
+        </el-tooltip>
+      </li>
+
+      <!-- <li
         @click.stop="handleOperateMenu('import')"
         :class="[middleSelectType === 'import' ? 'active' : '']"
       >
@@ -83,7 +103,7 @@
         <el-tooltip class="item" effect="dark" content="清空" placement="bottom">
           <i class="el-icon-document-delete"></i>
         </el-tooltip>
-      </li>
+      </li> -->
     </ul>
   </div>
 </template>
@@ -91,6 +111,25 @@
 
 export default {
   name: "HeaderOperate",
+  props:{
+    operateMenu: {
+      type: Object,
+      default: function() {
+        return { 
+          'left': [],
+          'right':[]
+        }
+      }
+    },
+  },
+  watch: {
+      operateMenu:{
+          handler:async function(){
+
+          },
+          immediate:true
+      }
+  },
   data() {
     return {
       middleSelectType: "drag-drop",  //操作
@@ -98,14 +137,17 @@ export default {
     }
   },
   methods: {
-    handleOperateMenu(type) {
+    handleOperateMenu(type) { //內部傳出去的
       this.middleSelectType = type
       this.$emit('handleOperateMenu',type)
     },
     setDisable(disable){
       this.disable = disable
+    },
+    setmiddleSelectType(type){ //外部來的
+      this.middleSelectType = type
     }
-  },
+  }
 };
 </script>
 
@@ -119,13 +161,15 @@ export default {
     list-style: none;
     > li {
       cursor: pointer;
-      margin-right: 18px;
       font-size: 18px;
       position: relative;
       display: flex;
       align-items: center;
       &.active {
         color: #2d8cf0;
+      }
+      &.needed {
+        color: red;
       }
       .svg-icon {
         display: flex;
@@ -140,6 +184,16 @@ export default {
   }
   .left {
     padding-left: 0px;
+  }
+  .left{
+    >li{
+      margin-right: 18px;
+    }
+  }
+  .right{
+    >li{
+      margin-left: 18px;
+    }
   }
   ::v-deep .ivu-tooltip {
     display: flex;

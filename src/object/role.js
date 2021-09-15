@@ -127,7 +127,6 @@ class Role extends Parent {
     }
     static async postMany(data){
         var data = await api.authority.apiPostRoleAuthorities(data).then(response => {
-            console.log(JSON.stringify(response))
             response.result = response.result.map(item=>{ return new Role(item)})
             return response
         }).catch(error=>{

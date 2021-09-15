@@ -32,7 +32,7 @@
     </div>
 </template>
 <script>
-import { changeDeviceFullType } from '@/utils/index'
+import { changeDefaultFullType } from '@/utils/index'
 import { blockmixin, dialogmixin, sharemixin, excelmixin } from '@/mixin/index'
 import { Device, DeviceType } from '@/object/index'
 
@@ -113,8 +113,8 @@ export default {
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,JSON.stringify(content))
             if(index === 'update' || index === 'create'){
-                var label = changeDeviceFullType(content.fullType,false,true)
-                content.setTypeName(label) 
+                var array = changeDefaultFullType(content.fullType)
+                content.setTypeName(array.label) 
                 var result = index === 'update' ? await content.update() : await content.create()
                 if(Object.keys(result).length !== 0){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')

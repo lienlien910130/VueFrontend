@@ -18,12 +18,6 @@
             v-bind="dialogAttrs"
             v-on:handleDialog="handleDialog"></DialogForm>
 
-             <DialogUpload
-            ref="dialogupload"
-            v-if="uploadVisible === true"
-            v-bind="uploadAttrs"
-            v-on:handleDialog="handleDialog"></DialogUpload>
-
             <DialogTable 
             ref="dialogtable"
             v-if="tableVisible === true"
@@ -42,8 +36,7 @@
 </template>
 <script>
 import { blockmixin, dialogmixin, sharemixin, tablemixin, excelmixin } from '@/mixin/index'
-import { Files, MaintainManagementList, MaintainManagement,Setting ,Device,Contactunit, SelfDefenseFireMarshallingMgmt, SelfDefenseFireMarshalling, ContingencyProcess } from '@/object/index'
-import moment from 'moment'
+import { SelfDefenseFireMarshallingMgmt, SelfDefenseFireMarshalling, ContingencyProcess } from '@/object/index'
 import lodash from 'lodash'
 
 export default {
@@ -53,11 +46,6 @@ export default {
             marshallingList:null,
             marshalling:null,
             processArray:[],
-
-            maintainArray:[], 
-            maintainFiles:[],
-            uploadVisible:false,
-            //dialog額外的參數
         }
     },
     computed: {
@@ -73,13 +61,6 @@ export default {
             return{
                 handleTableClick:this.handleTableClick,
                 clickPagination:this.handleTableClick
-            }
-        },
-        uploadAttrs(){
-            return{
-                visible:this.uploadVisible,
-                title:this.title,
-                files:this.maintainFiles
             }
         }
     },
@@ -169,11 +150,12 @@ export default {
             //     this.dialogStatus = 'create'
             // }
             else if(index === 'contingencyProcessMgmt'){
-                var processArray = await SelfDefenseFireMarshalling.getProcess(this.marshallingList.getID())
-                if(processArray.length){
+                var classArray = await content.getMarshallingMgmt()
+                //var processArray = await SelfDefenseFireMarshalling.getProcess(this.marshallingList.getID())
+                if(classArray.length){
                     this.$router.push({ path: '/process/index',query:{ l:this.marshallingList.getID() } })
                 }else{
-                    this.$message.error('尚未有班別的流程圖可檢視')
+                    this.$message.error('尚未建立班別')
                 }
             }else if(index === 'openMgmt'){
                 this.tableheaderButtonsName = [
@@ -248,13 +230,15 @@ export default {
                     this.$message.error('系統錯誤')
                 }
             }else if(index === 'create' || index === 'update'){
-                var isOk = index === 'update' ? await content.update() : await content.create(this.marshallingList.getID())
+                var isOk = index === 'update' ? 
+                    await content.update(this.marshallingList.getID()) : 
+                    await content.create(this.marshallingList.getID())
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     await this.getMarshallingMgmt()
                     this.innerVisible = false
                 }else{
-                    this.$message.error('系統錯誤')
+                    this.$message.error('班別名稱已存在，請重新輸入')
                 }
             }else if(index === 'cancel'){
                 this.marshallingList = null
@@ -264,13 +248,18 @@ export default {
                 this.excelVisible = true
                 this.excelType = 'uploadExcel'
             }else if(index === 'uploadExcelSave'){
-                var isOk = await SelfDefenseFireMarshallingMgmt.postMany(this.marshallingList.getID(),content)
-                if(isOk){
+                var result = await SelfDefenseFireMarshallingMgmt.postMany(this.marshallingList.getID(),content)
+                if(result.result.length !== 0){
                     this.$message('新增成功')
                     await this.getMarshallingMgmt() 
                     this.excelVisible = false
-                }else{
-                 this.$message.error('系統錯誤')
+                }
+                if(result.repeatDataList !== undefined){
+                    var list = []
+                    result.repeatDataList.forEach(item=>{
+                        list.push(item.name)
+                    })
+                    this.$message.error('【'+list.toString()+'】名稱已存在，請重新上傳')
                 }
             }else if(index === 'clickPagination'){
                 this.tablelistQueryParams = content
