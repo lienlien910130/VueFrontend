@@ -80,7 +80,7 @@
                     item.format =='buildingSelect' || 
                     item.format == 'floorOfHouseSelect'
                     || item.format =='userInfo' || item.format == 'maintainListSelect' || item.format == 'usageOfFloorUserInfo' ||
-                    item.format == 'processList' "
+                    item.format == 'processList' || item.format == 'manyFloorSelect' "
                     v-model="temp[item.prop]"
                     filterable
                     multiple
@@ -102,9 +102,9 @@
                         >
                         </el-option>  
                 </el-select>
-                <!-- 點位選擇樓層-->
+                <!-- 點位選擇樓層/PLC點位選擇值-->
                 <el-select
-                    v-else-if="item.format =='floorSelect'"
+                    v-else-if="item.format =='floorSelect' || item.format =='valueSelect'"
                     v-model="temp[item.prop]"
                     filterable
                     placeholder="請選擇"
@@ -435,7 +435,7 @@ export default {
                                 this.$set(v, 'id', v.getID()) 
                                 return v
                             })
-                        case 'floorSelect': 
+                        case 'floorSelect': case 'manyFloorSelect':
                             if(this.floor_record == 0){
                                     this.$store.dispatch('building/setFloors')
                                     this.$store.dispatch('record/saveFloorRecord',1)
@@ -446,6 +446,8 @@ export default {
                                 this.$set(v, 'id', v.getID()) 
                                 return v
                             })
+                        case 'valueSelect':
+                            return [{label:'bit',id:'bit'},{label:'word',id:'word'}]
                         case 'addressdeviceSelect':
                             if(this.device_record == 0){
                                   this.$store.dispatch('building/setDevice')

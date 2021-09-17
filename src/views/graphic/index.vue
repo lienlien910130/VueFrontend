@@ -11,8 +11,8 @@
             </Select>
             <el-button v-if="type =='view'" type="primary" size="mini" @click="changeType('edit')" :disabled="disabled">編輯</el-button>
             <el-button v-else type="primary" size="mini" @click="changeType('view')">關閉編輯</el-button>
-            <el-button type="primary" size="mini" @click="resetCanvas()" :disabled="disabled">復原位置</el-button>
-            <el-button type="primary" size="mini" @click="saveCanvasToImage()" :disabled="disabled">匯出圖片</el-button>
+            <!-- <el-button type="primary" size="mini" @click="resetCanvas()" :disabled="disabled">復原位置</el-button>
+            <el-button type="primary" size="mini" @click="saveCanvasToImage()" :disabled="disabled">匯出圖片</el-button> -->
             <el-button type="primary" size="mini" :disabled="disabled">歷史紀錄</el-button>
             <el-button type="primary" size="mini" :disabled="disabled" @click="redirect('address')">點位一覽</el-button>
             <el-popover
@@ -261,21 +261,15 @@ export default {
             index < this.listQueryParams.limit * this.listQueryParams.page && 
             index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
       },
-      resetCanvas(){ //復原位置
-        this.$refs.graphic.resetCanvas()
-      },
-      saveCanvasToImage(){ //匯出圖片
-        this.$refs.graphic.saveImg()
-      },
       redirect(name){ //點位設定&歷史紀錄--另開新頁
-        var routeData
-        switch (name) {
-          case 'address':
-            routeData = this.$router.resolve(
-                            { path: '/equipment/address' })
-            break;
-        }
-        window.open(routeData.href, '_blank')
+        // var routeData
+        // switch (name) {
+        //   case 'address':
+        //     routeData = this.$router.resolve(
+        //                     { path: '/equipment/address' })
+        //     break;
+        // }
+        // window.open(routeData.href, '_blank')
       },
       changeType(type){ //編輯/檢視
         if(!this.isEdit){
@@ -304,7 +298,8 @@ export default {
         this.type = 'view'
         this.floor = content
         this.pointarray = [] //儲存樓層點位
-        var data = await DrawingControl.getOfFloor(this.floor.getID())
+        this.pointarray  = await DrawingControl.getOfFloor(this.floor.getID())
+        console.log(JSON.stringify(this.pointarray))
         var obj = await this.floor.getGraphicFiles()
         this.codeContentId = obj.id
         if(content.getImageID() == null){

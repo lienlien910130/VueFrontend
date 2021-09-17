@@ -100,7 +100,7 @@ class DeviceAddressManagement extends Parent {
             protocolMode:0,
             floorsId:null,
             valueType:'',
-            value:'',
+            value:'bit',
             linkDevices:[],
             linkAssignDevices:[]
         })
@@ -300,13 +300,21 @@ class DeviceAddressManagement extends Parent {
                 isSearch:true,placeholder:'請輸入類型',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            {
-                label: '值',
-                prop: 'value',
-                mandatory:false, message:'請輸入值',isHidden:false,maxlength:'20',
-                isSearch:true,placeholder:'請輸入值',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            { 
+                label:'值' , 
+                prop:'value',
+                format:'valueSelect', 
+                mandatory:true,message:'請選擇值',type:'string',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
+            // {
+            //     label: '值',
+            //     prop: 'value',
+            //     mandatory:false, message:'請輸入值',isHidden:false,maxlength:'20',
+            //     isSearch:true,placeholder:'請輸入值',
+            //     isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            // },
             { 
                 label:'圖控使用狀態' , prop:'systemUsed',format:'systemUsedBoolean', 
                 mandatory:false, 
@@ -353,7 +361,6 @@ class DeviceAddressManagement extends Parent {
     static async getSearchPage(data,isPLC = null){
         if(isPLC == null){
             var data = await api.device.apiGetDevicesAddressSearchPages(data).then(response => {
-                console.log(JSON.stringify( response.result))
                 response.result = response.result.sort((x,y) => x.id - y.id)
                 .map(item=>{ return new DeviceAddressManagement(item)})
                 return response

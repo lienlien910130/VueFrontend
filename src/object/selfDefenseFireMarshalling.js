@@ -98,7 +98,7 @@ class SelfDefenseFireMarshalling extends Parent {
     }
     static async getProcess(fid){
         var data = await api.selfDefenseFireMarshalling.apiGetAllProcess(fid).then(async(response) => {
-            console.log(JSON.stringify(response))
+            console.log('getProcess',JSON.stringify(response))
             var array = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new ContingencyProcess(item) })
             return array
@@ -126,12 +126,12 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
         var roles = linkRoles !== undefined ?  linkRoles.map(item=>{ return new Role(item)}) : []
         var account = linkAccountList !== undefined ?  linkAccountList.map(item=>{ return new Account(item)}) : []
         var process = linkContingencyProcess !== undefined ?  linkContingencyProcess.map(item=>{ return new ContingencyProcess(item)}) : []
-        //var floor = linkFloors !== undefined ? linkFloors.map(item=>{ return new Floors(item)}) : new Array([]).map(item=>{ return new Floors(item)}) 
+        var floor = linkFloors !== undefined ? linkFloors.map(item=>{ return new Floors(item)}) : new Array([]).map(item=>{ return new Floors(item)}) 
         this.name = name 
         this.defaultContingencyProcessId = defaultContingencyProcessId !== undefined ? defaultContingencyProcessId : null
         this.linkRoles = roles
         this.linkAccountList = account
-        //this.linkFloors = floor
+        this.linkFloors = floor
         this.linkContingencyProcess = process
     }
     clone(data){
@@ -140,7 +140,7 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
     async update(selfDefenseFireMarshallingId){
         var temp = JSON.parse(JSON.stringify(this))
         temp.name = '{Check}'+temp.name
-        var data = await api.selfDefenseFireMarshalling.apiPatchFireMarshallingMgmt(selfDefenseFireMarshallingId,temp).then(async(response) => {
+        var data = await api.selfDefenseFireMarshalling.apiPutFireMarshallingMgmt(selfDefenseFireMarshallingId,temp).then(async(response) => {
             return new SelfDefenseFireMarshallingMgmt(response.result)
         }).catch(error=>{
             return {}
@@ -205,11 +205,11 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
                 isHidden:false,maxlength:'20',isSearch:true,placeholder:'請輸入名稱',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true 
             },
-            // { 
-            //     label:'樓層' , prop:'linkFloors',format:'floorSelect', mandatory:true,
-            //     type:'array',typemessage:'',isHidden:false,isSearch:false,
-            //     isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
-            // },
+            { 
+                label:'樓層' , prop:'linkFloors',format:'manyFloorSelect', mandatory:true,
+                type:'array',typemessage:'',isHidden:false,isSearch:false,
+                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+            },
             { 
                 label:'預設流程圖', 
                 prop:'defaultContingencyProcessId', 
@@ -248,7 +248,6 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
     }
     static async getSearchPage(selfDefenseFireMarshallingId,data){
         var data = await api.selfDefenseFireMarshalling.apiGetFireMarshallingMgmtSearchPages(selfDefenseFireMarshallingId,data).then(response => {
-            console.log(JSON.stringify(response))
             response.result = response.result.map(item=>{ return new SelfDefenseFireMarshallingMgmt(item)})
             return response
         }).catch(error=>{

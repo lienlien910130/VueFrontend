@@ -62,12 +62,13 @@ class DrawingControl extends Parent {
     }
     static async getOfFloor(floorId){
         var data = await api.drawingControl.apiGetDrawingAddress(floorId).then(response => {
-            console.log(JSON.stringify(response))
-            response.resultDeviceAddress = response.resultDeviceAddress
-            .sort((x,y) => x.id - y.id).map(item=>{ return new DeviceAddressManagement(item)})
-            response.resultDevicePlcAddress = response.resultDevicePlcAddress
-            .sort((x,y) => x.id - y.id).map(item=>{ return new DeviceAddressManagement(item)})
-            return response
+            
+            const array = response.resultDeviceAddress.concat(response.resultDevicePlcAddress)
+            // response.resultDeviceAddress = response.resultDeviceAddress
+            // .sort((x,y) => x.id - y.id).map(item=>{ return new DeviceAddressManagement(item)})
+            // response.resultDevicePlcAddress = response.resultDevicePlcAddress
+            // .sort((x,y) => x.id - y.id).map(item=>{ return new DeviceAddressManagement(item)})
+            return array
         }).catch(error=>{
             return []
         })

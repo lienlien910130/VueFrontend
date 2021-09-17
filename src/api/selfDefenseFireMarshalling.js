@@ -21,8 +21,8 @@ const selfDefenseFireMarshalling = {
         return req('get','/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/'+selfDefenseFireMarshallingId+'/a') },
     apiPostFireMarshallingMgmt(selfDefenseFireMarshallingId,data){ 
         return req('post','/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/check',selfDefenseFireMarshallingId,data) }, 
-    apiPatchFireMarshallingMgmt(selfDefenseFireMarshallingId,data){ 
-        return req('patch','/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/check',selfDefenseFireMarshallingId,data) },
+    apiPutFireMarshallingMgmt(selfDefenseFireMarshallingId,data){ 
+        return req('put','/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/check',selfDefenseFireMarshallingId,data) },
     apiDeleteFireMarshallingMgmt(mgmtId){ return req('delete','/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/'+mgmtId) },
     apiGetFireMarshallingMgmtSearchPages(selfDefenseFireMarshallingId,data){ 
         return req('post','/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/ss', selfDefenseFireMarshallingId, data)  },

@@ -26,7 +26,7 @@
         <el-tooltip class="item" effect="dark" :content="item.name" placement="top-start">
             <el-image
             :class="[{active:select==item},{icon:true}]"
-            :src="item.imgSrc"
+            :src="item.status[0].imgSrc"
             :alt="item.name"
             @mousedown="handleImage(item,$event)"
             draggable
@@ -67,6 +67,9 @@ export default {
     },
     mounted(){
         this.temp = Object.assign({}, this.viewlist)
+        this.viewlist.forEach(element => {
+            console.log(element.status)
+        });
     },
     methods:{
         handleChange(type){

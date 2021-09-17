@@ -152,6 +152,9 @@ export default function(method, url, parentId = null, data = null, isOrderby = f
         console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data))
         return service.delete(url)
     }else if(method == 'put'){
+        if(parentId !== null){
+            data.parentId = parentId
+        }
         console.log('method:'+method+' || url:'+url+' || data:'+JSON.stringify(data))
         return service.request({
             url: url,

@@ -347,28 +347,39 @@ const actions = {
     return new Promise((resolve, reject) => {
         commit('SET_DEFAULTDEVICETYPE', deviceType)
         var data = []
-        deviceType.forEach(item=>{
+        for(let item of deviceType){
           var v = item.value
-          item.children.forEach(children=>{
+          for(let children of item.children){
             var c = children.value
-            data.push({
-              value:children.value,
-              label:children.label,
-              typelabel:item.label,
-              typevalue:[v]
-            })
-            if(children.children !== undefined){
-              children.children.forEach(element=>{
-                data.push({
-                  value:element.value,
-                  label:element.label,
-                  typelabel:item.label+'/'+children.label,
-                  typevalue:[ v , c]
-                })
+            var childrenValueArray = c.split('.') 
+            if(children.children == undefined){
+              data.push({
+                value:children.value,
+                label:children.label,
+                typelabel:item.label,
+                typevalue:[v],
+                icontype:childrenValueArray[2],
+                status: children.status !== undefined ? children.status : [],
+                action: children.action !== undefined ? children.action : []
               })
+            }else{
+                for(let element of children.children){
+                  var e = element.value
+                  var elementValueArray = e.split('.') 
+                  data.push({
+                    value:element.value,
+                    label:element.label,
+                    typelabel:item.label+'/'+children.label,
+                    typevalue:[ v , c],
+                    icontype:elementValueArray[2],
+                    status: element.status !== undefined ? element.status : [],
+                    action: element.action !== undefined ? element.action : []
+                  })
+                }
             }
-          })
-        })
+          }
+        }
+        console.log(JSON.stringify(data))
         commit('SET_DEFAULTDEVICETYPENOLEVEL',data)
         resolve()
     })
