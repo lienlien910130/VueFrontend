@@ -118,21 +118,21 @@ export default {
       },
       graphicEvent(){
         return{
-            sendActionToLayer:this.sendActionToLayer,
-            sendObjectListToLayer: this.sendObjectListToLayer,
-            sendObjectRedoUndoToLayer:this.sendObjectRedoUndoToLayer,
+            //sendActionToLayer:this.sendActionToLayer,
+            //sendObjectListToLayer: this.sendObjectListToLayer,
+            //sendObjectRedoUndoToLayer:this.sendObjectRedoUndoToLayer,
             sendFloorGraphicFile: this.sendFloorGraphicFile,
-            sendLabelChange:this.sendLabelChange,
-            sendBlcokChange:this.sendBlcokChange,
+            //sendLabelChange:this.sendLabelChange,
+            //sendBlcokChange:this.sendBlcokChange,
             sendSaveToSelect:this.sendSaveToSelect
         }
       },
-      objectListAttrs(){
-        return {
-            objectList: this.objectList,
-            type:this.type
-        }
-      },
+      // objectListAttrs(){
+      //   return {
+      //       objectList: this.objectList,
+      //       type:this.type
+      //   }
+      // },
       tableAttrs(){
         return {
             title:'graphic',
@@ -158,7 +158,7 @@ export default {
           disabled:true, //若樓層沒平面圖則不開啟按鈕使用
           isSelect:false, //是否有尚未儲存的資料
           type:'view', //檢視&編輯
-          objectList:[], //圖控上的所有元件
+          //objectList:[], //圖控上的所有元件
           //跟wsg相關
           isEdit:false, //是否可編輯圖控
           actionObj:null, //正在做動的物件
@@ -299,7 +299,6 @@ export default {
         this.floor = content
         this.pointarray = [] //儲存樓層點位
         this.pointarray  = await DrawingControl.getOfFloor(this.floor.getID())
-        console.log(JSON.stringify(this.pointarray))
         var obj = await this.floor.getGraphicFiles()
         this.codeContentId = obj.id
         if(content.getImageID() == null){
@@ -317,48 +316,53 @@ export default {
         }
       },
       //圖層事件
-      sendActionToCanvas(index,val){ //圖層選取/刪除物件
-          if(index == "del"){
-            this.$refs.graphic.objectDelete(val)
-          }else{
-            this.$refs.graphic.objectSelect(val)
-          }
-      },
+      // sendActionToCanvas(index,val){ //圖層選取/刪除物件
+      //     if(index == "del"){
+      //       this.$refs.graphic.objectDelete(val)
+      //     }else{
+      //       this.$refs.graphic.objectSelect(val)
+      //     }
+      // },
       //圖控的事件
       sendSaveToSelect(val){ 
         this.isSelect = val
       },
-      sendObjectListToLayer(val){ //圖控傳過來的所有物件清單,更新圖層節點用
-        this.objectList = val
-      },
-      sendActionToLayer(index,val){ //圖控上面選取/刪除物件
+      // sendObjectListToLayer(val){ //圖控傳過來的所有物件清單,更新圖層節點用
+      //   this.objectList = val
+      // },
+      //sendActionToLayer(index,val){ //圖控上面選取/刪除物件
         // if(index == 'del'){
         //   this.$refs.objectList.objectDelete(val)
         // }else{
         //   this.$refs.objectList.objectSelect(val)
         // }
-      },
-      sendLabelChange(id,objname){ //圖控更新標題，圖層須連動更新
+      //},
+      //sendLabelChange(id,objname){ //圖控更新標題，圖層須連動更新
         //this.$refs.objectList.updateNodeLabel([id,objname])
-      },
-      sendBlcokChange(id,objname,blocktype){ //圖控更新區塊類型，圖層須連動更新
+      //},
+      //sendBlcokChange(id,objname,blocktype){ //圖控更新區塊類型，圖層須連動更新
         //this.$refs.objectList.updateNodeLevel([id,objname,blocktype])
-      },
-      sendObjectRedoUndoToLayer(val){//圖控上一步下一步，圖層須連動更新
+      //},
+      //sendObjectRedoUndoToLayer(val){//圖控上一步下一步，圖層須連動更新
         //this.$refs.objectList.redoundo(val)
-      },
-      async sendFloorGraphicFile(state,array){ //儲存圖控檔案，同步更新點位有無被設置
-        console.log(state)
+      //},
+      async sendFloorGraphicFile(state,addressArray){ //儲存圖控檔案，同步更新點位有無被設置
         var str = JSON.stringify(state)
         const fileContent = new File([str], this.floor.getID()+'.txt', { type: '' })
         const formData = new FormData()
         formData.append('file', fileContent)
         var isOk = await this.floor.postGraphicFiles(formData)
         if(isOk){
-          // if(array.length !==0 ){
-          //   await Device.updatefromGraphic(array)
-          //   this.$store.dispatch('building/setbuildingdevices',await Device.get())
-          // }
+          var array = []
+          for(var i =0; i<addressArray.length; i++){
+            if(this.pointarray[i].systemUsed !== addressArray[i].systemUsed){
+              array.push({
+                id:addressArray[i].id,
+                systemUsed:addressArray[i].systemUsed
+              })
+            }
+          }
+          console.log(array)
           this.$message('儲存成功')
         }else{
           this.$message.error('系統錯誤')

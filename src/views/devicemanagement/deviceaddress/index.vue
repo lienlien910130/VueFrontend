@@ -152,7 +152,6 @@ export default {
                 if(index == 'createmany'){
                     delete content.linkDevices
                     delete content.systemUsed
-                    delete content.protocolMode
                     delete content.status
                 }
                 var result = index === 'create' ? await content.create(deviceId) : 
@@ -167,17 +166,17 @@ export default {
                 }
             }else if(index == 'update'){
                 delete content.linkAssignDevices
-                var result = await content.update(title == 'openDialog' ? true : false) 
+                var result = await content.update(false) 
                 if(Object.keys(result).length !== 0){
                     this.$message('更新成功') 
                     this.$socket.sendMsg('deviceAddress', index, result)
                     await this.getBuildingDeviceAddressManagement()
                     this.innerVisible = false
-                    if(title == 'openDialog'){
-                        this.$store.dispatch('building/setDevice')
-                        var data = await DeviceAddressManagement.getOfID(content.getID())
-                        await this.handleBlock(this.title,'open',data)
-                    }
+                    // if(title == 'openDialog'){
+                    //     this.$store.dispatch('building/setDevice')
+                    //     var data = await DeviceAddressManagement.getOfID(content.getID())
+                    //     await this.handleBlock(this.title,'open',data)
+                    // }
                 }else{
                     this.$message.error('點位已存在，請重新輸入')
                 }

@@ -5,7 +5,7 @@ import Device from './device'
 class DeviceAddressManagement extends Parent {
     constructor (data) {
         super(data)
-        const { internet, system, address, number, status, systemUsed, protocolMode, valueType, value,
+        const { internet, system, address, number, status, systemUsed, memeryLoc, iconId,  valueType, value,
              floorsId, linkDevices  } = data
         var devices = linkDevices !== undefined ?
         linkDevices.map(item=>{ return new Device(item) }) :[]
@@ -15,10 +15,11 @@ class DeviceAddressManagement extends Parent {
         this.number = number
         this.status = status
         this.systemUsed = systemUsed
-        this.protocolMode = parseInt(protocolMode)
         this.floorsId = floorsId
         this.value = value
         this.valueType = valueType
+        this.memeryLoc = memeryLoc
+        this.iconId = iconId
         this.linkDevices = devices
     }
     clone(data){
@@ -61,8 +62,10 @@ class DeviceAddressManagement extends Parent {
             return data
         }else{
             var data = await api.device.apiPostDevicesPLCAddress(deviceId,temp).then(response => {
+                console.log(response)
                 return new DeviceAddressManagement(response.result)
             }).catch(error=>{
+                console.log(error)
                 return {}
             })
             return data
@@ -88,6 +91,9 @@ class DeviceAddressManagement extends Parent {
     getDevicesName(){
         return this.linkDevices.map(item => item.getName()).toString()
     }
+    getValueTypeName(){
+        return this.valueType == 'status' ? '監視狀態' : this.valueType == 'action' ? '控制動作' : '監視電源'
+    }
     static empty(){
         return new DeviceAddressManagement({
             id:'',
@@ -97,10 +103,11 @@ class DeviceAddressManagement extends Parent {
             number :'',
             status:'',
             systemUsed:false,
-            protocolMode:0,
             floorsId:null,
             valueType:'',
             value:'bit',
+            memeryLoc:'',
+            iconId:'',
             linkDevices:[],
             linkAssignDevices:[]
         })
@@ -149,7 +156,7 @@ class DeviceAddressManagement extends Parent {
             {
                 label: '編號',
                 prop: 'number',
-                mandatory:true, message:'請輸入編號',isHidden:false,maxlength:'11',
+                mandatory:false, message:'請輸入編號',isHidden:false,maxlength:'11',
                 pattern:/^\d*\-\d*$/g,errorMsg:'請輸入起始值-結束值',isPattern:true,
                 isSearch:true,placeholder:'請輸入編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
@@ -201,9 +208,17 @@ class DeviceAddressManagement extends Parent {
             {
                 label: '編號',
                 prop: 'number',
-                mandatory:true, message:'請輸入編號',isHidden:false,maxlength:'5',
+                mandatory:false, message:'請輸入編號',isHidden:false,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入編號',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '記憶體位址',
+                prop: 'memeryLoc',
+                mandatory:false, message:'請輸入記憶體位址',isHidden:false,maxlength:'5',
+                pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
+                isSearch:true,placeholder:'請輸入記憶體位址',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
@@ -213,25 +228,40 @@ class DeviceAddressManagement extends Parent {
                 isSearch:true,placeholder:'請輸入狀態',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
+            {
+                label: '類型',
+                prop: 'valueType', format:'valueType', 
+                mandatory:true, message:'請選擇類型',isHidden:false,maxlength:'5',
+                isSearch:true,placeholder:'請選擇類型',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            { 
+                label:'圖示' , 
+                prop:'iconId',
+                format:'iconSelect', 
+                mandatory:true,message:'請選擇圖示',type:'string',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
             { 
                 label:'圖控使用狀態' , prop:'systemUsed',format:'systemUsedBoolean', 
                 mandatory:false, 
                 type:'boolean',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true
             },
-            {
-                label: '控制模式',
-                prop: 'protocolMode',format:'protocolMode',
-                type:'number',typemessage:'',
-                mandatory:true,message:'請選擇控制模式',isHidden:false,
-                isSearch:false,placeholder:'請選擇控制模式',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-            },
+            // {
+            //     label: '控制模式',
+            //     prop: 'protocolMode',format:'protocolMode',
+            //     type:'number',typemessage:'',
+            //     mandatory:true,message:'請選擇控制模式',isHidden:false,
+            //     isSearch:false,placeholder:'請選擇控制模式',
+            //     isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            // },
             { 
                 label:'設備' , 
                 prop:'linkDevices',
                 format:'addressdeviceSelect', 
-                mandatory:false,message:'請選擇設備',type:'array',typemessage:'',
+                mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             }
@@ -266,14 +296,13 @@ class DeviceAddressManagement extends Parent {
                 label: '系統編號',
                 prop: 'system',
                 mandatory:true, message:'請輸入系統編號',isHidden:false,maxlength:'5',
-                pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入系統編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
                 label: '位址編號',
                 prop: 'address',
-                mandatory:true, message:'請輸入位址編號',isHidden:false,maxlength:'5',
+                mandatory:false, message:'請輸入位址編號',isHidden:false,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入位址編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
@@ -281,9 +310,17 @@ class DeviceAddressManagement extends Parent {
             {
                 label: '編號',
                 prop: 'number',
-                mandatory:true, message:'請輸入編號',isHidden:false,maxlength:'5',
+                mandatory:false, message:'請輸入編號',isHidden:false,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入編號',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '記憶體位址',
+                prop: 'memeryLoc',
+                mandatory:false, message:'請輸入記憶體位址',isHidden:false,maxlength:'5',
+                pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
+                isSearch:true,placeholder:'請輸入記憶體位址',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             // {
@@ -295,16 +332,16 @@ class DeviceAddressManagement extends Parent {
             // },
             {
                 label: '類型',
-                prop: 'valueType',
-                mandatory:false, message:'請輸入類型',isHidden:false,maxlength:'5',
-                isSearch:true,placeholder:'請輸入類型',
+                prop: 'valueType',format:'valueType', 
+                mandatory:true, message:'請選擇類型',isHidden:false,maxlength:'5',
+                isSearch:true,placeholder:'請選擇類型',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             { 
                 label:'值' , 
                 prop:'value',
                 format:'valueSelect', 
-                mandatory:true,message:'請選擇值',type:'string',typemessage:'',
+                mandatory:false,message:'請選擇值',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
@@ -316,24 +353,32 @@ class DeviceAddressManagement extends Parent {
             //     isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             // },
             { 
+                label:'圖示' , 
+                prop:'iconId',
+                format:'iconSelect', 
+                mandatory:true,message:'請選擇圖示',type:'string',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            { 
                 label:'圖控使用狀態' , prop:'systemUsed',format:'systemUsedBoolean', 
                 mandatory:false, 
                 type:'boolean',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true
             },
-            {
-                label: '控制模式',
-                prop: 'protocolMode',format:'protocolMode',
-                type:'number',typemessage:'',
-                mandatory:true,message:'請選擇控制模式',isHidden:false,
-                isSearch:false,placeholder:'請選擇控制模式',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-            },
+            // {
+            //     label: '控制模式',
+            //     prop: 'protocolMode',format:'protocolMode',
+            //     type:'number',typemessage:'',
+            //     mandatory:true,message:'請選擇控制模式',isHidden:false,
+            //     isSearch:false,placeholder:'請選擇控制模式',
+            //     isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            // },
             { 
                 label:'設備' , 
                 prop:'linkDevices',
                 format:'addressdeviceSelect', 
-                mandatory:false,message:'請選擇設備',type:'array',typemessage:'',
+                mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             }

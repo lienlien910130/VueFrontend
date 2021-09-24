@@ -102,25 +102,33 @@
                         >
                         </el-option>  
                 </el-select>
-                <!-- 點位選擇樓層/PLC點位選擇值-->
+                <!-- 點位選擇樓層/PLC點位選擇值/點位選擇icon-->
                 <el-select
-                    v-else-if="item.format =='floorSelect' || item.format =='valueSelect'"
+                    v-else-if="item.format =='floorSelect' || item.format =='valueSelect' || item.format == 'iconSelect' 
+                    || item.format == 'valueType' "
                     v-model="temp[item.prop]"
                     filterable
                     placeholder="請選擇"
                     style="width:100%"
                     >
-                        <el-option
+                    <template v-if="item.format == 'iconSelect' && selectfilter('iconShow') !== null" slot="prefix">
+                        <img class="avatar" :src="selectfilter('iconShow')" style="height:25px;width:25px;margin:auto;vertical-align:middle">
+                    </template>
+                    <el-option
                         v-for="(obj,index) in selectfilter(item.format)"
                         :key="index"
                         :label="obj.label"
                         :value="obj.id"
                         >
-                        </el-option>  
+                            <template v-if="item.format == 'iconSelect'">
+                                <img class="avatar" :src="obj.imgsrc" style="height:30px;width:30px;margin:auto;vertical-align:middle">
+                                <span>{{ obj.label }}</span>
+                            </template>
+                    </el-option>  
                 </el-select>
                 <!-- 班別選擇預設流程圖 -->
                 <el-select
-                    v-else-if="item.format =='contingencyProcessSelect' || item.format == 'marshallingMgmtSelect' "
+                    v-else-if="item.format == 'marshallingMgmtSelect' "
                     v-model="temp[item.prop]"
                     filterable
                     placeholder="請選擇"
@@ -176,7 +184,7 @@
                         </el-option>  
                 </el-select>
                 <!-- 控制模式 -->
-                <el-radio-group 
+                <!-- <el-radio-group 
                 v-else-if="item.format == 'protocolMode'"
                 v-model="temp[item.prop]" 
                 @change="changeprotocolMode">
@@ -184,7 +192,7 @@
                     <el-radio :label="1">接收</el-radio>
                     <el-radio :label="2">控制</el-radio>
                     <el-radio :label="3">皆有</el-radio>
-                </el-radio-group>
+                </el-radio-group> -->
                 <!-- 網路編號 -->
                 <el-input v-else-if="item.format =='internetNumber'"
                 v-model="temp[item.prop]" 
@@ -368,7 +376,7 @@ import Setting from '@/object/setting'
 import { changeDefaultFullType } from '@/utils/index'
 import constant from '@/constant/index'
 import { SelfDefenseFireMarshalling } from '@/object'
-
+import lodash from 'lodash'
 export default {
     name:'DialogForm',
     mixins:[computedmixin],
@@ -448,6 +456,22 @@ export default {
                             })
                         case 'valueSelect':
                             return [{label:'bit',id:'bit'},{label:'word',id:'word'}]
+                        case 'iconSelect':
+                            var iconlist = constant.Equipment
+                            return iconlist.map(v => {
+                                this.$set(v, 'value', v.id) 
+                                this.$set(v, 'id', v.id) 
+                                this.$set(v, 'label', v.name) 
+                                this.$set(v, 'imgsrc', v.status[0].imgSrc) 
+                                return v
+                            })
+                        case 'iconShow':
+                            var icon = constant.Equipment.filter(item=>{
+                                return item.id == this.temp['iconId']
+                            })[0]
+                            return icon !== undefined ? icon.status[0].imgSrc : null
+                        case 'valueType':
+                            return [{label:'監視狀態',id:'status'},{label:'監視電源',id:'power'},{label:'控制動作',id:'action'}]
                         case 'addressdeviceSelect':
                             if(this.device_record == 0){
                                   this.$store.dispatch('building/setDevice')
@@ -575,8 +599,6 @@ export default {
                             return this.deviceType
                         case 'address':
                             return constant.AreaCode
-                        case 'contingencyProcessSelect': 
-                            return this.temp['linkContingencyProcess']
                         case 'marshallingMgmtSelect':
                             return this.selectData
                     }
@@ -621,7 +643,7 @@ export default {
                     }
                 }else if(this.title == 'devicetype'){
                     var fullType = this.dialogData[0]['fullType']
-                    var obj = changeDefaultFullType(fullType)
+                    var obj = lodash.cloneDeep(changeDefaultFullType(fullType)) 
                     obj.typevalue.push(fullType)
                     this.fulltypevalue = obj.typevalue
                 }else if(this.title == 'deviceAddressManagement' || this.title == 'devicePLCAddressManagement'){
@@ -748,22 +770,22 @@ export default {
                }
             }
         },
-        changeprotocolMode(value){
-            if(this.title == 'deviceAddressManagement' && this.dialogStatus == 'update'){
-                this.$confirm('更換【控制模式】將會重置關聯的設備，是否要更新【控制模式】?', 
-                '提示', {
-                    confirmButtonText: '確定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    this.temp['linkDevices'] = []
-                    this.$emit('handleDialog', 'openDialog', this.dialogStatus , this.temp) 
-                }).catch(() => {
-                    this.temp['protocolMode'] = this.originalProtocolMode
-                    this.temp['linkDevices'] = []
-                })
-            }
-        },
+        // changeprotocolMode(value){
+        //     if(this.title == 'deviceAddressManagement' && this.dialogStatus == 'update'){
+        //         this.$confirm('更換【控制模式】將會重置關聯的設備，是否要更新【控制模式】?', 
+        //         '提示', {
+        //             confirmButtonText: '確定',
+        //             cancelButtonText: '取消',
+        //             type: 'warning'
+        //         }).then(() => {
+        //             this.temp['linkDevices'] = []
+        //             this.$emit('handleDialog', 'openDialog', this.dialogStatus , this.temp) 
+        //         }).catch(() => {
+        //             this.temp['protocolMode'] = this.originalProtocolMode
+        //             this.temp['linkDevices'] = []
+        //         })
+        //     }
+        // },
         querySearch(queryString, cb) {
             var restaurants = this.selectData
             var results = queryString ? restaurants.filter(this.createFilter(queryString)) : this.selectData
@@ -841,7 +863,8 @@ export default {
         },
         //fulltype選單變動
         changeFullType(){
-            this.temp['fullType'] = this.fulltypevalue[1]
+            var data = lodash.cloneDeep(this.fulltypevalue)
+            this.temp['fullType'] = data.pop()
         },
         //地址欄位
         handleChange(value){

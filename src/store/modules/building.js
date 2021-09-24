@@ -379,7 +379,6 @@ const actions = {
             }
           }
         }
-        console.log(JSON.stringify(data))
         commit('SET_DEFAULTDEVICETYPENOLEVEL',data)
         resolve()
     })

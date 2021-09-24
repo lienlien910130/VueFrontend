@@ -109,9 +109,10 @@ export function removeDuplicates(originalArray, prop) {
 }
 
 export function changeDefaultFullType(fullType){
-  return store.getters.deviceTypeNoLevel.filter(item=>{
+  var item = store.getters.deviceTypeNoLevel.filter(item=>{
     return item.value == fullType
   })[0]
+  return item !== undefined ? item : []
 }
 
 export function uploadFile(input, callBack){

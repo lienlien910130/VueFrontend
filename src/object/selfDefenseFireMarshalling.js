@@ -122,13 +122,12 @@ class SelfDefenseFireMarshalling extends Parent {
 class SelfDefenseFireMarshallingMgmt extends Parent {
     constructor (data) {
         super(data)
-        const { name, defaultContingencyProcessId, linkRoles, linkAccountList, linkContingencyProcess, linkFloors  } = data
+        const { name, linkRoles, linkAccountList, linkContingencyProcess, linkFloors  } = data
         var roles = linkRoles !== undefined ?  linkRoles.map(item=>{ return new Role(item)}) : []
         var account = linkAccountList !== undefined ?  linkAccountList.map(item=>{ return new Account(item)}) : []
         var process = linkContingencyProcess !== undefined ?  linkContingencyProcess.map(item=>{ return new ContingencyProcess(item)}) : []
         var floor = linkFloors !== undefined ? linkFloors.map(item=>{ return new Floors(item)}) : new Array([]).map(item=>{ return new Floors(item)}) 
         this.name = name 
-        this.defaultContingencyProcessId = defaultContingencyProcessId !== undefined ? defaultContingencyProcessId : null
         this.linkRoles = roles
         this.linkAccountList = account
         this.linkFloors = floor
@@ -180,16 +179,15 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
     getProcessName(){
         return this.linkContingencyProcess.map(item => item.getName()).toString()
     }
-    getDefaultProcessName(){
-        var name = this.defaultContingencyProcessId !== null && this.linkContingencyProcess.length !== 0  ? 
-        this.linkContingencyProcess.filter(item=>{ return item.id == this.defaultContingencyProcessId})[0].name : ''
-        return name 
-    }
+    // getDefaultProcessName(){
+    //     var name = this.defaultContingencyProcessId !== null && this.linkContingencyProcess.length !== 0  ? 
+    //     this.linkContingencyProcess.filter(item=>{ return item.id == this.defaultContingencyProcessId})[0].name : ''
+    //     return name 
+    // }
     static empty(){
         return new SelfDefenseFireMarshallingMgmt({
             id:'',
             name :'',
-            defaultContingencyProcessId: null,
             linkRoles:[],
             linkAccountList:[],
             linkFloors:[],
@@ -210,14 +208,14 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            { 
-                label:'預設流程圖', 
-                prop:'defaultContingencyProcessId', 
-                format:'contingencyProcessSelect',
-                mandatory:false, message:'請選擇流程圖',
-                isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true 
-            },
+            // { 
+            //     label:'預設流程圖', 
+            //     prop:'defaultContingencyProcessId', 
+            //     format:'contingencyProcessSelect',
+            //     mandatory:false, message:'請選擇流程圖',
+            //     isHidden:false,isSearch:false,
+            //     isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true 
+            // },
             { 
                 label:'角色' , prop:'linkRoles',format:'roleSelect', mandatory:true,
                 type:'array',typemessage:'',isHidden:false,isSearch:false,

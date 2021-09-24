@@ -69,7 +69,6 @@ class Floors extends Parent {
     }
     async getGraphicFiles(){
         var data = await api.files.apiGetFloorIdToGraphicFile(this.id).then(response => {
-            console.log(response)
             return response.result
         }).catch(error=>{
             return null

@@ -14,6 +14,7 @@ import store from '../store'
      let wsPort = '59119'
      let wsPath = ''
      let wsProtocol = 'JonUmZbPuQj69GnQdefx6w1ygkeU8PkzHO0EknOSdTmTYEhgg7HpDOeniThA96f4PlGlGFKBsVSbICqlEsb91xf15tVt7FGddY80p6AfcBIknQqsEWiPhKf9hByJL1Vt'
+     //let wsProtocol = 'pnfiawAkRxgMkiGMuAj8Jn46Knk3jc1k1SISfCmGiLHjAbdDhDQo4gvuv9S8XmBXwDyxJQzi6OPtx7J3X9BsmnDmysJiwYh7hUBpAr1vtHSwy6CwxC5kQXUAhztXgdQb'
      this.$ws = new WebSocket('ws://'+wsIP+':'+wsPort+'/'+wsPath, wsProtocol);
      this.$ws.onopen = this.wsOpen;
      this.$ws.onclose = this.wsClose;

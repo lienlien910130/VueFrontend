@@ -210,8 +210,19 @@
                                     {{ item.getDevicesName() }}
                                 </span>
 
-                                 <span v-else-if="option.format == 'floorSelect' " >
+                                <span v-else-if="option.format == 'floorSelect' " >
                                     {{ changeFloorName(item[option.prop]) }}
+                                </span>
+
+                                <span v-else-if="option.format == 'valueType' " >
+                                    {{ item.getValueTypeName() }}
+                                </span>
+
+                                <span v-else-if="option.format == 'iconSelect' " >
+                                    <template v-if="changeIcon(item[option.prop]) !== ''">
+                                        <img class="avatar" :src="changeIcon(item[option.prop])" 
+                                        style="height:25px;width:25px;margin:auto;vertical-align:middle">
+                                    </template>
                                 </span>
 
                                 <span v-else-if="option.format == 'deviceTypeSelect' "
@@ -365,6 +376,17 @@
                                              {{ changeFloorName(scope.row[item.prop]) }}
                                         </span>
 
+                                        <span v-else-if="item.format == 'valueType' " >
+                                            {{ scope.row.getValueTypeName() }}
+                                        </span>
+
+                                        <span v-else-if="item.format == 'iconSelect' " >
+                                            <template v-if="changeIcon(scope.row[item.prop]) !== ''">
+                                                <img class="avatar" :src="changeIcon(scope.row[item.prop])" 
+                                                style="height:25px;width:25px;margin:auto;vertical-align:middle">
+                                            </template>
+                                        </span>
+
                                         <span v-else-if="item.format == 'contactunitSelect' " 
                                         @click="clickMessageBox('廠商資料',item.format,scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
@@ -488,6 +510,7 @@ import { computedmixin } from '@/mixin/index'
 import { Device, DeviceType, Contactunit, User, UsageOfFloor, Role, Building, InspectionLacks } from '@/object/index'
 import moment from 'moment'
 import lodash from 'lodash'
+import constant from '@/constant/index'
 
 export default {
     mixins:[computedmixin],
@@ -670,6 +693,17 @@ export default {
         },
         total: function() {
             return this.listQueryParams.total || 0
+        },
+        changeIcon(){
+            return function (value) {
+                if(value !== null){
+                    var icon = constant.Equipment.filter(item=>{
+                        return item.id == value
+                    })[0]
+                    return icon !== undefined ? icon.status[0].imgSrc : ""
+                }
+                return ""
+            }
         }
     },
     watch:{

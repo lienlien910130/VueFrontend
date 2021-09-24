@@ -17,15 +17,22 @@
     </div>
     <div class="flow-attr">
         
-                <el-alert
-                  v-if="isSave == true"
-                  title="請先存檔後再離開畫面"
-                  type="warning"
-                  center
-                  :closable="false"
-                  show-icon
-                  style="margin-bottom:5px">
-                </el-alert>
+        <el-alert
+          v-if="isSave == true"
+          title="請先存檔後再離開畫面"
+          type="warning"
+          center
+          :closable="false"
+          show-icon
+          style="margin-bottom:5px">
+        </el-alert>
+
+        <div v-if="type == 'edit' && selectType == null">
+          <EquipmentType 
+          ref="equipmentType"
+          :imgAddress="imgAddress"
+          v-on:sendAddressImageIcon="sendAddressImageIcon"></EquipmentType>
+        </div>
 
         <el-form v-if="selectType !== null" class="form-inline" label-position="left" style="padding:8px">  
 
@@ -42,7 +49,7 @@
                       v-for="(item,index) in imgAddress"
                       :key="index"
                       :label="item.label"
-                      :value="item.value"
+                      :value="item.label"
                       :disabled="item.systemUsed">
                     </el-option>
                   </el-select>
@@ -110,6 +117,8 @@
                   :predefine="predefineColors" @change="changeAttributes('strokecolor')"></el-color-picker>
                 </el-form-item>
         </el-form>
+
+
     </div>
     <!-- <el-row :gutter="16" class="row" style="height:620px">
       <el-col :xs="24" :sm="24" :md="24" :lg="canvasvalue" style="overflow:auto">
@@ -290,6 +299,9 @@ export default {
       }
     }
   },
+  components:{
+    EquipmentType: () => import('@/views/graphic/components/EquipmentType.vue')
+  },
   computed: {
      ...mapGetters([
         'wsmsg',
@@ -304,10 +316,10 @@ export default {
         return this.addressInfo.reduce((pre, cur, index) => Object.assign(pre, {['value' + index]: cur[item.prop]}), {'title': item.label,});
       })
     },
-    connectArray(){
+    connectArray(value){
       var all = this.canvas.getObjects()
       return all.filter(item=>{
-        return item.type !== 'textbox' 
+        return item.type !== 'textbox' && item.addressId !== this.addressId 
       })
     }
   },
@@ -316,7 +328,7 @@ export default {
       operateMenu:constant.GraphicMenuView,
       hasAnimationStarted:false,
       setPointObj:null,
-      updateArray:[],
+      //updateArray:[],
       imgAddress:[],
       addressId:'',
       connectId:'',
@@ -403,7 +415,6 @@ export default {
       //客製化的元素
       blockType: '未分類',
       objectName:'', //圖層標題
-      objId:null,
       //上一步下一步
       state:'', //狀態
       undo:[], //之前的步驟
@@ -453,12 +464,22 @@ export default {
       pointarray:{
           handler:async function(){
             var data = lodash.cloneDeep(this.pointarray)
-            this.imgAddress = data.map(v => {
-                this.$set(v, 'systemUsed',item.systemUsed) 
-                this.$set(v, 'value',item.internet+'-'+item.system+'-'+item.address+'-'+item.number) 
-                this.$set(v, 'label',item.internet+'-'+item.system+'-'+item.address+'-'+item.number) 
-                this.$set(v, 'id', v.id) 
-                return v
+            this.imgAddress = data.map(item => {
+                this.$set(item, 'systemUsed',item.systemUsed) 
+                this.$set(item, 'id', item.id) 
+                var str = item.internet+'-'+item.system
+                if(item.type == 'fire'){
+                  str = str.concat('-'+item.address)
+                  if(item.number !== '' && item.number !== null && item.number !== undefined){
+                     str = str.concat('-'+item.number)
+                  } 
+                }else{
+                  if(item.memeryLoc !== '' && item.memeryLoc !== null && item.memeryLoc !== undefined){
+                     str = str.concat('-'+item.memeryLoc)
+                  } 
+                }
+                this.$set(item, 'label',str)
+                return item
             })
           },
           immediate:true
@@ -503,7 +524,7 @@ export default {
     })
     // this.canvas.on("object:moved", this.isEditChange(true))
     //添加消息接收函數
-    window.addEventListener("message", this.receiveMessage, false)
+    //window.addEventListener("message", this.receiveMessage, false)
 
     document.onkeydown = async(e) => {
       if (e.keyCode == 46) {
@@ -596,7 +617,7 @@ export default {
     },
     async loadBackgroundImage(objects,imgsrc){ //載入背景圖
       this.canvas.clear()
-      this.sendAllobj()
+      //this.sendAllobj()
       fabric.Image.fromURL(imgsrc, (img) => {
           const background = img.set({
            scaleX: this.canvas.width / img.width,
@@ -624,10 +645,10 @@ export default {
             var origRenderOnAddRemove = self.canvas.renderOnAddRemove
             self.canvas.renderOnAddRemove = false
             var original = []
-            obj.sort((x,y) => x.id - y.id).forEach(item=>{
+            obj.forEach(item=>{
               original.push(item)
             })
-            self.id = original[original.length-1].id +1
+            
             for(let i=0;i<object.length;i++){
               if(object[i].type == 'image'){
                 var item = constant.Equipment.filter((item,index) => 
@@ -645,7 +666,7 @@ export default {
                   }) 
                   self.canvas.add(image)
                   self.addCustomize(image,original[i].objId,original[i].objectName,original[i].blockType,
-                  original[i].srcId,original[i].addressId,original[i].connectId)
+                  original[i].srcId,original[i].addressId,original[i].connectId,original[i].status,original[i].action)
                 }).catch((err)=>{
                     console.log(err)  
                 })
@@ -653,15 +674,15 @@ export default {
                 object[i].visible = false
                 self.canvas.add(object[i])
                 self.addCustomize(object[i],original[i].objId,original[i].objectName,original[i].blockType,
-                original[i].srcId,original[i].addressId,original[i].connectId)
+                original[i].srcId,original[i].addressId,original[i].connectId,original[i].status,original[i].action)
               }
             }
             self.canvas.renderOnAddRemove = origRenderOnAddRemove
             self.canvas.renderAll()
             self.state = self.canvas.toJSON()
-            self.sendAllobj()
+            //self.sendAllobj()
         })
-        this.updateArray = []  
+        // this.updateArray = []  
       }
     },
     searchBlockType(val){ //區塊顯示開關 先關閉全部再開啟對應的類型
@@ -679,24 +700,32 @@ export default {
       this.canvas.renderAll()
     },
     //圖層傳來的事件
-    objectSelect(val){ //圖層選取物件
+    objectSelect(address){ //圖層選取物件
+      // this.canvas.discardActiveObject()
+      // if(val.visible && this.type == 'edit'){
+      //   this.canvas.setActiveObject(val)
+      //   this.objectName = val.objectName
+      //   this.canvas.renderAll()
+      // }
       this.canvas.discardActiveObject()
-      if(val.visible && this.type == 'edit'){
-        this.canvas.setActiveObject(val)
-        this.objectName = val.objectName
+      var icon = this.canvas.getObjects().filter(item=>{
+        return item.addressId == address
+      })[0]
+      if(icon !== undefined && icon.visible && this.type == 'edit'){
+        this.canvas.setActiveObject(icon)
         this.canvas.renderAll()
       }
     },
-    objectDelete(val){ //圖層刪除物件
-      val.forEach(obj => {
-        this.canvas.remove(obj)
-      })
-      this.saveCanvasState()
-      this.canvas.renderAll()
-    },
+    // objectDelete(val){ //圖層刪除物件
+    //   val.forEach(obj => {
+    //     this.canvas.remove(obj)
+    //   })
+    //   this.saveCanvasState()
+    //   this.canvas.renderAll()
+    // },
     //選取 刪除 移動物件
     selectioncreatedandupdated(e){ //畫面顯示選取到的物件的屬性狀況
-      this.addressDiv = {x:e.e.offsetX,y:e.e.offsetY}
+      //this.addressDiv = {x:e.e.offsetX,y:e.e.offsetY}
       // this.infovisible = true
       this.selectioncleared(null)
       var items = this.canvas.getActiveObjects()
@@ -704,7 +733,7 @@ export default {
       //this.isTextBox = null
       this.selectType = null
       if(items.length === 1){
-        this.objId = items[0].objId
+        //this.objId = items[0].objId
         this.objectName = items[0].objectName
         this.blockType = items[0].blockType  
         if(items[0].type === 'textbox'){
@@ -730,9 +759,9 @@ export default {
           }
         }else if(items[0].type === 'image'){
           this.selectType = 'image'
-          this.opacity = items[0].opacity*100
           this.srcId = items[0].srcId
           this.addressId = items[0].addressId
+          this.connectId = items[0].connectId
         }
       }
       items.forEach(item=>{
@@ -741,7 +770,7 @@ export default {
       //this.$emit('sendActionToLayer','sel',items)
     },
     selectioncleared(e){ //回到預設
-      this.objId = null
+      //this.objId = null
       this.objectName = ''
       this.blockType = '未分類'
       this.fontsize = '14'
@@ -765,6 +794,12 @@ export default {
       } 
       item.forEach(obj => {
         this.canvas.remove(obj)
+        var index = this.imgAddress.findIndex(item=>{ 
+          return item.label == obj.addressId })
+        if(index !== -1){ 
+          this.imgAddress[index].systemUsed = false 
+          this.$refs.equipmentType.setDisableDraggle(this.imgAddress[index].id,true)
+        }
       })
       this.saveCanvasState()
       this.canvas.renderAll()
@@ -849,15 +884,16 @@ export default {
         return
       }
 
-      if(this.canvas.getActiveObject() == null && this.imgSource.length !== 0 && this.drawType == 'icon'){ //可以點選圖片新增
-        if(window.child.closed){
-          this.imgSource = []
-          this.canvas.skipTargetFind = false
-        }else{
-          this.canvas.skipTargetFind = true
-          this.drop(e)
-        }
-      }else if (this.drawType == "text") { 
+      // if(this.canvas.getActiveObject() == null && this.imgSource.length !== 0 && this.drawType == 'icon'){ //可以點選圖片新增
+      //   if(window.child.closed){
+      //     this.imgSource = []
+      //     this.canvas.skipTargetFind = false
+      //   }else{
+      //     this.canvas.skipTargetFind = true
+      //     this.drop(e)
+      //   }
+      // }else 
+      if (this.drawType == "text") { 
         this.addTextBox()
       }else if (this.drawType == "polygon") {
         if (this.pointArray.length > 1) {
@@ -930,7 +966,7 @@ export default {
       //廣播圖層新增:長方形
       if(this.drawType === 'rectangle'){
         if(this.canvas.getObjects().length !== this.objectCount){
-          this.sendAllobj()
+          //this.sendAllobj()
           this.isEditChange(true)
         }
       }
@@ -947,10 +983,10 @@ export default {
     },
     //新增物件
     async drawTypeChange(e) { //切換繪圖類別
-      if(window.child && window.child.open && !window.child.closed){
-        window.child.close()
-        this.imgSource = []
-      }
+      // if(window.child && window.child.open && !window.child.closed){
+      //   window.child.close()
+      //   this.imgSource = []
+      // }
       
       if(this.drawType == 'text' && this.textbox !== null){
         this.textbox.exitEditing() //關閉文字框編輯
@@ -968,10 +1004,11 @@ export default {
       window.event.stopPropagation()
       window.event.preventDefault()
       const imgEl = document.createElement('img')
-      var item = constant.Equipment.filter((item,index) => 
-          item.id == this.imgSource[0]
-      )[0] 
-      imgEl.src = item.status[0].imgSrc
+      // var item = constant.Equipment.filter((item,index) => 
+      //     item.id == this.imgSource[0]
+      // )[0] 
+      // imgEl.src = item.status[0].imgSrc
+      imgEl.src = this.imgSource[8]
       imgEl.onload = () => {
         const image = new fabric.Image(imgEl, {
           scaleX: 0.1,
@@ -983,10 +1020,18 @@ export default {
           hasControls:false
         })
         this.canvas.add(image)
-        this.addCustomize(image,null,this.imgSource[5],null,this.imgSource[0])
-        this.sendAllobj() //廣播圖層新增:圖片
+        this.addCustomize(image,null,this.imgSource[3],null,this.imgSource[0],this.imgSource[4],null,this.imgSource[5],this.imgSource[6])
+        //this.sendAllobj() //廣播圖層新增:圖片
         this.canvas.renderAll()
         this.isEditChange(true)
+        if(this.imgSource[7] !== null){
+          this.$refs.equipmentType.setDisableDraggle(this.imgSource[7],false)
+        }
+        var index = this.imgAddress.findIndex(item=>{ 
+          return item.label == this.imgSource[4] })
+        if(index !== -1){ this.imgAddress[index].systemUsed = true }
+        this.imgSource = []
+        this.canvas.skipTargetFind = false
       }
     },
     drawing() { //新增矩形
@@ -1049,7 +1094,7 @@ export default {
       this.textbox.enterEditing()
       this.textbox.hiddenTextarea.focus()
       this.addCustomize(this.textbox)
-      this.sendAllobj() //廣播圖層新增:文字
+      //this.sendAllobj() //廣播圖層新增:文字
       this.isEditChange(true)
       this.drawTypeChange('')
     },
@@ -1169,7 +1214,7 @@ export default {
       })
       this.canvas.add(polygon)
       this.addCustomize(polygon)
-      this.sendAllobj() //廣播圖層新增:多邊形
+      //this.sendAllobj() //廣播圖層新增:多邊形
       this.isEditChange(true)
       this.drawingObject = polygon
       this.activeLine = null
@@ -1178,30 +1223,72 @@ export default {
       this.doDrawing = false
       this.drawType = null
     },
-    openLegendWindows(){ // 打開圖例
-      this.drawType = 'icon'
-      const { href } = this.$router.resolve({
-        name: 'Graphic_equipmentType'
-      })
-      if(window.child && window.child.open && !window.child.closed){
-        window.child.focus()
-      }else{
-        window.child = window.open(href, '_blank', 'toolbar=no, width=400, height=600,location=no')
-      }
-    },
-    receiveMessage(event) { //子視窗傳來的
-        //event.origin是指發送的消息源，一定要進行驗證！！！
-        // if (event.origin !== "http://localhost:9528")return
-        if (event.data.source === 'vue-devtools-backend-injection' 
-        || event.data.source === 'vue-devtools-proxy' || event.data.source === 'undefined')return
-        if(event.data !== "" && event.data !== 'null'){
-          this.imgSource = event.data.split(',')
-          this.canvas.skipTargetFind = true
-        }else if (event.data == 'null'){
-          this.imgSource = []
-          this.canvas.skipTargetFind = false
+    // openLegendWindows(){ // 打開圖例
+    //   this.drawType = 'icon'
+    //   const { href } = this.$router.resolve({
+    //     name: 'Graphic_equipmentType'
+    //   })
+    //   if(window.child && window.child.open && !window.child.closed){
+    //     window.child.focus()
+    //   }else{
+    //     window.child = window.open(href, '_blank', 'toolbar=no, width=400, height=600,location=no')
+    //   }
+    // },
+    sendAddressImageIcon(item,event){ //樓層點位-火警&plc + 圖例新增
+      if(item.internet !== undefined){
+        var address = item.internet+'-'+item.system
+        if(item.type == 'fire'){
+          address = address.concat('-'+item.address)
+          if(item.number !== '' && item.number !== null && item.number !== undefined){
+            address = address.concat('-'+item.number)
+          } 
+        }else{
+          if(item.memeryLoc !== '' && item.memeryLoc !== null && item.memeryLoc !== undefined){
+            address = address.concat('-'+item.memeryLoc)
+          } 
         }
+        // if(item.address !== '' && item.address !== null && item.address !== undefined){
+        //     address = address.concat('-'+item.address)
+        // }
+        // if(item.number !== '' && item.number !== null && item.number !== undefined){
+        //     address = address.concat('-'+item.number)
+        // }
+        // if(item.type == 'plc' && item.memeryLoc !== '' && item.memeryLoc !== null && item.memeryLoc !== undefined){
+        //     address = address.concat('-'+item.memeryLoc)
+        // }
+        var icon = constant.Equipment.filter(icon=>{
+          return icon.id == item.iconId 
+        })[0]
+        this.imgSource = [item.iconId, event.offsetX, event.offsetY, item.deviceFullType, address, 
+        icon.status !== undefined ? icon.status : [], 
+        icon.action !== undefined ? icon.action : [], 
+        item.id, icon.status[0].imgSrc]
+        this.objectSelect(address)
+      }else{
+        var icon = constant.Equipment.filter(icon=>{
+          return icon.id == item.id 
+        })[0]
+        this.imgSource = [item.id, event.offsetX, event.offsetY, item.name, null, 
+        icon.status !== undefined ? icon.status : [], 
+        icon.action !== undefined ? icon.action : [], 
+        null, icon.status[0].imgSrc]
+      }
+      
     },
+    // receiveMessage(event) { //子視窗傳來的
+    //     //event.origin是指發送的消息源，一定要進行驗證！！！
+    //     // if (event.origin !== "http://localhost:9528")return
+    //     if (event.data.source === 'vue-devtools-backend-injection' 
+    //     || event.data.source === 'vue-devtools-proxy' || event.data.source === 'undefined')return
+    //     if(event.data !== "" && event.data !== 'null'){
+    //       this.imgSource = event.data.split('|')
+    //       console.log(this.imgSource)
+    //       this.canvas.skipTargetFind = true
+    //     }else if (event.data == 'null'){
+    //       this.imgSource = []
+    //       this.canvas.skipTargetFind = false
+    //     }
+    // },
     //屬性修改
     changeAttributes(type){
       if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
@@ -1279,50 +1366,47 @@ export default {
         }
       }
     },
-    async sendAddressChange(){ //點位設定修改
+    sendAddressChange(){ //點位設定修改
       if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
         var original = this.canvas.getActiveObject().addressId
         var newaddress = this.addressId
         if(original !== newaddress){
-          // var item = this.imgAddress.filter(item=>{
-          //   return item.label == original
-          // })[0]
-          // item.systemUsed = false
+          var originalIndex = this.imgAddress.findIndex(item=>{ 
+          return item.label == original })
+          if(originalIndex !== -1){ 
+            this.imgAddress[originalIndex].systemUsed = false 
+            this.$refs.equipmentType.setDisableDraggle(this.imgAddress[originalIndex].id,true)
+          }
         }
         this.canvas.getActiveObject().set({ addressId: this.addressId })
-        var index = this.imgAddress.findIndex(item=>{ return item.label == this.addressId })
-        this.imgAddress[index].systemUsed = true
-        this.isEditChange(true)
-
-        // if(this.canvas.getActiveObject().type !== 'image'){
-        //   this.$emit('sendBlcokChange',this.canvas.getActiveObject().id,this.objectName,this.blockType)
-        // }
-        //檢查現在選取的方框是否有修改的類型
-        var ret1 = this.checkList.find((value, index, arr) => {
-          return value == this.blockType
-        })
-        if(ret1 == undefined){
-          this.canvas.getActiveObject().set({ visible: false })
-          this.canvas.discardActiveObject()
-          this.canvas.renderAll()
+        var newindex = this.imgAddress.findIndex(item=>{ return item.label == this.addressId })
+        if(newindex !== -1){ 
+          this.imgAddress[newindex].systemUsed = true 
+          this.$refs.equipmentType.setDisableDraggle(this.imgAddress[newindex].id,false)
         }
+        this.isEditChange(true)
       }
     },
     sendConnectChange(){ //關聯修改
-
+      if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
+          this.canvas.getActiveObject().set({ connectId: this.connectId })
+          this.isEditChange(true)
+      }
     },
     //儲存相關
     addCustomize(canvasObject, objId = null, objectname = null, blocktype = null, srcId = null, addressId = null,
-    connectId = null){ //新增客製化元素：貼上/初始化物件/圖例/矩形/文字/多邊
+    connectId = null, status = null, action = null){ //新增客製化元素：貼上/初始化物件/圖例/矩形/文字/多邊
         canvasObject.toObject = (function (toObject) {
             return function () {
                 return fabric.util.object.extend(toObject.call(this), {
-                    objId: this.objId,
+                    objId: getUUID(),
                     objectName: this.objectName,
                     blockType: this.blockType,
                     srcId:this.srcId,
                     addressId:this.addressId,
-                    connectId:this.connectId
+                    connectId:this.connectId,
+                    status:status,
+                    action:action
                 })
             }
         })(canvasObject.toObject)
@@ -1333,11 +1417,12 @@ export default {
         canvasObject.set("srcId",srcId == null ? '' : srcId) //圖示的id
         canvasObject.set("addressId",addressId == null ? '' : addressId) //點位，用來websocket接收訊息後找icon並且動作
         canvasObject.set("connectId",connectId == null ? '' : connectId) //關聯，區塊要關聯探測器物件的id(uuid)，下拉選單選取所有scrid=探測器的
-
+        canvasObject.set("status",status)
+        canvasObject.set("action",action)
     },
     sendAllobj(){ //傳給父元件：貼上/初始化物件/圖例/矩形/文字/多邊
-      this.saveCanvasState()
-      this.$emit('sendObjectListToLayer',this.canvas.getObjects())
+      // this.saveCanvasState()
+      // this.$emit('sendObjectListToLayer',this.canvas.getObjects())
     },
     saveCanvasState(){ //儲存畫布狀態：物件有編輯/物件刪除/傳給父元件(貼上/初始化物件/圖例/矩形/文字/多邊)
       if(JSON.stringify(this.canvas.toJSON()) === JSON.stringify(this.state)) return  
@@ -1358,7 +1443,7 @@ export default {
           item.src = ''
         }
       })
-      this.$emit('sendFloorGraphicFile',currState,this.updateArray)
+      this.$emit('sendFloorGraphicFile', currState, this.imgAddress)
       this.isEditChange(false)
     },
     copy(){ //複製圖片
@@ -1381,19 +1466,19 @@ export default {
             clonedObj.forEachObject(function(obj) {
               canvas.add(obj)
               self.addCustomize(obj,null,_clipboard.objectName,_clipboard.blockType,
-              _clipboard.srcId) 
+              _clipboard.srcId,null,null,_clipboard.status,_clipboard.action) 
             })
             clonedObj.setCoords()
           } else {
             canvas.add(clonedObj)
             self.addCustomize(clonedObj,null,_clipboard.objectName,_clipboard.blockType,
-            _clipboard.srcId)  
+            _clipboard.srcId,null,null,_clipboard.status,_clipboard.action)  
           }
           _clipboard.top += 10
           _clipboard.left += 10
           canvas.setActiveObject(clonedObj)
           canvas.requestRenderAll()
-          self.sendAllobj()
+          //self.sendAllobj()
           self.isEditChange(true)
         })
     },
@@ -1406,7 +1491,7 @@ export default {
       this.canvas.loadFromJSON(lastJSON, () => {
         this.redo.push(this.state) // 在做上一步時把目前狀態 push 到 redo 陣列
         this.state = lastJSON // 換成上一步的狀態
-        this.$emit('sendObjectRedoUndoToLayer',this.canvas.getObjects())
+        //this.$emit('sendObjectRedoUndoToLayer',this.canvas.getObjects())
         this.isEditChange(true)
       })
     },
@@ -1419,7 +1504,7 @@ export default {
       this.canvas.loadFromJSON(lastJSON, () => {
         this.undo.push(this.state)
         this.state = lastJSON
-        this.$emit('sendObjectRedoUndoToLayer',this.canvas.getObjects())
+        //this.$emit('sendObjectRedoUndoToLayer',this.canvas.getObjects())
         this.isEditChange(true)
       })
     },
@@ -1485,9 +1570,9 @@ export default {
         case '': case 'text': case 'rectangle': case 'polygon':
           this.drawTypeChange(operate)
           break;
-        case 'icon':
-          this.openLegendWindows()
-          break;
+        // case 'icon':
+        //   this.openLegendWindows()
+        //   break;
         case 'upper-step':
           this.doUndo()
           break;

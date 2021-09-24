@@ -62,7 +62,6 @@ class DeviceType extends Parent {
     getFullType(){
         return this.fullType
     }
-    
     //設備清單使用
     getSelectName(){
         return this.getType() !== '' ? 
@@ -150,7 +149,7 @@ class DeviceType extends Parent {
     }
     static async getDefault (){
         var data = await api.device.apiGetDefaultFullType().then(response => {
-            console.log(response)
+            //console.log(response)
             return JSON.parse(response)
         }).catch(error=>{
             return []

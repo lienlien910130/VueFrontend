@@ -2090,11 +2090,11 @@ export default {
     {
         left:
         [
-            {
-                type:'icon',
-                name:'圖例',
-                icon:'el-icon-add-location'
-            },
+            // {
+            //     type:'icon',
+            //     name:'圖例',
+            //     icon:'el-icon-add-location'
+            // },
             {
                 type:'text',
                 name:'文字',

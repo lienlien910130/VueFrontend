@@ -82,9 +82,7 @@
                                         <span v-else-if="scope.column.property == 'linkContingencyProcess'"> 
                                             {{ scope.row.getProcessName() }}
                                         </span>
-                                        <span v-else-if="scope.column.property == 'defaultContingencyProcessId'"> 
-                                            {{ scope.row.getDefaultProcessName() }}
-                                        </span>
+                                       
                                         <span v-else-if="scope.column.property == 'systemUsed'"> 
                                             {{ scope.row[item.prop] == true ? '已設置' : '未設置' }}
                                         </span>

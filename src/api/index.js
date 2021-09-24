@@ -7,7 +7,7 @@ import report from '@/api/report'
 import setting from '@/api/setting'
 import authority from '@/api/authority'
 import selfDefenseFireMarshalling from '@/api/selfDefenseFireMarshalling'
-import drawingControl from '@/api/drawingControl'
+
 
 export default {    
   user,
@@ -17,6 +17,5 @@ export default {
   report,
   setting,
   authority,
-  selfDefenseFireMarshalling,
-  drawingControl
+  selfDefenseFireMarshalling
 }

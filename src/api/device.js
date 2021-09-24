@@ -101,7 +101,9 @@ const device = {
             element.parentId = maintainListId
         })
         return req('post','/maintainListManagement/maintainManagement/s', null, data) 
-    },    
+    },
+    //取得樓層點位
+    apiGetDrawingAddress(floorId){ return req( 'get','/drawingControl/'+floorId+'/address' ) },
     
 }
 
