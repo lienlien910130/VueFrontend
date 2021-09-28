@@ -92,7 +92,7 @@ class DeviceAddressManagement extends Parent {
         return this.linkDevices.map(item => item.getName()).toString()
     }
     getValueTypeName(){
-        return this.valueType == 'status' ? '監視狀態' : this.valueType == 'action' ? '控制動作' : '監視電源'
+        return this.value == 'status' ? '監視狀態' : this.value == 'action' ? '控制動作' : '監視電源'
     }
     static empty(){
         return new DeviceAddressManagement({
@@ -104,8 +104,8 @@ class DeviceAddressManagement extends Parent {
             status:'',
             systemUsed:false,
             floorsId:null,
-            valueType:'',
-            value:'bit',
+            valueType:'bit',
+            value:'',
             memeryLoc:'',
             iconId:'',
             linkDevices:[],
@@ -230,7 +230,7 @@ class DeviceAddressManagement extends Parent {
             },
             {
                 label: '類型',
-                prop: 'valueType', format:'valueType', 
+                prop: 'value', format:'valueType', 
                 mandatory:true, message:'請選擇類型',isHidden:false,maxlength:'5',
                 isSearch:true,placeholder:'請選擇類型',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
@@ -332,14 +332,14 @@ class DeviceAddressManagement extends Parent {
             // },
             {
                 label: '類型',
-                prop: 'valueType',format:'valueType', 
+                prop: 'value',format:'valueType', 
                 mandatory:true, message:'請選擇類型',isHidden:false,maxlength:'5',
                 isSearch:true,placeholder:'請選擇類型',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             { 
                 label:'值' , 
-                prop:'value',
+                prop:'valueType',
                 format:'valueSelect', 
                 mandatory:false,message:'請選擇值',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,

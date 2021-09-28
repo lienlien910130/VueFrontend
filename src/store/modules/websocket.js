@@ -1,7 +1,7 @@
 
 const getDefaultState = () => {
     return {
-      wsmsg: '',
+      wsmsg: [],
       wsuserId:''
     }
   }
@@ -13,7 +13,7 @@ const getDefaultState = () => {
       Object.assign(state, getDefaultState())
     },
     SET_MSG: (state, wsmsg) => {
-      state.wsmsg = wsmsg
+      state.wsmsg.push(wsmsg)
     },
     SET_MSGUSERID: (state, wsuserId) => {
       state.wsuserId = wsuserId

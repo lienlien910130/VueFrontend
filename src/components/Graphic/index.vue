@@ -1420,10 +1420,10 @@ export default {
         canvasObject.set("status",status)
         canvasObject.set("action",action)
     },
-    sendAllobj(){ //傳給父元件：貼上/初始化物件/圖例/矩形/文字/多邊
+    //sendAllobj(){ //傳給父元件：貼上/初始化物件/圖例/矩形/文字/多邊
       // this.saveCanvasState()
       // this.$emit('sendObjectListToLayer',this.canvas.getObjects())
-    },
+    //},
     saveCanvasState(){ //儲存畫布狀態：物件有編輯/物件刪除/傳給父元件(貼上/初始化物件/圖例/矩形/文字/多邊)
       if(JSON.stringify(this.canvas.toJSON()) === JSON.stringify(this.state)) return  
       this.undo.push(this.state)
@@ -1615,8 +1615,17 @@ export default {
             type: 'warning'
           }).then(() => {
             var items = this.canvas.getObjects()
+            if(items.length){
+              this.isEditChange(true)
+            }
             for(let obj of items){
               this.canvas.remove(obj)
+              var index = this.imgAddress.findIndex(item=>{ 
+                return item.label == obj.addressId })
+              if(index !== -1){ 
+                this.imgAddress[index].systemUsed = false 
+                this.$refs.equipmentType.setDisableDraggle(this.imgAddress[index].id, true)
+              }
             }
             this.saveCanvasState()
             this.canvas.renderAll()

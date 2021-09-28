@@ -14,7 +14,7 @@
             <!-- <el-button type="primary" size="mini" @click="resetCanvas()" :disabled="disabled">復原位置</el-button>
             <el-button type="primary" size="mini" @click="saveCanvasToImage()" :disabled="disabled">匯出圖片</el-button> -->
             <el-button type="primary" size="mini" :disabled="disabled">歷史紀錄</el-button>
-            <el-button type="primary" size="mini" :disabled="disabled" @click="redirect('address')">點位一覽</el-button>
+            <!-- <el-button type="primary" size="mini" :disabled="disabled" @click="redirect('address')">點位一覽</el-button> -->
             <el-popover
               placement="left-start"
               title="快捷鍵"
@@ -179,15 +179,10 @@ export default {
         }
     },
     watch: {
-      // buildingfloors:{
-      //   handler:async function(){
-      //     this.selectData = this.buildingfloors
-      //   },
-      //   immediate:true
-      // },
       // wsmsg:{
       //   handler:async function(){
-      //       var data = JSON.parse(this.wsmsg.data)
+      //       var datalist = this.wsmsg.shift()
+      //       var data = JSON.parse(datalist.data)
       //       console.log(data)
       //       var uid = data.id
       //       var type = data.type
@@ -276,10 +271,10 @@ export default {
           this.type = type
           if(type == 'edit'){
             this.checkList = ['未分類','警戒區','防護區','放射區','撒水區']
-            //this.$socket.sendMsg(this.id,'openEdit',this.floor.getID())
+            this.$socket.sendMsg('graphic', 'openEdit' , this.floor.getID())
           }else{
             this.checkList = []
-            //this.$socket.sendMsg(this.id,'closeEdit',this.floor.getID())
+            this.$socket.sendMsg('graphic', 'closeEdit' , this.floor.getID())
           }
           this.$refs.graphic.searchBlockType(this.checkList)
         }else{
@@ -293,7 +288,7 @@ export default {
       async handleSelect(content, device = null){
         console.log('handleSelect',device)
         if(this.type == 'edit'){
-          //this.$socket.sendMsg(this.id,'closeEdit',this.floor.getID())
+          this.$socket.sendMsg('graphic', 'closeEdit' , this.floor.getID())
         }
         this.type = 'view'
         this.floor = content
@@ -311,6 +306,7 @@ export default {
             this.$refs.graphic.loadBackgroundImage(obj.codeContent,data)
         }
         //this.$socket.sendMsg(this.id,'enterGraphic',this.floor.getID())
+        this.$socket.sendMsg('graphic', 'enterGraphic' , this.floor.getID())
         if(device !== null){
           this.actionObj = device
         }
@@ -353,17 +349,32 @@ export default {
         formData.append('file', fileContent)
         var isOk = await this.floor.postGraphicFiles(formData)
         if(isOk){
-          var array = []
+          this.$message('儲存成功')
+          var fire = []
+          var plc = []
           for(var i =0; i<addressArray.length; i++){
             if(this.pointarray[i].systemUsed !== addressArray[i].systemUsed){
-              array.push({
-                id:addressArray[i].id,
-                systemUsed:addressArray[i].systemUsed
-              })
+              if(addressArray[i].type == 'fire'){
+                fire.push({
+                  id:addressArray[i].id,
+                  systemUsed:addressArray[i].systemUsed
+                })
+              }else{
+                plc.push({
+                  id:addressArray[i].id,
+                  systemUsed:addressArray[i].systemUsed
+                })
+              }
             }
           }
-          console.log(array)
-          this.$message('儲存成功')
+          if(fire.length || plc.length){
+            var result = await DrawingControl.update(fire,plc)
+            if(!result){
+              this.$message.error('系統錯誤')
+            }else{
+              this.pointarray  = await DrawingControl.getOfFloor(this.floor.getID())
+            }
+          }
         }else{
           this.$message.error('系統錯誤')
         }

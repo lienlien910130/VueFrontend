@@ -313,7 +313,7 @@
                     {{ item.prop == 'floorsOfAboveGround' ? '地上' : '地下'}}
                     </template>
                     <template 
-                    v-if="item.prop !== 'sort'"
+                    v-if="item.prop !== 'sort' && item.prop !== 'port' && item.prop !== 'differentialTransmission'"
                     slot="append">
                         <span v-if="item.prop =='area'">m<sup>2</sup></span>
                         <span v-else-if="item.prop == 'capacity'">人</span>

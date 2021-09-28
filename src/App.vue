@@ -24,57 +24,64 @@ export default {
   watch:{
     wsmsg:{
       handler:async function(){
-          var data = JSON.parse(this.wsmsg.data)
-          if(data.Data.Id !== this.wsuserId){
-            if(data.DataType == 'building' || data.DataType == 'account'){
-              switch(data.DataType){
-                case 'building':
-                  this.handleBuilding(data.SendType, data.Data.Bid, data.Data.Content)
-                  break;
-                case 'account':
-                  this.handleAccount(data.SendType, data.Data.Content)
-                  break;
-              }
-              
-            }else if(data.Data.Bid == this.buildingid){
-              console.log('收到別人的訊息!', data.DataType)
+          var datalist = this.wsmsg.shift()
+          if(datalist !== undefined){
+            var data = JSON.parse(datalist.data)
+            if(data.Data.Id !== undefined && data.Data.Id !== this.wsuserId){
+              if(data.DataType == 'building' || data.DataType == 'account'){
                 switch(data.DataType){
-                  case 'roles':
-                    this.handleRoles(data.SendType, data.Data.Content)
+                  case 'building':
+                    this.handleBuilding(data.SendType, data.Data.Bid, data.Data.Content)
                     break;
                   case 'account':
                     this.handleAccount(data.SendType, data.Data.Content)
                     break;
-                  case 'menus':
-                    this.handleMenus(data.SendType, data.Data.Content)
-                    break;
-                  case 'setting':
-                    this.handleSetting(data.SendType, data.Data.Content)
-                    break;
-                  case 'floor':
-                    this.handleFloor(data.SendType, data.Data.Content)
-                    break;
-                  case 'contactUnit':
-                    this.handleContactUnit(data.SendType, data.Data.Content)
-                    break;
-                  case 'houseHolder':
-                    this.handleHouseHolder(data.SendType, data.Data.Content)
-                    break;
-                  case 'floorOfHouse':
-                    this.handleFloorOfHouse(data.SendType, data.Data.Content)
-                    break;
-                  case 'device':
-                    this.handleDevice(data.SendType, data.Data.Content)
-                    break;
-                  case 'deviceType':
-                    this.handleDeviceType(data.SendType, data.Data.Content)
-                    break;
-                  case 'deviceAddress':
-                    this.handleDeviceAddress(data.SendType, data.Data.Content)
-                    break;
                 }
+                
+              }else if(data.Data.Bid == this.buildingid){
+                console.log('收到別人的訊息!', data.DataType)
+                switch(data.DataType){
+                    case 'roles':
+                      this.handleRoles(data.SendType, data.Data.Content)
+                      break;
+                    case 'account':
+                      this.handleAccount(data.SendType, data.Data.Content)
+                      break;
+                    case 'menus':
+                      this.handleMenus(data.SendType, data.Data.Content)
+                      break;
+                    case 'setting':
+                      this.handleSetting(data.SendType, data.Data.Content)
+                      break;
+                    case 'floor':
+                      this.handleFloor(data.SendType, data.Data.Content)
+                      break;
+                    case 'contactUnit':
+                      this.handleContactUnit(data.SendType, data.Data.Content)
+                      break;
+                    case 'houseHolder':
+                      this.handleHouseHolder(data.SendType, data.Data.Content)
+                      break;
+                    case 'floorOfHouse':
+                      this.handleFloorOfHouse(data.SendType, data.Data.Content)
+                      break;
+                    case 'device':
+                      this.handleDevice(data.SendType, data.Data.Content)
+                      break;
+                    case 'deviceType':
+                      this.handleDeviceType(data.SendType, data.Data.Content)
+                      break;
+                    case 'deviceAddress':
+                      this.handleDeviceAddress(data.SendType, data.Data.Content)
+                      break;
+                    case 'graphic':
+                      this.handleGraphic(data.SendType, data.Data.Content)
+                      break;
+                }
+              }
             }
           }
+          
       },
       immediate:true
     }
@@ -225,6 +232,9 @@ export default {
       }else if(index == 'create'){
         this.$store.dispatch('building/addAddressManagement', new Array(new DeviceAddressManagement(content)))
       }
+    },
+    handleGraphic(index,content){
+      console.log(this.floor.getID())
     }
   }
     

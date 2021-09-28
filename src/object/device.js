@@ -10,7 +10,7 @@ class Device extends Parent {
  
     constructor (data) {
         super(data)
-        const { name,dateOfPurchase, dateOfWarranty, location,groupID, 
+        const { name,dateOfPurchase, dateOfWarranty, location,groupID, ip, port, slaveId, differentialTransmission,
             status,lastMaintainTime,nextMaintainTime,  internetNumber,
             linkKeeperUnits,linkMaintainVendors, linkDeviceTypes } = data
         var deviceType = linkDeviceTypes !== undefined ?
@@ -25,6 +25,10 @@ class Device extends Parent {
         this.location = location
         this.groupID = groupID
         this.status = status
+        this.ip = ip
+        this.port = port
+        this.slaveId = slaveId
+        this.differentialTransmission = differentialTransmission
         this.lastMaintainTime = lastMaintainTime
         this.nextMaintainTime = nextMaintainTime
         this.internetNumber = internetNumber
@@ -139,6 +143,10 @@ class Device extends Parent {
             location :'',
             lastMaintainTime:null,
             nextMaintainTime:null,
+            ip:null,
+            port:null,
+            slaveId:null,
+            differentialTransmission:null,
             internetNumber:null,
             linkKeeperUnits : [],
             linkMaintainVendors :[],
@@ -175,6 +183,40 @@ class Device extends Parent {
                 prop: 'internetNumber',format:'internetNumber',
                 mandatory:false,message:'請輸入網路編號',isHidden:true,
                 isSearch:true,maxlength:'5',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: 'IP',
+                prop: 'ip',
+                mandatory:false, message:'請輸入IP',isHidden:true,maxlength:'15',
+                isSearch:true,placeholder:'請輸入IP',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: 'Port',
+                prop: 'port',
+                format:'inputnumber', 
+                pattern:/^[0-9]{1,4}$/,errorMsg:'請輸入0~99999',isPattern:true,
+                type:'number',typemessage:'',placeholder:'請輸入0~99999',maxlength:'5',
+                mandatory:false, message:'請輸入Port',isHidden:true,
+                isSearch:true,
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '調撥號碼',
+                prop: 'slaveId',
+                mandatory:false, message:'請輸入調撥號碼',isHidden:true,maxlength:'20',
+                isSearch:true,placeholder:'請輸入調撥號碼',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '通訊速率',
+                prop: 'differentialTransmission',
+                format:'inputnumber', 
+                pattern:/^[0-9]{1,4}$/,errorMsg:'請輸入0~9999',isPattern:true,
+                type:'number',typemessage:'',placeholder:'請輸入0~9999',maxlength:'4',
+                mandatory:false, message:'請輸入通訊速率',isHidden:true,
+                isSearch:true,
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
              {

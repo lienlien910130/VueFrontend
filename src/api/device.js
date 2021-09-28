@@ -104,7 +104,11 @@ const device = {
     },
     //取得樓層點位
     apiGetDrawingAddress(floorId){ return req( 'get','/drawingControl/'+floorId+'/address' ) },
-    
+    // 圖控更新點位
+    apiPatchDevicesAddressOfDrawing(data){ return req('patch','/drawingControl/fdcc/s', null, data) },
+    apiPatchDevicesPLCAddressOfDrawing(data){  return req('patch','/drawingControl/plc/s', null, data) },
+
+
 }
 
 export default device

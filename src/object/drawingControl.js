@@ -1,6 +1,5 @@
 import Parent from './parent'
 import api from '@/api'
-import { DeviceAddressManagement } from '.'
 
 class DrawingControl extends Parent {
     // constructor (data) {
@@ -79,6 +78,26 @@ class DrawingControl extends Parent {
         })
         return data
     }
+    static async update(fire,plc){
+        var fireresult = false
+        var plcresult = false
+        if(fire.length){
+            fireresult = await api.device.apiPatchDevicesAddressOfDrawing(fire).then(response => {
+                return true
+            }).catch(error=>{
+                return false
+            })
+        }
+        if(plc.length){
+            plcresult = await api.device.apiPatchDevicesPLCAddressOfDrawing(plc).then(response => {
+                return true
+            }).catch(error=>{
+                return false
+            })
+        }
+        return fireresult == true || plcresult == true ? true : false
+    }
+
 }
 
 export default DrawingControl
