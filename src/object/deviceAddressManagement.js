@@ -26,11 +26,11 @@ class DeviceAddressManagement extends Parent {
     }
     async update(resetLink, isPLC = null){
         var temp = JSON.parse(JSON.stringify(this))
-        temp.internet = '{Check}'+temp.internet
-        temp.system = '{Check}'+temp.system
-        temp.address = '{Check}'+temp.address
-        temp.number = '{Check}'+temp.number
         if(isPLC == null){
+            temp.internet = '{Check}'+temp.internet
+            temp.system = '{Check}'+temp.system
+            temp.address = '{Check}'+temp.address
+            temp.number = '{Check}'+temp.number
             var data = await api.device.apiPutDevicesAddress(resetLink,temp).then(async(response) => {
                 return new DeviceAddressManagement(response.result)
             }).catch(error=>{
@@ -38,6 +38,9 @@ class DeviceAddressManagement extends Parent {
             })
             return data
         }else{
+            temp.internet = '{Check}'+temp.internet
+            temp.system = '{Check}'+temp.system
+            temp.memeryLoc = '{Check}'+temp.memeryLoc
             var data = await api.device.apiPutDevicesPLCAddress(resetLink,temp).then(async(response) => {
                 return new DeviceAddressManagement(response.result)
             }).catch(error=>{
@@ -48,11 +51,11 @@ class DeviceAddressManagement extends Parent {
     }
     async create(deviceId,isPLC = null){
         var temp = JSON.parse(JSON.stringify(this))
-        temp.internet = '{Check}'+temp.internet
-        temp.system = '{Check}'+temp.system
-        temp.address = '{Check}'+temp.address
-        temp.number = '{Check}'+temp.number
         if(isPLC == null){
+            temp.internet = '{Check}'+temp.internet
+            temp.system = '{Check}'+temp.system
+            temp.address = '{Check}'+temp.address
+            temp.number = '{Check}'+temp.number
             var data = await api.device.apiPostDevicesAddress(deviceId,temp).then(response => {
                 return new DeviceAddressManagement(response.result)
             }).catch(error=>{
@@ -60,6 +63,9 @@ class DeviceAddressManagement extends Parent {
             })
             return data
         }else{
+            temp.internet = '{Check}'+temp.internet
+            temp.system = '{Check}'+temp.system
+            temp.memeryLoc = '{Check}'+temp.memeryLoc
             var data = await api.device.apiPostDevicesPLCAddress(deviceId,temp).then(response => {
                 console.log(response)
                 return new DeviceAddressManagement(response.result)
