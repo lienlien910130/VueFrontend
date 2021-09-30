@@ -17,7 +17,7 @@ export default {
   name: 'App',
   created(){
     this.initsocket()
-    this.resetUI()
+    //this.resetUI()
     // this.$messaging.getToken()
     //   .then(function (currentToken) {
     //       if (currentToken) {
@@ -31,48 +31,48 @@ export default {
     //       console.log('err',err)
     // });
 
-    this.$messaging.onMessage(function (payload) {
-        console.log(payload)
-        //如果可以顯示通知就做顯示通知
-        if (Notification.permission === 'granted') {
-          this.notifyMe(payload)
-        }
-        // const notificationTitle = payload.data.title;
-        // const notificationOptions = {
-        //   body: payload.data.body,
-        //   icon: '/static/icon.png',
-        //   vibrate: [100, 50, 100],
-        //   data: {
-        //       dateOfArrival: Date.now()
-        //   },
-        //   actions: [
-        //       {
-        //           action: "confirm", title: "Go interact with this!",
-        //           icon: "images/checkmark.png"
-        //       },
-        //       {
-        //           action: "close", title: "Ignore",
-        //           icon: "images/red_x.png"
-        //       }
-        //   ]
-        // };
+    // this.$messaging.onMessage(function (payload) {
+    //     console.log(payload)
+    //     //如果可以顯示通知就做顯示通知
+    //     if (Notification.permission === 'granted') {
+    //       this.notifyMe(payload)
+    //     }
+    //     // const notificationTitle = payload.data.title;
+    //     // const notificationOptions = {
+    //     //   body: payload.data.body,
+    //     //   icon: '/static/icon.png',
+    //     //   vibrate: [100, 50, 100],
+    //     //   data: {
+    //     //       dateOfArrival: Date.now()
+    //     //   },
+    //     //   actions: [
+    //     //       {
+    //     //           action: "confirm", title: "Go interact with this!",
+    //     //           icon: "images/checkmark.png"
+    //     //       },
+    //     //       {
+    //     //           action: "close", title: "Ignore",
+    //     //           icon: "images/red_x.png"
+    //     //       }
+    //     //   ]
+    //     // };
 
-        // self.registration.showNotification(notificationTitle,
-        //   notificationOptions);
+    //     // self.registration.showNotification(notificationTitle,
+    //     //   notificationOptions);
         
-        // self.addEventListener('notificationclick', function(event) {
-        //     var notification = event.notification;
-        //     var action = event.action;
+    //     // self.addEventListener('notificationclick', function(event) {
+    //     //     var notification = event.notification;
+    //     //     var action = event.action;
             
-        //     console.log(notification);
-        //     if(action === 'confirm') {
-        //         console.log('使用者點選確認');
-        //         notification.close();
-        //     } else {
-        //         console.log(action);
-        //     }
-        // })
-    });
+    //     //     console.log(notification);
+    //     //     if(action === 'confirm') {
+    //     //         console.log('使用者點選確認');
+    //     //         notification.close();
+    //     //     } else {
+    //     //         console.log(action);
+    //     //     }
+    //     // })
+    // });
   },
   computed: {
     ...mapGetters([
