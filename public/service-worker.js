@@ -1,7 +1,4 @@
 
-/**
- * service worker 用了offline-plugin之后，这个文件就不使用了
- */
 var cacheName = 'bs-0-0-1'
 var cacheFiles = [
   '/',
@@ -81,16 +78,6 @@ self.addEventListener('push', function (e) {
   e.waitUntil(
       self.registration.showNotification("Push Notification", options)
   );
-
-  // var data = e.data
-  // if (e.data) {
-    
-  //   //data = data.json()
-  //   console.log('push的數據為：', data)
-  //   self.registration.showNotification(data.text)
-  // } else {
-  //   console.log('push沒有任何數據')
-  // }
 })
 //監聽使用者對推播訊息操作的選項
 self.addEventListener('notificationclick', function(event) {

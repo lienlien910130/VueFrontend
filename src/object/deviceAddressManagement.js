@@ -5,7 +5,7 @@ import Device from './device'
 class DeviceAddressManagement extends Parent {
     constructor (data) {
         super(data)
-        const { internet, system, address, number, status, systemUsed, memeryLoc, iconId,  valueType, value,
+        const { internet, system, address, number, systemUsed, memeryLoc, iconId,  valueType, value,
              floorsId, linkDevices  } = data
         var devices = linkDevices !== undefined ?
         linkDevices.map(item=>{ return new Device(item) }) :[]
@@ -13,7 +13,6 @@ class DeviceAddressManagement extends Parent {
         this.system = system
         this.address = address
         this.number = number
-        this.status = status
         this.systemUsed = systemUsed
         this.floorsId = floorsId
         this.value = value
@@ -94,6 +93,19 @@ class DeviceAddressManagement extends Parent {
     getValueTypeName(){
         return this.value == 'status' ? '監視狀態' : this.value == 'action' ? '控制動作' : '監視電源'
     }
+    getAddressStr(){
+        var str = this.internet
+        if(this.system !== '' && this.system !== null && this.system !== undefined){
+            str = str.concat('-'+this.system)
+        }
+        if(this.address !== '' && this.address !== null && this.address !== undefined){
+            str = str.concat('-'+this.address)
+        }
+        if(this.number !== '' && this.number !== null && this.number !== undefined){
+            str = str.concat('-'+this.number)
+        }
+        return str
+    }
     static empty(){
         return new DeviceAddressManagement({
             id:'',
@@ -101,7 +113,6 @@ class DeviceAddressManagement extends Parent {
             system : '',
             address : '',
             number :'',
-            status:'',
             systemUsed:false,
             floorsId:null,
             valueType:'bit',
@@ -131,14 +142,14 @@ class DeviceAddressManagement extends Parent {
                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
             {
-                label: '網路編號',
+                label: '總機編號',
                 prop: 'internet',format:'internetNumber',
                 mandatory:true, message:'請輸入網路編號',isHidden:false,maxlength:'5',
                 isSearch:true,placeholder:'請輸入網路編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
-               label: '系統編號',
+               label: '迴路編號',
                prop: 'system',
                mandatory:true, message:'請輸入系統編號',isHidden:false,maxlength:'11',
                pattern:/^\d*\-\d*$/g,errorMsg:'請輸入起始值-結束值',isPattern:true,
@@ -181,52 +192,53 @@ class DeviceAddressManagement extends Parent {
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
+            { 
+                label:'點位' , 
+                prop:'addressStr',
+                format:'addressStr', 
+                mandatory:false,message:'請輸入點位',type:'string',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+            },
              {
-                 label: '網路編號',
+                 label: '總機編號',
                  prop: 'internet',format:'internetNumber',
-                 mandatory:true, message:'請輸入網路編號',isHidden:true,maxlength:'5',
+                 mandatory:false, message:'請輸入網路編號',isHidden:true,maxlength:'5',
                  pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                  isSearch:true,placeholder:'請輸入網路編號',
-                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
              },
              {
-                label: '系統編號',
+                label: '迴路編號',
                 prop: 'system',
-                mandatory:true, message:'請輸入系統編號',isHidden:false,maxlength:'5',
+                mandatory:false, message:'請輸入系統編號',isHidden:true,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入系統編號',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
             },
             {
                 label: '位址編號',
                 prop: 'address',
-                mandatory:true, message:'請輸入位址編號',isHidden:false,maxlength:'5',
+                mandatory:false, message:'請輸入位址編號',isHidden:true,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入位址編號',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
             },
             {
                 label: '編號',
                 prop: 'number',
-                mandatory:false, message:'請輸入編號',isHidden:false,maxlength:'5',
+                mandatory:false, message:'請輸入編號',isHidden:true,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入編號',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
             },
             {
                 label: '記憶體位址',
                 prop: 'memeryLoc',
-                mandatory:false, message:'請輸入記憶體位址',isHidden:false,maxlength:'5',
+                mandatory:false, message:'請輸入記憶體位址',isHidden:true,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入記憶體位址',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-            },
-            {
-                label: '狀態',
-                prop: 'status',
-                mandatory:false, message:'請輸入狀態',isHidden:false,maxlength:'20',
-                isSearch:true,placeholder:'請輸入狀態',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
             },
             {
                 label: '類型',
@@ -249,14 +261,6 @@ class DeviceAddressManagement extends Parent {
                 type:'boolean',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true
             },
-            // {
-            //     label: '控制模式',
-            //     prop: 'protocolMode',format:'protocolMode',
-            //     type:'number',typemessage:'',
-            //     mandatory:true,message:'請選擇控制模式',isHidden:false,
-            //     isSearch:false,placeholder:'請選擇控制模式',
-            //     isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-            // },
             { 
                 label:'設備' , 
                 prop:'linkDevices',
@@ -285,35 +289,45 @@ class DeviceAddressManagement extends Parent {
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
+            { 
+                label:'點位' , 
+                prop:'addressStr',
+                format:'addressStr', 
+                mandatory:false,message:'請輸入點位',type:'string',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+            },
              {
-                 label: '網路編號',
+                 label: '總機編號',
                  prop: 'internet',format:'internetNumber',
-                 mandatory:true, message:'請輸入網路編號',isHidden:true,maxlength:'5',
+                 mandatory:false, message:'請輸入網路編號',isHidden:true,maxlength:'5',
+                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                  isSearch:true,placeholder:'請輸入網路編號',
-                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
              },
              {
-                label: '系統編號',
+                label: '迴路編號',
                 prop: 'system',
-                mandatory:true, message:'請輸入系統編號',isHidden:false,maxlength:'5',
+                mandatory:false, message:'請輸入系統編號',isHidden:true,maxlength:'5',
+                pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入系統編號',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
             },
             {
                 label: '位址編號',
                 prop: 'address',
-                mandatory:false, message:'請輸入位址編號',isHidden:false,maxlength:'5',
+                mandatory:false, message:'請輸入位址編號',isHidden:true,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入位址編號',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
             },
             {
                 label: '編號',
                 prop: 'number',
-                mandatory:false, message:'請輸入編號',isHidden:false,maxlength:'5',
+                mandatory:false, message:'請輸入編號',isHidden:true,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入編號',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
             },
             {
                 label: '記憶體位址',
@@ -323,13 +337,6 @@ class DeviceAddressManagement extends Parent {
                 isSearch:true,placeholder:'請輸入記憶體位址',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            // {
-            //     label: '狀態',
-            //     prop: 'status',
-            //     mandatory:false, message:'請輸入狀態',isHidden:false,maxlength:'20',
-            //     isSearch:true,placeholder:'請輸入狀態',
-            //     isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-            // },
             {
                 label: '類型',
                 prop: 'value',format:'valueType', 
@@ -345,13 +352,6 @@ class DeviceAddressManagement extends Parent {
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            // {
-            //     label: '值',
-            //     prop: 'value',
-            //     mandatory:false, message:'請輸入值',isHidden:false,maxlength:'20',
-            //     isSearch:true,placeholder:'請輸入值',
-            //     isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-            // },
             { 
                 label:'圖示' , 
                 prop:'iconId',
@@ -366,14 +366,6 @@ class DeviceAddressManagement extends Parent {
                 type:'boolean',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true
             },
-            // {
-            //     label: '控制模式',
-            //     prop: 'protocolMode',format:'protocolMode',
-            //     type:'number',typemessage:'',
-            //     mandatory:true,message:'請選擇控制模式',isHidden:false,
-            //     isSearch:false,placeholder:'請選擇控制模式',
-            //     isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-            // },
             { 
                 label:'設備' , 
                 prop:'linkDevices',

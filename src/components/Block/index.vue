@@ -214,6 +214,10 @@
                                     {{ changeFloorName(item[option.prop]) }}
                                 </span>
 
+                                <span v-else-if="option.format == 'addressStr' " >
+                                    {{ item.getAddressStr() }}
+                                </span>
+
                                 <span v-else-if="option.format == 'valueType' " >
                                     {{ item.getValueTypeName() }}
                                 </span>
@@ -378,6 +382,10 @@
 
                                         <span v-else-if="item.format == 'valueType' " >
                                             {{ scope.row.getValueTypeName() }}
+                                        </span>
+
+                                        <span v-else-if="item.format == 'addressStr' " >
+                                            {{ scope.row.getAddressStr() }}
                                         </span>
 
                                         <span v-else-if="item.format == 'iconSelect' " >

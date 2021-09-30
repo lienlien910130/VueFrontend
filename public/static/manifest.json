@@ -1,0 +1,36 @@
+{
+  "name": "智慧消防管理系統",
+  "short_name": "智慧消防",
+  "icons": [
+    {
+      "src": "./manifestimg/76.png",
+      "sizes": "76x76",
+      "type": "image/png"
+    },
+    {
+      "src": "./manifestimg/152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "./manifestimg/180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./manifestimg/192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./manifestimg/512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#6387F5",
+  "gcm_sender_id": "656647175001"
+}

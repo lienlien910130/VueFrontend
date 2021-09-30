@@ -81,32 +81,32 @@ class DeviceType extends Parent {
     static getTableConfig(){
        return [
             {
-                label: '設備類型',
+                label: '系統',
                 prop: 'fullType',
                 format:'fullType',
-                mandatory:true, message:'請選擇設備類型',
+                mandatory:true, message:'請選擇系統',
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
-                label: '設備名稱',
+                label: '種類',
                 prop: 'name',
                 mandatory:false,isHidden:false,
                 isSearch:true,
                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true
             },
             {
-                label: '廠牌名稱',
+                label: '廠牌',
                 prop: 'brand',
-                mandatory:true, message:'請輸入廠牌名稱',isHidden:false,maxlength:'20',
-                isSearch:true,placeholder:'請輸入廠牌名稱',
+                mandatory:true, message:'請輸入廠牌',isHidden:false,maxlength:'20',
+                isSearch:true,placeholder:'請輸入廠牌',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
-                label: '設備型號',
+                label: '型號',
                 prop: 'productId',
-                mandatory:true, message:'請輸入設備型號',isHidden:false,maxlength:'20',
-                isSearch:true,placeholder:'請輸入設備型號',
+                mandatory:true, message:'請輸入型號',isHidden:false,maxlength:'20',
+                isSearch:true,placeholder:'請輸入型號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {

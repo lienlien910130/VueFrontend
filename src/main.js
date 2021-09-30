@@ -23,8 +23,9 @@ import api from './api'
 
 import '@/icons' // icon
 import '@/permission' // permission control
-import '@/registerServiceWorker.js'
-
+// import '@/_registerServiceWorker.js'
+import firebase from "firebase/app"
+import '@firebase/messaging'
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api
@@ -47,6 +48,28 @@ Vue.prototype.$indexedDB = indexedDB
 Vue.prototype.$qs = qs
 Vue.prototype.$api = api
 Vue.prototype.$logForTranslate = logForTranslate
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXIfFxYh6c6Jb6Haa3zWr2RtS22nFVQEs",
+  authDomain: "mercuryfire-886cf.firebaseapp.com",
+  databaseURL: "https://mercuryfire-886cf-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mercuryfire-886cf",
+  storageBucket: "mercuryfire-886cf.appspot.com",
+  messagingSenderId: "656647175001",
+  appId: "1:656647175001:web:8255534ebbedb4a5d22a48",
+  measurementId: "G-3CQ60MXFKF"
+}
+
+firebase.initializeApp(firebaseConfig)
+const messaging = firebase.messaging()
+Vue.prototype.$messaging = messaging
+// navigator.serviceWorker.register('/firebase-messaging-sw.js',{scope: '/'})
+//   .then((registration) => {
+//     console.log('firebase-messaging-sw.js')
+//     Vue.prototype.$messaging.useServiceWorker(registration)
+// }).catch(err => {
+//     console.log(err)
+// })
 
 new Vue({
   el: '#app',

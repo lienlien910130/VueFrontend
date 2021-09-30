@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { addClass, removeClass } from '@/utils'
+// import { addClass, removeClass } from '@/utils'
 
 export default {
   name: 'RightPanel',
@@ -42,11 +42,11 @@ export default {
       if (value && !this.clickNotClose) {
         this.addEventClick()
       }
-      if (value) {
-        addClass(document.body, 'showRightPanel')
-      } else {
-        removeClass(document.body, 'showRightPanel')
-      }
+      // if (value) {
+      //   addClass(document.body, 'showRightPanel')
+      // } else {
+      //   removeClass(document.body, 'showRightPanel')
+      // }
     }
   },
   mounted() {

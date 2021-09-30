@@ -1,6 +1,11 @@
 <template>
   <div id="app">
     <router-view />
+    <div id="permission_div" style="display: none;">
+      <h4>Needs Permission</h4>
+      <p id="token"></p>
+      <button onclick="requestPermission()">Request Permission</button>
+    </div>
   </div>
 </template>
 
@@ -12,6 +17,62 @@ export default {
   name: 'App',
   created(){
     this.initsocket()
+    this.resetUI()
+    // this.$messaging.getToken()
+    //   .then(function (currentToken) {
+    //       if (currentToken) {
+    //         console.log('currentToken',currentToken)
+    //       } else {
+    //         //顯示訂閱的視窗
+    //          console.log('no token')
+    //       }
+    // })
+    // .catch(function (err) {
+    //       console.log('err',err)
+    // });
+
+    this.$messaging.onMessage(function (payload) {
+        console.log(payload)
+        //如果可以顯示通知就做顯示通知
+        if (Notification.permission === 'granted') {
+          this.notifyMe(payload)
+        }
+        // const notificationTitle = payload.data.title;
+        // const notificationOptions = {
+        //   body: payload.data.body,
+        //   icon: '/static/icon.png',
+        //   vibrate: [100, 50, 100],
+        //   data: {
+        //       dateOfArrival: Date.now()
+        //   },
+        //   actions: [
+        //       {
+        //           action: "confirm", title: "Go interact with this!",
+        //           icon: "images/checkmark.png"
+        //       },
+        //       {
+        //           action: "close", title: "Ignore",
+        //           icon: "images/red_x.png"
+        //       }
+        //   ]
+        // };
+
+        // self.registration.showNotification(notificationTitle,
+        //   notificationOptions);
+        
+        // self.addEventListener('notificationclick', function(event) {
+        //     var notification = event.notification;
+        //     var action = event.action;
+            
+        //     console.log(notification);
+        //     if(action === 'confirm') {
+        //         console.log('使用者點選確認');
+        //         notification.close();
+        //     } else {
+        //         console.log(action);
+        //     }
+        // })
+    });
   },
   computed: {
     ...mapGetters([
@@ -235,7 +296,49 @@ export default {
     },
     handleGraphic(index,content){
       console.log(this.floor.getID())
-    }
+    },
+    resetUI() {
+      this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'}).then((currentToken) => {
+        if (currentToken) {
+          console.log('currentToken',currentToken)
+        } else {
+          console.log('notokencurrentToken')
+        }
+      }).catch((err) => {
+        console.log('An error occurred while retrieving token. ', err);
+      });
+    },
+    notifyMe(payload) {
+		  	if (!("Notification" in window)) {
+		  		console.log("This browser does not support desktop notification");
+		   	}
+		   	else if (Notification.permission === "granted") {
+	    		show_win(payload);
+		   	}
+		   	else if (Notification.permission !== 'denied' || Notification.permission === "default") {
+			    	Notification.requestPermission(function (permission) {
+				    	if (permission === "granted") {
+				    		show_win(payload);
+				     	};
+				    });
+		  	};
+		},
+    show_win(payload){
+		    console.log('onMessage: ', payload);
+		    var notifyMsg = payload.data;
+		    var notification = new Notification(notifyMsg.title,
+		    {
+		        body: notifyMsg.body,
+		        icon: notifyMsg.icon
+		    });
+
+		    notification.onclick = function (e) { // 綁定點擊事件
+		        e.preventDefault(); // prevent the browser from focusing the Notification's tab
+		        window.open(notifyMsg.click_action);
+		    }
+      	// var notification = new Notification(MessageContent);
+      	setTimeout(notification.close.bind(notification), 2000);
+		}
   }
     
 }

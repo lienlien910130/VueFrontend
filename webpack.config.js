@@ -41,7 +41,7 @@ module.exports = {
       {
         test: /\.css$/,
         loader: [
-          'style-loader','css-loader',
+          'style-loader', 'css-loader',
           'sass-loader'
         ]
       },
@@ -67,7 +67,7 @@ module.exports = {
           {
             loader: 'file-loader',
             options: {
-              name: '[name].[ext]?[hash]'
+              name: '[name].[ext]'
             }
           }
         ]
@@ -96,27 +96,27 @@ module.exports = {
         cleanAfterEveryBuildPatterns: ['./dist']
     }),
     new MiniCssExtractPlugin(),
-    new OfflinePlugin({
-      // 要求触发ServiceWorker事件回调
-      ServiceWorker: {
-        events: true,
-        // push事件逻辑写在另外一个文件里面
-        entry: './public/sw-push.js'
-      },
-      // 更更新策略选择全部更新
-      updateStrategy: 'all',
-      // 除去一些不需要缓存的文件
-      excludes: ['**/*.map', '**/*.svg', '**/*.png', '**/*.jpg', '**/sw-push.js', '**/sw-my.js', '**/*.json'],
+    // new OfflinePlugin({
+    //   // 要求触发ServiceWorker事件回调
+    //   ServiceWorker: {
+    //     events: true,
+    //     // push事件逻辑写在另外一个文件里面
+    //     entry: './public/sw-push.js'
+    //   },
+    //   // 更更新策略选择全部更新
+    //   updateStrategy: 'all',
+    //   // 除去一些不需要缓存的文件
+    //   excludes: ['**/*.map', '**/*.svg', '**/*.png', '**/*.jpg', '**/sw-push.js', '**/sw-my.js', '**/*.json'],
 
-      // 添加index.html的更新
-      rewrites (asset) {
-        if (asset.indexOf('index.html') > -1) {
-          return './index.html'
-        }
+    //   // 添加index.html的更新
+    //   rewrites (asset) {
+    //     if (asset.indexOf('index.html') > -1) {
+    //       return './index.html'
+    //     }
 
-        return asset
-      }
-    }),
+    //     return asset
+    //   }
+    // }),
     // new WorkboxPlugin.GenerateSW({
 		// 	clientsClaim: true,
 		// 	skipWaiting: true
@@ -128,23 +128,19 @@ module.exports = {
           to: path.resolve(__dirname, './dist/static')
         },
         {
-          from: 'public/manifest.json',
-          to: 'manifest.json'
+          from: 'public/firebase-messaging-sw.js',
+          to: 'firebase-messaging-sw.js'
         },
         {
           from: 'web.config',
           to: 'web.config'
-        },
-        {
-          from:path.resolve(__dirname, './public/manifestimg'),
-          to: path.resolve(__dirname, './dist/manifestimg')
         }
       ]
     }),
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"development"',
-        VUE_APP_BASE_API: '"http://192.168.88.65:59119"'
+        VUE_APP_BASE_API: '"https://192.168.88.65:49110"'
       }
     }),
     new HtmlWebpackPlugin({
@@ -175,7 +171,7 @@ if (process.env.NODE_ENV === 'production') {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"production"',
-        VUE_APP_BASE_API: '"http://192.168.88.65:59119"'
+        VUE_APP_BASE_API: '"https://192.168.88.65:49110"'
       }
     }),
     new webpack.optimize.UglifyJsPlugin({

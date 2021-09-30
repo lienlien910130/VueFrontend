@@ -69,6 +69,51 @@
                         value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </span>
+                <span v-else-if="item.format == 'addressStr'">
+                    <el-row>
+                        <span style="width:23%;display:inline-block;text-align:center"> 總機編號 </span>
+                        <span> - </span>
+                        <span style="width:23%;display:inline-block;text-align:center"> 迴路編號 </span>
+                        <span> - </span>
+                        <span style="width:23%;display:inline-block;text-align:center"> 系統編號 </span>
+                        <span> - </span>
+                        <span style="width:23%;display:inline-block;text-align:center"> 編號 </span>
+                    </el-row>
+                    <el-row>
+                        <el-input
+                        v-model="temp['internet']" 
+                        :maxlength="5"
+                        show-word-limit
+                        style="width:23%"
+                        :disabled="disable"
+                        >
+                        </el-input>
+                        <span> - </span>
+                        <el-input
+                        v-model="temp['system']" 
+                        :maxlength="5"
+                        show-word-limit
+                        style="width:23%"
+                        >
+                        </el-input>
+                        <span> - </span>
+                        <el-input
+                        v-model="temp['address']" 
+                        :maxlength="5"
+                        show-word-limit
+                        style="width:23%"
+                        >
+                        </el-input>
+                        <span> - </span>
+                        <el-input
+                        v-model="temp['number']" 
+                        :maxlength="5"
+                        show-word-limit
+                        style="width:23%"
+                        >
+                        </el-input>
+                    </el-row>
+                </span>
                 <!--  設備(火警總機/PLC)關聯點位選取關聯的 / 點位選取設備 (limit-1) 
                 設備 / 廠商 / 角色 / 建築物 / 門牌 / 住戶 下拉選單 (多)-->
                 <el-select
@@ -126,7 +171,7 @@
                             </template>
                     </el-option>  
                 </el-select>
-                <!-- 班別選擇預設流程圖 -->
+                <!-- 流程選擇班別-->
                 <el-select
                     v-else-if="item.format == 'marshallingMgmtSelect' "
                     v-model="temp[item.prop]"
@@ -183,23 +228,13 @@
                         >
                         </el-option>  
                 </el-select>
-                <!-- 控制模式 -->
-                <!-- <el-radio-group 
-                v-else-if="item.format == 'protocolMode'"
-                v-model="temp[item.prop]" 
-                @change="changeprotocolMode">
-                    <el-radio :label="0">皆無</el-radio>
-                    <el-radio :label="1">接收</el-radio>
-                    <el-radio :label="2">控制</el-radio>
-                    <el-radio :label="3">皆有</el-radio>
-                </el-radio-group> -->
-                <!-- 網路編號 -->
+                <!-- 網路編號
                 <el-input v-else-if="item.format =='internetNumber'"
                 v-model="temp[item.prop]" 
                 :maxlength="item.maxlength"
                 show-word-limit
                 :disabled="disable">
-                </el-input>
+                </el-input> -->
                 <!-- 檢修申報下拉選單(多)-->
                 <el-select
                     v-else-if="item.format == 'inspectionSelect' "

@@ -6,7 +6,7 @@
     <div class="container">
       <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
         <div ref="title" class="title-container">
-          <img class="pic" :src="src"/>
+          <div class="pic"></div>
         </div>
         <!-- <span>帳號:mf44，密碼:1234</span> -->
         <el-form-item prop="username">
@@ -79,7 +79,6 @@ export default {
   mounted() {
     this.identifyCode = ""
     this.makeCode(this.identifyCodes, 4)
-    this.getVersion()
   },
   data() {
     const validateUsername = (rule, value, callback) => {
@@ -174,9 +173,6 @@ export default {
       // this.loginForm.identifyinputCode = this.identifyCode
     },
     //取得版本解析
-    getVersion() {
-      this.src = require('../../assets/image/login_logo.png')
-    },
     result(res) {
       console.log('linelogin=>'+res)
     }
@@ -329,6 +325,8 @@ $light_gray:#eee;
       height: 150px;
       background-repeat: no-repeat;
       background-size: 100% 100%;
+      background-image: url("../../assets/image/login_logo.png");
+      margin:auto;
     }
   }
 

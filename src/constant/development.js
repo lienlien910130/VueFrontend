@@ -24,7 +24,7 @@ export default {
             type:'FFE_IndoorFireHydrant',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/2.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/2.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r2.png")},
             ]
         },
         {
@@ -33,7 +33,7 @@ export default {
             type:'FFE_OutdoorFireHydrant',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/9.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/9.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r9.png")},
             ]
         },
         {
@@ -42,7 +42,7 @@ export default {
             type:'FFE_AutomaticSprinklerSystem',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/3.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/3.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r3.png")},
             ]
         },
         {
@@ -51,7 +51,7 @@ export default {
             type:'FFE_FoamFireExtinguisher',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/5.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/5.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r5.png")},
             ]
         },
         {
@@ -60,7 +60,7 @@ export default {
             type:'FFE_WaterMistSystem',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/4.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/4.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r4.png")},
             ]
         },
         {
@@ -69,7 +69,7 @@ export default {
             type:'FFE_InertGasSystem',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/6.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/6.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r6.png")},
             ]
         },
         {
@@ -78,7 +78,7 @@ export default {
             type:'FFE_HalohydrocarbonSystem',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/7.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/7.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r7.png")},
             ]
         },
         {
@@ -87,7 +87,7 @@ export default {
             type:'FFE_DryPowderSystem',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/8.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/8.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r8.png")},
             ]
         },
         {
@@ -96,7 +96,7 @@ export default {
             type:'PressurizedWater',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/22.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/22.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r22.png")},
             ],
             action:[
                 {value:'0',label:'停止'},
@@ -109,7 +109,7 @@ export default {
             type:'AE_FireDetectorCentralControl',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/33.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/33.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r33.png")},
             ]
         },
         {
@@ -118,7 +118,7 @@ export default {
             type:'AE_SmokeDetector',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/10.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/1.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r1.png")},
             ]
         },
         {
@@ -127,7 +127,7 @@ export default {
             type:'AE_PhotoelectricSeparationDetector',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/11.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/1.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r1.png")},
             ]
         },
         {
@@ -136,7 +136,7 @@ export default {
             type:'AE_ThermalDetector',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/14.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/1.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r1.png")},
             ]
         },
         {
@@ -145,7 +145,7 @@ export default {
             type:'AE_FlameDetector',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/15.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/1.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r1.png")},
             ]
         },
         {
@@ -154,7 +154,7 @@ export default {
             type:'AE_TileLeakDetector',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/17.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/17.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r17.png")},
             ]
         },
         {
@@ -163,7 +163,7 @@ export default {
             type:'AE_ManualAlarmDevice',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/16.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/16.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r16.png")}
             ]
         },
         {
@@ -172,7 +172,7 @@ export default {
             type:'AE_EmergencyBroadcastDevice',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/19.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/19.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r19.png")},
             ]
         },
         {
@@ -181,7 +181,7 @@ export default {
             type:'FPE_RollingFireDoor',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/24.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/24.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r24.png")},
             ],
             action:[
                 {value:'0',label:'關'}
@@ -193,7 +193,7 @@ export default {
             type:'FPE_FireDoor',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/23.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/23.png")},
+                {value:'1',imgSrc:require("../assets/equipment/r/r23.png")},
             ]
         },
         {
@@ -202,7 +202,7 @@ export default {
             type:'SPE_SmokeBarrier',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/25.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/25.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r25.png")}
             ],
             action:[
                 {value:'0',label:'關'},
@@ -215,8 +215,8 @@ export default {
             type:'SPE_NaturalSmokeExhaustWindow',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/27.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/27.png")},
-                {value:'2',imgSrc:require("../assets/equipment/r/27.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r27.png")},
+                {value:'2',imgSrc:require("../assets/equipment/r/r27.png")}
             ],
             action:[
                 {value:'0',label:'關'},
@@ -230,7 +230,7 @@ export default {
             type:'RE_SmokeExtractionDevice',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/34.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/34.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r34.png")}
             ]
         },
         {
@@ -239,7 +239,7 @@ export default {
             type:'RE_SmokeOutlet',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/21.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/21.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r21.png")}
             ]
         },
         {
@@ -248,7 +248,7 @@ export default {
             type:'SpecialSmokeOutlet',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/26.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/26.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r26.png")}
             ]
         },
         {
@@ -257,7 +257,7 @@ export default {
             type:'RE_SmokeOutlet',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/28.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/28.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r28.png")}
             ]
         },
         {
@@ -298,7 +298,7 @@ export default {
             type:'SRE_EscapeGuideLights',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/20.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/20.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r20.png")}
             ]
         },
         {
@@ -307,7 +307,7 @@ export default {
             type:'SRE_EmergencyLighting',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/20.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/20.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r20.png")}
             ]
         },
         {
@@ -316,7 +316,7 @@ export default {
             type:'OE_ElectricLight',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/20.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/20.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r20.png")}
             ],
             action:[
                 {value:'0',label:'關'},
@@ -329,7 +329,7 @@ export default {
             type:'OE_EmergencyDoorLock',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/20.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/20.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r20.png")}
             ]
         },
         {
@@ -354,7 +354,7 @@ export default {
             type:'EmergencyCall',
             status:[
                 {value:'0',imgSrc:require("../assets/equipment/b/18.png")},
-                {value:'1',imgSrc:require("../assets/equipment/r/18.png")}
+                {value:'1',imgSrc:require("../assets/equipment/r/r18.png")}
             ]
         },
         {
