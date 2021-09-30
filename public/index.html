@@ -21,24 +21,16 @@
 <script  type="module">
 
 
-// if ('serviceWorker' in navigator) {
-//   window.addEventListener('load', function () {
-//     navigator.serviceWorker.register('/firebase-messaging-sw.js',{scope: '/'})
-//       .then((registration) => {
-//         console.log('firebase-messaging-sw.js')
-//         // Notification.requestPermission(function(status){
-//         //   console.log('User Choice', status);
-//         //   if(status !== 'granted') {
-//         //       console.log('推播允許被拒絕了!');
-//         //   }else{
-
-//         //   }
-//         // })
-//     }).catch(err => {
-//         console.log(err)
-//     })
-//   })
-// }
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js',{scope: '/'})
+      .then((registration) => {
+        console.log('firebase-messaging-sw.js')
+    }).catch(err => {
+        console.log(err)
+    })
+  })
+}
 
 // if ('serviceWorker' in navigator) {
 //   window.addEventListener('load', function () {
