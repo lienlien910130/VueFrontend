@@ -308,7 +308,6 @@ class DeviceAddressManagement extends Parent {
                 label: '迴路編號',
                 prop: 'system',
                 mandatory:false, message:'請輸入系統編號',isHidden:true,maxlength:'5',
-                pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入系統編號',
                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
             },
