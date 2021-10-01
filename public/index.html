@@ -21,16 +21,16 @@
 <script  type="module">
 
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('/firebase-messaging-sw.js',{scope: '/'})
-      .then((registration) => {
-        console.log('firebase-messaging-sw.js')
-    }).catch(err => {
-        console.log(err)
-    })
-  })
-}
+// if ('serviceWorker' in navigator) {
+//   window.addEventListener('load', function () {
+//     navigator.serviceWorker.register('/firebase-messaging-sw.js',{scope: '/'})
+//       .then((registration) => {
+//         console.log('firebase-messaging-sw.js')
+//     }).catch(err => {
+//         console.log(err)
+//     })
+//   })
+// }
 
 // if ('serviceWorker' in navigator) {
 //   window.addEventListener('load', function () {

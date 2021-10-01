@@ -21,8 +21,7 @@ messaging.onBackgroundMessage((payload) => {
     vibrate: [100, 50, 100],
     data: {
         dateOfArrival: Date.now()
-    },
-    click_action: 'https://google.com.tw'
+    }
     // actions: [
     //     {
     //         action: "confirm", title: "Go interact with this!",
@@ -38,23 +37,24 @@ messaging.onBackgroundMessage((payload) => {
 });
 
 self.addEventListener('notificationclick', function(event) {
-  var url = click_action;
+  // var url = click_action;
   event.notification.close();
-  event.waitUntil(
-    clients.matchAll({
-      type: 'window'
-    }).then(windowClients => {
-      // 如果tab是開著的，就 focus 這個tab
-      for (var i = 0; i < windowClients.length; i++) {
-        var client = windowClients[i];
-        if(client.url === url && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      // 如果沒有，就新增tab
-      if(clients.openWindow) {
-        return clients.openWindow(click_action);
-      }
-    })
-  );
+  clients.openWindow('https://google.com.tw');
+  // event.waitUntil(
+  //   clients.matchAll({
+  //     type: 'window'
+  //   }).then(windowClients => {
+  //     // 如果tab是開著的，就 focus 這個tab
+  //     for (var i = 0; i < windowClients.length; i++) {
+  //       var client = windowClients[i];
+  //       if(client.url === url && 'focus' in client) {
+  //         return client.focus();
+  //       }
+  //     }
+  //     // 如果沒有，就新增tab
+  //     if(clients.openWindow) {
+  //       return clients.openWindow(click_action);
+  //     }
+  //   })
+  // );
 });

@@ -17,7 +17,8 @@ const getDefaultState = () => {
     account: '',
     name: '',
     roles: '',
-    level: ''
+    level: '',
+    mToken:''
   }
 }
 
@@ -44,6 +45,9 @@ const mutations = {
   },
   SET_LEVEL: (state, level) => {
     state.level = level
+  },
+  SET_MToken: (state, token) => {
+    state.mToken = token
   }
 }
 
@@ -78,6 +82,22 @@ const actions = {
         commit('SET_NAME', name)
         commit('SET_ROLES', roles)
         store.dispatch('building/setBuildingList', id == '1' ? await Building.get() : buildingarray)
+        resolve()
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  async setMessageToken({ commit }, token ) {
+    return new Promise((resolve, reject) => {
+      user.apiPatchUserInfo({id:state.id, cToken:token }).then(async(response) => {
+        if (!response) {
+          reject('更新 Message Token 失敗')
+        }
+        console.log(response)
+        const { cToken } = response.result
+        commit('SET_MToken', cToken)
         resolve()
       }).catch(error => {
         reject(error)

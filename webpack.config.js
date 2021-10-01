@@ -1,6 +1,6 @@
 const path = require('path')
 // const WorkboxPlugin = require('workbox-webpack-plugin')
-const OfflinePlugin = require('offline-plugin')
+// const OfflinePlugin = require('offline-plugin')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -140,7 +140,8 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"development"',
-        VUE_APP_BASE_API: '"https://192.168.88.65:49110"'
+        //VUE_APP_BASE_API: '"http://192.168.88.65:49119"'
+        VUE_APP_BASE_API: '"/api"'
       }
     }),
     new HtmlWebpackPlugin({
@@ -171,7 +172,7 @@ if (process.env.NODE_ENV === 'production') {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"production"',
-        VUE_APP_BASE_API: '"https://192.168.88.65:49110"'
+        VUE_APP_BASE_API: '"http://192.168.88.65:49110"'
       }
     }),
     new webpack.optimize.UglifyJsPlugin({

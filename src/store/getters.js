@@ -17,6 +17,7 @@ const getters = {
   roles: state => state.user.roles,
   id: state => state.user.id,
   name: state => state.user.name,
+  mToken: state => state.user.mToken,
 
   verid: state => state.version.id,
   vername: state => state.version.name,

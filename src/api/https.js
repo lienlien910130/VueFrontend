@@ -39,11 +39,10 @@ const tip = msg => {
 }
 
 const service = axios.create({
-//   baseURL: process.env.VUE_APP_BASE_API2, // url = base url + request url
+   baseURL: process.env.VUE_APP_BASE_API,
      // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
-    baseURL: 'http://192.168.88.65:49119',
-    //baseUrl: 'https://192.168.88.65:59110',
+    //baseUrl: 'http://192.168.88.65:49119',
     timeout: 20000, 
     headers: { 
         'Content-Type': 'application/json; charset=utf-8;'

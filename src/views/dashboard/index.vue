@@ -100,6 +100,7 @@ import { MaintainManagement }  from '@/object/maintainManagement'
 import Inspection from '@/object/inspection'
 import PublicSafe from '@/object/publicSafe'
 import moment from 'moment'
+import store from '@/store'
 
 export default {
   name: 'Dashboard',
@@ -179,6 +180,22 @@ export default {
       },
       immediate:true
     }
+  },
+  async mounted() {
+    //this.initsocket()
+    this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
+      .then(async function (currentToken) {
+          if (currentToken) {
+            console.log('currentToken',currentToken)
+            await store.dispatch('user/setMessageToken',currentToken)
+          } else {
+            //顯示訂閱的視窗
+             console.log('no token')
+          }
+    })
+    .catch(function (err) {
+          console.log('err',err)
+    });
   },
   data() {
     return {
