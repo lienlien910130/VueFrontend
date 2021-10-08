@@ -1,4 +1,6 @@
-import Vue from 'vue'
+//import Vue from 'vue'
+const Vue = require('vue')
+
 /**
  * 首字母大写
  * @param str 字符串

@@ -1,7 +1,8 @@
-import Vue from 'vue'
-import Router from 'vue-router'
-
-Vue.use(Router)
+// import Vue from 'vue'
+// import Router from 'vue-router'
+const Vue = require('vue')
+// const Router = require('vue-router')
+Vue.use(VueRouter)
 
 import Layout from '../layout'
 
@@ -281,7 +282,7 @@ export const notfound = [
 // ]
 
 
-const createRouter = () => new Router({
+const createRouter = () => new VueRouter({
   mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes

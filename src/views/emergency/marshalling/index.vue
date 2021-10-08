@@ -37,7 +37,6 @@
 <script>
 import { blockmixin, dialogmixin, sharemixin, tablemixin, excelmixin } from '@/mixin/index'
 import { SelfDefenseFireMarshallingMgmt, SelfDefenseFireMarshalling, ContingencyProcess } from '@/object/index'
-import lodash from 'lodash'
 
 export default {
     mixins:[sharemixin,blockmixin,dialogmixin,tablemixin, excelmixin],
@@ -111,7 +110,7 @@ export default {
             this.dialogData = []
             this.dialogButtonsName = []
             this.dialogTitle = this.title
-            this.dialogConfig =  lodash.cloneDeep(this.tableConfig)
+            this.dialogConfig =  _.cloneDeep(this.tableConfig)
             this.marshallingList = content
             if(index === 'open'){
                 this.dialogData.push(content)

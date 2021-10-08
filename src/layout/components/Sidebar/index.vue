@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+// const Vuex = require('vuex')
 // import variables from '@/styles/variables.scss'
 
 export default {
@@ -34,7 +34,7 @@ export default {
     SidebarItem:() => import('./SidebarItem')
   },
   computed: {
-    ...mapGetters([
+    ...Vuex.mapGetters([
       'permission_routes',
       'sidebar'
     ]),

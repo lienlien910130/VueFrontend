@@ -1,9 +1,8 @@
-import { mapGetters } from 'vuex'
-import moment from 'moment'
-
+// const Vuex = require('vuex')
+const moment = require('moment')
 export default {
         computed: {
-            ...mapGetters([
+            ...Vuex.mapGetters([
                 'id',
                 'buildingid',
                 'buildinginfo',

@@ -27,7 +27,7 @@
 </div>
 </template>
 <script>
-import moment from 'moment'
+const moment = require('moment')
 export default {
     name: 'ListDiv',
     props:{

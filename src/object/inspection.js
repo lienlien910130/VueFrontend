@@ -1,7 +1,7 @@
 import Parent from './parent'
 import api from '@/api'
 import Files  from './files'
-import moment from 'moment'
+const moment = require('moment')
 
 class Inspection extends Parent {
     constructor (data) {

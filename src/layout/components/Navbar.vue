@@ -81,13 +81,12 @@
 </template>
 
 <script>
-
-import { mapGetters } from 'vuex'
+// const Vuex = require('vuex')
 import { formatTime } from '@/utils/index.js'
 
 export default {
   computed: {
-    ...mapGetters([
+    ...Vuex.mapGetters([
       'sidebar',
       'account',
       'name',

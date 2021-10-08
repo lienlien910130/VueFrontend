@@ -516,8 +516,7 @@
 
 import { computedmixin } from '@/mixin/index'
 import { Device, DeviceType, Contactunit, User, UsageOfFloor, Role, Building, InspectionLacks } from '@/object/index'
-import moment from 'moment'
-import lodash from 'lodash'
+const moment = require('moment')
 import constant from '@/constant/index'
 
 export default {
@@ -708,7 +707,9 @@ export default {
                     var icon = constant.Equipment.filter(item=>{
                         return item.id == value
                     })[0]
-                    return icon !== undefined ? icon.status[0].imgSrc : ""
+                    return icon !== undefined ?  require('@assets/equipment/'+icon.status[0].imgSrc)  : ""
+                   
+                    // return icon !== undefined ? icon.status[0].imgSrc : ""
                 }
                 return ""
             }
@@ -737,7 +738,7 @@ export default {
                     var type = this.title == 'deviceAddressManagement' ? 
                         'nDeviceTypeList.AE.AE_FireDetectorCentralControl' : 
                         'nDeviceTypeList.OE.OE_ProgrammableLogicController'
-                    this.deviceSelectArray = lodash.cloneDeep(this.buildingdevices.filter(item => 
+                    this.deviceSelectArray = _.cloneDeep(this.buildingdevices.filter(item => 
                         item.getLinkType().getFullType() == type && 
                         item.getInternetNumber() !== null && item.getInternetNumber() !== '' && item.getInternetNumber() !== undefined).map(v => {
                             this.$set(v, 'value', v.getID()) 

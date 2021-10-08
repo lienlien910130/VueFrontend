@@ -6,7 +6,6 @@ import idb from '../../utils/indexedDB'
 import { resetRouter } from '../../router'
 import user from '../../api/user.js'
 import store from '../index.js'
-import { Message } from 'element-ui'
 import { Role, Building } from '@/object/index'
 
 // 個人資料
@@ -64,7 +63,7 @@ const actions = {
         resolve()
       }).catch(error => {
         console.log("error.response.status=>" + error)
-        Message.error('帳號密碼錯誤，請重新輸入')
+        alert('帳號密碼錯誤，請重新輸入')
         reject(error)
       })
     })
@@ -95,7 +94,6 @@ const actions = {
         if (!response) {
           reject('更新 Message Token 失敗')
         }
-        console.log(response)
         const { cToken } = response.result
         commit('SET_MToken', cToken)
         resolve()

@@ -11,15 +11,51 @@
     <link rel="apple-touch-icon" sizes="180x180" href="./static/manifestimg/180.png" />
     <title><%= webpackConfig.name %></title>
     <script src="https://cdn.jsdelivr.net/npm/mobile-detect@1.4.5/mobile-detect.min.js"></script>
+    <link href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.css" rel="stylesheet">
     <link rel="manifest"  href="/static/manifest.json" /> 
   </head>
   <body>
     <div id="app"></div>
-    <!-- built files will be auto injected -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script> -->
+    
+    <script src="https://cdn.bootcss.com/vue-router/3.0.6/vue-router.min.js"></script>
+    
+    <!-- <script src="https://unpkg.com/vuex@3.1.0"></script> -->
+    
+    <!-- <script src="https://cdn.staticfile.org/axios/0.18.1/axios.min.js"></script> -->
+    
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.1.0/fabric.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.6/xlsx.full.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.6/shim.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.8.0/echarts.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/vue-codemirror@4.0.6/dist/vue-codemirror.min.js"></script>
+
   </body>
 </html>
 <script  type="module">
-
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js',{scope: '/'})
+      .then((registration) => {
+        console.log('firebase-messaging-sw.js')
+    }).catch(err => {
+        console.log(err)
+    })
+  })
+}
 
 // if ('serviceWorker' in navigator) {
 //   window.addEventListener('load', function () {

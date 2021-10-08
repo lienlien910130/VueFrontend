@@ -241,7 +241,7 @@ $light_gray:#eee;
   min-height: 100%;
   width: 100%;
   overflow: hidden;
-  background-image: url("../../assets/image/login_bg.jpg");
+  background-image: url("@assets/image/login_bg.jpg");
   background-size: 100% 100%;
   background-repeat: no-repeat;
 
@@ -272,7 +272,7 @@ $light_gray:#eee;
     height: 60px;
     float: left;
     margin-top:20px;
-    background-image: url("../../assets/image/b_d.png");
+    background-image: url("@assets/image/b_d.png");
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-color: rgba(255, 255, 255, 0.74);
@@ -286,7 +286,7 @@ $light_gray:#eee;
     padding: 35px 35px 35px 35px;
     overflow: hidden;
     float: left;
-    background-image: url("../../assets/image/b_u.png");
+    background-image: url("@assets/image/b_u.png");
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-color: rgba(255, 255, 255, 0.74);
@@ -325,7 +325,7 @@ $light_gray:#eee;
       height: 150px;
       background-repeat: no-repeat;
       background-size: 100% 100%;
-      background-image: url("../../assets/image/login_logo.png");
+      background-image: url("@assets/image/login_logo.png");
       margin:auto;
     }
   }

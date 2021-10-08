@@ -60,14 +60,15 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+// const Vuex = require('vuex')
+
 import Setting from '@/object/setting'
 export default {
     components:{
         SettingBlock:() => import('./components/SettingBlock.vue')
     },
     computed:{
-      ...mapGetters([
+      ...Vuex.mapGetters([
           'buildingcontactunit',
           'buildingdevices'
       ]),

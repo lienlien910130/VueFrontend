@@ -36,8 +36,8 @@
 </div>
 </template>
 <script>
-import { mapGetters } from 'vuex'
-import Floors from '@/object/floors'
+
+// const Vuex = require('vuex')
 
 export default {
   data() {
@@ -53,7 +53,7 @@ export default {
     }
   },
   computed:{
-    ...mapGetters([
+    ...Vuex.mapGetters([
         'buildingfloors',
         'floor_record'
     ]),

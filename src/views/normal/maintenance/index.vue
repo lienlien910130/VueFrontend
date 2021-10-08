@@ -125,7 +125,7 @@
 <script>
 import { blockmixin, dialogmixin, sharemixin, tablemixin, excelmixin } from '@/mixin/index'
 import { Files, MaintainManagementList, MaintainManagement,Setting ,Device,Contactunit } from '@/object/index'
-import moment from 'moment'
+const moment = require('moment')
 
 export default {
     mixins:[sharemixin,blockmixin,dialogmixin,tablemixin, excelmixin],

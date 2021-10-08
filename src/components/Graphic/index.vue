@@ -271,10 +271,10 @@
 
 <script>
 import constant from '@/constant/development'
-import { mapGetters } from 'vuex'
+const fabric = require('fabric')
 import { getUUID } from '@/utils'
 import { initAligningGuidelines } from '@/utils/aligning'
-import lodash from 'lodash'
+
 export default {
   name: "Graphic",
   props:{
@@ -303,7 +303,7 @@ export default {
     EquipmentType: () => import('@/views/graphic/components/EquipmentType.vue')
   },
   computed: {
-     ...mapGetters([
+     ...Vuex.mapGetters([
         'wsmsg',
         'sidebar',
         'buildingdevices'
@@ -463,7 +463,7 @@ export default {
       },
       pointarray:{
           handler:async function(){
-            var data = lodash.cloneDeep(this.pointarray)
+            var data = _.cloneDeep(this.pointarray)
             this.imgAddress = data.map(item => {
                 this.$set(item, 'systemUsed',item.systemUsed) 
                 this.$set(item, 'id', item.id) 
@@ -572,7 +572,6 @@ export default {
     }
   },
   methods: {
-    //父元件傳來的事件
     saveImg() { //儲存圖片
         var a = []
         this.canvas.getObjects().map(item=>{
@@ -617,7 +616,6 @@ export default {
     },
     async loadBackgroundImage(objects,imgsrc){ //載入背景圖
       this.canvas.clear()
-      //this.sendAllobj()
       fabric.Image.fromURL(imgsrc, (img) => {
           const background = img.set({
            scaleX: this.canvas.width / img.width,
@@ -634,25 +632,24 @@ export default {
           self.imgEl = new Image()
           self.imgEl.onload = () => resolve(self.imgEl)
           self.imgEl.onerror = ()=>reject("加載失敗")
-          self.imgEl.src = src
+          self.imgEl.src = require('@assets/equipment/'+src)
       })
     },
     async loadObjects(val){ //載入初始物件
       if(val !== null){ 
         var self = this
         var obj = JSON.parse(val)
-        fabric.util.enlivenObjects(obj,async function(object) {
+        fabric.util.enlivenObjects(obj, async function(object) {
             var origRenderOnAddRemove = self.canvas.renderOnAddRemove
             self.canvas.renderOnAddRemove = false
             var original = []
             obj.forEach(item=>{
               original.push(item)
             })
-            
             for(let i=0;i<object.length;i++){
               if(object[i].type == 'image'){
                 var item = constant.Equipment.filter((item,index) => 
-                  item.id == original[i].srcId
+                  item.id == object[i].srcId
                 )[0]
                 await self.addImageProcess(item.status[0].imgSrc).then((respone) => {
                   const image = new fabric.Image(respone, {
@@ -665,16 +662,16 @@ export default {
                     hasControls:false
                   }) 
                   self.canvas.add(image)
-                  self.addCustomize(image,original[i].objId,original[i].objectName,original[i].blockType,
-                  original[i].srcId,original[i].addressId,original[i].connectId,original[i].status,original[i].action)
+                  self.addCustomize(image,object[i].objId,object[i].objectName,object[i].blockType,
+                  object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
                 }).catch((err)=>{
                     console.log(err)  
                 })
               }else{
                 object[i].visible = false
                 self.canvas.add(object[i])
-                self.addCustomize(object[i],original[i].objId,original[i].objectName,original[i].blockType,
-                original[i].srcId,original[i].addressId,original[i].connectId,original[i].status,original[i].action)
+                self.addCustomize(object[i],object[i].objId,object[i].objectName,object[i].blockType,
+                object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
               }
             }
             self.canvas.renderOnAddRemove = origRenderOnAddRemove
@@ -682,7 +679,6 @@ export default {
             self.state = self.canvas.toJSON()
             //self.sendAllobj()
         })
-        // this.updateArray = []  
       }
     },
     searchBlockType(val){ //區塊顯示開關 先關閉全部再開啟對應的類型
@@ -716,13 +712,6 @@ export default {
         this.canvas.renderAll()
       }
     },
-    // objectDelete(val){ //圖層刪除物件
-    //   val.forEach(obj => {
-    //     this.canvas.remove(obj)
-    //   })
-    //   this.saveCanvasState()
-    //   this.canvas.renderAll()
-    // },
     //選取 刪除 移動物件
     selectioncreatedandupdated(e){ //畫面顯示選取到的物件的屬性狀況
       //this.addressDiv = {x:e.e.offsetX,y:e.e.offsetY}
@@ -966,8 +955,14 @@ export default {
       //廣播圖層新增:長方形
       if(this.drawType === 'rectangle'){
         if(this.canvas.getObjects().length !== this.objectCount){
-          //this.sendAllobj()
           this.isEditChange(true)
+          var imageSelect = this.canvas.getActiveObjects().filter(item=> { return item.type == 'image'})
+          //若再有一個框住的話，是否想要可以覆蓋?
+          var path = this.canvas.getActiveObjects().filter(item=> { return item.type == 'path'})
+          imageSelect.forEach(item=>{
+            item.set({ connectId: path[0].objId })
+            this.isEditChange(true)
+          })
         }
       }
       this.drawingObject = null
@@ -1004,11 +999,7 @@ export default {
       window.event.stopPropagation()
       window.event.preventDefault()
       const imgEl = document.createElement('img')
-      // var item = constant.Equipment.filter((item,index) => 
-      //     item.id == this.imgSource[0]
-      // )[0] 
-      // imgEl.src = item.status[0].imgSrc
-      imgEl.src = this.imgSource[8]
+      imgEl.src = require('@assets/equipment/'+this.imgSource[8])
       imgEl.onload = () => {
         const image = new fabric.Image(imgEl, {
           scaleX: 0.1,
@@ -1021,7 +1012,6 @@ export default {
         })
         this.canvas.add(image)
         this.addCustomize(image,null,this.imgSource[3],null,this.imgSource[0],this.imgSource[4],null,this.imgSource[5],this.imgSource[6])
-        //this.sendAllobj() //廣播圖層新增:圖片
         this.canvas.renderAll()
         this.isEditChange(true)
         if(this.imgSource[7] !== null){
@@ -1094,7 +1084,6 @@ export default {
       this.textbox.enterEditing()
       this.textbox.hiddenTextarea.focus()
       this.addCustomize(this.textbox)
-      //this.sendAllobj() //廣播圖層新增:文字
       this.isEditChange(true)
       this.drawTypeChange('')
     },
@@ -1214,7 +1203,6 @@ export default {
       })
       this.canvas.add(polygon)
       this.addCustomize(polygon)
-      //this.sendAllobj() //廣播圖層新增:多邊形
       this.isEditChange(true)
       this.drawingObject = polygon
       this.activeLine = null
@@ -1344,7 +1332,6 @@ export default {
         if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
           this.canvas.getActiveObject().set({ objectName: this.objectName })
           this.isEditChange(true)
-          //this.$emit('sendLabelChange',this.canvas.getActiveObject().id,this.objectName)
         }
       }, 400)
     },

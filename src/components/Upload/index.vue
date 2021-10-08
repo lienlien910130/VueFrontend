@@ -98,11 +98,11 @@
 
 <script>
 import { Files } from '@/object'
-import { mapGetters } from 'vuex'
+// const Vuex = require('vuex')
 export default {
     name:'Upload',
     computed:{
-            ...mapGetters([
+            ...Vuex.mapGetters([
                 'fullscreen'
             ])
     },

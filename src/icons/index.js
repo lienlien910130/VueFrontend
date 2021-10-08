@@ -1,4 +1,5 @@
-import Vue from 'vue'
+//import Vue from 'vue'
+const Vue = require('vue')
 import SvgIcon from '@/components/SvgIcon'// svg component
 
 // register globally

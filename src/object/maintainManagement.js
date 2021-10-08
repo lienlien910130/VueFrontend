@@ -1,6 +1,6 @@
 import api from '@/api'
 import Parent from './parent' 
-import moment from 'moment'
+const moment = require('moment')
 import Files  from './files'
 import Device from './device'
 import Contactunit from './contactunit'

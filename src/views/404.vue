@@ -17,12 +17,12 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+// const Vuex = require('vuex')
 
 export default {
   name: 'Page404',
   computed: {
-      ...mapGetters([
+      ...Vuex.mapGetters([
         'device'
       ])
   },

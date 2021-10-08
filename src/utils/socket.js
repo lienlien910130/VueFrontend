@@ -2,7 +2,7 @@
 import store from '../store'
 
  let wsConnection = {
-   plcWs:{
+   backWs:{
       $ws: null,
       lockReturn: false,
       timeout: 60 * 1000 * 5,
@@ -21,31 +21,34 @@ import store from '../store'
    //初始化websocket
    initWebSocket: function () {
       let _this = this;
+      
+      
+      //back
+      let backIP = '192.168.88.110'
+      let backPort = '5000'
+      let backWsProtocol = 'clRywHL4CrkA3OUw7qBoFMhx6ZG1bDXTskdhZP6qc07D3U54D6I6FQSEkgHODJUPM3ZcUocC7m64O2XcZYT8VBX4SoHpfiYfkiop2cvRBFzG5jFLTQ98RI2rJe8wiIZz'
+      this.backWs.$ws = new WebSocket('ws://'+backIP+':'+backPort+'/', backWsProtocol);
+      this.backWs.$ws.onopen = function(){
+        console.log('ws open-BACK')
+        wsConnection.startWsHeartbeat(_this.backWs)
+      }
+      this.backWs.$ws.onclose = function(){
+        console.log('ws close-BACK')
+        wsConnection.reconnect(_this.backWs)
+      }
+      this.backWs.$ws.onmessage = function(msg){
+        console.log('ws message-BACK')
+        console.log(msg)
+        wsConnection.resetHeartbeat(_this.backWs)
+      }
+      this.backWs.$ws.onerror = function(){
+        wsConnection.reconnect(_this.backWs)
+      }
+      //前端給前端內部溝通
       let wsIP = '192.168.88.65'
       let wsPort = '49119'
-      let wsPath = ''
-      //plc
-      // let plcWsProtocol = 'clRywHL4CrkA3OUw7qBoFMhx6ZG1bDXTskdhZP6qc07D3U54D6I6FQSEkgHODJUPM3ZcUocC7m64O2XcZYT8VBX4SoHpfiYfkiop2cvRBFzG5jFLTQ98RI2rJe8wiIZz'
-      // this.plcWs.$ws = new WebSocket('ws://'+wsIP+':'+wsPort+'/'+wsPath, plcWsProtocol);
-      // this.plcWs.$ws.onopen = function(){
-      //   console.log('ws open-PLC')
-      //   wsConnection.startWsHeartbeat(_this.plcWs)
-      // }
-      // this.plcWs.$ws.onclose = function(){
-      //   console.log('ws close-PLC')
-      //   wsConnection.reconnect(_this.plcWs)
-      // }
-      // this.plcWs.$ws.onmessage = function(msg){
-      //   console.log('ws message-PLC')
-      //   console.log(msg)
-      //   wsConnection.resetHeartbeat(_this.plcWs)
-      // }
-      // this.plcWs.$ws.onerror = function(){
-      //   wsConnection.reconnect(_this.plcWs)
-      // }
-      //內部溝通
       let dataWsProtocol = 'JonUmZbPuQj69GnQdefx6w1ygkeU8PkzHO0EknOSdTmTYEhgg7HpDOeniThA96f4PlGlGFKBsVSbICqlEsb91xf15tVt7FGddY80p6AfcBIknQqsEWiPhKf9hByJL1Vt'
-      this.dataWs.$ws = new WebSocket('ws://'+wsIP+':'+wsPort+'/'+wsPath, dataWsProtocol);
+      this.dataWs.$ws = new WebSocket('ws://'+wsIP+':'+wsPort+'/', dataWsProtocol);
       this.dataWs.$ws.onopen = function(){
         console.log('ws open')
         wsConnection.startWsHeartbeat(_this.dataWs)
@@ -137,7 +140,7 @@ import store from '../store'
           Content: content
         }
       }
-      _this.dataWs.$ws.send(JSON.stringify(msg))
+      // _this.dataWs.$ws.send(JSON.stringify(msg))
    }
  }
  

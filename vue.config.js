@@ -1,6 +1,5 @@
 'use strict'
 const path = require('path')
-const fs = require("fs")
 
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -13,9 +12,11 @@ const port = process.env.port || process.env.npm_config_port || 9528 // dev port
 
 // All configuration item explanations can be find in https://cli.vuejs.org/config/
 module.exports = {
-  publicPath: '/',
+  publicPath: './',
   outputDir: 'dist',
   assetsDir: 'static',
+  indexPath:'index.html',
+  filenameHashing: false,
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
   devServer: {
@@ -25,31 +26,26 @@ module.exports = {
       warnings: false,
       errors: true
     },
-    // https: {
-    //   key: fs.readFileSync(`${__dirname}/src/assets/https/private.key`),
-    //   cert: fs.readFileSync(`${__dirname}/src/assets/https/certificate.crt`),
-    //   ca: fs.readFileSync(`${__dirname}/src/assets/https/ca_bundle.crt`)
-    // },
     proxy: {
-      // change xxx-api/login => mock/login
-      // detail: https://cli.vuejs.org/config/#devserver-proxy
-      [process.env.VUE_APP_BASE_API2]: {
-        target: 'http://192.168.88.65:59119/zh-tw',
+      '/api':{
+        target:'http://192.168.88.65:49119',
+        pathRewrite: { '^/api':'' }, 
         changeOrigin: true,
-        pathRewrite: {
-          ['^' + process.env.VUE_APP_BASE_API2]: ''
-        }
+        ws: true
       }
     }
   },
   configureWebpack: {
-    // provide the app's title in webpack's name field, so that
-    // it can be accessed in index.html to inject the correct title.
     name: name,
     resolve: {
-      alias: {
-        '@': resolve('src')
-      }
+      alias: { 
+        'vue$': 'vue/dist/vue.esm.js',
+        "@": resolve('src')
+      },
+      extensions: ['*', '.js', '.vue','.json'],
+      modules: [
+        'node_modules'
+      ]
     }
   },
   chainWebpack(config) {

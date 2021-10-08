@@ -92,14 +92,15 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+// const Vuex = require('vuex')
+
 import constant from '../../../src/constant';
 import { removeDuplicates } from '@/utils/index'
 import Device from '@/object/device'
 import { MaintainManagement }  from '@/object/maintainManagement'
 import Inspection from '@/object/inspection'
 import PublicSafe from '@/object/publicSafe'
-import moment from 'moment'
+const moment = require('moment')
 import store from '@/store'
 
 export default {
@@ -115,7 +116,7 @@ export default {
     PanelGroup: () => import('./components/PanelGroup')
   },
   computed: {
-    ...mapGetters([
+    ...Vuex.mapGetters([
       'buildingid',
       'buildingoptions',
       'account'

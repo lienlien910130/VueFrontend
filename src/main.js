@@ -1,13 +1,13 @@
-import Vue from 'vue'
+// import Vue from 'vue'
+const Vue = require('vue')
+import ElementUI from 'element-ui'
+import locale from 'element-ui/lib/locale/lang/zh-TW'
+// const ElementUI = require('element-ui')
+import 'element-ui/lib/theme-chalk/index.css'
 import qs from 'qs'
 import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 
-import ElementUI from 'element-ui'
-
-import fabric from 'fabric'
 import vcolorpicker from 'vcolorpicker'
-import locale from 'element-ui/lib/locale/lang/zh-TW'
-import 'element-ui/lib/theme-chalk/index.css'
 import logForTranslate from '@/utils/logForTranslate.js'
 import '@/components/componentRegister.js'
 
@@ -34,10 +34,10 @@ import '@firebase/messaging'
  * Currently MockJs will be used in the production environment,
  * please remove it before going online ! ! !
  */
-
+// Vue.use(ElementUI)
 Vue.use(ElementUI, { locale })
 Vue.use(SIdentify)
-Vue.use(fabric)
+// Vue.use(fabric)
 Vue.use(vcolorpicker)
 
 Vue.config.productionTip = false
@@ -70,7 +70,6 @@ navigator.serviceWorker.register('/firebase-messaging-sw.js',{scope: '/'})
 }).catch(err => {
     console.log(err)
 })
-
 new Vue({
   el: '#app',
   router,

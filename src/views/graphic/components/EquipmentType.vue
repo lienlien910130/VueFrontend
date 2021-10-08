@@ -26,7 +26,7 @@
                         >
                             <el-tooltip class="item" effect="dark" :content="item.label" placement="top-start">
                                 <el-image
-                                :class="[{active:select == item},{icon:true}]"
+                                :class="[{active:item.draggable == false},{icon:true}]"
                                 :src="getImg(item.iconId)"
                                 :alt="item.deviceFullType"
                                 @mousedown="handleImage(item,$event)"
@@ -129,8 +129,6 @@
 
 <script>
 import constant from '@/constant'
-import lodash from 'lodash'
-
 export default {
     name:'EquipmentType',
     props:{
@@ -144,11 +142,11 @@ export default {
     watch: {
       imgAddress:{
           handler:async function(){
-                this.imgList = lodash.cloneDeep(this.imgAddress)
+                this.imgList = _.cloneDeep(this.imgAddress)
                 this.imgList.forEach(element => {
                     element.draggable = !element.systemUsed
                 })
-                this.original = lodash.cloneDeep(this.imgList)
+                this.original = _.cloneDeep(this.imgList)
           },
           immediate:true
       }
@@ -160,7 +158,7 @@ export default {
                     let icon = constant.Equipment.filter((item, index) => 
                         item.id == value 
                     )[0]
-                    return icon !== undefined ? icon.status[0].imgSrc : null
+                    return icon !== undefined ?  require('@assets/equipment/'+icon.status[0].imgSrc)  : ""
                 }
                 return null
             }
@@ -217,17 +215,17 @@ export default {
         },
         handleClick(tab, event) {
             if(tab.name == 'allicon'){
-                this.imgList = lodash.cloneDeep(constant.Equipment)
+                this.imgList = _.cloneDeep(constant.Equipment)
                 this.imgList.forEach(element => {
                     element.draggable = true
                 })
             }else{
-                this.imgList = lodash.cloneDeep(this.imgAddress)
+                this.imgList = _.cloneDeep(this.imgAddress)
                 this.imgList.forEach(element => {
                     element.draggable = !element.systemUsed
                 })
             }
-            this.original = lodash.cloneDeep(this.imgList)
+            this.original = _.cloneDeep(this.imgList)
         }
     }
 }

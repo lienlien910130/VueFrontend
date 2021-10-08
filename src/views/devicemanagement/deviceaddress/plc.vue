@@ -33,8 +33,7 @@
 </template>
 <script>
 import { blockmixin, dialogmixin, sharemixin, excelmixin } from '@/mixin/index'
-import { Device, DeviceAddressManagement } from '@/object/index'
-import lodash from 'lodash'
+import { DeviceAddressManagement } from '@/object/index'
 
 export default {
     name:'DeviceAddressManagement',
@@ -80,7 +79,7 @@ export default {
         async handleBlock(title,index, content) { //設備
             console.log(title,index,JSON.stringify(content))
             this.dialogData = []
-            this.dialogConfig = lodash.cloneDeep(DeviceAddressManagement.getPLCTableConfig())
+            this.dialogConfig = _.cloneDeep(DeviceAddressManagement.getPLCTableConfig())
             this.dialogTitle = this.title
             this.dialogButtonsName = []
             if(index === 'open'){
@@ -143,7 +142,7 @@ export default {
                 { name:'取消',type:'info',status:'cancelfloor'}]
                 this.dialogStatus = 'update'
                 this.innerVisible = true
-                this.selectArray = lodash.cloneDeep(content)
+                this.selectArray = _.cloneDeep(content)
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作

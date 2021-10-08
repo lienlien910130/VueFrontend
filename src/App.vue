@@ -10,13 +10,13 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+// const Vuex = require('vuex')
 import { Account, Building, Contactunit, Device, DeviceAddressManagement, DeviceType, Floors, Role, UsageOfFloor, User } from './object'
 
 export default {
   name: 'App',
   async created(){
-    //this.initsocket()
+    this.initsocket()
     // this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
     //   .then(async function (currentToken) {
     //       if (currentToken) {
@@ -79,78 +79,78 @@ export default {
 		}
   },
   computed: {
-    ...mapGetters([
+    ...Vuex.mapGetters([
         'wsmsg',
         'wsuserId',
         'buildingid',
         'id'
     ])
   },
-  watch:{
-    wsmsg:{
-      handler:async function(){
-          var datalist = this.wsmsg.shift()
-          if(datalist !== undefined){
-            var data = JSON.parse(datalist.data)
-            if(data.Data.Id !== undefined && data.Data.Id !== this.wsuserId){
-              if(data.DataType == 'building' || data.DataType == 'account'){
-                switch(data.DataType){
-                  case 'building':
-                    this.handleBuilding(data.SendType, data.Data.Bid, data.Data.Content)
-                    break;
-                  case 'account':
-                    this.handleAccount(data.SendType, data.Data.Content)
-                    break;
-                }
+  // watch:{
+  //   wsmsg:{
+  //     handler:async function(){
+  //         var datalist = this.wsmsg.shift()
+  //         if(datalist !== undefined){
+  //           var data = JSON.parse(datalist.data)
+  //           if(data.Data.Id !== undefined && data.Data.Id !== this.wsuserId){
+  //             if(data.DataType == 'building' || data.DataType == 'account'){
+  //               switch(data.DataType){
+  //                 case 'building':
+  //                   this.handleBuilding(data.SendType, data.Data.Bid, data.Data.Content)
+  //                   break;
+  //                 case 'account':
+  //                   this.handleAccount(data.SendType, data.Data.Content)
+  //                   break;
+  //               }
                 
-              }else if(data.Data.Bid == this.buildingid){
-                console.log('收到別人的訊息!', data.DataType)
-                switch(data.DataType){
-                    case 'roles':
-                      this.handleRoles(data.SendType, data.Data.Content)
-                      break;
-                    case 'account':
-                      this.handleAccount(data.SendType, data.Data.Content)
-                      break;
-                    case 'menus':
-                      this.handleMenus(data.SendType, data.Data.Content)
-                      break;
-                    case 'setting':
-                      this.handleSetting(data.SendType, data.Data.Content)
-                      break;
-                    case 'floor':
-                      this.handleFloor(data.SendType, data.Data.Content)
-                      break;
-                    case 'contactUnit':
-                      this.handleContactUnit(data.SendType, data.Data.Content)
-                      break;
-                    case 'houseHolder':
-                      this.handleHouseHolder(data.SendType, data.Data.Content)
-                      break;
-                    case 'floorOfHouse':
-                      this.handleFloorOfHouse(data.SendType, data.Data.Content)
-                      break;
-                    case 'device':
-                      this.handleDevice(data.SendType, data.Data.Content)
-                      break;
-                    case 'deviceType':
-                      this.handleDeviceType(data.SendType, data.Data.Content)
-                      break;
-                    case 'deviceAddress':
-                      this.handleDeviceAddress(data.SendType, data.Data.Content)
-                      break;
-                    case 'graphic':
-                      this.handleGraphic(data.SendType, data.Data.Content)
-                      break;
-                }
-              }
-            }
-          }
+  //             }else if(data.Data.Bid == this.buildingid){
+  //               console.log('收到別人的訊息!', data.DataType)
+  //               switch(data.DataType){
+  //                   case 'roles':
+  //                     this.handleRoles(data.SendType, data.Data.Content)
+  //                     break;
+  //                   case 'account':
+  //                     this.handleAccount(data.SendType, data.Data.Content)
+  //                     break;
+  //                   case 'menus':
+  //                     this.handleMenus(data.SendType, data.Data.Content)
+  //                     break;
+  //                   case 'setting':
+  //                     this.handleSetting(data.SendType, data.Data.Content)
+  //                     break;
+  //                   case 'floor':
+  //                     this.handleFloor(data.SendType, data.Data.Content)
+  //                     break;
+  //                   case 'contactUnit':
+  //                     this.handleContactUnit(data.SendType, data.Data.Content)
+  //                     break;
+  //                   case 'houseHolder':
+  //                     this.handleHouseHolder(data.SendType, data.Data.Content)
+  //                     break;
+  //                   case 'floorOfHouse':
+  //                     this.handleFloorOfHouse(data.SendType, data.Data.Content)
+  //                     break;
+  //                   case 'device':
+  //                     this.handleDevice(data.SendType, data.Data.Content)
+  //                     break;
+  //                   case 'deviceType':
+  //                     this.handleDeviceType(data.SendType, data.Data.Content)
+  //                     break;
+  //                   case 'deviceAddress':
+  //                     this.handleDeviceAddress(data.SendType, data.Data.Content)
+  //                     break;
+  //                   case 'graphic':
+  //                     this.handleGraphic(data.SendType, data.Data.Content)
+  //                     break;
+  //               }
+  //             }
+  //           }
+  //         }
           
-      },
-      immediate:true
-    }
-  },
+  //     },
+  //     immediate:true
+  //   }
+  // },
   methods: {
     initsocket(){
       if ("WebSocket" in window){
@@ -312,19 +312,6 @@ width: 0 !important;
 #app::-webkit-scrollbar {  
 width: 0 !important;height: 0;  
 }  
-
-/* ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  background: #E0E3E7;
-  height: 20px;
-}
- ::-webkit-scrollbar-track {
-  background-color: transparent;
-} */
 
 </style>
 

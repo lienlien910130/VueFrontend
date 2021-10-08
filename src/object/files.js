@@ -1,5 +1,5 @@
 import api from '@/api'
-import moment from 'moment'
+const moment = require('moment')
 import Parent from './parent'
 
 class Files extends Parent {

@@ -286,7 +286,7 @@ export default {
       },
       //樓層事件
       async handleSelect(content, device = null){
-        console.log('handleSelect',device)
+        console.log('handleSelect',content)
         if(this.type == 'edit'){
           this.$socket.sendMsg('graphic', 'closeEdit' , this.floor.getID())
         }

@@ -35,14 +35,14 @@
 </template>
 
 <script>
-import moment from 'moment'
-import { mapGetters } from 'vuex'
+const moment = require('moment')
+// const Vuex = require('vuex')
 import { changeDefaultFullType } from '@/utils/index'
 
 export default {
   name: 'ExportExcel',
   computed: {
-        ...mapGetters([
+        ...Vuex.mapGetters([
             'buildingoptions',
             'deviceType'
         ])

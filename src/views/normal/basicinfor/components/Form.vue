@@ -48,12 +48,13 @@
 </template>
 <script>
 import Building from '@/object/building'
-import { mapGetters } from 'vuex'
+
+// const Vuex = require('vuex')
 import constant from '@/constant/index'
 
 export default {
   computed: {
-    ...mapGetters([
+    ...Vuex.mapGetters([
         'device',
         'buildingid',
         'buildingusers',

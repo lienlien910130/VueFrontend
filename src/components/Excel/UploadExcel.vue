@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import XLSX from 'xlsx'
+const XLSX = require('xlsx')
 export default {
   name: 'UploadExcel',
   props:{

@@ -411,7 +411,6 @@ import Setting from '@/object/setting'
 import { changeDefaultFullType } from '@/utils/index'
 import constant from '@/constant/index'
 import { SelfDefenseFireMarshalling } from '@/object'
-import lodash from 'lodash'
 export default {
     name:'DialogForm',
     mixins:[computedmixin],
@@ -497,14 +496,14 @@ export default {
                                 this.$set(v, 'value', v.id) 
                                 this.$set(v, 'id', v.id) 
                                 this.$set(v, 'label', v.name) 
-                                this.$set(v, 'imgsrc', v.status[0].imgSrc) 
+                                this.$set(v, 'imgsrc',require('@assets/equipment/'+v.status[0].imgSrc)) 
                                 return v
                             })
                         case 'iconShow':
                             var icon = constant.Equipment.filter(item=>{
                                 return item.id == this.temp['iconId']
                             })[0]
-                            return icon !== undefined ? icon.status[0].imgSrc : null
+                            return icon !== undefined ? require('@assets/equipment/'+icon.status[0].imgSrc)  : null
                         case 'valueType':
                             return [{label:'監視狀態',id:'status'},{label:'監視電源',id:'power'},{label:'控制動作',id:'action'}]
                         case 'addressdeviceSelect':
@@ -678,7 +677,7 @@ export default {
                     }
                 }else if(this.title == 'devicetype'){
                     var fullType = this.dialogData[0]['fullType']
-                    var obj = lodash.cloneDeep(changeDefaultFullType(fullType)) 
+                    var obj = _.cloneDeep(changeDefaultFullType(fullType)) 
                     obj.typevalue.push(fullType)
                     this.fulltypevalue = obj.typevalue
                 }else if(this.title == 'deviceAddressManagement' || this.title == 'devicePLCAddressManagement'){
@@ -898,7 +897,7 @@ export default {
         },
         //fulltype選單變動
         changeFullType(){
-            var data = lodash.cloneDeep(this.fulltypevalue)
+            var data = _.cloneDeep(this.fulltypevalue)
             this.temp['fullType'] = data.pop()
         },
         //地址欄位

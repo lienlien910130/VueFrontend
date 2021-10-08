@@ -1,6 +1,6 @@
 import Parent from './parent'
 import api from '@/api'
-import moment from 'moment'
+const moment = require('moment')
 
 class User extends Parent {
  

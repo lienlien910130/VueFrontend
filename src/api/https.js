@@ -1,5 +1,6 @@
 import axios from 'axios'
-import { Message, Loading } from 'element-ui'
+// const axios = require('axios')
+const ElementUI = require('element-ui')
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 
@@ -9,7 +10,7 @@ let timer;
 // 顯示遮罩
 function showLoading() {
     if (requestCount === 0) {
-      loading = Loading.service({
+      loading = ElementUI.Loading.service({
         lock: true,
         text: '請稍後...',
         spinner: 'el-icon-loading',
@@ -35,7 +36,7 @@ function resetLoading(){
     loading.close()
 }
 const tip = msg => {
-    Message.error(msg)
+    ElementUI.Message.error(msg)
 }
 
 const service = axios.create({

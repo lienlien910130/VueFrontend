@@ -16,11 +16,10 @@
 </template>
 
 <script>
-    import 'codemirror/lib/codemirror.css'
-    import { codemirror } from 'vue-codemirror'
-
-    require("codemirror/mode/javascript/javascript.js")
-
+    // import 'codemirror/lib/codemirror.css'
+    // import { codemirror } from 'vue-codemirror'
+    //require("codemirror/mode/javascript/javascript.js")
+    const vuecodemirror = require('vue-codemirror')
     export default {
         name:'JsonViewer',
         props: {
@@ -37,7 +36,7 @@
             }
         },
         components: {
-            codemirror
+            codemirror: vuecodemirror.codemirror
         },
         methods: {
             init() {

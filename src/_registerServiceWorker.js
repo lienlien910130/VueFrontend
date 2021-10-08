@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import * as OfflinePluginRuntime from 'offline-plugin/runtime'
-import { Message, MessageBox } from 'element-ui'
+
 
 OfflinePluginRuntime.install({
 
@@ -11,19 +11,19 @@ OfflinePluginRuntime.install({
   },
   onUpdated: () => {
     // 弹一个确认框
-    MessageBox({        
-        title: '更新',        
-        message: '新版本內容下載完成，點擊確定按鈕立即使用新版',        
-        confirmButtonText: '确定',        
-        showClose: false,        
-        showCancelButton: false,        
-        closeOnClickModal: false,        
-        closeOnPressEscape: false,        
-        type: 'success',        
-        callback() {          
-          window.location.reload()       
-        }      
-    })      
+    // MessageBox({        
+    //     title: '更新',        
+    //     message: '新版本內容下載完成，點擊確定按鈕立即使用新版',        
+    //     confirmButtonText: '确定',        
+    //     showClose: false,        
+    //     showCancelButton: false,        
+    //     closeOnClickModal: false,        
+    //     closeOnPressEscape: false,        
+    //     type: 'success',        
+    //     callback() {          
+    //       window.location.reload()       
+    //     }      
+    // })      
     console.log('New content is available; please refresh.') 
   }
 })

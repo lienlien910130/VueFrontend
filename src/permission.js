@@ -1,11 +1,9 @@
 import router from './router'
 import store from './store'
-import { Message } from 'element-ui'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css' 
 import { getToken, getBuildingid } from '@/utils/auth' 
-import { User,Role,Building,DeviceType,Contactunit,Device,Floors,Setting, Menu } from './object/index'
-import idb from './utils/indexedDB'
+import { Building,DeviceType, Menu } from './object/index'
 
 NProgress.configure({ showSpinner: false }) 
 
@@ -13,13 +11,14 @@ const whiteList = ['/login'] // no redirect whitelist
 
 router.beforeEach(async(to, from, next) => {
  
-  console.log(to.name,from.name,to.meta.title)
-  NProgress.start()
-  document.title = `${to.meta.title == null ? `載入中` : to.meta.title } - 智慧消防管理平台`
-  const hasToken = getToken()
-  const buildingID = getBuildingid()
-  await store.dispatch('permission/setnavbarButton', to.name == 'process') //為了在navbar顯示返回的button
-  var toMenu = to.name
+    console.log(to.name, from.name, to.meta.title)
+    NProgress.start()
+    document.title = `${to.meta.title == null ? `載入中` : to.meta.title } - 智慧消防管理平台`
+    const hasToken = getToken()
+    const buildingID = getBuildingid()
+    await store.dispatch('permission/setnavbarButton', to.name == 'process') //為了在navbar顯示返回的button
+    var toMenu = to.name
+
     if (hasToken) { //已經登入過了
       if (to.path === '/login') {
         // if is logged in, redirect to the home page
@@ -73,7 +72,6 @@ router.beforeEach(async(to, from, next) => {
           } catch (error) {
             // remove token and go to login page to re-login
             await store.dispatch('user/logout')
-            Message.error(error || 'Has Error')
             next(`/login?redirect=${to.path}`)
             alert('error'+error)
             NProgress.done()

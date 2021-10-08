@@ -67,7 +67,6 @@
     // import jsp from 'jsplumb'
     import '@/utils/jsplumb'
     import { flowmixin } from '@/mixin/index'
-    import lodash from 'lodash'
     import { uploadFile } from '@/utils'
 
     export default {
@@ -328,7 +327,7 @@
             dataReload(data) {
                 this.flowVisible = false
                 this.$nextTick(() => {
-                    data = lodash.cloneDeep(data)
+                    data = _.cloneDeep(data)
                     this.flowVisible = true
                     this.data = data
                     let { offsetX, offsetY } = this.data
@@ -358,7 +357,7 @@
                 var self = this
                 if(this.data.nodeList !== undefined){
                     for(let node of this.data.nodeList){
-                        this.jsPlumb.makeSource(node.id, lodash.merge(this.jsplumbSourceOptions, {}))
+                        this.jsPlumb.makeSource(node.id, _.merge(this.jsplumbSourceOptions, {}))
                         this.jsPlumb.makeTarget(node.id, this.jsplumbTargetOptions)
                         this.jsPlumb.draggable(node.id, {
                             containment: 'parent',
@@ -440,7 +439,7 @@
                 this.activeElement.type = 'node'
                 this.activeElement.nodeId = node.id
                 this.$refs.nodeForm.nodeInit(this.data, node.id)
-                this.selsectNode = lodash.cloneDeep(node)
+                this.selsectNode = _.cloneDeep(node)
                 this.pasteElement = { left:0, top:0}
             },
             // 改變節點位置
@@ -558,7 +557,7 @@
                         nodeList: [],
                         lineList: []
                     }
-                    this.state = lodash.cloneDeep(this.data)
+                    this.state = _.cloneDeep(this.data)
                     this.dragMove = {
                         top: -3000,
                         left: -3000,
@@ -632,7 +631,7 @@
               })
             },
             copy(){
-                this.copyNode = lodash.cloneDeep(this.selsectNode)
+                this.copyNode = _.cloneDeep(this.selsectNode)
             },
             paste(){
                 if(this.activeElement.type == 'line'){
@@ -642,7 +641,7 @@
                     this.$message.error('請選擇節點並複製')
                     return false
                 }
-                this.copyNode = lodash.cloneDeep(this.selsectNode)
+                this.copyNode = _.cloneDeep(this.selsectNode)
                 this.copyNode.id = this.getUUID()
                 this.copyNode.name = this.countNodeName(this.copyNode.name)
                 var left, top
@@ -670,7 +669,7 @@
             saveState(){ //儲存狀態：新增節點/刪除節點/新增線/刪除線/拖曳節點
                 if(JSON.stringify(this.data) === JSON.stringify(this.state)) return  
                 this.undo.push(this.state)
-                this.state = lodash.cloneDeep(this.data)
+                this.state = _.cloneDeep(this.data)
                 this.redo = []
                 console.log('saveState',JSON.stringify(this.state))
             },
@@ -687,7 +686,7 @@
                 this.state = lastJSON // 換成上一步的狀態
                 this.jsPlumb.deleteEveryEndpoint()
                 this.jsPlumb.deleteEveryConnection()
-                this.data = lodash.cloneDeep(this.state)
+                this.data = _.cloneDeep(this.state)
                 if(this.data.lineList !== undefined){
                     this.data.lineList.forEach(line => {
                         var connParam = {
@@ -720,7 +719,7 @@
                 this.state = lastJSON
                 this.jsPlumb.deleteEveryEndpoint()
                 this.jsPlumb.deleteEveryConnection()
-                this.data = lodash.cloneDeep(this.state)
+                this.data = _.cloneDeep(this.state)
                 this.dataReload(this.data)
             }
         }

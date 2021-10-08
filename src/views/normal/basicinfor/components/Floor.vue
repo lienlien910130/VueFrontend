@@ -8,11 +8,12 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+// const Vuex = require('vuex')
+
 export default {
   props: ['imageSrc','loading'],
   computed:{
-    ...mapGetters([
+    ...Vuex.mapGetters([
         'fullscreen'
     ])
   },

@@ -87,8 +87,7 @@
 </template>
 
 <script>
-    import { mapGetters } from 'vuex'
-    import { cloneDeep } from 'lodash'
+    // const Vuex = require('vuex')
     import { Role, SelfDefenseFireMarshalling } from '@/object'
 
     export default {
@@ -120,7 +119,7 @@
             }
         },
         computed:{
-            ...mapGetters([
+            ...Vuex.mapGetters([
                 'buildingroles',
                 'role_record'
             ]),
@@ -149,7 +148,7 @@
                 this.data = data
                 data.nodeList.filter((node) => {
                     if (node.id === id) {
-                        this.node = cloneDeep(node)
+                        this.node = _.cloneDeep(node)
                     }
                 })
                 this.node.linkRoles = this.node.linkRoles.map(item=> { return new Role(item)})
