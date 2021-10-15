@@ -2,7 +2,8 @@
 const getDefaultState = () => {
     return {
       wsmsg: [],
-      wsuserId:''
+      wsuserId:'',
+      graphicMsg:''
     }
   }
   
@@ -18,6 +19,9 @@ const getDefaultState = () => {
     SET_MSGUSERID: (state, wsuserId) => {
       state.wsuserId = wsuserId
     },
+    SET_GRAPHICMSG: (state, graphicMsg) => {
+      state.graphicMsg = graphicMsg
+    },
 }
   
 const actions = {
@@ -28,6 +32,9 @@ const actions = {
   saveUserId({ commit } , wsuserId){
       commit('SET_MSGUSERID', wsuserId)
   },
+  sendGraphicMsg({ commit } , msg){
+      commit('SET_GRAPHICMSG', msg)
+  }
 }
 
 export default {

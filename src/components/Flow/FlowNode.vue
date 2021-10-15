@@ -16,10 +16,10 @@
             {{node.name}}
         </div>
         <div class="ef-node-right-ico">
-            <i class="el-icon-circle-check el-node-state-success" v-show="node.state === 'success'"></i>
-            <i class="el-icon-circle-close el-node-state-error" v-show="node.state === 'error'"></i>
-            <i class="el-icon-warning-outline el-node-state-warning" v-show="node.state === 'warning'"></i>
-            <i class="el-icon-loading el-node-state-running" v-show="node.state === 'running'"></i>
+            <i class="el-icon-circle-check el-node-state-success" v-show="node.state === 'Success'"></i>
+            <i class="el-icon-circle-close el-node-state-error" v-show="node.state === 'Error'"></i>
+            <i class="el-icon-warning-outline el-node-state-warning" v-show="node.state === 'Warning'"></i>
+            <i class="el-icon-loading el-node-state-running" v-show="node.state === 'Running'"></i>
         </div>
     </div>
 </template>
@@ -38,7 +38,7 @@
             nodeContainerClass() {
                 return {
                     'ef-node-container': true,
-                    'ef-node-active': this.activeElement.type == 'node' ? this.activeElement.nodeId === this.node.id : false
+                    'ef-node-active': this.activeElement.type == 'node' ? this.activeElement.nodeId === this.node.nodeId : false
                 }
             },
             // 节点容器样式
@@ -50,7 +50,7 @@
             },
             nodeIcoClass() {
                 var nodeIcoClass = {}
-                nodeIcoClass[this.node.ico] = true
+                nodeIcoClass[this.node.icon] = true
                 // 添加该class可以推拽连线出来，viewOnly 可以控制节点是否运行编辑
                 nodeIcoClass['flow-node-drag'] = this.node.viewOnly ? false : true
                 return nodeIcoClass
@@ -65,13 +65,10 @@
                     return;
                 }
                 this.$emit('changeNodeSite', {
-                    nodeId: this.node.id,
+                    nodeId: this.node.nodeId,
                     left: this.$refs.node.style.left,
                     top: this.$refs.node.style.top,
                 })
-            },
-            handleNodeConnection(type){
-                this.$emit('handleNodeConnection',this.node,type)
             }
         }
     }

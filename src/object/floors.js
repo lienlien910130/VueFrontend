@@ -15,7 +15,6 @@ class Floors extends Parent {
         this.floorPlanID =  floorPlanID == undefined ? null :  floorPlanID
         this.sort = sort
         this.linkDevices = devices
-        return this
     }
     clone(data){
         return new Floors(data)
@@ -124,6 +123,15 @@ class Floors extends Parent {
             var result = response.result.sort((x,y) => x.sort - y.sort)
             .map(item=>{ return new Floors(item)})
             return result
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async getOfId (floorId){
+        var data = await api.building.apiGetFloor(floorId).then(response => {
+            var result = response.result.map(item=>{ return new Floors(item)})
+            return result[0]
         }).catch(error=>{
             return []
         })

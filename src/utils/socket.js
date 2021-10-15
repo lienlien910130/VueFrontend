@@ -1,6 +1,6 @@
 
 import store from '../store'
-
+import { Account, Building, Contactunit, Device, DeviceAddressManagement, DeviceType, Floors, Role, UsageOfFloor, User } from '../object'
  let wsConnection = {
    backWs:{
       $ws: null,
@@ -21,34 +21,32 @@ import store from '../store'
    //初始化websocket
    initWebSocket: function () {
       let _this = this;
-      
-      
       //back
-      let backIP = '192.168.88.110'
-      let backPort = '5000'
-      let backWsProtocol = 'clRywHL4CrkA3OUw7qBoFMhx6ZG1bDXTskdhZP6qc07D3U54D6I6FQSEkgHODJUPM3ZcUocC7m64O2XcZYT8VBX4SoHpfiYfkiop2cvRBFzG5jFLTQ98RI2rJe8wiIZz'
-      this.backWs.$ws = new WebSocket('ws://'+backIP+':'+backPort+'/', backWsProtocol);
-      this.backWs.$ws.onopen = function(){
-        console.log('ws open-BACK')
-        wsConnection.startWsHeartbeat(_this.backWs)
-      }
-      this.backWs.$ws.onclose = function(){
-        console.log('ws close-BACK')
-        wsConnection.reconnect(_this.backWs)
-      }
-      this.backWs.$ws.onmessage = function(msg){
-        console.log('ws message-BACK')
-        console.log(msg)
-        wsConnection.resetHeartbeat(_this.backWs)
-      }
-      this.backWs.$ws.onerror = function(){
-        wsConnection.reconnect(_this.backWs)
-      }
+      // let backIP = '192.168.88.110'
+      // let backPort = '5000'
+      // let backWsProtocol = 'clRywHL4CrkA3OUw7qBoFMhx6ZG1bDXTskdhZP6qc07D3U54D6I6FQSEkgHODJUPM3ZcUocC7m64O2XcZYT8VBX4SoHpfiYfkiop2cvRBFzG5jFLTQ98RI2rJe8wiIZz'
+      // this.backWs.$ws = new WebSocket('ws://'+backIP+':'+backPort+'/', backWsProtocol);
+      // this.backWs.$ws.onopen = function(){
+      //   console.log('ws open-BACK')
+      //   wsConnection.startWsHeartbeat(_this.backWs)
+      // }
+      // this.backWs.$ws.onclose = function(){
+      //   console.log('ws close-BACK')
+      //   wsConnection.reconnect(_this.backWs)
+      // }
+      // this.backWs.$ws.onmessage = function(msg){
+      //   console.log('ws message-BACK')
+      //   console.log(msg)
+      //   wsConnection.resetHeartbeat(_this.backWs)
+      // }
+      // this.backWs.$ws.onerror = function(){
+      //   wsConnection.reconnect(_this.backWs)
+      // }
       //前端給前端內部溝通
-      let wsIP = '192.168.88.65'
-      let wsPort = '49119'
       let dataWsProtocol = 'JonUmZbPuQj69GnQdefx6w1ygkeU8PkzHO0EknOSdTmTYEhgg7HpDOeniThA96f4PlGlGFKBsVSbICqlEsb91xf15tVt7FGddY80p6AfcBIknQqsEWiPhKf9hByJL1Vt'
-      this.dataWs.$ws = new WebSocket('ws://'+wsIP+':'+wsPort+'/', dataWsProtocol);
+      // this.dataWs.$ws = new WebSocket('ws://'+wsIP+':'+wsPort+'/', dataWsProtocol);
+      this.dataWs.$ws = new WebSocket(process.env.VUE_APP_WEBSOCKET, dataWsProtocol);
+
       this.dataWs.$ws.onopen = function(){
         console.log('ws open')
         wsConnection.startWsHeartbeat(_this.dataWs)
@@ -61,40 +59,18 @@ import store from '../store'
         console.log('ws message')
         console.log(msg)
         wsConnection.resetHeartbeat(_this.dataWs)
-        // var data = JSON.parse(msg.data)
-        // if(data.SenderName == 'MercuryfireWS' || data.SenderName == 'MercuryfireWS2'){
-        //   store.dispatch('websocket/saveUserId',data.Data.Id)
-        // }
+        var data = JSON.parse(msg.data)
+        if(data.SenderName == 'MercuryfireWS65'){
+          store.dispatch('websocket/saveUserId',data.Id)
+        }else{
+          getMessage(msg)
+        }
         // store.dispatch('websocket/sendMsg',msg)
       }
       this.dataWs.$ws.onerror = function(){
         wsConnection.reconnect(_this.dataWs)
       }
    },
-   //開啟
-  //  wsOpen: function (e) {
-  //    wsConnection.startWsHeartbeat()
-  //    console.log('ws success', e)
-  //  },
-   //關閉
-  //  wsClose: function (e) {
-  //    console.log(e, 'ws close')
-  //    wsConnection.reconnect()
-  //  },
-   //收到訊息
-  //  wsMsg: function (msg) { 
-  //    wsConnection.resetHeartbeat()
-  //    var data = JSON.parse(msg.data)
-  //    if(data.SenderName == 'MercuryfireWS' || data.SenderName == 'MercuryfireWS2'){
-  //     store.dispatch('websocket/saveUserId',data.Data.Id)
-  //    }
-  //    store.dispatch('websocket/sendMsg',msg)
-  //  },
-   //錯誤處理
-  //  wsError: function (err) {
-  //    console.log(err, 'ws error')
-  //    wsConnection.reconnect()
-  //  },
    //重啟
    reconnect: function (ws) {
      let _this = this
@@ -140,8 +116,206 @@ import store from '../store'
           Content: content
         }
       }
-      // _this.dataWs.$ws.send(JSON.stringify(msg))
+      _this.dataWs.$ws.send(JSON.stringify(msg))
    }
  }
+
+ function getMessage(msg){
+    var data = JSON.parse(msg.data)
+    console.log('getMessage',data.Data.Id, store.getters.wsuserId)
+    if(data.Data.Id !== undefined && data.Data.Id !== store.getters.wsuserId){
+      console.log('收到別人的訊息!', data.DataType)
+      if(data.DataType == 'building' || data.DataType == 'account'){
+        switch(data.DataType){
+          case 'building':
+            handleBuilding(data.SendType, data.Data.Bid, data.Data.Content)
+            break;
+          case 'account':
+            handleAccount(data.SendType, data.Data.Content)
+            break;
+        }
+      }else if(data.Data.Bid == store.getters.buildingid){
+        switch(data.DataType){
+            case 'roles':
+              handleRoles(data.SendType, data.Data.Content)
+              break;
+            case 'menus':
+              handleMenus(data.SendType, data.Data.Content)
+              break;
+            case 'setting':
+              handleSetting(data.SendType, data.Data.Content)
+              break;
+            case 'floor':
+              handleFloor(data.SendType, data.Data.Content)
+              break;
+            case 'contactUnit':
+              handleContactUnit(data.SendType, data.Data.Content)
+              break;
+            case 'houseHolder':
+              handleHouseHolder(data.SendType, data.Data.Content)
+              break;
+            case 'floorOfHouse':
+              handleFloorOfHouse(data.SendType, data.Data.Content)
+              break;
+            case 'device':
+              handleDevice(data.SendType, data.Data.Content)
+              break;
+            case 'deviceType':
+              handleDeviceType(data.SendType, data.Data.Content)
+              break;
+            case 'deviceAddress':
+              handleDeviceAddress(data.SendType, data.Data.Content)
+              break;
+            case 'graphic':
+              handleGraphic(msg)
+              break;
+        }
+      }
+    }
+ }
  
- export default wsConnection
+ function handleRoles(index,content){
+  console.log('handleRoles',index,content)
+  if(index == 'update'){
+    store.dispatch('building/updateRole', new Role(content))
+  }else if(index == 'delete'){
+    store.dispatch('building/deleteRole',content)
+  }else if(index == 'create'){
+    store.dispatch('building/addRole', new Array(new Role(content)))
+  }else if(index == 'uploadExcelSave'){
+    store.dispatch('building/addRole', content.map(item=>{ return new Role(item)}))
+  }
+}
+function handleAccount(index,content){
+  console.log('handleAccount',index,content)
+  if(index == 'update'){
+    store.dispatch('building/updateAccount', new Account(content))
+  }else if(index == 'delete'){
+    store.dispatch('building/deleteAccount',content)
+  }else if(index == 'create'){
+    store.dispatch('building/addAccount', new Array(new Account(content)))
+  }else if(index == 'uploadExcelSave'){
+    store.dispatch('building/addAccount', content.map(item=>{ return new Account(item)}))
+  }
+}
+function handleMenus(index,content){
+  console.log('handleMenus',index,content)
+  if(index == 'reset'){ //切換頁面的同時重新載入選單並儲存
+    store.dispatch('permission/setneedreload', true)
+  }else if(index == 'routes'){
+    store.dispatch('permission/setRoutes')
+  }
+}
+function handleSetting(index,content){
+  console.log('handleSetting',index,content)
+  if(index == 'update'){
+    store.dispatch('building/updateOption', content)
+  }else if(index == 'delete'){
+    store.dispatch('building/deleteOption',content)
+  }else if(index == 'create'){
+    store.dispatch('building/addOption', content)
+  }
+}
+function handleBuilding(index,bid,content){
+  console.log('handleBuilding',index,content)
+  if(index == 'update'){
+    store.dispatch('building/updateBuildingList', new Building(content))
+  }else if(index == 'delete'){
+    store.dispatch('building/deleteBuildingList',content)
+  }else if(index == 'create'){
+    if(store.getters.id == '1'){ //系統管理員
+      store.dispatch('building/addBuildingList', new Building(content))
+    }
+  }else if(index == 'info'){
+    if(bid == store.getters.buildingid){
+      store.dispatch('building/setBuildingInfo', new Building(content))
+    }
+  }else if(index == 'set'){
+    if(store.getters.id == '1'){ //系統管理員
+      var array = content.map(item=>{ return new Building(item)})
+      store.dispatch('building/setBuildingList', array)
+    }
+  }
+}
+function handleFloor(index,content){
+  console.log('handleSetting',index,content)
+  if(index == 'update'){
+    store.dispatch('building/updateFloor', new Floors(content))
+  }
+}
+function handleContactUnit(index,content){
+  console.log('handleContactUnit',index,content)
+  if(index == 'update'){
+    store.dispatch('building/updateContactunit', new Contactunit(content))
+  }else if(index == 'delete'){
+    store.dispatch('building/deleteContactunit',content)
+  }else if(index == 'create'){
+    store.dispatch('building/addContactunit',new Array(new Contactunit(content)))
+  }else if(index == 'uploadExcelSave'){
+    store.dispatch('building/addContactunit', content.map(item=>{ return new Contactunit(item)}))
+  }
+}
+function handleHouseHolder(index,content){
+  console.log('handleHouseHolder',index,content)
+  if(index == 'update'){
+    store.dispatch('building/updateHouseHolder', new User(content))
+  }else if(index == 'delete'){
+    store.dispatch('building/deleteHouseHolder',content)
+  }else if(index == 'create'){
+    store.dispatch('building/addHouseHolder', new Array(new User(content)))
+  }else if(index == 'uploadExcelSave'){
+    store.dispatch('building/addHouseHolder', content.map(item=>{ return new User(item)}))
+  }
+}
+function handleFloorOfHouse(index,content){
+  console.log('handleFloorOfHouse',index,content)
+  if(index == 'update'){
+    store.dispatch('building/updateFloorOfHouse', new UsageOfFloor(content))
+  }else if(index == 'delete'){
+    store.dispatch('building/deleteFloorOfHouse',content)
+  }else if(index == 'create'){
+    store.dispatch('building/addFloorOfHouse', new Array(new UsageOfFloor(content)))
+  }else if(index == 'uploadExcelSave'){
+    store.dispatch('building/addFloorOfHouse', content.map(item=>{ return new UsageOfFloor(item)}))
+  }
+}
+function handleDevice(index,content){
+  console.log('handleDevice',index,content)
+  if(index == 'update'){
+    store.dispatch('building/updateDevice', new Device(content))
+  }else if(index == 'delete'){
+    store.dispatch('building/deleteDevice',content)
+  }else if(index == 'create'){
+    store.dispatch('building/addDevice', new Array(new Device(content)))
+  }else if(index == 'uploadExcelSave'){
+    store.dispatch('building/addDevice', content.map(item=>{ return new Device(item)}))
+  }
+}
+function handleDeviceType(index,content){
+  console.log('handleDeviceType',index,content)
+  if(index == 'update'){
+    store.dispatch('building/updateDeviceType', new DeviceType(content))
+  }else if(index == 'delete'){
+    store.dispatch('building/deleteDeviceType',content)
+  }else if(index == 'create'){
+    store.dispatch('building/addDeviceType', new Array(new DeviceType(content)))
+  }else if(index == 'uploadExcelSave'){
+    store.dispatch('building/addDeviceType', content.map(item=>{ return new DeviceType(item)}))
+  }
+}
+function handleDeviceAddress(index,content){
+  console.log('handleDeviceAddress',index,content)
+  if(index == 'update'){
+    store.dispatch('building/updateAddressManagement', new DeviceAddressManagement(content))
+  }else if(index == 'delete'){
+    store.dispatch('building/deleteAddressManagement',content)
+  }else if(index == 'create'){
+    store.dispatch('building/addAddressManagement', new Array(new DeviceAddressManagement(content)))
+  }
+}
+function handleGraphic(msg){
+  console.log('handleGraphic',msg)
+  store.dispatch('websocket/sendGraphicMsg',msg)
+}
+
+export default wsConnection

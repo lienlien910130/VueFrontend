@@ -31,7 +31,12 @@ router.beforeEach(async(to, from, next) => {
             await store.dispatch('permission/setmenu',await  Menu.get())
             await store.dispatch('permission/setneedreload', false)
           }
-          if(to.name == 'process'){ toMenu = 'selfDefenseFireMarshalling'  }
+          if(to.name == 'process'){ 
+            toMenu = 'selfDefenseFireMarshalling'  
+          }
+          if(to.name == 'emergencygraphic'){
+            toMenu = 'drawingControl'
+          }
           var menuarray = store.getters.menuNoLevel.filter(item=> item.code == toMenu)
           if(menuarray.length !== 0){
             await store.dispatch('permission/setmenuId', menuarray[0].getID()) //儲存要進入的頁面ID

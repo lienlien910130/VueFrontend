@@ -11,7 +11,8 @@ module.exports = merge(baseWebpackConfig, {
     new webpack.DefinePlugin({
         'process.env': {
           NODE_ENV: '"production"',
-          VUE_APP_BASE_API: '"/api"'
+          VUE_APP_BASE_API: '"/api"',
+          VUE_APP_WEBSOCKET:'"wss://demo.mercuryfire.com.tw/ws"'
         }
     }),
     new CompressionPlugin({

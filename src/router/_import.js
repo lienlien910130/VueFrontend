@@ -26,6 +26,6 @@ const map = {
 
     'selfDefenseFireMarshalling':()=> import('@/views/emergency/marshalling/index.vue'),
     'process':()=> import('@/views/emergency/process/index.vue'),
-    'instruction':()=> import('@/views/emergency/instruction/index.vue'),
-
+    'CSampleNodeListMgmt':()=> import('@/views/emergency/instruction/index.vue'),
+   
 }

@@ -4,10 +4,10 @@
             <div class="ef-node-form-body">
                 <el-form :model="node" ref="dataForm" label-width="80px" v-show="type === 'node'" @submit.native.prevent>
                     <el-form-item label="ID">
-                        <el-input v-model="node.id" :disabled="true"></el-input>
+                        <el-input v-model="node.nodeId" :disabled="true"></el-input>
                     </el-form-item>
                     <el-form-item label="類型">
-                        <el-input v-model="node.type" :disabled="true"></el-input>
+                        <el-input v-model="node.nType" :disabled="true"></el-input>
                     </el-form-item>
                     <el-form-item label="名稱">
                         <el-input v-model="node.name" @input="save"></el-input>
@@ -21,7 +21,7 @@
                     <el-form-item label="top座標">
                         <el-input v-model="node.top" :disabled="true"></el-input>
                     </el-form-item> -->
-                    <el-form-item label="狀態">
+                    <!-- <el-form-item label="狀態">
                         <el-select v-model="node.state" placeholder="請選擇" @change="save">
                             <el-option
                                 v-for="item in stateList"
@@ -30,8 +30,23 @@
                                 :value="item.state">
                             </el-option>
                         </el-select>
+                    </el-form-item> -->
+                    <el-form-item v-if="node.nType == 12" label="流程圖">
+                        <el-select 
+                        v-model="node.nextCpId" 
+                        placeholder="請選擇" 
+                        filterable
+                        multiple
+                        value-key="id" >
+                            <el-option
+                                v-for="(item,index) in selectfilter('processSelect')"
+                                :key="index"
+                                :label="item.name"
+                                :value="item">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
-                    <el-form-item label="角色">
+                    <el-form-item v-if="node.nType == 21" label="角色">
                         <el-select 
                         v-model="node.linkRoles" 
                         placeholder="請選擇" 
@@ -42,14 +57,14 @@
                             <el-option
                                 v-for="(item,index) in selectfilter('roleSelect')"
                                 :key="index"
-                                :label="item.label"
+                                :label="item.name"
                                 :value="item">
                             </el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="人員">
+                    <el-form-item v-if="node.nType == 21" label="人員">
                         <el-select 
-                        v-model="node.linkAccounts" 
+                        v-model="node.linkAccountList" 
                         placeholder="請選擇" 
                         filterable
                         multiple
@@ -58,12 +73,12 @@
                             <el-option
                                 v-for="(item,index) in accountArray"
                                 :key="index"
-                                :label="item.label"
+                                :label="item.name"
                                 :value="item">
                             </el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="訊息">
+                    <el-form-item v-if="node.nType == 21" label="訊息">
                         <el-input 
                         v-model="node.message" 
                         type="textarea" 
@@ -87,10 +102,17 @@
 </template>
 
 <script>
-    // const Vuex = require('vuex')
     import { Role, SelfDefenseFireMarshalling } from '@/object'
 
     export default {
+        props:{
+            processArray: {
+                type: Array,
+                default: function () {
+                    return []
+                }
+            }
+        },
         data() {
             return {
                 visible: true,
@@ -99,22 +121,22 @@
                 node: {},
                 line: {},
                 data: {},
-                stateList: [{
-                    state: 'default',
-                    label: '預設'
-                },{
-                    state: 'success',
-                    label: '成功'
-                }, {
-                    state: 'warning',
-                    label: '警告'
-                }, {
-                    state: 'error',
-                    label: '錯誤'
-                }, {
-                    state: 'running',
-                    label: '運行中'
-                }],
+                // stateList: [{
+                //     state: 'Success',
+                //     label: '成功'
+                // }, {
+                //     state: 'Warning',
+                //     label: '警告'
+                // }, {
+                //     state: 'Error',
+                //     label: '錯誤'
+                // }, {
+                //     state: 'Running',
+                //     label: '運行中'
+                // }, {
+                //     state: 'Failed',
+                //     label: '執行失敗'
+                // }],
                 accountArray:[]
             }
         },
@@ -126,17 +148,25 @@
             selectfilter(){
                 return function (value) {
                     if(value !== null ){
-                        if(this.role_record == 0){
-                            this.$store.dispatch('building/setroles')
-                            this.$store.dispatch('record/saveRoleRecord',1)
+                        switch(value){
+                            case 'processSelect':
+                                console.log(this.processArray)
+                                return []
+                            case 'roleSelect':
+                                if(this.role_record == 0){
+                                    this.$store.dispatch('building/setroles')
+                                    this.$store.dispatch('record/saveRoleRecord',1)
+                                }
+                                return this.buildingroles.map(v => {
+                                    var role = {
+                                        name:v.getName(),
+                                        id:v.getID()
+                                    }
+                                    return role
+                                })
                         }
-                        return this.buildingroles.map(v => {
-                            this.$set(v, 'value', v.getID()) 
-                            this.$set(v, 'label', v.getName()) 
-                            this.$set(v, 'id', v.getID()) 
-                            return v
-                        })
-                    }else{
+                    }
+                    else{
                         return []
                     }
                 }  
@@ -147,7 +177,7 @@
                 this.type = 'node'
                 this.data = data
                 data.nodeList.filter((node) => {
-                    if (node.id === id) {
+                    if (node.nodeId === id) {
                         this.node = _.cloneDeep(node)
                     }
                 })
@@ -160,20 +190,20 @@
             },
             // 修改線
             saveLine() {
-                this.$emit('setLineLabel', this.line.from, this.line.to, this.line.label)
+                this.$emit('setLineLabel', this.line.from, this.line.to, this.line.label, this.line.id)
             },
             // 修改節點
             save() {
                 this.data.nodeList.filter((node) => {
-                    if (node.id === this.node.id) {
+                    if (node.nodeId === this.node.nodeId) {
                         node.name = this.node.name
                         node.left = this.node.left
                         node.top = this.node.top
-                        node.ico = this.node.ico
+                        node.icon = this.node.icon
                         node.state = this.node.state
                         node.message = this.node.message
                         node.linkRoles = this.node.linkRoles
-                        node.linkAccounts = this.node.linkAccounts
+                        node.linkAccountList = this.node.linkAccountList
                         this.$emit('repaintEverything')
                     }
                 })
@@ -182,18 +212,21 @@
                 this.save()
                 var account = []
                 for(let role of value){
-                    var result = await SelfDefenseFireMarshalling.getAccountByRole(role.getID())
-                    result.forEach(element => {
-                        account.push(element)
-                    })
+                    if(role){
+                        var result = await SelfDefenseFireMarshalling.getAccountByRole(role.id)
+                        result.forEach(element => {
+                            account.push(element)
+                        })
+                    }
                 }
                 const set = new Set()
                 this.accountArray = 
                     account.filter(item => !set.has(item.id) ? set.add(item.id) : false).map(v => {
-                        this.$set(v, 'value', v.getID()) 
-                        this.$set(v, 'label', v.getName()) 
-                        this.$set(v, 'id', v.getID()) 
-                        return v
+                        var account = {
+                            name:v.name,
+                            id:v.id
+                        }
+                        return account
                     })
             }
         }

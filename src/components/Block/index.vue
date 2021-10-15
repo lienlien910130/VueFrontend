@@ -229,6 +229,10 @@
                                     </template>
                                 </span>
 
+                                <span v-else-if="option.format == 'nTypeChange' " >
+                                    {{ changenType(item[option.prop]) }}
+                                </span>
+
                                 <span v-else-if="option.format == 'deviceTypeSelect' "
                                 @click="clickMessageBox('設備種類',option.format,item[option.prop])"
                                 style="color:#66b1ff;cursor:pointer">
@@ -386,6 +390,10 @@
 
                                         <span v-else-if="item.format == 'addressStr' " >
                                             {{ scope.row.getAddressStr() }}
+                                        </span>
+
+                                        <span v-else-if="item.format == 'nTypeChange' " >
+                                            {{ changenType(scope.row[item.prop]) }}
                                         </span>
 
                                         <span v-else-if="item.format == 'iconSelect' " >
@@ -622,9 +630,9 @@ export default {
         },
         labelstyle(){
             if (this.$store.state.app.device === 'mobile') {
-                return '40%'
+                return '30%'
             } else {
-                return '40%'
+                return '30%'
             }
         },
         itemstyle(){
@@ -713,7 +721,48 @@ export default {
                 }
                 return ""
             }
-        }
+        },
+        changenType(){
+            return function (value) {
+                if(value !== null){
+                    var type = ''
+                    switch(value){
+                        case '10':
+                            type = 'Start';
+                            break;
+                        case '11':
+                            type = 'End';
+                            break;
+                        case '12':
+                            type = 'LinkToWorkflow';
+                            break;
+                        case '21':
+                            type = 'MessageBroadcast';
+                            break;
+                        case '22':
+                            type = 'MobilePush';
+                            break;
+                        case '23':
+                            type = 'LinePush';
+                            break;
+                        case '24':
+                            type = 'MessagePush';
+                            break;
+                        case '25':
+                            type = 'VoiceBroadcast';
+                            break;
+                        case '31':
+                            type = 'CountDown';
+                            break;
+                        case '50':
+                            type = 'OptionEvents';
+                            break;
+                    }
+                    return type
+                }
+                return ""
+            }
+        },
     },
     watch:{
         isTable:{

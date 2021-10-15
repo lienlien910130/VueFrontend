@@ -45,6 +45,7 @@ export default {
             marshallingList:null,
             marshalling:null,
             processArray:[],
+            isUpdate:false
         }
     },
     computed: {
@@ -224,7 +225,8 @@ export default {
                     if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
                         this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
                     }
-                    await this.getMarshallingMgmt()  
+                    await this.getMarshallingMgmt()
+                    this.isUpdate = true  
                 }else{
                     this.$message.error('系統錯誤')
                 }
@@ -236,11 +238,11 @@ export default {
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     await this.getMarshallingMgmt()
                     this.innerVisible = false
+                    this.isUpdate = true
                 }else{
                     this.$message.error('班別名稱已存在，請重新輸入')
                 }
             }else if(index === 'cancel'){
-                this.marshallingList = null
                 this.innerVisible = false
                 this.excelVisible = false
             }else if(index === 'uploadExcel'){
@@ -267,7 +269,12 @@ export default {
         },
         async handleTableClick(index, content){
             if(index === 'cancel'){
+                if(this.isUpdate){
+                    await this.marshallingList.patchFloor()
+                    this.isUpdate = false
+                }
                 this.tableVisible = false
+                this.marshallingList = null
             }else {
                 await this.handleMarshallingMgmt(index,content)
             }

@@ -7,7 +7,7 @@ import report from '@/api/report'
 import setting from '@/api/setting'
 import authority from '@/api/authority'
 import selfDefenseFireMarshalling from '@/api/selfDefenseFireMarshalling'
-
+import nodeList from '@/api/nodeList'
 
 export default {    
   user,
@@ -17,5 +17,6 @@ export default {
   report,
   setting,
   authority,
-  selfDefenseFireMarshalling
+  selfDefenseFireMarshalling,
+  nodeList
 }

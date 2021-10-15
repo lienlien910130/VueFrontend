@@ -26,6 +26,7 @@ const getters = {
 
   wsmsg: state => state.websocket.wsmsg,
   wsuserId: state => state.websocket.wsuserId,
+  graphicMsg: state => state.websocket.graphicMsg,
 
   buildingroles : state => state.building.roles,
   buildingid : state => state.building.buildingid,

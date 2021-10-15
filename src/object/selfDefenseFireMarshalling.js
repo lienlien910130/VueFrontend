@@ -2,7 +2,7 @@ import Parent from './parent'
 import api from '@/api'
 import Account from './account'
 import Role from './role'
-import { Floors } from '.'
+import { Floors, SampleNodeList } from '.'
 
 //大項
 class SelfDefenseFireMarshalling extends Parent {
@@ -46,6 +46,9 @@ class SelfDefenseFireMarshalling extends Parent {
             return []
         })
         return data
+    }
+    async patchFloor(){
+        await api.selfDefenseFireMarshalling.apiPatchFloorFromMgmt(this.id)
     }
     getName(){
         return this.name
@@ -98,7 +101,7 @@ class SelfDefenseFireMarshalling extends Parent {
     }
     static async getProcess(fid){
         var data = await api.selfDefenseFireMarshalling.apiGetAllProcess(fid).then(async(response) => {
-            console.log('getProcess',JSON.stringify(response))
+            console.log(JSON.stringify(response))
             var array = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new ContingencyProcess(item) })
             return array
@@ -111,6 +114,16 @@ class SelfDefenseFireMarshalling extends Parent {
         var data = await api.selfDefenseFireMarshalling.apiGetFireMarshallingMgmt(id).then(response => {
             var array = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new SelfDefenseFireMarshallingMgmt(item) })
+            return array
+        }).catch(error=>{
+            return []
+        })
+        return data
+    }
+    static async getSampleNode(){
+        var data = await api.selfDefenseFireMarshalling.apiGetAllOfMarshallingSampleNode().then(async(response) => {
+            var array = response.result.sort((x,y) => x.id - y.id)
+            .map(item=>{ return new SampleNodeList(item) })
             return array
         }).catch(error=>{
             return []
@@ -236,7 +249,6 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
     }
     static async get(selfDefenseFireMarshallingId){
         var data = await api.selfDefenseFireMarshalling.apiGetFireMarshallingMgmtSearchPages(selfDefenseFireMarshallingId,data).then(response => {
-            console.log(JSON.stringify(response))
             response.result = response.result.map(item=>{ return new SelfDefenseFireMarshallingMgmt(item)})
             return response
         }).catch(error=>{
@@ -246,6 +258,7 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
     }
     static async getSearchPage(selfDefenseFireMarshallingId,data){
         var data = await api.selfDefenseFireMarshalling.apiGetFireMarshallingMgmtSearchPages(selfDefenseFireMarshallingId,data).then(response => {
+            console.log('getSearchPage',response)
             response.result = response.result.map(item=>{ return new SelfDefenseFireMarshallingMgmt(item)})
             return response
         }).catch(error=>{

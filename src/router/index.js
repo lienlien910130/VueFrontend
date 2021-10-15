@@ -34,6 +34,42 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/cctv',
+    component: Layout,
+    redirect: '/cctv',
+    children: [{
+      path: 'index',
+      name: 'cctv',
+      component: () => import('@/views/emergency/emergencyState/cctv.vue'),
+      meta: { title: '監視器', icon: 'icon', needLogin: true }
+    }],
+    hidden: true
+  },
+  {
+    path: '/emergencygraphic',
+    component: Layout,
+    redirect: '/emergencygraphic',
+    children: [{
+      path: 'index',
+      name: 'emergencygraphic',
+      component: () => import('@/views/emergency/emergencyState/graphic.vue'),
+      meta: { title: '緊急應變圖控', icon: 'icon', needLogin: true }
+    }],
+    hidden: true
+  },
+  {
+    path: '/selfDefenseClass',
+    component: Layout,
+    redirect: '/selfDefenseClass',
+    children: [{
+      path: 'index',
+      name: 'selfDefenseClass',
+      component: () => import('@/views/emergency/emergencyState/selfDefenseClass.vue'),
+      meta: { title: '緊急應變班別', icon: 'icon', needLogin: true }
+    }],
+    hidden: true
+  },
+  {
     path: '/',
     component: Layout,
     redirect: '/dashboard',

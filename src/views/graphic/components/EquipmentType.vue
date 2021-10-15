@@ -41,10 +41,10 @@
                         class="linkdiv"
                         v-for="(item,index) in imgList"
                         :key="index">
-                            <el-tooltip class="item" effect="dark" :content="item.label" placement="top-start">
+                            <el-tooltip class="item" effect="dark" :content="item.deviceFullType" placement="top-start">
                                 <el-link
                                 class="link"
-                                type="info">{{ parseInt(index)+1 }} . {{ item.deviceFullType }}
+                                type="info">{{ parseInt(index)+1 }} . {{ item.label }}
                                 </el-link>
                             </el-tooltip>
                         </div>

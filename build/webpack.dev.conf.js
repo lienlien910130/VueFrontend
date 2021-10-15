@@ -17,7 +17,7 @@ module.exports = merge(baseWebpackConfig, {
     progress: true,
     stats: 'errors-only',
     contentBase: path.resolve(__dirname, '../dist'),
-    publicPath: './',
+    publicPath: '/',
     port: 59111
   },
   // module: {
@@ -52,7 +52,8 @@ module.exports = merge(baseWebpackConfig, {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"development"',
-        VUE_APP_BASE_API: '"/api"'
+        VUE_APP_BASE_API: '"/api"',
+        VUE_APP_WEBSOCKET:'"ws://localhost:8088/ws"'
       }
     })
   ]

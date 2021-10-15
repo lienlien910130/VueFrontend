@@ -98,18 +98,11 @@ export default {
                 } 
             },
             changeFloorName(){
-                return function (value) {
-                    if(this.floor_record == 0){
-                        this.$store.dispatch('building/setFloors')
-                        this.$store.dispatch('record/saveFloorRecord',1)
+                return function (val) {
+                    if(val !== null){
+                        return val.map(item=>{ return item.getName() }).toString()
                     }
-                    if(value !== null){
-                        let _array = this.buildingfloors.filter((item, index) => 
-                            item.id == value 
-                        )
-                        return _array.length !== 0 ? _array[0].floor : ''
-                    }
-                    return ""
+                    return ''
                 }
             },
             stringToBr(){

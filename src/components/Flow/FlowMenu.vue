@@ -31,7 +31,18 @@
                 </li>
             </ul>
         </div>
-        <div v-for="menu  in  nodeArray" :key="menu.id">
+        
+            <span class="ef-node-pmenu" @click="menuOpen = !menuOpen">
+              <i :class="{'el-icon-caret-bottom': menuOpen,'el-icon-caret-right': !menuOpen}"></i>&nbsp;{{ '節點資料' }}</span>
+            <ul v-show="menuOpen" class="ef-node-menu-ul">
+                <draggable 
+                @end="end" @start="move" v-model="sampleNodeArray" :options="draggableOptions">
+                    <li v-for="node in sampleNodeArray" class="ef-node-menu-li" :key="node.id" :type="node.nType">
+                        <i :class="node.icon"></i> {{node.name}}
+                    </li>
+                </draggable>
+            </ul>
+        <!-- <div v-for="menu  in  nodeArray" :key="menu.id">
             <span class="ef-node-pmenu" @click="menu.open = !menu.open">
               <i :class="{'el-icon-caret-bottom': menu.open,'el-icon-caret-right': !menu.open}"></i>&nbsp;{{menu.name}}</span>
             <ul v-show="menu.open" class="ef-node-menu-ul">
@@ -42,7 +53,7 @@
                     </li>
                 </draggable>
             </ul>
-        </div>
+        </div> -->
     </div>
 </template>
 <script>
@@ -63,12 +74,12 @@
                     return []
                 }
             },
-            nodeArray: {
+            sampleNodeArray: {
                 type: Array,
                 default: function () {
                     return []
                 }
-            },
+            }
         },
         data() {
             return {
@@ -84,7 +95,8 @@
                 },
                 defaultOpeneds: ['1'],
                 nodeMenu: {},
-                processopen:true
+                processopen:true,
+                menuOpen:true
             }
         },
         components: {
@@ -107,13 +119,16 @@
         },
         methods: {
             getMenuByType(type) {
-                for (let i = 0; i < this.nodeArray.length; i++) {
-                    let children = this.nodeArray[i].children;
-                    for (let j = 0; j < children.length; j++) {
-                        if (children[j].type === type) {
-                            return children[j]
-                        }
+                for (let i = 0; i < this.sampleNodeArray.length; i++) {
+                    if (this.sampleNodeArray[i].nType === type) {
+                        return this.sampleNodeArray[i]
                     }
+                    // let children = this.nodeArray[i].children;
+                    // for (let j = 0; j < children.length; j++) {
+                    //     if (children[j].type === type) {
+                    //         return children[j]
+                    //     }
+                    // }
                 }
             },
             move(evt, a, b, c) {

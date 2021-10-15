@@ -20,6 +20,7 @@ export default {
             'menu',
             'wsmsg',
             'wsuserId',
+            'graphicMsg',
             'menuAuthority',
             'role_record',
             'account',

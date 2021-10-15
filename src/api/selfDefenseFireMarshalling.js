@@ -15,8 +15,8 @@ const selfDefenseFireMarshalling = {
     apiGetAllProcess(selfDefenseFireMarshallingId){ 
         return req('get','/selfDefenseFireMarshalling/SelfDefenseFireMarshallingMgmt/'+selfDefenseFireMarshallingId+'/contingencyProcessList')}, 
     apiGetAccountByRole(roleId){ return req('get','/selfDefenseFireMarshalling/'+roleId+'/accounts') },
-    
-    //自衛消防編組細項-班別 p:大項
+    apiPatchFloorFromMgmt(selfDefenseFireMarshallingId) {return req('delete','/selfDefenseFireMarshalling/'+selfDefenseFireMarshallingId+'/floors') },
+    //自衛消防編組細項-班別
     apiGetFireMarshallingMgmt(selfDefenseFireMarshallingId){ 
         return req('get','/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/'+selfDefenseFireMarshallingId+'/a') },
     apiPostFireMarshallingMgmt(selfDefenseFireMarshallingId,data){ 
@@ -32,6 +32,7 @@ const selfDefenseFireMarshalling = {
         })
         return req('post','/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/check/s', null, data) 
     },
+    
     //細項的流程資料 p:細項
     apiGetContingencyProcess(mgmtId){ return req('get','/selfDefenseFireMarshalling/ContingencyProcessMgmt/'+mgmtId+'/a') },
     apiPostContingencyProcess(mgmtId,data){ return req('post','/selfDefenseFireMarshalling/ContingencyProcessMgmt',mgmtId,data) }, 
@@ -45,6 +46,9 @@ const selfDefenseFireMarshalling = {
     apiPostContingencyProcessJson(processId,data){ 
         return req('upload','/selfDefenseFireMarshalling/ContingencyProcessMgmt/'+this.getUid()+'/'+processId+'/upload', null,
         data) },
+   
+    //預設的所有節點資料
+    apiGetAllOfMarshallingSampleNode(){ return req('get','selfDefenseFireMarshalling/CNodeMgmt/sample/a') }
 }
 
 

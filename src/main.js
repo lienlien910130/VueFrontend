@@ -65,7 +65,6 @@ const messaging = firebase.messaging()
 Vue.prototype.$messaging = messaging
 navigator.serviceWorker.register('/firebase-messaging-sw.js',{scope: '/'})
   .then((registration) => {
-    console.log('firebase-messaging-sw.js')
     Vue.prototype.$messaging.useServiceWorker(registration)
 }).catch(err => {
     console.log(err)

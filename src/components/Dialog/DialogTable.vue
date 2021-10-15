@@ -77,7 +77,7 @@
                                             {{ scope.row.getRolesName() }}
                                         </span>
                                         <span v-else-if="scope.column.property == 'linkFloors'"> 
-                                            {{ changeFloorName(scope.row) }}
+                                            {{ changeFloorName(scope.row[scope.column.property]) }}
                                         </span>
                                         <span v-else-if="scope.column.property == 'linkContingencyProcess'"> 
                                             {{ scope.row.getProcessName() }}

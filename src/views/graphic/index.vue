@@ -179,60 +179,61 @@ export default {
         }
     },
     watch: {
-      // wsmsg:{
-      //   handler:async function(){
-      //       var datalist = this.wsmsg.shift()
-      //       var data = JSON.parse(datalist.data)
-      //       console.log(data)
-      //       var uid = data.id
-      //       var type = data.type
-      //       var content = data.content
-      //       if(uid !== this.id){
-      //         switch (type){
-      //           case 'enterGraphic':
-      //             if(this.type == 'edit' && content == this.floor.getID()){
-      //               this.$socket.sendMag(this.id,'openEdit',this.floor.getID())
-      //             }
-      //             break;
-      //           case 'openEdit':
-      //             if(content == this.floor.getID()){
-      //               this.isEdit = true
-      //             }
-      //             break;
-      //           case 'closeEdit':
-      //             if(content == this.floor.getID()){
-      //               this.isEdit = false
-      //             }
-      //             break;
-      //           default:
-      //             var cons = JSON.parse(content)
-      //             console.log(cons)
-      //             var index = this.buildingfloors.findIndex(f=>f.id === cons.LinkDevice.FloorId)
-      //             var index2 = this.buildingdevices.findIndex(d=>d.id === cons.LinkDevice.DeviceId)
-      //             if(cons.LinkDevice.FloorId !== this.floor.getID()){
-      //               this.handleSelect(this.buildingfloors[index],cons)
-      //             }else{
-      //               this.actionObj = cons
-      //             }
-      //             var data = {
-      //               date:formatTime(new Date(), '{y}-{m}-{d} {h}:{i}:{s}'),
-      //               floor:this.buildingfloors[index].label,
-      //               action:cons.Action,
-      //               name:this.buildingdevices[index2].name,
-      //               point:cons.SystemNumber+'-'+cons.CircuitNumber+'-'+cons.Address
-      //             }
-      //             this.origindata.push(data)
-      //             this.listQueryParams.total = this.origindata.length
-      //             this.origindata = this.origindata.sort( (a, b) => {
-      //                 return new Date(b.date) - new Date(a.date)
-      //               })
-      //             this.clickPagination()
-      //             break;
-      //         }
-      //       }
-      //   },
-      //   immediate:true
-      // },
+      graphicMsg:{
+        handler:async function(){
+            console.log(this.graphicMsg.data)
+            var data = JSON.parse(this.graphicMsg.data)
+            console.log(data)
+            // var type = this.graphicMsg.data.SendType
+            // var bid = this.graphicMsg.data.Data.Bid
+            // var content = JSON.parse(this.graphicMsg.data.Data.Content)
+
+            // if(bid == this.buildingId){
+            //   switch (type){
+            //     case 'enterGraphic':
+            //       if(this.type == 'edit' && content == this.floor.getID()){
+            //         this.$socket.sendMag('graphic','openEdit',this.floor.getID())
+            //       }
+            //       break;
+            //     case 'openEdit':
+            //       if(content == this.floor.getID()){
+            //         this.isEdit = true
+            //       }
+            //       break;
+            //     case 'closeEdit':
+            //       if(content == this.floor.getID()){
+            //         this.isEdit = false
+            //       }
+            //       break;
+            //     // default:
+            //     //   var cons = JSON.parse(content)
+            //     //   console.log(cons)
+            //     //   var index = this.buildingfloors.findIndex(f=>f.id === cons.LinkDevice.FloorId)
+            //     //   var index2 = this.buildingdevices.findIndex(d=>d.id === cons.LinkDevice.DeviceId)
+            //     //   if(cons.LinkDevice.FloorId !== this.floor.getID()){
+            //     //     this.handleSelect(this.buildingfloors[index],cons)
+            //     //   }else{
+            //     //     this.actionObj = cons
+            //     //   }
+            //     //   var data = {
+            //     //     date:formatTime(new Date(), '{y}-{m}-{d} {h}:{i}:{s}'),
+            //     //     floor:this.buildingfloors[index].label,
+            //     //     action:cons.Action,
+            //     //     name:this.buildingdevices[index2].name,
+            //     //     point:cons.SystemNumber+'-'+cons.CircuitNumber+'-'+cons.Address
+            //     //   }
+            //     //   this.origindata.push(data)
+            //     //   this.listQueryParams.total = this.origindata.length
+            //     //   this.origindata = this.origindata.sort( (a, b) => {
+            //     //       return new Date(b.date) - new Date(a.date)
+            //     //     })
+            //     //   this.clickPagination()
+            //     //   break;
+            //   }
+            // }
+        },
+        immediate:true
+      },
     },
     created(){
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
@@ -255,16 +256,6 @@ export default {
             (item, index) => 
             index < this.listQueryParams.limit * this.listQueryParams.page && 
             index >= this.listQueryParams.limit * (this.listQueryParams.page - 1))
-      },
-      redirect(name){ //點位設定&歷史紀錄--另開新頁
-        // var routeData
-        // switch (name) {
-        //   case 'address':
-        //     routeData = this.$router.resolve(
-        //                     { path: '/equipment/address' })
-        //     break;
-        // }
-        // window.open(routeData.href, '_blank')
       },
       changeType(type){ //編輯/檢視
         if(!this.isEdit){
