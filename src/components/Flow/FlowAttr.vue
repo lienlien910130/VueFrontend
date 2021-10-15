@@ -32,27 +32,28 @@
                         </el-select>
                     </el-form-item> -->
                     <el-form-item v-if="node.nType == 12" label="流程圖">
-                        <el-select 
-                        v-model="node.nextCpId" 
-                        placeholder="請選擇" 
+                        <el-select
+                        v-model="node.nextCpId"
+                        placeholder="請選擇"
                         filterable
-                        multiple
-                        value-key="id" >
+                        value-key="id"
+                        @change="save">
                             <el-option
                                 v-for="(item,index) in selectfilter('processSelect')"
                                 :key="index"
                                 :label="item.name"
-                                :value="item">
+                                :value="item"
+                                :disabled="item.id == processId">
                             </el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item v-if="node.nType == 21" label="角色">
-                        <el-select 
-                        v-model="node.linkRoles" 
-                        placeholder="請選擇" 
+                        <el-select
+                        v-model="node.linkRoles"
+                        placeholder="請選擇"
                         filterable
                         multiple
-                        value-key="id" 
+                        value-key="id"
                         @change="filterAccount">
                             <el-option
                                 v-for="(item,index) in selectfilter('roleSelect')"
@@ -63,12 +64,12 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item v-if="node.nType == 21" label="人員">
-                        <el-select 
-                        v-model="node.linkAccountList" 
-                        placeholder="請選擇" 
+                        <el-select
+                        v-model="node.linkAccountList"
+                        placeholder="請選擇"
                         filterable
                         multiple
-                        value-key="id" 
+                        value-key="id"
                         @change="save">
                             <el-option
                                 v-for="(item,index) in accountArray"
@@ -79,16 +80,16 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item v-if="node.nType == 21" label="訊息">
-                        <el-input 
-                        v-model="node.message" 
-                        type="textarea" 
+                        <el-input
+                        v-model="node.message"
+                        type="textarea"
                         :autosize="{ minRows: 8, maxRows: 12}"
                         @input="save"></el-input>
                     </el-form-item>
                 </el-form>
                 <el-form :model="line" ref="dataForm" label-width="80px" v-show="type === 'line'" @submit.native.prevent>
                     <el-form-item label="備註">
-                        <el-input v-model="line.label"  
+                        <el-input v-model="line.label"
                         ></el-input>
                     </el-form-item>
                     <el-form-item>
@@ -106,6 +107,7 @@
 
     export default {
         props:{
+            processId:{ type: String },
             processArray: {
                 type: Array,
                 default: function () {
@@ -121,22 +123,6 @@
                 node: {},
                 line: {},
                 data: {},
-                // stateList: [{
-                //     state: 'Success',
-                //     label: '成功'
-                // }, {
-                //     state: 'Warning',
-                //     label: '警告'
-                // }, {
-                //     state: 'Error',
-                //     label: '錯誤'
-                // }, {
-                //     state: 'Running',
-                //     label: '運行中'
-                // }, {
-                //     state: 'Failed',
-                //     label: '執行失敗'
-                // }],
                 accountArray:[]
             }
         },
@@ -150,8 +136,13 @@
                     if(value !== null ){
                         switch(value){
                             case 'processSelect':
-                                console.log(this.processArray)
-                                return []
+                                return this.processArray.map(v => {
+                                    var process = {
+                                        name:v.name,
+                                        id:v.id
+                                    }
+                                    return process
+                                })
                             case 'roleSelect':
                                 if(this.role_record == 0){
                                     this.$store.dispatch('building/setroles')
@@ -169,7 +160,7 @@
                     else{
                         return []
                     }
-                }  
+                }
             }
         },
         methods: {
@@ -204,6 +195,7 @@
                         node.message = this.node.message
                         node.linkRoles = this.node.linkRoles
                         node.linkAccountList = this.node.linkAccountList
+                        node.
                         this.$emit('repaintEverything')
                     }
                 })
@@ -220,7 +212,7 @@
                     }
                 }
                 const set = new Set()
-                this.accountArray = 
+                this.accountArray =
                     account.filter(item => !set.has(item.id) ? set.add(item.id) : false).map(v => {
                         var account = {
                             name:v.name,

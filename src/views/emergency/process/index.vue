@@ -6,8 +6,8 @@
   >
     <div class="flow-menu">
       <div class="section">
-        <FlowMenu 
-            ref="nodeMenu" 
+        <FlowMenu
+            ref="nodeMenu"
             v-bind="flowMenuAttrs"
             v-on="flowMenuEvent"
         />
@@ -25,10 +25,10 @@
                 @mousemove="mousemoveHandler"
             >
                 <!-- <div class="view-scale">縮放：{{ parseInt(viewScale * 100) }}%</div> -->
-                <div class="view-scale">節點數量：{{ data.nodeList !== undefined ? data.nodeList.length : '0' }}</div> 
+                <div class="view-scale">節點數量：{{ data.nodeList !== undefined ? data.nodeList.length : '0' }}</div>
                 <div
                 :class="['flow-content', 'grid', dragMove.isDown ? 'flow-grab' : null]"
-                
+
                 :style="{
                     transform: `scale(${viewScale})`,
                     transformOrigin: `${scalePosition.x}px ${scalePosition.y}px`,
@@ -58,31 +58,32 @@
       </div>
     </div>
     <div class="flow-attr">
-       <FlowAttr 
-        ref="nodeForm" 
-        @setLineLabel="setLineLabel" 
+       <FlowAttr
+        ref="nodeForm"
+        @setLineLabel="setLineLabel"
         @repaintEverything="repaintEverything"
-        :processArray="processArray">
+        :processArray="processArray"
+        :processId="processId">
        </FlowAttr>
     </div>
 
 
     <JsonViewer v-if="flowInfoVisible" ref="flowInfo" :data="data"></JsonViewer>
     <input type="file" ref="inputFile" @change="handleExportFile" style="display: none" />
-    
-    <DialogForm 
+
+    <DialogForm
             ref="dialogform"
             v-if="innerVisible === true"
             v-bind="dialogAttrs"
             v-on:handleDialog="handleDialog"></DialogForm>
 
-    <DialogTable 
+    <DialogTable
         ref="dialogtable"
         v-if="tableVisible === true"
         v-bind="tableAttrs"
         v-on:handleTableClick="handleTableClick"></DialogTable>
   </div>
-    
+
 </template>
 
 <script>
@@ -352,7 +353,7 @@
                         if (this.loadFlowFinish ) {
                             this.data.lineList.push({id:lineId, from: from, to: to})
                             this.saveState()
-                        }  
+                        }
                     })
                     // 刪除線的回調：若使用deleteEveryConnection，有幾條線就會呼叫幾次
                     this.jsPlumb.bind("connectionDetached", (evt) => {
@@ -476,7 +477,7 @@
             },
             //node傳來的事件
             //點擊節點-在節點組件呼叫回來
-            clickNode(node) { 
+            clickNode(node) {
                 this.activeElement.name = node.name
                 this.activeElement.type = 'node'
                 this.activeElement.nodeId = node.nodeId
@@ -501,7 +502,7 @@
                 var containerRect = efContainer.getBoundingClientRect()
                 var left = screenX, top = screenY
                 // 计算是否拖入到容器中
-                if (left < containerRect.x || left > containerRect.width + containerRect.x || top < containerRect.y || 
+                if (left < containerRect.x || left > containerRect.width + containerRect.x || top < containerRect.y ||
                 containerRect.y > containerRect.y + containerRect.height) {
                     this.$message.error("請把節點拖曳到畫面中")
                     return
@@ -713,7 +714,7 @@
                 })
             },
             saveState(){ //儲存狀態：新增節點/刪除節點/新增線/刪除線/拖曳節點
-                if(JSON.stringify(this.data) === JSON.stringify(this.state)) return  
+                if(JSON.stringify(this.data) === JSON.stringify(this.state)) return
                 this.undo.push(this.state)
                 this.state = _.cloneDeep(this.data)
                 this.redo = []
@@ -808,7 +809,7 @@
                             newNode.nType = parseInt(newNode.nType)
                             addNodeList.push(newNode)
                         }else{
-                            
+
                         }
                     })
                     //刪除的節點
@@ -856,9 +857,7 @@
                     var result = await ContingencyProcess.getJson(pid)
                     this.processId = pid
                     this.processNodeArray = await CNode.get(this.processId)
-                    console.log(JSON.stringify(this.processNodeArray))
                     this.processLineArray = await COption.getOfProcess(this.processId)
-                    console.log(JSON.stringify(this.processLineArray))
                     if(result.codeContent !== undefined){
                         this.$nextTick(() => {
                             this.dataReload(JSON.parse(result.codeContent))
@@ -938,8 +937,8 @@
             async handleDialog(title ,index, content){
                 console.log(title,index,content)
                 if(index == 'update' || index == 'create'){
-                    var isOk = index == 'update' ? 
-                            await ContingencyProcess.update(content) : 
+                    var isOk = index == 'update' ?
+                            await ContingencyProcess.update(content) :
                             await  ContingencyProcess.create(content)
                     if(isOk){
                         index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
