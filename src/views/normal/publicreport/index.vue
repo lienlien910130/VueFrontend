@@ -10,7 +10,7 @@
                     </i>
                   </div>
                   <div class="content">
-                    <span> {{ this.buildinginfo.getName() }}</span> 
+                    <span> {{ this.buildinginfo.getName() }}</span>
                   </div>
                 </div>
                 <div class="verticalhalfdiv">
@@ -20,9 +20,9 @@
                     </i>
                   </div>
                   <div class="content">
-                    <span class="report"> 
-                      {{ TimeOptions("PublicSafeTimeOptions") }} 
-                    </span> 
+                    <span class="report">
+                      {{ TimeOptions("PublicSafeTimeOptions") }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -67,7 +67,7 @@
                         <div>
                             電話 ： {{ item.cellPhoneNumber }}
                         </div>
-                      </div> 
+                      </div>
                     </div>
                   </div>
                 </el-col>
@@ -77,30 +77,30 @@
           <el-row :gutter="32">
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper" >
-                  <Block 
+                  <Block
                     ref="block"
                     :list-query-params.sync="listQueryParams"
-                    v-bind="blockAttrs" 
+                    v-bind="blockAttrs"
                     v-on="blockEvent"></Block>
                 </div>
               </el-col>
           </el-row>
-          <!-- <Dialog 
+          <!-- <Dialog
             v-if="innerVisible === true"
-            v-bind="dialogAttrs" 
+            v-bind="dialogAttrs"
             :files="files"
             :formtableData="formtableData"
             :formtableconfig="formtableconfig"
             :listQueryParams="lacklistQueryParams"
             v-on:handleDialog="handleDialog"></Dialog> -->
 
-          <DialogForm 
+          <DialogForm
           ref="dialogform"
           v-if="innerVisible === true"
           v-bind="dialogAttrs"
           v-on:handleDialog="handleDialog"></DialogForm>
 
-          <DialogTable 
+          <DialogTable
           ref="dialogtable"
           v-if="tableVisible === true"
           v-bind="tableAttrs"
@@ -112,7 +112,7 @@
           v-bind="uploadAttrs"
           v-on:handleDialog="handleDialog"></DialogUpload>
 
-          <DialogExcel 
+          <DialogExcel
           ref="dialogexcel"
           v-if="excelVisible === true"
           v-bind="excelAttrs"
@@ -186,7 +186,7 @@ export default {
         return {value: item.professName}
       })
     },
-    async getBuildingPublicSafeReport() { 
+    async getBuildingPublicSafeReport() {
       var data = await PublicSafe.getSearchPage(this.listQueryParams)
       this.blockData = data.result
       this.listQueryParams.total = data.totalPageCount
@@ -213,15 +213,24 @@ export default {
           this.dialogConfig = this.tableConfig
           this.innerVisible = true
           this.dialogStatus = 'update'
-      }else if(index === 'delete'){
-        var isDelete = await content.delete()
+      }else if(index === 'delete'  || index === 'deleteMany'){
+        var isDelete = false
+        if(index === 'delete'){
+          isDelete = await content.delete()
+        }else{
+          var deleteArray = []
+          content.forEach(item=>{
+            deleteArray.push(item.id)
+          })
+          isDelete = await PublicSafe.deleteMany(deleteArray.toString())
+        }
         if(isDelete){
           this.$message('刪除成功')
           if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
             this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
           }
           await this.getBuildingPublicSafeReport()
-          // await this.resetlistQueryParams()
+          this.$refs.block.clearSelectArray()
         }else{
           this.$message.error('系統錯誤')
         }
@@ -249,29 +258,41 @@ export default {
       }else if(index === 'uploadExcel'){
         this.excelVisible = true
         this.excelType = 'uploadExcel'
+      }else if(index === 'updateMany'){
+        this.dialogStatus = 'updateMany'
+        content.forEach(item=>{
+          var obj = _.cloneDeep(item)
+          this.dialogData.push(obj)
+        })
+        this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'updateManySave'},
+          { name:'取消',type:'info',status:'cancel'}]
+        this.innerVisible = true
       }
     },
     async handleDialog(title ,index, content){ //Dialog相關操作
         console.log(title ,index, JSON.stringify(content))
         var isOk = false
         if(title === 'reportPublicSafe'){
-          if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
-            isOk = index === 'update' ? await content.update() :
+          if(index === 'update' || index === 'create' ||
+          index === 'uploadExcelSave' || index === 'updateManySave'){
+            isOk = index === 'update' || index === 'updateManySave' ? await content.update() :
             index === 'create' ? await content.create() : await PublicSafe.postMany(content)
             if(isOk){
-              index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+              index === 'update' || index === 'updateManySave' ?
+                this.$message('更新成功') : this.$message('新增成功')
               await this.getBuildingPublicSafeReport()
             }else{
               this.$message.error('系統錯誤')
             }
-            this.innerVisible = false
+            if(index !== 'updateManySave') this.innerVisible = false
             this.excelVisible = false
           }else if(index === 'createfile'){
             const formData = new FormData()
               content.forEach(item => {
                 formData.append('file', item.raw)
             })
-            isOk = await this.publicSafe.createfiles(formData) 
+            isOk = await this.publicSafe.createfiles(formData)
             if(isOk){
               this.$message('上傳成功')
               this.files = await this.publicSafe.files()
@@ -295,6 +316,7 @@ export default {
             this.innerVisible = false
             this.excelVisible = false
             this.uploadVisible = false
+            this.$refs.block.clearSelectArray()
           }
         }else{
           await this.handleLackDialog(title,index,content)
@@ -304,8 +326,8 @@ export default {
         this.dialogData = []
         this.dialogTitle = 'publicsafelack'
         if(index === 'createlack' || index === 'updatelack'){
-          var isOk = index === 'createlack' ? 
-          await content.create(this.publicSafe.getID()) : 
+          var isOk = index === 'createlack' ?
+          await content.create(this.publicSafe.getID()) :
           await content.update()
           if(isOk){
               index === 'updatelack' ? this.$message('更新成功') : this.$message('新增成功')
@@ -458,5 +480,5 @@ export default {
             color: red;
         }
     }
-    
+
 </style>

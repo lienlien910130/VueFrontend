@@ -36,13 +36,12 @@
                         v-model="node.nextCpId"
                         placeholder="請選擇"
                         filterable
-                        value-key="id"
                         @change="save">
                             <el-option
                                 v-for="(item,index) in selectfilter('processSelect')"
                                 :key="index"
                                 :label="item.name"
-                                :value="item"
+                                :value="item.id"
                                 :disabled="item.id == processId">
                             </el-option>
                         </el-select>
@@ -190,12 +189,10 @@
                         node.name = this.node.name
                         node.left = this.node.left
                         node.top = this.node.top
-                        node.icon = this.node.icon
-                        node.state = this.node.state
                         node.message = this.node.message
                         node.linkRoles = this.node.linkRoles
                         node.linkAccountList = this.node.linkAccountList
-                        node.
+                        node.nextCpId = this.node.nextCpId
                         this.$emit('repaintEverything')
                     }
                 })

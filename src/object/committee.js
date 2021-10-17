@@ -5,14 +5,14 @@ import User from './user'
 import { removeDuplicates } from '@/utils/index'
 
 class Committee extends Parent {
- 
+
     constructor (data) {
         super(data)
         const { title, note, linkUsageOfFloors, linkUsers } = data
         var usageOfFloor = linkUsageOfFloors.map(item=>{ return new UsageOfFloor(item)})
         var user = linkUsers.map(item=>{ return new User(item)})
-        this.title = title 
-        this.note = note 
+        this.title = title
+        this.note = note
         this.linkUsageOfFloors = usageOfFloor
         this.linkUsers = user
     }
@@ -78,7 +78,7 @@ class Committee extends Parent {
             mandatory:true, message:'請選擇住戶',
             isHidden:false,isSearch:false,
             isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
-            { label:'備註' , prop:'note',format:'textarea', 
+            { label:'備註' , prop:'note',format:'textarea',
             mandatory:false,isHidden:false,
             maxlength:'200',isSearch:true,
             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false }
@@ -110,6 +110,14 @@ class Committee extends Parent {
             return false
         })
         return data
+    }
+    static async deleteMany(data){
+      var data = await api.building.apiDeleteCommittee(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
     }
 }
 

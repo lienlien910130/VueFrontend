@@ -7,7 +7,7 @@ class SampleNodeList extends Parent {
     constructor (data) {
         super(data)
         const { name, nodeId, nType, icon  } = data
-        this.name = name 
+        this.name = name
         this.nodeId = nodeId
         this.nType = nType
         this.icon = icon
@@ -57,26 +57,26 @@ class SampleNodeList extends Parent {
     }
     static getTableConfig(){
         return [
-            { 
-                label:'名稱' , 
-                prop:'name', 
+            {
+                label:'名稱' ,
+                prop:'name',
                 mandatory:true, message:'請輸入名稱',
                 isHidden:false,maxlength:'20',isSearch:true,placeholder:'請輸入名稱',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true 
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            { 
-                label:'節點類型' , 
+            {
+                label:'節點類型' ,
                 prop:'nType',format:'nTypeChange',
                 mandatory:true, message:'請輸入節點類型',
                 isHidden:false,maxlength:'20',isSearch:true,placeholder:'請輸入節點類型',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true 
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            { 
-                label:'icon', 
-                prop:'icon', 
+            {
+                label:'icon',
+                prop:'icon',
                 mandatory:false, message:'請輸入icon',
                 isHidden:false,maxlength:'40',isSearch:true,placeholder:'請輸入icon',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true 
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             }
        ]
     }
@@ -108,6 +108,14 @@ class SampleNodeList extends Parent {
         })
         return data
     }
+    static async deleteMany(data){
+      var data = await api.nodeList.apiDeleteSampleNode(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
+    }
 }
 //節點
 class CNode extends Parent {
@@ -118,7 +126,7 @@ class CNode extends Parent {
         var roles = linkRoles !== undefined ? linkRoles.map(item=>{ return new Role(item)}) : []
         var accounts = linkAccountList !== undefined ? linkAccountList.map(item=>{ return new Account(item)}) : []
         var options = linkCOptions !== undefined ? linkCOptions.map(item=>{ return new COption(item)}) : []
-        this.name = name 
+        this.name = name
         this.nodeId = nodeId
         this.nType = nType
         this.icon = icon
@@ -207,7 +215,7 @@ class COption extends Parent {
     constructor (data) {
         super(data)
         const { name, lastNodeId, nextNodeId, optionId } = data
-        this.name = name 
+        this.name = name
         this.lastNodeId = lastNodeId
         this.nextNodeId = nextNodeId
         this.optionId = optionId

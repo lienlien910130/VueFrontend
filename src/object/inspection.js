@@ -192,11 +192,11 @@ class Inspection extends Parent {
                 mandatory:false, isHidden:true,isSearch:false,type:'number',typemessage:'',
                 isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true
             }
-        ]    
+        ]
     }
     static async get (){
         var data = await api.report.apiGetBuildingInspection().then(response => {
-            var result = response.result.sort((x,y) => x.id - y.id).map(item => { 
+            var result = response.result.sort((x,y) => x.id - y.id).map(item => {
                 return new Inspection(item)
             })
             return result
@@ -229,6 +229,14 @@ class Inspection extends Parent {
             return false
         })
         return data
+    }
+    static async deleteMany(data){
+      var data = await api.report.apiDeleteInspection(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
     }
 }
 

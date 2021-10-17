@@ -4,11 +4,11 @@
    <div v-if="backVisible" @click="backTo">
      <i class="el-icon-caret-left hamburger-container">返回自衛消防編組</i>
    </div>
-   
+
     <!-- <div class="left-menu">
       <router-link to="/">
          <svg-icon  icon-class="indexlogo"
-          style="width:200px;height:90px" />       
+          style="width:200px;height:90px" />
       </router-link>
     </div> -->
 
@@ -21,18 +21,18 @@
 
       <Screenfull v-if="device!=='mobile'" id="screenfull" class="right-menu-item hover-effect" />
 
-      <el-dropdown 
+      <el-dropdown
           class="avatar-container right-menu-item" trigger="click">
             <div class="avatar-wrapper">
               <i class="el-icon-office-building icon" />
               <span  v-if="device!=='mobile'" style="margin-left:3px">{{  buildingName  }}</span>
                <i class="el-icon-caret-bottom" />
             </div>
-            <el-dropdown-menu 
-            slot="dropdown" 
-            class="user-dropdown" 
+            <el-dropdown-menu
+            slot="dropdown"
+            class="user-dropdown"
             >
-              <el-dropdown-item 
+              <el-dropdown-item
               v-for="item in selectData"
               :key="item.id"
               @click.native="handleSelect(item)">
@@ -41,10 +41,10 @@
             </el-dropdown-menu>
         </el-dropdown>
 
-      <el-dropdown 
+      <el-dropdown
         class="avatar-container right-menu-item" trigger="click">
           <div class="avatar-wrapper">
-            <svg-icon icon-class="user" style="font-size:25px"/>
+            <svg-icon icon-class="user"/>
             <span v-if="device!=='mobile'" style="margin-left:3px">{{ name }}</span>
             <i class="el-icon-caret-bottom" />
           </div>
@@ -75,7 +75,7 @@
             <span class="timer">{{ date | formatDate }}</span>
           </div>
       </div>
-      
+
     </div>
   </div>
 </template>
@@ -107,7 +107,7 @@ export default {
   },
   async mounted() {
       let _this = this
-	    this.timer = setInterval(() => { 
+	    this.timer = setInterval(() => {
         _this.date = new Date()
       }, 1000)
   },
@@ -132,7 +132,7 @@ export default {
       },
       buildinginfo:{
         handler:async function(){
-          this.buildingName = this.buildinginfo.length === 0 ? 
+          this.buildingName = this.buildinginfo.length === 0 ?
            '請選擇建築物' : this.buildinginfo.buildingName !== undefined ?
            this.buildinginfo.buildingName : ''
         },
@@ -145,11 +145,11 @@ export default {
         immediate:true
       },
   },
-  beforeDestroy() { 
-    if (this.timer) 
-    { 
+  beforeDestroy() {
+    if (this.timer)
+    {
         clearInterval(this.timer)
-    } 
+    }
   },
   data() {
     return {

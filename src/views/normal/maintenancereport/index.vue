@@ -10,7 +10,7 @@
                     </i>
                   </div>
                   <div class="content">
-                    <span> {{ this.buildinginfo.getName() }}</span> 
+                    <span> {{ this.buildinginfo.getName() }}</span>
                   </div>
                 </div>
                 <div class="verticalhalfdiv">
@@ -20,7 +20,7 @@
                     </i>
                   </div>
                   <div class="content">
-                    <span class="report"> {{ TimeOptions("InspectionTimeOptions") }} </span> 
+                    <span class="report"> {{ TimeOptions("InspectionTimeOptions") }} </span>
                   </div>
                 </div>
               </div>
@@ -65,7 +65,7 @@
                         <div>
                             電話 ： {{ item.cellPhoneNumber }}
                         </div>
-                      </div> 
+                      </div>
                     </div>
                   </div>
                 </el-col>
@@ -75,18 +75,18 @@
           <el-row :gutter="32">
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper" >
-                    <Block 
+                    <Block
                     ref="block"
                     :list-query-params.sync="listQueryParams"
-                    v-bind="blockAttrs" 
+                    v-bind="blockAttrs"
                     v-on="blockEvent"></Block>
                 </div>
               </el-col>
           </el-row>
-          <!-- <Dialog 
+          <!-- <Dialog
             ref="dialog"
             v-if="innerVisible === true"
-            v-bind="dialogAttrs" 
+            v-bind="dialogAttrs"
             :specialId="lackFileId"
             :files="files"
             :formtableData="formtableData"
@@ -94,13 +94,13 @@
             :listQueryParams="lacklistQueryParams"
             v-on:handleDialog="handleDialog"></Dialog> -->
 
-          <DialogForm 
+          <DialogForm
           ref="dialogform"
           v-if="innerVisible === true"
           v-bind="dialogAttrs"
           v-on:handleDialog="handleDialog"></DialogForm>
 
-          <DialogTable 
+          <DialogTable
           ref="dialogtable"
           v-if="tableVisible === true"
           v-bind="tableAttrs"
@@ -112,7 +112,7 @@
           v-bind="uploadAttrs"
           v-on:handleDialog="handleDialog"></DialogUpload>
 
-          <DialogExcel 
+          <DialogExcel
           ref="dialogexcel"
           v-if="excelVisible === true"
           v-bind="excelAttrs"
@@ -201,7 +201,7 @@ export default {
       var data = await Inspection.getSearchPage(this.listQueryParams)
       this.blockData = data.result
       this.listQueryParams.total = data.totalPageCount
-    },  
+    },
     async getInspectionLack(){ //取得缺失內容
       var data =  await InspectionLacks.getSearchPage(this.inspection.getID(),
       this.tablelistQueryParams)
@@ -223,17 +223,26 @@ export default {
           { name:'取消',type:'info',status:'cancel'}]
         this.innerVisible = true
         this.dialogStatus = 'update'
-      }else if(index === 'delete'){
-        var isDelete = await content.delete()
+      }else if(index === 'delete' || index === 'deleteMany'){
+        var isDelete = false
+        if(index === 'delete'){
+          isDelete = await content.delete()
+        }else{
+          var deleteArray = []
+          content.forEach(item=>{
+            deleteArray.push(item.id)
+          })
+          isDelete = await Inspection.deleteMany(deleteArray.toString())
+        }
         if(isDelete){
           this.$message('刪除成功')
-          // await this.resetlistQueryParams()
           if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
             this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
           }
           await this.getBuildingMaintenanceReport()
+          this.$refs.block.clearSelectArray()
         }else{
-          this.$message.error('系統錯誤') 
+          this.$message.error('系統錯誤')
         }
       }else if(index === 'empty'){
           this.dialogData.push( Inspection.empty() )
@@ -259,29 +268,41 @@ export default {
       }else if(index === 'uploadExcel'){
         this.excelVisible = true
         this.excelType = 'uploadExcel'
+      }else if(index === 'updateMany'){
+        this.dialogStatus = 'updateMany'
+        content.forEach(item=>{
+          var obj = _.cloneDeep(item)
+          this.dialogData.push(obj)
+        })
+        this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'updateManySave'},
+          { name:'取消',type:'info',status:'cancel'}]
+        this.innerVisible = true
       }
     },
     async handleDialog(title ,index, content){ //Dialog相關操作
         console.log(title ,index,JSON.stringify(content))
         var isOk = false
         if(title === 'reportInspectio'){
-          if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
-            var isOk = index === 'update' ? await content.update() : 
+          if(index === 'update' || index === 'create' ||
+          index === 'uploadExcelSave' || index === 'updateManySave'){
+            var isOk = index === 'update' || index === 'updateManySave' ? await content.update() :
              index === 'create' ? await content.create() : await Inspection.postMany(content)
             if(isOk){
-              index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+              index === 'update' || index === 'updateManySave' ?
+                this.$message('更新成功') : this.$message('新增成功')
               await this.getBuildingMaintenanceReport()
             }else{
               this.$message.error('系統錯誤')
             }
-            this.innerVisible = false
+            if(index !== 'updateManySave') this.innerVisible = false
             this.excelVisible = false
           }else if(index === 'createfile'){
               const formData = new FormData()
                 content.forEach(item => {
                   formData.append('file', item.raw)
               })
-              isOk = await this.inspection.createfiles(formData) 
+              isOk = await this.inspection.createfiles(formData)
               if(isOk){
                 this.$message('上傳成功')
                 this.files = await this.inspection.files()
@@ -307,7 +328,7 @@ export default {
               }).then(() => {
                 autoCreate = true
                }).catch(()=>{
-                autoCreate = false        
+                autoCreate = false
              })
             isOk = await this.inspection.settinglackfile(autoCreate,parseInt(content),
             index === 'changeAgain' ? true : false)
@@ -326,6 +347,7 @@ export default {
             this.innerVisible = false
             this.excelVisible = false
             this.uploadVisible = false
+            this.$refs.block.clearSelectArray()
           }
         }else{
           await this.handleLackDialog(title,index,content)
@@ -425,7 +447,7 @@ export default {
             await this.handleTableClick('open',this.$route.params.target)
           }
         }
-      }else if(this.$route.query.type !== undefined && 
+      }else if(this.$route.query.type !== undefined &&
           this.$route.query.type == 'inspection'){
         await this.handleBlock('','empty','')
         this.$message('請先建立新的檢修申報後進行缺失項目的檔案設定')
@@ -493,5 +515,5 @@ export default {
             color: red;
         }
     }
-    
+
 </style>

@@ -3,10 +3,10 @@ import api from '@/api'
 const moment = require('moment')
 
 class User extends Parent {
- 
+
     constructor (data) {
         super(data)
-        const { name,identityCard, birthday, callNumber,cellPhoneNumber, 
+        const { name,identityCard, birthday, callNumber,cellPhoneNumber,
             emergencyNumber, email, note, usageOfFloor } = data
         this.name = name
         this.identityCard = identityCard
@@ -83,7 +83,7 @@ class User extends Parent {
          pattern:/^[A-Z]{1}[1-2]{1}[0-9]{8}$/,errorMsg:'格式錯誤,請重新輸入',isPattern: true,
          maxlength:'10',isHidden:true,isSearch:false,placeholder:'請輸入身份證',
          isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
-         { label:'生日' , prop:'birthday',format:'YYYY-MM-DD', 
+         { label:'生日' , prop:'birthday',format:'YYYY-MM-DD',
          mandatory:false,isHidden:false,isSearch:false,
          isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
          { label:'電話' , prop:'callNumber', mandatory:false,maxlength:'15',
@@ -95,18 +95,18 @@ class User extends Parent {
          isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
          { label:'緊急電話' , prop:'emergencyNumber', mandatory:false,maxlength:'15',
          isHidden:false,isSearch:true,placeholder:'請輸入緊急電話',
-         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},   
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
          { label:'電子信箱' , prop:'email', mandatory:false,
          pattern:/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/,
          errorMsg:'格式錯誤,請重新輸入',isPattern: true,maxlength:'100',
          isHidden:false,isSearch:true,placeholder:'請輸入電子信箱',
-         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},   
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
          { label:'門牌' , prop:'usageOfFloor', mandatory:false,maxlength:'15',
          isHidden:false,isSearch:true,placeholder:'請輸入職稱',
-         isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true},  
+         isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true},
          { label:'備註' , prop:'note', mandatory:false,format:'textarea',maxlength:'200',
          isHidden:false,isSearch:true,placeholder:'請輸入職稱',
-         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false} 
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false}
        ]
     }
     static async get (){
@@ -146,6 +146,14 @@ class User extends Parent {
             return []
         })
         return data
+    }
+    static async deleteMany(data){
+      var data = await api.building.apiDeleteUser(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
     }
 }
 

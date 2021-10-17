@@ -23,8 +23,6 @@ export default {
             name:'室內消防栓',
             type:'FFE_IndoorFireHydrant',
             status:[
-                // {value:'0',imgSrc:require("../assets/equipment/b/2.png")},
-                // {value:'1',imgSrc:require("../assets/equipment/r/r2.png")}
                 {value:'0',imgSrc:"b/2.png"},
                 {value:'1',imgSrc:"r/r2.png"}
             ]

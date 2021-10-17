@@ -7,7 +7,7 @@ import { MaintainManagement } from '@/object/maintainManagement'
 import DeviceAddressManagement from '@/object/deviceAddressManagement';
 
 class Device extends Parent {
- 
+
     constructor (data) {
         super(data)
         const { name,dateOfPurchase, dateOfWarranty, location,groupID, ip, port, slaveId, differentialTransmission,
@@ -41,7 +41,7 @@ class Device extends Parent {
     }
     async update(resetLink){
         var temp = JSON.parse(JSON.stringify(this))
-        if(temp.internetNumber !== null &&  temp.internetNumber !== undefined)  temp.internetNumber = '{Check}'+temp.internetNumber  
+        if(temp.internetNumber !== null &&  temp.internetNumber !== undefined)  temp.internetNumber = '{Check}'+temp.internetNumber
         var data = await api.device.apiPatchDevicesManagement(temp,resetLink).then(async(response) => {
             return new Device(response.result)
         }).catch(error=>{
@@ -51,7 +51,7 @@ class Device extends Parent {
     }
     async create(){
         var temp = JSON.parse(JSON.stringify(this))
-        if(temp.internetNumber !== null &&  temp.internetNumber !== undefined)   temp.internetNumber = '{Check}'+temp.internetNumber 
+        if(temp.internetNumber !== null &&  temp.internetNumber !== undefined)   temp.internetNumber = '{Check}'+temp.internetNumber
         var data = await api.device.apiPostDevicesManagement(temp).then(response => {
             return new Device(response.result)
         }).catch(error=>{
@@ -127,7 +127,7 @@ class Device extends Parent {
         return this.linkDeviceTypes.length !== 0 ? this.linkDeviceTypes[0] : DeviceType.empty()
     }
     getName(){ //組合過的名稱：設備種類名稱+設備名稱
-        var name = this.linkDeviceTypes.length !== 0 ? 
+        var name = this.linkDeviceTypes.length !== 0 ?
         '【'+this.linkDeviceTypes[0].getName()+'】'+this.name :  '【尚未設定設備種類】'+this.name
         return name
     }
@@ -195,7 +195,7 @@ class Device extends Parent {
             {
                 label: 'Port',
                 prop: 'port',
-                format:'inputnumber', 
+                format:'inputnumber',
                 pattern:/^[0-9]{1,4}$/,errorMsg:'請輸入0~99999',isPattern:true,
                 type:'number',typemessage:'',placeholder:'請輸入0~99999',maxlength:'5',
                 mandatory:false, message:'請輸入Port',isHidden:true,
@@ -212,7 +212,7 @@ class Device extends Parent {
             {
                 label: '通訊速率',
                 prop: 'differentialTransmission',
-                format:'inputnumber', 
+                format:'inputnumber',
                 pattern:/^[0-9]{1,4}$/,errorMsg:'請輸入0~9999',isPattern:true,
                 type:'number',typemessage:'',placeholder:'請輸入0~9999',maxlength:'4',
                 mandatory:false, message:'請輸入通訊速率',isHidden:true,
@@ -238,14 +238,14 @@ class Device extends Parent {
              {
                  label: '位置設置',
                  prop: 'location',
-                 mandatory:false, 
+                 mandatory:false,
                  isHidden:true,maxlength:'20',isSearch:true,placeholder:'請輸入位置設置',
                  isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false
              },
              {
                  label: '分類群組',
                  prop: 'groupID',
-                 mandatory:false, 
+                 mandatory:false,
                  isHidden:false,maxlength:'10',isSearch:true,placeholder:'請輸入分類群組',
                  isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false
              },
@@ -289,7 +289,7 @@ class Device extends Parent {
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            
+
             // {
             //     label: '尚未被使用',
             //     prop: 'systemUnUseMode',
@@ -305,7 +305,7 @@ class Device extends Parent {
             { label:'名稱',prop: 'name',mandatory:true, message:'請輸入名稱',isHidden:false,maxlength:'20'},
             { label:'種類' , prop:'linkDeviceTypes',format:'deviceTypeSelect', mandatory:false,
             message:'請輸入描述',maxlength:'200',isHidden:false},
-            { label:'設備狀況',prop: 'status',format:'DeviceStatusOptions',mandatory:true, 
+            { label:'設備狀況',prop: 'status',format:'DeviceStatusOptions',mandatory:true,
             message:'請選擇設備狀況',isHidden:false},
             { label:'系統' , prop:'systemNumber',format:'address', mandatory:true, message:'請輸入系統編號',
             isPattern:false,errorMsg:'',maxlength:'2',isHidden:false},
@@ -341,6 +341,14 @@ class Device extends Parent {
             return []
         })
         return data
+    }
+    static async deleteMany(data){
+      var data = await api.device.apiDeleteDevicesManagement(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
     }
     // static async updateAddress(data){
     //     var data = await api.device.apiPutDevicesAddress(data).then(async(response) => {

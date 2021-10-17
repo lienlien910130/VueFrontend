@@ -3,27 +3,27 @@
         <el-row  :gutter="32">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper" >
-                    <Block 
+                    <Block
                     ref="block"
                     :list-query-params.sync="listQueryParams"
-                    v-bind="blockAttrs" 
+                    v-bind="blockAttrs"
                     v-on="blockEvent"></Block>
                 </div>
             </el-col>
         </el-row>
-        <!-- <Dialog 
+        <!-- <Dialog
         ref="dialog"
         v-if="innerVisible === true"
-        v-bind="dialogAttrs" 
+        v-bind="dialogAttrs"
         v-on:handleDialog="handleDialog"></Dialog> -->
 
-        <DialogForm 
+        <DialogForm
         ref="dialogform"
         v-if="innerVisible === true"
         v-bind="dialogAttrs"
         v-on:handleDialog="handleDialog"></DialogForm>
 
-        <DialogExcel 
+        <DialogExcel
         ref="dialogexcel"
         v-if="excelVisible === true"
         v-bind="excelAttrs"
@@ -96,18 +96,28 @@ export default {
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
-            }else if(index === 'delete'){
-                var isDelete = await content.delete()
+            }else if(index === 'delete'  || index === 'deleteMany'){
+                var isDelete = false
+                if(index === 'delete'){
+                  isDelete = await content.delete()
+                }else{
+                  var deleteArray = []
+                  content.forEach(item=>{
+                    deleteArray.push(item.id)
+                  })
+                  isDelete = await DeviceAddressManagement.deleteMany(deleteArray.toString())
+                }
                 if(isDelete){
                     this.$message('刪除成功')
-                    if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
+                    if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1 ){
                         this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
                     }
-                    this.$socket.sendMsg('deviceAddress', index, content.getID())
+                    this.$socket.sendMsg('deviceAddress','delete' ,
+                        index === 'delete'  ? content.getID() : deleteArray.toString())
                     await this.getBuildingDeviceAddressManagement()
-                    // await this.resetlistQueryParams()
+                    this.$refs.block.clearSelectArray()
                 }else{
-                    this.$message.error('系統錯誤') 
+                    this.$message.error('系統錯誤')
                 }
             }else if(index === 'empty'){
                 this.dialogData.push( DeviceAddressManagement.empty() )
@@ -141,6 +151,17 @@ export default {
                 this.dialogStatus = 'update'
                 this.innerVisible = true
                 this.selectArray = _.cloneDeep(content)
+            }else if(index === 'updateMany'){
+              this.dialogConfig.shift()
+              this.dialogStatus = 'updateMany'
+              content.forEach(item=>{
+                var obj = _.cloneDeep(item)
+                this.dialogData.push(obj)
+              })
+              this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'updateManySave'},
+                { name:'取消',type:'info',status:'cancel'}]
+              this.innerVisible = true
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
@@ -153,7 +174,7 @@ export default {
                     delete content.systemUsed
                     delete content.status
                 }
-                var result = index === 'create' ? await content.create(deviceId) : 
+                var result = index === 'create' ? await content.create(deviceId) :
                     await DeviceAddressManagement.batchInsert(deviceId,content)
                 if(Object.keys(result).length !== 0 || result == true){
                     this.$message('新增成功')
@@ -163,19 +184,14 @@ export default {
                 }else{
                     this.$message.error('點位已存在，請重新輸入')
                 }
-            }else if(index == 'update'){
+            }else if(index == 'update' || index == 'updateManySave'){
                 delete content.linkAssignDevices
-                var result = await content.update(false) 
+                var result = await content.update(false)
                 if(Object.keys(result).length !== 0){
-                    this.$message('更新成功') 
+                    this.$message('更新成功')
                     this.$socket.sendMsg('deviceAddress', index, result)
                     await this.getBuildingDeviceAddressManagement()
-                    this.innerVisible = false
-                    // if(title == 'openDialog'){
-                    //     this.$store.dispatch('building/setDevice')
-                    //     var data = await DeviceAddressManagement.getOfID(content.getID())
-                    //     await this.handleBlock(this.title,'open',data)
-                    // }
+                    if(index !== 'updateManySave') this.innerVisible = false
                 }else{
                     this.$message.error('點位已存在，請重新輸入')
                 }
@@ -189,7 +205,7 @@ export default {
                 })
                 var result = await DeviceAddressManagement.updateMany(updateData)
                 if(Object.keys(result).length !== 0){
-                    this.$message('更新成功') 
+                    this.$message('更新成功')
                     this.$socket.sendMsg('deviceAddress', index, result)
                     await this.getBuildingDeviceAddressManagement()
                     this.innerVisible = false
@@ -205,7 +221,7 @@ export default {
         },
         async changeTable(value){
             this.isTable = value
-            if(this.$route.query.type !== undefined && 
+            if(this.$route.query.type !== undefined &&
                     this.$route.query.type == 'address' && this.$route.query.obj !== '' ){
                 var data = await DeviceAddressManagement.getOfID(this.$route.query.obj )
                 await this.handleBlock('','open',data)

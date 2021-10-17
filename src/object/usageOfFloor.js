@@ -4,7 +4,7 @@ import User from './user'
 import Files from './files'
 
 class UsageOfFloor extends Parent {
- 
+
     constructor (data) {
         super(data)
         const { houseNumber,placeName, capacity, note,
@@ -28,7 +28,7 @@ class UsageOfFloor extends Parent {
     }
     async update(floorId){
         var temp = JSON.parse(JSON.stringify(this))
-        temp.houseNumber = '{Check}'+temp.houseNumber 
+        temp.houseNumber = '{Check}'+temp.houseNumber
         var data = await api.building.apiPatchFloorOfHouse(floorId,temp).then(async(response) => {
             return new UsageOfFloor(response.result)
         }).catch(error=>{
@@ -38,7 +38,7 @@ class UsageOfFloor extends Parent {
     }
     async create(floorId){
         var temp = JSON.parse(JSON.stringify(this))
-        temp.houseNumber = '{Check}'+temp.houseNumber  
+        temp.houseNumber = '{Check}'+temp.houseNumber
         var data = await api.building.apiPostFloorOfHouse(floorId, temp).then(response => {
             return new UsageOfFloor(response.result)
         }).catch(error=>{
@@ -112,22 +112,22 @@ class UsageOfFloor extends Parent {
              mandatory:true, message:'請輸入空間特性',
              isHidden:false,maxlength:'200',isSearch:true,placeholder:'請輸入空間特性',
              isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
-             { label:'營業時間' , prop:'businessHours', 
+             { label:'營業時間' , prop:'businessHours',
              mandatory:false, message:'請輸入營業時間',
              isHidden:false,maxlength:'50',isSearch:true,placeholder:'請輸入營業時間',
              isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
-             { label:'所有人' , prop:'linkOwners',format:'userInfo', 
-             mandatory:false, 
+             { label:'所有人' , prop:'linkOwners',format:'userInfo',
+             mandatory:false,
              type:'array',typemessage:'',
              isHidden:false,isSearch:false,
              isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
-             { label:'使用人' , prop:'linkUsers',format:'userInfo', 
-             mandatory:false, 
+             { label:'使用人' , prop:'linkUsers',format:'userInfo',
+             mandatory:false,
              type:'array',typemessage:'',
              isHidden:false,isSearch:false,
              isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
-             { label:'住戶' , prop:'linkLivingUsers',format:'usageOfFloorUserInfo', 
-             mandatory:false, 
+             { label:'住戶' , prop:'linkLivingUsers',format:'usageOfFloorUserInfo',
+             mandatory:false,
              type:'array',typemessage:'',
              isHidden:false,isSearch:false,
              isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
@@ -174,6 +174,14 @@ class UsageOfFloor extends Parent {
             return []
         })
         return data
+    }
+    static async deleteMany(data){
+      var data = await api.building.apiDeleteFloorOfHouse(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
     }
 }
 

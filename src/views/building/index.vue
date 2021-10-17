@@ -3,17 +3,17 @@
     <el-row :gutter="32">
       <el-col :xs="24" :sm="24" :md="24" :lg="24">
           <div class="block-wrapper">
-            <Block 
+            <Block
               ref="block"
               :list-query-params.sync="listQueryParams"
-              v-bind="blockAttrs" 
+              v-bind="blockAttrs"
               v-on="blockEvent"></Block>
           </div>
       </el-col>
     </el-row>
-    <!-- <Dialog 
+    <!-- <Dialog
         v-if="innerVisible === true"
-        v-bind="dialogAttrs" 
+        v-bind="dialogAttrs"
         :files="files"
         :specialId="floorImageId"
         :formtableData="formtableData"
@@ -21,7 +21,7 @@
         :listQueryParams="floorlistQueryParams"
         v-on:handleDialog="handleDialog"></Dialog> -->
 
-    <DialogForm 
+    <DialogForm
       ref="dialogform"
       v-if="innerVisible === true"
       v-bind="dialogAttrs"
@@ -33,13 +33,13 @@
       v-bind="uploadAttrs"
       v-on:handleDialog="handleDialog"></DialogUpload>
 
-    <DialogExcel 
+    <DialogExcel
       ref="dialogexcel"
       v-if="excelVisible === true"
       v-bind="excelAttrs"
       v-on:handleDialog="handleDialog"></DialogExcel>
 
-    <DialogTable 
+    <DialogTable
       ref="dialogtable"
       v-if="tableVisible === true"
       v-bind="tableAttrs"
@@ -120,7 +120,7 @@ export default {
     async initBuilding(){
       this.title = 'building'
       this.tableConfig = Building.getTableConfig()
-      await this.getAllBuilding()  
+      await this.getAllBuilding()
       this.buttonsName = [
         { name:'刪除',icon:'el-icon-delete',status:'delete'},
         { name:'編輯',icon:'el-icon-edit',status:'open'},
@@ -171,7 +171,7 @@ export default {
       var isOk = await Floors.create(buildingId,this.floorsArray)
       return isOk
     },
-    async handleBlock(title,index, content){
+    async handleBlock(title, index, content){
         console.log(title,index,JSON.stringify(content))
         this.dialogData = []
         this.dialogTitle = this.title
@@ -185,9 +185,9 @@ export default {
           this.dialogConfig[4].isEdit = false
           this.dialogConfig[5].isEdit = false
           this.dialogSelect = userlist.map(v => {
-                this.$set(v, 'value', v.getID()) 
-                this.$set(v, 'label', v.getName()) 
-                this.$set(v, 'id', v.getID()) 
+                this.$set(v, 'value', v.getID())
+                this.$set(v, 'label', v.getName())
+                this.$set(v, 'id', v.getID())
                 return v
             })
           this.dialogData.push(content)
@@ -203,27 +203,39 @@ export default {
           { name:'取消',type:'info',status:'cancel'}]
           this.innerVisible = true
           this.dialogStatus = 'create'
-        }else if(index === 'delete'){
-          if(this.buildingid == content.getID()){
-            this.$message.error('請勿刪除正在選取的建築物')
-            return false
+        }else if(index === 'delete'  || index === 'deleteMany'){
+          var isDelete = false
+          if(index === 'delete'){
+            if(this.buildingid == content.getID()){
+              this.$message.error('請勿刪除正在選取的建築物')
+              return false
+            }
+            isDelete = await content.delete()
+          }else{
+            var deleteArray = []
+            content.forEach(item=>{
+              deleteArray.push(item.id)
+            })
+            var index = deleteArray.findIndex(item=> item == this.buildingId)
+            if(index !== -1){
+              this.$message.error('請勿刪除正在選取的建築物')
+              return false
+            }
+            isDelete = await DeviceType.deleteMany(deleteArray.toString())
           }
           var isOk = await content.delete()
           if(isOk){
             this.$message('刪除成功')
-            // await this.resetlistQueryParams()
             if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
               this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
             }
             await this.getAllBuilding()
             this.$store.dispatch('building/setBuildingList',await Building.get())
-            this.$socket.sendMsg('building', index , content.getID())
-            // if(this.buildingid == content.getID()){
-            //   this.$store.dispatch('permission/generateRoutes', true)
-            //   this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
-            // }
+            this.$socket.sendMsg('building','delete' ,
+              index === 'delete'  ? content.getID() : deleteArray.toString())
+             this.$refs.block.clearSelectArray()
           }else{
-            this.$message.error('系統錯誤') 
+            this.$message.error('系統錯誤')
           }
         }else if(index === 'exportExcel'){
           this.exportExcelData = this.blockData
@@ -251,6 +263,16 @@ export default {
           this.filesTitle = 'building'
           this.building = content
           await this.handleUpload(this.building,index,content)
+        }else if(index === 'updateMany'){
+              this.dialogStatus = 'updateMany'
+              content.forEach(item=>{
+                var obj = _.cloneDeep(item)
+                this.dialogData.push(obj)
+              })
+              this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'updateManySave'},
+                { name:'取消',type:'info',status:'cancel'}]
+              this.innerVisible = true
         }
     },
     async handleTableClick(index, content){
@@ -279,7 +301,7 @@ export default {
         //     await this.getFloorList()
         //     // await this.resettablelistQueryParams()
         // }else{
-        //     this.$message.error('系統錯誤') 
+        //     this.$message.error('系統錯誤')
         // }
       }else if(index === 'open'){
         this.dialogData.push(content)
@@ -298,7 +320,7 @@ export default {
       }else if(index === 'openfiles'){
         this.filesTitle = 'floorFiles'
         this.floor = content
-        this.floorImageId = content.floorPlanID == null ? 
+        this.floorImageId = content.floorPlanID == null ?
          null : content.getImageID()
         await this.handleUpload(this.floor,index,content)
       }else if(index === 'clickPagination'){
@@ -323,15 +345,15 @@ export default {
             await this.crefloor('up',content.floorsOfAboveGround,result.getID())
             await this.crefloor('down',content.floorsOfUnderground,result.getID())
             var isOk = await this.postFloor(result.getID())
-            isOk == true ? this.$message('新增成功') : this.$message.error('新增樓層有誤') 
+            isOk == true ? this.$message('新增成功') : this.$message.error('新增樓層有誤')
             this.$store.dispatch('building/setBuildingList',await Building.get())
             this.$socket.sendMsg('building', 'create' , result)
             await this.getAllBuilding()
             this.innerVisible = false
           }else{
-            this.$message.error('該建築物名稱已存在，請重新輸入') 
+            this.$message.error('該建築物名稱已存在，請重新輸入')
           }
-        }else if(index === 'update'){
+        }else if(index === 'update' || index === 'updateManySave'){
           var result = await content.update()
           if(Object.keys(result).length !== 0){
             this.$message('更新成功')
@@ -342,9 +364,9 @@ export default {
               this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
             }
             await this.getAllBuilding()
-            this.innerVisible = false
+            if(index !== 'updateManySave') this.innerVisible = false
           }else{
-            this.$message.error('該建築物名稱已存在，請重新輸入') 
+            this.$message.error('該建築物名稱已存在，請重新輸入')
           }
         }else if(index === 'uploadExcelSave'){
           var result = await Building.postMany(content)
@@ -382,12 +404,13 @@ export default {
           this.innerVisible = false
           this.excelVisible = false
           this.uploadVisible = false
+          this.$refs.block.clearSelectArray()
         }
       }else{
         await this.handleFloor(index,content)
       }
     },
-    async handleFloor(index,content){ 
+    async handleFloor(index,content){
       this.dialogData = []
       this.dialogTitle = 'floor'
       this.dialogConfig = Floors.getTableConfig()
@@ -400,8 +423,8 @@ export default {
         var floorsArray = []
         floorsArray.push(content)
         var result = await content.update(this.building.getID())
-        // var result = index === 'createfloor' ? 
-        //   await Floors.create(this.building.getID(),floorsArray) : 
+        // var result = index === 'createfloor' ?
+        //   await Floors.create(this.building.getID(),floorsArray) :
         //   await content.update(this.building.getID())
         if(Object.keys(result).length !== 0){
             index === 'updatefloor' ? this.$message('更新成功') : this.$message('新增成功')
@@ -412,7 +435,7 @@ export default {
             await this.getFloorList()
             this.innerVisible = false
         }else{
-          this.$message.error('該樓層名稱已存在，請重新輸入') 
+          this.$message.error('該樓層名稱已存在，請重新輸入')
         }
       }else if(index === 'createfile' || index === 'deletefile'){
         await this.handleUpload(this.floor,index,content)
@@ -439,7 +462,7 @@ export default {
           }
           this.$socket.sendMsg('floor', 'update' , result, this.building.getID())
         }else{
-          this.$message.error('系統錯誤') 
+          this.$message.error('系統錯誤')
         }
       }
     },
@@ -459,7 +482,7 @@ export default {
           this.$message('上傳成功')
           this.files = await type.files()
         }else{
-          this.$message.error('系統錯誤') 
+          this.$message.error('系統錯誤')
         }
       }else {
         var data = { id:content.toString() }
@@ -468,7 +491,7 @@ export default {
           this.$message('刪除成功')
           this.files = await type.files()
         }else{
-          this.$message.error('系統錯誤') 
+          this.$message.error('系統錯誤')
         }
       }
     },

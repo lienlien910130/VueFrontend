@@ -12,24 +12,24 @@
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="17">
                     <div class="block-wrapper">
-                        <Block 
+                        <Block
                         ref="block"
                         :list-query-params.sync="listQueryParams"
-                        v-bind="blockAttrs" 
+                        v-bind="blockAttrs"
                         v-on="blockEvent"></Block>
                     </div>
                 </el-col>
            </el-row>
-           <!-- <Dialog 
-                v-bind="dialogAttrs" 
+           <!-- <Dialog
+                v-bind="dialogAttrs"
                 v-on:handleDialog="handleDialog"></Dialog> -->
-             <DialogForm 
+             <DialogForm
             ref="dialogform"
             v-if="innerVisible === true"
             v-bind="dialogAttrs"
             v-on:handleDialog="handleDialog"></DialogForm>
 
-            <DialogExcel 
+            <DialogExcel
             ref="dialogexcel"
             v-if="excelVisible === true"
             v-bind="excelAttrs"
@@ -84,11 +84,12 @@ export default {
             this.title = 'accessAuthority'
             this.tableConfig = AccessAuthority.getTableConfig()
             this.hasSearch = false
-            
+
         },
         async handleTreeNode(node,data){
             this.selectId = data.getID()
             this.classCode = data.getCode()
+            console.log(this.classCode)
             var array = await AccessAuthority.get(this.selectId)
             this.blockData = array.result
         },
@@ -105,12 +106,22 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
-            }else if(index === 'delete'){
-                var isOk = await content.delete()
-                if(isOk){
+            }else if(index === 'delete' || index === 'deleteMany'){
+                var isDelete = false
+                if(index === 'delete'){
+                  isDelete = await content.delete()
+                }else{
+                  var deleteArray = []
+                  content.forEach(item=>{
+                    deleteArray.push(item.id)
+                  })
+                  isDelete = await AccessAuthority.deleteMany(deleteArray.toString())
+                }
+                if(isDelete){
                     this.$message('刪除成功')
                     this.$socket.sendMsg('menus','reset', '')
                     this.$store.dispatch('permission/setmenu',await  Menu.get())
+                    this.$refs.block.clearSelectArray()
                     // var array = await AccessAuthority.get(this.selectId)
                     // this.blockData = array.result
                 }else{
@@ -122,7 +133,7 @@ export default {
                         message: '請選擇目錄'
                     })
                 }else{
-                    this.dialogData.push( AccessAuthority.empty() )    
+                    this.dialogData.push( AccessAuthority.empty() )
                     this.dialogButtonsName = [
                         { name:'儲存',type:'primary',status:'create'},
                         { name:'取消',type:'info',status:'cancel'}]
@@ -148,27 +159,39 @@ export default {
                     this.excelVisible = true
                     this.excelType = 'uploadExcel'
                 }
+            }else if(index === 'updateMany'){
+              this.dialogStatus = 'updateMany'
+              content.forEach(item=>{
+                var obj = _.cloneDeep(item)
+                this.dialogData.push(obj)
+              })
+              this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'updateManySave'},
+                { name:'取消',type:'info',status:'cancel'}]
+              this.innerVisible = true
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,JSON.stringify(content))
-            if(index !== 'cancel' && index !== 'selectData'){
+            if(index !== 'cancel'){
                 if(index === 'create'){
                     content.setlinkMainMenus([{id : this.selectId}])
+                    content.class = this.classCode
                 }else if(index === 'uploadExcelSave'){
                     content.forEach(element => {
+                        element.class = '{Check}'+this.classCode
                         element.linkMainMenus = [{id : this.selectId}]
                     })
                 }
-                content.class = this.classCode
-                var result = index === 'update' ? await content.update() : 
+                var result = index === 'update' || index === 'updateManySave' ? await content.update() :
                 index === 'create' ? await content.create() : await AccessAuthority.postMany(content)
                 var condition = index !== 'uploadExcelSave' ? result == true : result.result.length !== 0
                 if(condition){
-                    index == 'update' ? this.$message('更新成功') : this.$message('新增成功')
+                    index == 'update' || index == 'updateManySave' ?
+                        this.$message('更新成功') : this.$message('新增成功')
                     this.$socket.sendMsg('menus', 'reset', '')
                     this.$store.dispatch('permission/setmenu',await  Menu.get())
-                    this.innerVisible = false
+                    if(index !== 'updateManySave') this.innerVisible = false
                     this.excelVisible = false
                 }else{
                     this.$message.error('該權限已存在，請重新輸入')
@@ -183,6 +206,7 @@ export default {
             }else{
                 this.innerVisible = false
                 this.excelVisible = false
+                this.$refs.block.clearSelectArray()
             }
         },
         async changeTable(value){

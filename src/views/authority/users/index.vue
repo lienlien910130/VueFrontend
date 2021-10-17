@@ -2,31 +2,31 @@
         <div class="editor-container">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper">
-                    <Block 
+                    <Block
                         ref="block"
                         :list-query-params.sync="listQueryParams"
-                        v-bind="blockAttrs" 
+                        v-bind="blockAttrs"
                         v-on="blockEvent"></Block>
                 </div>
             </el-col>
-            <!-- <Dialog 
-                v-bind="dialogAttrs" 
+            <!-- <Dialog
+                v-bind="dialogAttrs"
                 :accessAuthoritiesData="treeData"
                 :accessAuthorities="roleAccessAuthority"
                 v-on:handleDialog="handleDialog"></Dialog> -->
-            <DialogForm 
+            <DialogForm
             ref="dialogform"
             v-if="innerVisible === true"
             v-bind="dialogAttrs"
             v-on:handleDialog="handleDialog"></DialogForm>
 
-            <DialogExcel 
+            <DialogExcel
             ref="dialogexcel"
             v-if="excelVisible === true"
             v-bind="excelAttrs"
             v-on:handleDialog="handleDialog"></DialogExcel>
 
-            <DialogAuthority 
+            <DialogAuthority
             ref="dialogauthority"
             v-if="authorityVisible === true"
             v-bind="authorityAttrs"
@@ -128,17 +128,27 @@ export default {
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
                 this.dialogStatus = 'update'
-            }else if(index === 'delete'){
-                var isOk = await content.delete()
-                if(isOk){
+            }else if(index === 'delete' || index === 'deleteMany'){
+                var isDelete = false
+                if(index === 'delete'){
+                  isDelete = await content.delete()
+                }else{
+                  var deleteArray = []
+                  content.forEach(item=>{
+                    deleteArray.push(item.id)
+                  })
+                  isDelete = await Account.deleteMany(deleteArray.toString())
+                }
+                if(isDelete){
                     this.$message('刪除成功')
                     if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
                         this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
                     }
                     this.$store.dispatch('building/setaccounts')
-                    this.$socket.sendMsg('account','delete',content.getID())
+                    this.$socket.sendMsg('account','delete' ,
+                        index === 'delete'  ? content.getID() : deleteArray.toString())
                     await this.getAllAccount()
-                    // await this.resetlistQueryParams()
+                    this.$refs.block.clearSelectArray()
                 }else{
                     this.$message.error('系統錯誤')
                 }
@@ -150,7 +160,7 @@ export default {
                 this.innerVisible = true
                 this.dialogStatus = 'create'
             }else if(index === 'distribution'){
-                var roles = content.getRoles()  
+                var roles = content.getRoles()
                 var array = []
                 for(let element in roles){
                     array.push(await roles[element].getAccess('account'))
@@ -172,20 +182,32 @@ export default {
             }else if(index === 'uploadExcel'){
                 this.excelVisible = true
                 this.excelType = 'uploadExcel'
+            }else if(index === 'updateMany'){
+              this.dialogStatus = 'updateMany'
+              content.forEach(item=>{
+                var obj = _.cloneDeep(item)
+                this.dialogData.push(obj)
+              })
+              this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'updateManySave'},
+                { name:'取消',type:'info',status:'cancel'}]
+              this.innerVisible = true
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,content)
             if(index !== 'cancel'){
-                var result = index === 'update' ? await content.update() : 
+                var result = index === 'update' || index === 'updateManySave' ?
+                await content.update() :
                 index === 'create' ? await content.create() : await Account.postMany(content)
                 var condition = index !== 'uploadExcelSave' ? result == true : result.result.length !== 0
                 if(condition){
-                    index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+                    index === 'update' || index === 'updateManySave' ?
+                        this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('building/setaccounts')
                     this.$socket.sendMsg('account', index , index !== 'uploadExcelSave' ? result: result.result)
                     await this.getAllAccount()
-                    this.innerVisible = false
+                    if(index !== 'updateManySave') this.innerVisible = false
                     this.excelVisible = false
                 }else{
                     if(index !== 'uploadExcelSave'){
@@ -203,6 +225,7 @@ export default {
                 this.innerVisible = false
                 this.excelVisible = false
                 this.authorityVisible = false
+                this.$refs.block.clearSelectArray()
             }
         },
         async changeTable(value){

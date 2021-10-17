@@ -46,12 +46,12 @@ function addRouter(routerlist) {
       e.name = e.code
       delete e.redirect
     }else{ //第一階層
-      e.component = Layout 
+      e.component = Layout
     }
     delete e.linkMainMenus
     delete e.code
     delete e.icon
-    
+
     if (e.children !== undefined && hasToCycle == true) {
       // 存在子路由就遞迴
       addRouter(e.children)
@@ -97,19 +97,19 @@ const mutations = {
 }
 
 const actions = {
-  setmenuId({ commit }, menuId) { 
+  setmenuId({ commit }, menuId) {
     return new Promise((resolve, reject) => {
       commit('SET_MENUID', menuId)
       resolve()
     })
   },
-  setmenuAuthority({ commit }, menuAuthority) { 
+  setmenuAuthority({ commit }, menuAuthority) {
     return new Promise((resolve, reject) => {
       commit('SET_MENUAUTHORITY', menuAuthority)
       resolve()
     })
   },
-  setmenu({ commit }, menu) { 
+  setmenu({ commit }, menu) {
     return new Promise((resolve, reject) => {
       commit('SET_MENU', menu)
       var array = []
@@ -130,7 +130,7 @@ const actions = {
     let accessedRoutes = []
     if (roles) {
       accessedRoutes = mercuryfireRoutes || []
-    } 
+    }
     accessedRoutes = accessedRoutes.concat(notfound)
     commit('SET_ROUTES', accessedRoutes)
     return accessedRoutes
@@ -139,21 +139,29 @@ const actions = {
     resetRouter()
     var data = await Menu.get()
     store.dispatch('permission/setmenu',data)
-    var menucopy = data.map(item=>{ return item.clone(item)})
+    var menucopy = data.map(item=>{
+      if(item.linkMainMenus.length){
+        item.linkMainMenus = item.linkMainMenus.sort((x,y) => x.sort - y.sort)
+      }
+      item.linkMainMenus.forEach(obj=>{
+        obj.linkMainMenus = obj.linkMainMenus.sort((x,y) => x.sort - y.sort)
+      })
+      return item.clone(item)}
+    )
     var getRouter = addRouter(menucopy)
-    getRouter = getRouter.filter(item => { 
-      return item.path !== '/' 
+    getRouter = getRouter.filter(item => {
+      return item.path !== '/'
     }).concat(notfound)
     commit('SET_ROUTES', getRouter)
     router.addRoutes(getRouter)
   },
-  setneedreload({ commit }, needreload) { 
+  setneedreload({ commit }, needreload) {
     return new Promise((resolve, reject) => {
       commit('SET_NEEDRELOAD', needreload)
       resolve()
     })
   },
-  setnavbarButton({ commit }, isVisible) { 
+  setnavbarButton({ commit }, isVisible) {
     return new Promise((resolve, reject) => {
       commit('SET_NAVBARBUTTONVISIBLE', isVisible)
       resolve()

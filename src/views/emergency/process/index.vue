@@ -801,6 +801,7 @@
                     })
                     var addNodeList = []
                     var deleteNodeList = []
+                    var updateNodeList = []
                     //判斷新增與更新的節點
                     nodeList.forEach(item=>{
                         var indexnode = this.processNodeArray.findIndex(obj=> obj.nodeId === item.nodeId )
@@ -809,6 +810,21 @@
                             newNode.nType = parseInt(newNode.nType)
                             addNodeList.push(newNode)
                         }else{
+                            var nodeItem = {
+                              name:item.name,
+                              message:item.message,
+                              nextCpId:item.nextCpId,
+                              linkRoles:item.linkRoles,
+                              linkAccountList:item.linkAccountList
+                            }
+                            var processItem = {
+                              name:this.processNodeArray[indexnode].name,
+                              message:this.processNodeArray[indexnode].message == undefined ? '' : this.processNodeArray[indexnode].message,
+                              nextCpId:this.processNodeArray[indexnode].nextCpId == undefined ? '' : this.processNodeArray[indexnode].nextCpId,
+                              linkRoles:this.processNodeArray[indexnode].linkRoles,
+                              linkAccountList:this.processNodeArray[indexnode].linkAccountList
+                            }
+                            var sameResult = isObjectValueEqual(nodeItem,processItem)
 
                         }
                     })
@@ -824,7 +840,8 @@
                     console.log('addLineList',JSON.stringify(addLineList))
                     console.log('deleteLineList',JSON.stringify(deleteLineList))
                     if(addNodeList.length){
-                        var addNodeResult = await CNode.postMany(this.processId, addNodeList)
+                        var addNodeListclone = _.cloneDeep(addNodeList)
+                        var addNodeResult = await CNode.postMany(this.processId, addNodeListclone)
                         if(addNodeResult){
                             this.processNodeArray = await CNode.get(this.processId)
                         }
@@ -836,7 +853,8 @@
                         }
                     }
                     if(addLineList.length){
-                        var addLineResult = await COption.postMany(this.processId, addLineList)
+                      var addLineListclone = _.cloneDeep(addLineListclone)
+                        var addLineResult = await COption.postMany(this.processId, addLineListclone)
                         if(addLineResult){
                             this.processLineArray = await COption.getOfProcess(this.processId)
                         }
@@ -857,6 +875,7 @@
                     var result = await ContingencyProcess.getJson(pid)
                     this.processId = pid
                     this.processNodeArray = await CNode.get(this.processId)
+                    console.log(JSON.stringify(this.processNodeArray))
                     this.processLineArray = await COption.getOfProcess(this.processId)
                     if(result.codeContent !== undefined){
                         this.$nextTick(() => {

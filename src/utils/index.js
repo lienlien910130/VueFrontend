@@ -102,7 +102,7 @@ export function changeDefaultFullType(fullType){
 }
 
 export function uploadFile(input, callBack){
-	//支持chrome IE10  
+	//支持chrome IE10
 	if (window.FileReader) {
 		let file = input.files[0], filename = file.name.split(".")[0];
 		let reader = new FileReader();
@@ -112,7 +112,7 @@ export function uploadFile(input, callBack){
 		}
 		reader.readAsText(file);
 	}
-	//支持IE 7 8 9 10  
+	//支持IE 7 8 9 10
 	else if (typeof window.ActiveXObject != 'undefined') {
 		let xmlDoc;
 		xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
@@ -120,7 +120,7 @@ export function uploadFile(input, callBack){
 		xmlDoc.load(input.value);
 		callBack(xmlDoc.xml)
 	}
-	//支持FF  
+	//支持FF
 	else if (document.implementation && document.implementation.createDocument) {
 		let xmlDoc;
 		xmlDoc = document.implementation.createDocument("", "", null);
@@ -140,14 +140,29 @@ export function isObjectValueEqual(a, b) {
 
   var aProps = Object.getOwnPropertyNames(a);
   var bProps = Object.getOwnPropertyNames(b);
-
   if (aProps.length != bProps.length) {
     return false;
   }
   for (var i = 0; i < aProps.length; i++) {
     var propName = aProps[i];
-    if (a[propName] !== b[propName]) {
-    return false;
+    if(typeof a[propName] == 'string'){
+      if (a[propName] !== b[propName]) {
+        return false;
+      }
+    }else if(typeof a[propName] == 'object'){ //陣列
+      console.log(a[propName],b[propName])
+      if (a[propName].length !== b[propName].length) {
+        return false;
+      }else{
+        // a[propName] = a[propName].sort((x,y) => x.id - y.id)
+        // b[propName] = b[propName].sort((x,y) => x.id - y.id)
+        // for(var i=0;i<a[propName].length;i++){
+        //   console.log(a[propName][i])
+        //   if(a[propName][i].id !== b[propName][i].id){
+        //     return false;
+        //   }
+        // }
+      }
     }
   }
   return true;

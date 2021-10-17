@@ -71,7 +71,7 @@ class Role extends Parent {
             })
             return data
         }
-       
+
     }
     getName(){
         return this.name
@@ -133,6 +133,14 @@ class Role extends Parent {
             return []
         })
         return data
+    }
+    static async deleteMany(data){
+      var data = await api.authority.apiDeleteRoleAuthority(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
     }
     // static async getMainMenuAuthority(mainMenuId){
     //     var data = await api.authority.apiGetAccountAuthorityByMenu(mainMenuId).then(response => {

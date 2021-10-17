@@ -9,7 +9,7 @@ class PublicSafe extends Parent {
         const { declareYear, declareDeadline, declareDate, declareResult, declarationImproveDate,
             checkStartDate, checkEndDate, professName, certificateNumber, isImproved, imported, nextInspectionDate,
             note,completedCount,allCount } = data
-          
+
         this.declareYear = declareYear
         this.declareDeadline = declareDeadline
         this.declareDate = declareDate
@@ -184,7 +184,7 @@ class PublicSafe extends Parent {
             //     isHidden:true,isSearch:false,
             //     isAssociate:false,isEdit:false,isUpload:false,isExport:false,isBlock:true
             // }
-         ]  
+         ]
     }
     static async get (){
         var data = await api.report.apiGetBuildingPublicSafe().then(response => {
@@ -219,6 +219,14 @@ class PublicSafe extends Parent {
             return false
         })
         return data
+    }
+    static async deleteMany(data){
+      var data = await api.report.apiDeletePublicSafe(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
     }
 }
 

@@ -3,28 +3,28 @@
             <el-row :gutter="32">
               <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper">
-                    <Block 
+                    <Block
                     ref="block"
                     :list-query-params.sync="listQueryParams"
-                    v-bind="blockAttrs" 
+                    v-bind="blockAttrs"
                     v-on="blockEvent"></Block>
                 </div>
               </el-col>
             </el-row>
 
-            <DialogForm 
+            <DialogForm
             ref="dialogform"
             v-if="innerVisible === true"
             v-bind="dialogAttrs"
             v-on:handleDialog="handleDialog"></DialogForm>
 
-            <DialogTable 
+            <DialogTable
             ref="dialogtable"
             v-if="tableVisible === true"
             v-bind="tableAttrs"
             v-on="tableEvent"></DialogTable>
-            
-            <DialogExcel 
+
+            <DialogExcel
             ref="dialogexcel"
             v-if="excelVisible === true"
             v-bind="excelAttrs"
@@ -44,8 +44,7 @@ export default {
         return{
             marshallingList:null,
             marshalling:null,
-            processArray:[],
-            isUpdate:false
+            processArray:[]
         }
     },
     computed: {
@@ -65,7 +64,7 @@ export default {
         }
     },
     methods:{
-        async init(){   
+        async init(){
             this.title = 'selfDefenseFireMarshalling'
             this.tableConfig = SelfDefenseFireMarshalling.getTableConfig()
             this.buttonsName = [
@@ -172,7 +171,7 @@ export default {
                 await this.handleMarshallingMgmt(index,content)
             }else{ //消防編組大項
                 if(index === 'create' || index === 'update'){
-                    var isOk = index === 'update' ? 
+                    var isOk = index === 'update' ?
                       await content.update() : await content.create()
                     if(isOk){
                         this.innerVisible = false
@@ -226,19 +225,19 @@ export default {
                         this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
                     }
                     await this.getMarshallingMgmt()
-                    this.isUpdate = true  
+                    await this.marshallingList.patchFloor()
                 }else{
                     this.$message.error('系統錯誤')
                 }
             }else if(index === 'create' || index === 'update'){
-                var isOk = index === 'update' ? 
-                    await content.update(this.marshallingList.getID()) : 
+                var isOk = index === 'update' ?
+                    await content.update(this.marshallingList.getID()) :
                     await content.create(this.marshallingList.getID())
                 if(isOk){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
                     await this.getMarshallingMgmt()
                     this.innerVisible = false
-                    this.isUpdate = true
+                    await this.marshallingList.patchFloor()
                 }else{
                     this.$message.error('班別名稱已存在，請重新輸入')
                 }
@@ -252,7 +251,7 @@ export default {
                 var result = await SelfDefenseFireMarshallingMgmt.postMany(this.marshallingList.getID(),content)
                 if(result.result.length !== 0){
                     this.$message('新增成功')
-                    await this.getMarshallingMgmt() 
+                    await this.getMarshallingMgmt()
                     this.excelVisible = false
                 }
                 if(result.repeatDataList !== undefined){
@@ -269,10 +268,6 @@ export default {
         },
         async handleTableClick(index, content){
             if(index === 'cancel'){
-                if(this.isUpdate){
-                    await this.marshallingList.patchFloor()
-                    this.isUpdate = false
-                }
                 this.tableVisible = false
                 this.marshallingList = null
             }else {
@@ -282,7 +277,7 @@ export default {
         async changeTable(value){
             this.isTable = value
             await this.resetlistQueryParams()
-            // if(this.$route.query.type !== undefined && 
+            // if(this.$route.query.type !== undefined &&
             //         this.$route.query.type == 'maintain' && this.$route.query.obj !== '' ){
             //     var data = await MaintainManagement.getOfID(this.$route.query.obj )
             //     await this.handleMaintain('open',data)

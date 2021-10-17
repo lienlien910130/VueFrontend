@@ -11,34 +11,33 @@
         @close="handleClickOption('cancel')"
         center>
         <div v-if="dialogData.length > 1" >
-           <el-tabs 
-            v-model="activeName" 
+           <el-tabs
+            v-model="activeName"
             @tab-click="handleTabClick">
                 <el-tab-pane
                 v-for="(item) in dialogData"
                 :key="item.id"
-                :label="title === 'floorOfHouse' ? item.houseNumber :
-                title === 'lack' ? item.lackItem : item.name "
+                :label="changeTabLabel(item)"
                 :name="item.id"></el-tab-pane>
             </el-tabs>
         </div>
         <!-- dialogStatus : 一般表單/upload/lack/authority -->
         <keep-alive>
         <el-form
-        ref="dataForm"  
-        :model="temp"  
-        :label-position="label" 
-        label-width="auto" 
+        ref="dataForm"
+        :model="temp"
+        :label-position="label"
+        label-width="auto"
             >
-            <el-form-item 
+            <el-form-item
             v-for="(item, index) in config"
             :key="index"
             :prop="item.prop"
             v-show="item.isEdit"
             :rules="[
                 { required: item.mandatory, message: item.message},
-                item.isPattern ? 
-                    { pattern: item.pattern , message:item.errorMsg } : 
+                item.isPattern ?
+                    { pattern: item.pattern , message:item.errorMsg } :
                     { type: item.type, message: item.typemessage }
             ]"
             >
@@ -48,13 +47,13 @@
                     <a @click="openWindows(item.format)" style="color:#66b1ff"> {{ item.label }} </a>
                 </i>
                 <!-- 年度&日期 -->
-                <el-date-picker 
-                v-if="item.format == 'YYYY' || item.format == 'YYYY-MM-DD'" 
-                v-model="temp[item.prop]" 
-                value-format="yyyy-MM-dd" 
+                <el-date-picker
+                v-if="item.format == 'YYYY' || item.format == 'YYYY-MM-DD'"
+                v-model="temp[item.prop]"
+                value-format="yyyy-MM-dd"
                 placeholder="請選擇"
                 style="width:100%"
-                :type="item.format == 'YYYY' ? 'year' : 'date' " /> 
+                :type="item.format == 'YYYY' ? 'year' : 'date' " />
                 <!-- 範圍 -->
                 <span v-else-if="item.format == 'range'">
                     <el-date-picker
@@ -81,7 +80,7 @@
                     </el-row>
                     <el-row>
                         <el-input
-                        v-model="temp['internet']" 
+                        v-model="temp['internet']"
                         :maxlength="5"
                         show-word-limit
                         style="width:23%"
@@ -90,7 +89,7 @@
                         </el-input>
                         <span> - </span>
                         <el-input
-                        v-model="temp['system']" 
+                        v-model="temp['system']"
                         :maxlength="5"
                         show-word-limit
                         style="width:23%"
@@ -98,7 +97,7 @@
                         </el-input>
                         <span> - </span>
                         <el-input
-                        v-model="temp['address']" 
+                        v-model="temp['address']"
                         :maxlength="5"
                         show-word-limit
                         style="width:23%"
@@ -106,7 +105,7 @@
                         </el-input>
                         <span> - </span>
                         <el-input
-                        v-model="temp['number']" 
+                        v-model="temp['number']"
                         :maxlength="5"
                         show-word-limit
                         style="width:23%"
@@ -114,15 +113,15 @@
                         </el-input>
                     </el-row>
                 </span>
-                <!--  設備(火警總機/PLC)關聯點位選取關聯的 / 點位選取設備 (limit-1) 
+                <!--  設備(火警總機/PLC)關聯點位選取關聯的 / 點位選取設備 (limit-1)
                 設備 / 廠商 / 角色 / 建築物 / 門牌 / 住戶 下拉選單 (多)-->
                 <el-select
                     v-else-if="item.format == 'assignFireDeviceSelect' ||
                     item.format == 'assignPLCDeviceSelect'
-                    || item.format == 'addressdeviceSelect' || item.format == 'deviceSelect' || 
-                    item.format =='contactunitSelect' || 
-                    item.format =='roleSelect' ||  
-                    item.format =='buildingSelect' || 
+                    || item.format == 'addressdeviceSelect' || item.format == 'deviceSelect' ||
+                    item.format =='contactunitSelect' ||
+                    item.format =='roleSelect' ||
+                    item.format =='buildingSelect' ||
                     item.format == 'floorOfHouseSelect'
                     || item.format =='userInfo' || item.format == 'maintainListSelect' || item.format == 'usageOfFloorUserInfo' ||
                     item.format == 'processList' || item.format == 'manyFloorSelect' "
@@ -131,7 +130,7 @@
                     multiple
                     :multiple-limit="item.format == 'assignFireDeviceSelect' ||
                     item.format == 'assignPLCDeviceSelect'
-                    || item.format == 'addressdeviceSelect' || item.format == 'maintainListSelect' || 
+                    || item.format == 'addressdeviceSelect' || item.format == 'maintainListSelect' ||
                     item.format == 'floorOfHouseSelect' || item.format == 'contactunitSelect' || item.format == 'deviceSelect' ? 1 : 0 "
                     value-key="id"
                     placeholder="請選擇"
@@ -145,11 +144,11 @@
                         :value="obj"
                         :disabled="item.format =='addressdeviceSelect' || item.format == 'usageOfFloorUserInfo' ? obj.disabled : false "
                         >
-                        </el-option>  
+                        </el-option>
                 </el-select>
                 <!-- 點位選擇樓層/PLC點位選擇值/點位選擇icon-->
                 <el-select
-                    v-else-if="item.format =='floorSelect' || item.format =='valueSelect' || item.format == 'iconSelect' 
+                    v-else-if="item.format =='floorSelect' || item.format =='valueSelect' || item.format == 'iconSelect'
                     || item.format == 'valueType' "
                     v-model="temp[item.prop]"
                     filterable
@@ -169,7 +168,7 @@
                                 <img class="avatar" :src="obj.imgsrc" style="height:30px;width:30px;margin:auto;vertical-align:middle">
                                 <span>{{ obj.label }}</span>
                             </template>
-                    </el-option>  
+                    </el-option>
                 </el-select>
                 <!-- 流程選擇班別-->
                 <el-select
@@ -185,7 +184,7 @@
                         :label="obj.name"
                         :value="obj.id"
                         >
-                        </el-option>  
+                        </el-option>
                 </el-select>
                 <!-- 設備種類 -->
                 <el-select
@@ -206,7 +205,7 @@
                         :label="obj.label"
                         :value="obj"
                         >
-                        </el-option>  
+                        </el-option>
                 </el-select>
                 <!-- 管委會的住戶選擇/消防編組細項選擇角色的帳號 -->
                 <el-select
@@ -226,11 +225,11 @@
                         :label="obj.getName()"
                         :value="obj"
                         >
-                        </el-option>  
+                        </el-option>
                 </el-select>
                 <!-- 網路編號
                 <el-input v-else-if="item.format =='internetNumber'"
-                v-model="temp[item.prop]" 
+                v-model="temp[item.prop]"
                 :maxlength="item.maxlength"
                 show-word-limit
                 :disabled="disable">
@@ -272,11 +271,11 @@
                 </el-cascader>
                 <!-- 設定的下拉選單(單) -->
                 <el-select
-                    v-else-if="item.format =='BrandOptions' || 
-                    item.format =='MaintainContentOptions' 
-                    || item.format =='MaintainProcessOptions' || 
-                    item.format == 'DeviceStatusOptions' 
-                    || item.format == 'ContactUnitOptions' || 
+                    v-else-if="item.format =='BrandOptions' ||
+                    item.format =='MaintainContentOptions'
+                    || item.format =='MaintainProcessOptions' ||
+                    item.format == 'DeviceStatusOptions'
+                    || item.format == 'ContactUnitOptions' ||
                     item.format == 'LackStatusOptions'
                     "
                     ref="settingOption"
@@ -294,7 +293,7 @@
                         :label="item.textName"
                         :value="item.id"
                         >
-                        </el-option>  
+                        </el-option>
                 </el-select>
                 <!-- 地址 -->
                 <span
@@ -307,8 +306,8 @@
                       @change="handleChange"
                       placeholder="請選擇縣市區域"
                       ></el-cascader>
-                    <el-input ref="address" name="address" v-model="temp[item.prop]"  
-                      show-word-limit maxlength="100"/> 
+                    <el-input ref="address" name="address" v-model="temp[item.prop]"
+                      show-word-limit maxlength="100"/>
                 </span>
                 <!-- 權限設定 -->
                 <el-select
@@ -332,22 +331,22 @@
                     placeholder="請選擇"
                     style="width:100%"
                     >
-                    <el-option v-for="(val,index) in [true, false]" 
+                    <el-option v-for="(val,index) in [true, false]"
                     :key="index"
                     :value="val" :label="val | changeBoolean(item.format)"></el-option>
                 </el-select>
                 <!-- inputnumber -->
                 <el-input
                 v-else-if="item.format =='inputnumber'"
-                v-model.number="temp[item.prop]" 
+                v-model.number="temp[item.prop]"
                 type="number" :min="0"  :placeholder="item.placeholder" >
-                    <template 
-                    v-if="item.prop == 'floorsOfAboveGround' || 
+                    <template
+                    v-if="item.prop == 'floorsOfAboveGround' ||
                     item.prop == 'floorsOfUnderground'"
                     slot="prepend">
                     {{ item.prop == 'floorsOfAboveGround' ? '地上' : '地下'}}
                     </template>
-                    <template 
+                    <template
                     v-if="item.prop !== 'sort' && item.prop !== 'port' && item.prop !== 'differentialTransmission'"
                     slot="append">
                         <span v-if="item.prop =='area'">m<sup>2</sup></span>
@@ -364,10 +363,10 @@
                 :fetch-suggestions="querySearch"
                 :placeholder="item.placeholder"
                 style="width:100%"
-                ></el-autocomplete>   
+                ></el-autocomplete>
                 <!-- 區塊 -->
                 <el-input v-else-if="item.format =='textarea'"
-                v-model="temp[item.prop]" 
+                v-model="temp[item.prop]"
                 :autosize="{ minRows: 4, maxRows: 8}"
                 maxlength="200"
                 type="textarea"
@@ -377,7 +376,7 @@
                     請至維護保養修改進度
                 </span>
                 <el-input v-else
-                v-model="temp[item.prop]" 
+                v-model="temp[item.prop]"
                 :maxlength="item.maxlength"
                 show-word-limit
                 :placeholder="item.placeholder"
@@ -401,7 +400,7 @@
             </el-button>
             </span>
         </div>
-    </el-dialog>  
+    </el-dialog>
     </div>
 </template>
 
@@ -411,6 +410,7 @@ import Setting from '@/object/setting'
 import { changeDefaultFullType } from '@/utils/index'
 import constant from '@/constant/index'
 import { SelfDefenseFireMarshalling } from '@/object'
+const moment = require('moment')
 export default {
     name:'DialogForm',
     mixins:[computedmixin],
@@ -447,7 +447,7 @@ export default {
         }
     },
     watch:{
-        dialogData:{ 
+        dialogData:{
             handler:function(){
                 this.init()
             },
@@ -466,15 +466,15 @@ export default {
             return function (value) {
                 if(value !== null ){
                     switch(value){
-                        case 'deviceSelect': 
+                        case 'deviceSelect':
                             if(this.device_record == 0){
                                this.$store.dispatch('building/setDevice')
                                 this.$store.dispatch('record/saveDeviceRecord',1)
                             }
                             return this.buildingdevices.map(v => {
-                                this.$set(v, 'value', v.getID()) 
-                                this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
-                                this.$set(v, 'id', v.getID()) 
+                                this.$set(v, 'value', v.getID())
+                                this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName())
+                                this.$set(v, 'id', v.getID())
                                 return v
                             })
                         case 'floorSelect': case 'manyFloorSelect':
@@ -483,9 +483,9 @@ export default {
                                     this.$store.dispatch('record/saveFloorRecord',1)
                             }
                             return this.buildingfloors.map(v => {
-                                this.$set(v, 'value', v.getID()) 
-                                this.$set(v, 'label', v.getName()) 
-                                this.$set(v, 'id', v.getID()) 
+                                this.$set(v, 'value', v.getID())
+                                this.$set(v, 'label', v.getName())
+                                this.$set(v, 'id', v.getID())
                                 return v
                             })
                         case 'valueSelect':
@@ -493,10 +493,10 @@ export default {
                         case 'iconSelect':
                             var iconlist = constant.Equipment
                             return iconlist.map(v => {
-                                this.$set(v, 'value', v.id) 
-                                this.$set(v, 'id', v.id) 
-                                this.$set(v, 'label', v.name) 
-                                this.$set(v, 'imgsrc',require('@assets/equipment/'+v.status[0].imgSrc)) 
+                                this.$set(v, 'value', v.id)
+                                this.$set(v, 'id', v.id)
+                                this.$set(v, 'label', v.name)
+                                this.$set(v, 'imgsrc',require('@assets/equipment/'+v.status[0].imgSrc))
                                 return v
                             })
                         case 'iconShow':
@@ -511,12 +511,12 @@ export default {
                                   this.$store.dispatch('building/setDevice')
                                     this.$store.dispatch('record/saveDeviceRecord',1)
                             }
-                            return this.buildingdevices.filter(item => 
-                            item.getLinkType().getFullType() !== 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' && 
+                            return this.buildingdevices.filter(item =>
+                            item.getLinkType().getFullType() !== 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' &&
                             item.getLinkType().getFullType() !== 'nDeviceTypeList.OE.OE_ProgrammableLogicController').map(v => {
-                                this.$set(v, 'value', v.getID()) 
-                                this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
-                                this.$set(v, 'id', v.getID()) 
+                                this.$set(v, 'value', v.getID())
+                                this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName())
+                                this.$set(v, 'id', v.getID())
                                 return v
                             })
                         case 'assignFireDeviceSelect': //火警總機
@@ -524,12 +524,12 @@ export default {
                                     this.$store.dispatch('building/setDevice')
                                     this.$store.dispatch('record/saveDeviceRecord',1)
                             }
-                            return this.buildingdevices.filter(item => 
-                            item.getLinkType().getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' && 
+                            return this.buildingdevices.filter(item =>
+                            item.getLinkType().getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' &&
                             item.getInternetNumber() !== null && item.getInternetNumber() !== '' && item.getInternetNumber() !== undefined).map(v => {
-                                this.$set(v, 'value', v.getID()) 
-                                this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
-                                this.$set(v, 'id', v.getID()) 
+                                this.$set(v, 'value', v.getID())
+                                this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName())
+                                this.$set(v, 'id', v.getID())
                                 return v
                             })
                         case 'assignPLCDeviceSelect': //PLC
@@ -537,12 +537,12 @@ export default {
                                     this.$store.dispatch('building/setDevice')
                                     this.$store.dispatch('record/saveDeviceRecord',1)
                             }
-                            return this.buildingdevices.filter(item => 
-                            item.getLinkType().getFullType() == 'nDeviceTypeList.OE.OE_ProgrammableLogicController' && 
+                            return this.buildingdevices.filter(item =>
+                            item.getLinkType().getFullType() == 'nDeviceTypeList.OE.OE_ProgrammableLogicController' &&
                             item.getInternetNumber() !== null && item.getInternetNumber() !== '' && item.getInternetNumber() !== undefined).map(v => {
-                                this.$set(v, 'value', v.getID()) 
-                                this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName()) 
-                                this.$set(v, 'id', v.getID()) 
+                                this.$set(v, 'value', v.getID())
+                                this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName())
+                                this.$set(v, 'id', v.getID())
                                 return v
                             })
                         case 'contactunitSelect':
@@ -551,9 +551,9 @@ export default {
                                     this.$store.dispatch('record/saveContactunitRecord',1)
                             }
                             return this.buildingcontactunit.map(v => {
-                                this.$set(v, 'value', v.getID()) 
-                                this.$set(v, 'label', v.getName()) 
-                                this.$set(v, 'id', v.getID()) 
+                                this.$set(v, 'value', v.getID())
+                                this.$set(v, 'label', v.getName())
+                                this.$set(v, 'id', v.getID())
                                 return v
                             })
                         case 'maintainListSelect':
@@ -566,9 +566,9 @@ export default {
                                 this.$store.dispatch('record/saveFloorOfHouseRecord',1)
                             }
                             return this.buildingfloorOfHouse.map(v => {
-                                this.$set(v, 'id', v.id) 
-                                this.$set(v, 'label', v.houseNumber) 
-                                this.$set(v, 'value', v.id) 
+                                this.$set(v, 'id', v.id)
+                                this.$set(v, 'label', v.houseNumber)
+                                this.$set(v, 'value', v.id)
                                 return v
                             })
                             // return this.selectData
@@ -578,9 +578,9 @@ export default {
                                     this.$store.dispatch('record/saveDeviceTypeRecord',1)
                             }
                             return this.buildingdeviceType.map(v => {
-                                this.$set(v, 'value', v.getID()) 
-                                this.$set(v, 'label', v.getSelectName()) 
-                                this.$set(v, 'id', v.getID()) 
+                                this.$set(v, 'value', v.getID())
+                                this.$set(v, 'label', v.getSelectName())
+                                this.$set(v, 'id', v.getID())
                                 return v
                             })
                             // return this.selectData
@@ -593,9 +593,9 @@ export default {
                                     this.$store.dispatch('record/saveHouseHolderRecord',1)
                                 }
                                 return this.buildingusers.map(v => {
-                                    this.$set(v, 'value', v.getID()) 
-                                    this.$set(v, 'label', v.getName()) 
-                                    this.$set(v, 'id', v.getID()) 
+                                    this.$set(v, 'value', v.getID())
+                                    this.$set(v, 'label', v.getName())
+                                    this.$set(v, 'id', v.getID())
                                     return v
                                 })
                             }
@@ -605,9 +605,9 @@ export default {
                                 this.$store.dispatch('record/saveHouseHolderRecord',1)
                             }
                             return this.buildingusers.map(v => {
-                                    this.$set(v, 'value', v.getID()) 
-                                    this.$set(v, 'label', v.getName()) 
-                                    this.$set(v, 'id', v.getID()) 
+                                    this.$set(v, 'value', v.getID())
+                                    this.$set(v, 'label', v.getName())
+                                    this.$set(v, 'id', v.getID())
                                     this.$set(v, 'disabled', !(v.getUsageOfFloor() == null) )
                                     return v
                             })
@@ -617,16 +617,16 @@ export default {
                                 this.$store.dispatch('record/saveRoleRecord',1)
                             }
                             return this.buildingroles.map(v => {
-                                this.$set(v, 'value', v.getID()) 
-                                this.$set(v, 'label', v.getName()) 
-                                this.$set(v, 'id', v.getID()) 
+                                this.$set(v, 'value', v.getID())
+                                this.$set(v, 'label', v.getName())
+                                this.$set(v, 'id', v.getID())
                                 return v
                             })
                         case 'buildingSelect' :
                             return this.buildingarray.map(v => {
-                                this.$set(v, 'value', v.id) 
-                                this.$set(v, 'label', v.buildingName) 
-                                this.$set(v, 'id', v.id) 
+                                this.$set(v, 'value', v.id)
+                                this.$set(v, 'label', v.buildingName)
+                                this.$set(v, 'id', v.id)
                                 return v
                             })
                         case 'fullTypeSelect':
@@ -639,14 +639,36 @@ export default {
                 }else{
                     return ""
                 }
-            }  
+            }
+        },
+        changeTabLabel(){
+          return function (item) {
+            console.log(this.title,item)
+            switch(this.title){
+              case 'floorOfHouse':
+                return item.houseNumber
+              case 'lack':
+                return item.lackItem
+              case 'deviceAddressManagement':
+                return item.internet+'-'+item.system+'-'+item.address+'-'+item.number
+              case 'devicePLCAddressManagement':
+                return item.internet+'-'+item.system+'-'+item.memeryLoc
+              case 'committee':
+                return item.title
+              case 'reportInspectio': case 'reportPublicSafe':
+                return moment(item.declareYear).format('YYYY')
+              default:
+                return item.name
+            }
+          }
         }
     },
     data() {
         return {
             textMap: {
                 update: '編輯',
-                create: '新增'
+                create: '新增',
+                updateMany: '多筆更新【*每更動一筆資料請按儲存*】'
             },
             activeName:'',
             temp:{},
@@ -669,7 +691,8 @@ export default {
             // window.addEventListener("message", this.receiveMessage, false)
             if(this.dialogData.length){
                 this.activeName = this.dialogData[0].getID()
-                this.temp = this.dialogData[0].clone(this.dialogData[0])
+                this.temp = this.dialogData.length == 1 ?
+                   this.dialogData[0].clone(this.dialogData[0]) : this.dialogData[0]
                 if(this.title == 'reportInspectio' || this.title == 'reportPublicSafe'){
                     if(this.dialogData[0]['checkStartDate'] !== null){
                         this.rangevalue = [this.dialogData[0]['checkStartDate'],
@@ -677,16 +700,16 @@ export default {
                     }
                 }else if(this.title == 'devicetype'){
                     var fullType = this.dialogData[0]['fullType']
-                    var obj = _.cloneDeep(changeDefaultFullType(fullType)) 
+                    var obj = _.cloneDeep(changeDefaultFullType(fullType))
                     obj.typevalue.push(fullType)
                     this.fulltypevalue = obj.typevalue
                 }else if(this.title == 'deviceAddressManagement' || this.title == 'devicePLCAddressManagement'){
                     this.originalProtocolMode = JSON.parse(JSON.stringify(this.temp['protocolMode']))
                 }else if(this.title == 'equipment'){
                     var type = this.temp.getLinkType().getFullType()
-                    if(type == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
+                    if(type == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' ||
                     type == 'nDeviceTypeList.OE.OE_ProgrammableLogicController'){
-                        this.originalInternet = this.temp['internetNumber'] !== undefined ? 
+                        this.originalInternet = this.temp['internetNumber'] !== undefined ?
                             JSON.parse(JSON.stringify(this.temp['internetNumber'])) : null
                         this.disable = false
                     }
@@ -707,7 +730,7 @@ export default {
                         })
                         const set = new Set()
                         this.commitUserInfoArray = data.filter(item => !set.has(item.id) ? set.add(item.id) : false)
-                    }   
+                    }
                 }else if(this.title == 'selfDefenseFireMarshallingMgmt'){
                     var roles = this.temp.getLinkRole()
                     var data = []
@@ -735,8 +758,8 @@ export default {
                 this.$store.dispatch('record/saveSettingRecord',1)
             }
             if(format !== null ){
-                let _array = this.buildingoptions.filter((item, index) => 
-                    item.classType == format 
+                let _array = this.buildingoptions.filter((item, index) =>
+                    item.classType == format
                 )
                 return _array
             }else{
@@ -750,7 +773,7 @@ export default {
         async checkMode(value,format){
             if(value.length){
                if(this.title == 'equipment' && format == 'deviceTypeSelect'){
-                    if(value[0].getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' || 
+                    if(value[0].getFullType() == 'nDeviceTypeList.AE.AE_FireDetectorCentralControl' ||
                     value[0].getFullType() == 'nDeviceTypeList.OE.OE_ProgrammableLogicController'){
                         this.disable = false
                         this.$emit('handleChangeConfig',true)
@@ -806,14 +829,14 @@ export default {
         },
         // changeprotocolMode(value){
         //     if(this.title == 'deviceAddressManagement' && this.dialogStatus == 'update'){
-        //         this.$confirm('更換【控制模式】將會重置關聯的設備，是否要更新【控制模式】?', 
+        //         this.$confirm('更換【控制模式】將會重置關聯的設備，是否要更新【控制模式】?',
         //         '提示', {
         //             confirmButtonText: '確定',
         //             cancelButtonText: '取消',
         //             type: 'warning'
         //         }).then(() => {
         //             this.temp['linkDevices'] = []
-        //             this.$emit('handleDialog', 'openDialog', this.dialogStatus , this.temp) 
+        //             this.$emit('handleDialog', 'openDialog', this.dialogStatus , this.temp)
         //         }).catch(() => {
         //             this.temp['protocolMode'] = this.originalProtocolMode
         //             this.temp['linkDevices'] = []
@@ -910,7 +933,7 @@ export default {
                 this.temp['checkStartDate'] = this.rangevalue[0]
                 this.temp['checkEndDate'] = this.rangevalue[1]
             }
-            if(status !== 'cancel' && status !== 'cancellack' && status !== 'empty' && 
+            if(status !== 'cancel' && status !== 'cancellack' && status !== 'empty' &&
             status !== 'cancelfloor'){
                 this.$refs.dataForm.validate(async(valid) => {
                     if (valid) {
@@ -927,36 +950,37 @@ export default {
                             this.prop = []
                             await this.getOptions()
                         }
-                        //設備更新時判斷有沒有更新控制模式&設備種類
-                        if(this.title == 'equipment' && status == 'update'){ 
+                        //設備更新時判斷有沒有更新控制模式
+                        if(this.title == 'equipment' && status == 'update'
+                        || this.title == 'equipment' && status == 'updateManySave'){
                             //var protocolMode = this.originalProtocolMode !== this.temp['protocolMode']
                             var inter = this.temp['internetNumber'] !== undefined ? this.temp['internetNumber'] : null
                             var internet = this.originalInternet !== inter
                             if(internet == true){
-                                this.$confirm('更換【網路編號】將會重置關聯的點位，是否要更新【網路編號】?', 
+                                this.$confirm('更換【網路編號】將會重置關聯的點位，是否要更新【網路編號】?',
                                 '提示', {
                                     confirmButtonText: '確定',
                                     cancelButtonText: '取消',
                                     type: 'warning'
                                 }).then(() => {
-                                    this.$emit('handleDialog', true, status , this.temp) 
+                                    this.$emit('handleDialog', true, status , this.temp)
                                 }).catch(() => {
                                     this.temp['internetNumber'] = this.originalInternet
-                                    this.$emit('handleDialog', false, status , this.temp)          
+                                    this.$emit('handleDialog', false, status , this.temp)
                                 })
                             }else{
-                                this.$emit('handleDialog', false, status , this.temp)  
-                            }   
+                                this.$emit('handleDialog', false, status , this.temp)
+                            }
                         }else{
-                            this.$emit('handleDialog', this.title, status , this.temp)  
-                        }  
+                            this.$emit('handleDialog', this.title, status , this.temp)
+                        }
                     } else {
                         this.$message.error('請輸入完整資訊')
                         return false
                     }
                 })
             }
-           
+
             if(status == 'cancel' || status == 'cancellack' || status == 'cancelfloor' ||
             status == 'empty' || status == 'authoritycreate' ){
                 var data = status == 'authoritycreate' ? this.accessArray : ''

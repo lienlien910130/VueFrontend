@@ -18,7 +18,7 @@ class Files extends Parent {
     getFileName(){ return this.fileOriginalName }
     getExtName(){ return this.extName }
     getModule(){ return this.targetModule }
-    getUploadTime(){ 
+    getUploadTime(){
         return moment(this.uploadTime ).format('YYYY-MM-DD HH:mm')
     }
 
@@ -56,7 +56,7 @@ class Files extends Parent {
     //     }).catch(error=>{
     //         return []
     //     })
-    //     return data        
+    //     return data
     // }
     static async getImage(fileId){
         var data = await api.files.apiGetImage(fileId).then(response => {
@@ -64,10 +64,11 @@ class Files extends Parent {
         }).catch(error=>{
             return []
         })
-        return data        
+        return data
     }
     static async getSearchPage(data){
         var data = await api.files.apiGetAllFiles(data).then(response => {
+          console.log(response)
             response.result = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new Files(item)})
             return response

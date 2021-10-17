@@ -9,7 +9,7 @@ class SelfDefenseFireMarshalling extends Parent {
     constructor (data) {
         super(data)
         const { name  } = data
-        this.name = name 
+        this.name = name
     }
     clone(data){
         return new SelfDefenseFireMarshalling(data)
@@ -61,12 +61,12 @@ class SelfDefenseFireMarshalling extends Parent {
     }
     static getTableConfig(){
         return [
-            { 
-                label:'名稱' , 
-                prop:'name', 
+            {
+                label:'名稱' ,
+                prop:'name',
                 mandatory:true, message:'請輸入名稱',
                 isHidden:false,maxlength:'20',isSearch:true,placeholder:'請輸入名稱',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true 
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             }
        ]
     }
@@ -101,7 +101,6 @@ class SelfDefenseFireMarshalling extends Parent {
     }
     static async getProcess(fid){
         var data = await api.selfDefenseFireMarshalling.apiGetAllProcess(fid).then(async(response) => {
-            console.log(JSON.stringify(response))
             var array = response.result.sort((x,y) => x.id - y.id)
             .map(item=>{ return new ContingencyProcess(item) })
             return array
@@ -139,8 +138,8 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
         var roles = linkRoles !== undefined ?  linkRoles.map(item=>{ return new Role(item)}) : []
         var account = linkAccountList !== undefined ?  linkAccountList.map(item=>{ return new Account(item)}) : []
         var process = linkContingencyProcess !== undefined ?  linkContingencyProcess.map(item=>{ return new ContingencyProcess(item)}) : []
-        var floor = linkFloors !== undefined ? linkFloors.map(item=>{ return new Floors(item)}) : new Array([]).map(item=>{ return new Floors(item)}) 
-        this.name = name 
+        var floor = linkFloors !== undefined ? linkFloors.map(item=>{ return new Floors(item)}) : new Array([]).map(item=>{ return new Floors(item)})
+        this.name = name
         this.linkRoles = roles
         this.linkAccountList = account
         this.linkFloors = floor
@@ -193,9 +192,9 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
         return this.linkContingencyProcess.map(item => item.getName()).toString()
     }
     // getDefaultProcessName(){
-    //     var name = this.defaultContingencyProcessId !== null && this.linkContingencyProcess.length !== 0  ? 
+    //     var name = this.defaultContingencyProcessId !== null && this.linkContingencyProcess.length !== 0  ?
     //     this.linkContingencyProcess.filter(item=>{ return item.id == this.defaultContingencyProcessId})[0].name : ''
-    //     return name 
+    //     return name
     // }
     static empty(){
         return new SelfDefenseFireMarshallingMgmt({
@@ -209,38 +208,38 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
     }
     static getTableConfig(){
         return [
-            { 
-                label:'名稱' , 
-                prop:'name', 
+            {
+                label:'名稱' ,
+                prop:'name',
                 mandatory:true, message:'請輸入名稱',
                 isHidden:false,maxlength:'20',isSearch:true,placeholder:'請輸入名稱',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true 
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            { 
+            {
                 label:'樓層' , prop:'linkFloors',format:'manyFloorSelect', mandatory:true,
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            // { 
-            //     label:'預設流程圖', 
-            //     prop:'defaultContingencyProcessId', 
+            // {
+            //     label:'預設流程圖',
+            //     prop:'defaultContingencyProcessId',
             //     format:'contingencyProcessSelect',
             //     mandatory:false, message:'請選擇流程圖',
             //     isHidden:false,isSearch:false,
-            //     isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true 
+            //     isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             // },
-            { 
+            {
                 label:'角色' , prop:'linkRoles',format:'roleSelect', mandatory:true,
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            { 
+            {
                 label:'帳號' , prop:'linkAccountList',format:'accountSelect', mandatory:false,
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            { 
-                label:'流程圖名稱' , prop:'linkContingencyProcess',format:'processList', 
+            {
+                label:'流程圖名稱' , prop:'linkContingencyProcess',format:'processList',
                 mandatory:false,
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true
@@ -258,7 +257,6 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
     }
     static async getSearchPage(selfDefenseFireMarshallingId,data){
         var data = await api.selfDefenseFireMarshalling.apiGetFireMarshallingMgmtSearchPages(selfDefenseFireMarshallingId,data).then(response => {
-            console.log('getSearchPage',response)
             response.result = response.result.map(item=>{ return new SelfDefenseFireMarshallingMgmt(item)})
             return response
         }).catch(error=>{
@@ -282,7 +280,7 @@ class ContingencyProcess extends Parent {
     constructor (data) {
         super(data)
         const { name  } = data
-        this.name = name 
+        this.name = name
     }
     clone(data){
         return new ContingencyProcess(data)
@@ -298,25 +296,25 @@ class ContingencyProcess extends Parent {
     }
     static getTableConfig(){
         return [
-            { 
+            {
                 label:'選擇班別' , prop:'selfDefenseFireMarshallingMgmt',format:'marshallingMgmtSelect',
                 mandatory:true, message:'請選擇班別',
                 isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            { 
-                label:'流程圖名稱' , 
-                prop:'name', 
+            {
+                label:'流程圖名稱' ,
+                prop:'name',
                 mandatory:true, message:'請輸入名稱',
                 isHidden:false,maxlength:'20',isSearch:true,placeholder:'請輸入名稱',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true 
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             }
        ]
     }
     static async create(data){
         var mgmtId = data.selfDefenseFireMarshallingMgmt
         // var temp = JSON.parse(JSON.stringify(data))
-        // temp.name = '{Check}'+temp.name 
+        // temp.name = '{Check}'+temp.name
         var data = await api.selfDefenseFireMarshalling.apiPostContingencyProcess(mgmtId,data).then(response => {
             return true
         }).catch(error=>{
@@ -326,7 +324,7 @@ class ContingencyProcess extends Parent {
     }
     static async update(data){
         // var temp = JSON.parse(JSON.stringify(data))
-        // temp.name = '{Check}'+temp.name 
+        // temp.name = '{Check}'+temp.name
         var data = await api.selfDefenseFireMarshalling.apiPatchContingencyProcess(data).then(async(response) => {
             return true
         }).catch(error=>{

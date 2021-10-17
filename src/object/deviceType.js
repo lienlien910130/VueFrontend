@@ -64,8 +64,8 @@ class DeviceType extends Parent {
     }
     //設備清單使用
     getSelectName(){
-        return this.getType() !== '' ? 
-        '【'+this.getType()+'】'+this.name+'-'+this.brand+'-'+this.productId : 
+        return this.getType() !== '' && this.getType() !== undefined ?
+        '【'+this.getType()+'】'+this.name+'-'+this.brand+'-'+this.productId :
         ''
     }
     static empty(){
@@ -116,7 +116,7 @@ class DeviceType extends Parent {
                 isSearch:true,placeholder:'請輸入國家認證編號',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             }
-        ]   
+        ]
     }
     static async get (){
         var data = await api.device.apiGetDevicesTypeByDevicesManagement().then(response => {
@@ -125,31 +125,9 @@ class DeviceType extends Parent {
             return []
         })
         return data
-        // if(type == 'devicesManagement'){
-        //     data = await api.device.apiGetDevicesTypeByDevicesManagement().then(response => {
-        //         return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
-        //     }).catch(error=>{
-        //         return []
-        //     })
-        // }
-        // else if(type == 'deviceTypesManagement'){
-        //     data = await api.device.apiGetDevicesType().then(response => {
-        //         return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
-        //     }).catch(error=>{
-        //         return []
-        //     })
-        // }else{
-        //     data = await api.device.apiGetDevicesTypeByDevicesAddress().then(response => {
-        //         return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new DeviceType(item) })
-        //     }).catch(error=>{
-        //         return []
-        //     })
-        // }
-        // return data
     }
     static async getDefault (){
         var data = await api.device.apiGetDefaultFullType().then(response => {
-            //console.log(response)
             return JSON.parse(response)
         }).catch(error=>{
             return []
@@ -168,12 +146,29 @@ class DeviceType extends Parent {
     static async postMany(data){
         var data = await api.device.apiPostDevicesTypes(data).then(response => {
             response.result = response.result.map(item=>{ return new DeviceType(item)})
-            return response.result 
+            return response.result
         }).catch(error=>{
             return []
         })
         return data
     }
+    static async deleteMany(data){
+      var data = await api.device.apiDeleteDevicesType(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
+    }
+    // static async updateMany(data){
+    //   var data = await api.device.apiPatchDevicesType(data).then(response => {
+    //     response.result = response.result.map(item=>{ return new DeviceType(item)})
+    //     return response.result
+    //   }).catch(error=>{
+    //       return []
+    //   })
+    //   return data
+    // }
 }
 
 export default DeviceType

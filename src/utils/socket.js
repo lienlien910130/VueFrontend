@@ -110,9 +110,9 @@ import { Account, Building, Contactunit, Device, DeviceAddressManagement, Device
         DataType:dataType,
         SendType:sendType,
         SenderName:store.getters.name,
-        Data:{ 
-          Id: store.getters.wsuserId, 
-          Bid: Bid == null ? store.getters.buildingid : Bid, 
+        Data:{
+          Id: store.getters.wsuserId,
+          Bid: Bid == null ? store.getters.buildingid : Bid,
           Content: content
         }
       }
@@ -173,10 +173,10 @@ import { Account, Building, Contactunit, Device, DeviceAddressManagement, Device
       }
     }
  }
- 
+
  function handleRoles(index,content){
   console.log('handleRoles',index,content)
-  if(index == 'update'){
+  if(index == 'update'  || index == 'updateManySave'){
     store.dispatch('building/updateRole', new Role(content))
   }else if(index == 'delete'){
     store.dispatch('building/deleteRole',content)
@@ -188,7 +188,7 @@ import { Account, Building, Contactunit, Device, DeviceAddressManagement, Device
 }
 function handleAccount(index,content){
   console.log('handleAccount',index,content)
-  if(index == 'update'){
+  if(index == 'update' || index == 'updateManySave'){
     store.dispatch('building/updateAccount', new Account(content))
   }else if(index == 'delete'){
     store.dispatch('building/deleteAccount',content)
@@ -218,7 +218,7 @@ function handleSetting(index,content){
 }
 function handleBuilding(index,bid,content){
   console.log('handleBuilding',index,content)
-  if(index == 'update'){
+  if(index == 'update' || index == 'updateManySave'){
     store.dispatch('building/updateBuildingList', new Building(content))
   }else if(index == 'delete'){
     store.dispatch('building/deleteBuildingList',content)
@@ -245,7 +245,7 @@ function handleFloor(index,content){
 }
 function handleContactUnit(index,content){
   console.log('handleContactUnit',index,content)
-  if(index == 'update'){
+  if(index == 'update' || index == 'updateManySave'){
     store.dispatch('building/updateContactunit', new Contactunit(content))
   }else if(index == 'delete'){
     store.dispatch('building/deleteContactunit',content)
@@ -257,7 +257,7 @@ function handleContactUnit(index,content){
 }
 function handleHouseHolder(index,content){
   console.log('handleHouseHolder',index,content)
-  if(index == 'update'){
+  if(index == 'update' || index == 'updateManySave'){
     store.dispatch('building/updateHouseHolder', new User(content))
   }else if(index == 'delete'){
     store.dispatch('building/deleteHouseHolder',content)
@@ -269,7 +269,7 @@ function handleHouseHolder(index,content){
 }
 function handleFloorOfHouse(index,content){
   console.log('handleFloorOfHouse',index,content)
-  if(index == 'update'){
+  if(index == 'update' || index == 'updateManySave'){
     store.dispatch('building/updateFloorOfHouse', new UsageOfFloor(content))
   }else if(index == 'delete'){
     store.dispatch('building/deleteFloorOfHouse',content)
@@ -281,7 +281,7 @@ function handleFloorOfHouse(index,content){
 }
 function handleDevice(index,content){
   console.log('handleDevice',index,content)
-  if(index == 'update'){
+  if(index == 'update' || index == 'updateManySave'){
     store.dispatch('building/updateDevice', new Device(content))
   }else if(index == 'delete'){
     store.dispatch('building/deleteDevice',content)
@@ -293,7 +293,7 @@ function handleDevice(index,content){
 }
 function handleDeviceType(index,content){
   console.log('handleDeviceType',index,content)
-  if(index == 'update'){
+  if(index == 'update' || index == 'updateManySave'){
     store.dispatch('building/updateDeviceType', new DeviceType(content))
   }else if(index == 'delete'){
     store.dispatch('building/deleteDeviceType',content)
@@ -305,7 +305,7 @@ function handleDeviceType(index,content){
 }
 function handleDeviceAddress(index,content){
   console.log('handleDeviceAddress',index,content)
-  if(index == 'update'){
+  if(index == 'update' || index == 'updateManySave'){
     store.dispatch('building/updateAddressManagement', new DeviceAddressManagement(content))
   }else if(index == 'delete'){
     store.dispatch('building/deleteAddressManagement',content)

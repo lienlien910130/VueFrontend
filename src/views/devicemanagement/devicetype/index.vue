@@ -3,27 +3,27 @@
         <el-row  :gutter="32">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper">
-                    <Block 
+                    <Block
                     ref="block"
                     :list-query-params.sync="listQueryParams"
-                    v-bind="blockAttrs" 
+                    v-bind="blockAttrs"
                     v-on="blockEvent"></Block>
                 </div>
             </el-col>
         </el-row>
-        <!-- <Dialog 
+        <!-- <Dialog
         ref="dialog"
         v-if="innerVisible === true"
-        v-bind="dialogAttrs" 
+        v-bind="dialogAttrs"
         v-on:handleDialog="handleDialog"></Dialog> -->
 
-        <DialogForm 
+        <DialogForm
         ref="dialogform"
         v-if="innerVisible === true"
         v-bind="dialogAttrs"
         v-on:handleDialog="handleDialog"></DialogForm>
 
-        <DialogExcel 
+        <DialogExcel
         ref="dialogexcel"
         v-if="excelVisible === true"
         v-bind="excelAttrs"
@@ -80,19 +80,29 @@ export default {
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
-            }else if(index === 'delete'){
-                var isDelete = await content.delete()
+            }else if(index === 'delete' || index === 'deleteMany'){
+                var isDelete = false
+                if(index === 'delete'){
+                  isDelete = await content.delete()
+                }else{
+                  var deleteArray = []
+                  content.forEach(item=>{
+                    deleteArray.push(item.id)
+                  })
+                  isDelete = await DeviceType.deleteMany(deleteArray.toString())
+                }
                 if(isDelete){
                     this.$message('刪除成功')
                     this.$store.dispatch('building/setDevice')
-                    this.$socket.sendMsg('deviceType', 'delete' , content.getID())
+                    this.$socket.sendMsg('deviceType', 'delete' ,
+                        index === 'delete'  ? content.getID() : deleteArray.toString())
                     if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
                         this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
                     }
                     await this.getBuildingDevicesType()
-                    // await this.resetlistQueryParams()
+                    this.$refs.block.clearSelectArray()
                 }else{
-                    this.$message.error('系統錯誤') 
+                    this.$message.error('系統錯誤')
                 }
             }else if(index === 'empty'){
                 this.dialogData.push( DeviceType.empty() )
@@ -108,22 +118,32 @@ export default {
             }else if(index === 'uploadExcel'){
                 this.excelVisible = true
                 this.excelType = 'uploadExcel'
+            }else if(index === 'updateMany'){
+              this.dialogStatus = 'updateMany'
+              content.forEach(item=>{
+                var obj = _.cloneDeep(item)
+                this.dialogData.push(obj)
+              })
+              this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'updateManySave'},
+                { name:'取消',type:'info',status:'cancel'}]
+              this.innerVisible = true
             }
         },
         async handleDialog(title ,index, content){ //Dialog相關操作
             console.log(title ,index,JSON.stringify(content))
-            if(index === 'update' || index === 'create'){
+            if(index === 'update' || index === 'create' || index === 'updateManySave'){
                 var array = changeDefaultFullType(content.fullType)
-                content.setTypeName(array.label) 
-                var result = index === 'update' ? await content.update() : await content.create()
+                content.setTypeName(array.label)
+                var result = index === 'create' ? await content.create() : await content.update()
                 if(Object.keys(result).length !== 0){
-                    index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                    if(index === 'update'){
+                    index === 'create' ? this.$message('新增成功') : this.$message('更新成功')
+                    if(index !== 'create'){
                         this.$store.dispatch('building/setDevice')
                     }
                     this.$socket.sendMsg('deviceType', index , result)
                     await this.getBuildingDevicesType()
-                    this.innerVisible = false
+                    if(index !== 'updateManySave') this.innerVisible = false
                 }else{
                     this.$message.error('系統錯誤')
                 }
@@ -140,6 +160,7 @@ export default {
             }else{
                 this.innerVisible = false
                 this.excelVisible = false
+                this.$refs.block.clearSelectArray()
             }
         },
         async changeTable(value){

@@ -16,12 +16,12 @@
             type="index">
             </el-table-column>
 
-            <el-table-column 
+            <el-table-column
                 v-for="(item,index) in config"
-                align="left" 
-                :label="item.label" 
-                :key="index" 
-                :prop="item.prop" 
+                align="left"
+                :label="item.label"
+                :key="index"
+                :prop="item.prop"
                 :column-key="item.prop"
                 sortable="custom"
                 header-align="center"
@@ -30,7 +30,7 @@
                     <span >{{  scope.row[item.prop] }}</span>
                 </template>
             </el-table-column>
-            
+
     </el-table>
 
     <div v-if="total > 0 " class="pagination-container">

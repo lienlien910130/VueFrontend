@@ -102,13 +102,14 @@ const actions = {
     }
   },
   deleteBuildingList({ commit }, id){
+    var deleteList = id.split(',')
     var obj = state.buildingarray.filter((item) => {
-        return item.id !== id
+        return deleteList.findIndex(obj=> obj === item.id) == -1
     })
     commit('SET_BUILDINGLIST', obj)
   },
   //建築物資訊-正在選取的建築物才更新
-  setBuildingInfo({ commit }, buildinginfo) { 
+  setBuildingInfo({ commit }, buildinginfo) {
     return new Promise((resolve, reject) => {
       // console.log(buildinginfo)
       commit('SET_BUILDINGINFO', buildinginfo)
@@ -116,7 +117,7 @@ const actions = {
     })
   },
   //角色-正在選取的建築物才更新
-  async setroles({ commit }) { 
+  async setroles({ commit }) {
     var data =  await Role.get()
     commit('SET_ROLES', data)
   },
@@ -134,13 +135,14 @@ const actions = {
     }
   },
   deleteRole({ commit }, id){
+    var deleteList = id.split(',')
     var obj = state.roles.filter((item) => {
-        return item.id !== id
+        return deleteList.findIndex(obj=> obj === item.id) == -1
     })
     commit('SET_ROLES', obj)
   },
   //帳號-正在選取的建築物才更新
-  async setaccounts({ commit }) { 
+  async setaccounts({ commit }) {
     var data =  await Account.get()
     commit('SET_ACCOUNT', data)
   },
@@ -158,8 +160,9 @@ const actions = {
     }
   },
   deleteAccount({ commit }, id){
+    var deleteList = id.split(',')
     var obj = state.account.filter((item) => {
-        return item.id !== id
+        return deleteList.findIndex(obj=> obj === item.id) == -1
     })
     commit('SET_ACCOUNT', obj)
   },
@@ -217,8 +220,9 @@ const actions = {
     }
   },
   deleteContactunit({ commit }, id){
+    var deleteList = id.split(',')
     var obj = state.buildingcontactunit.filter((item) => {
-        return item.id !== id
+        return deleteList.findIndex(obj=> obj === item.id) == -1
     })
     commit('SET_BUILDINGCONTACTUNIT', obj)
   },
@@ -241,8 +245,9 @@ const actions = {
     }
   },
   deleteHouseHolder({ commit }, id){
+    var deleteList = id.split(',')
     var obj = state.buildingusers.filter((item) => {
-        return item.id !== id
+        return deleteList.findIndex(obj=> obj === item.id) == -1
     })
     commit('SET_BUILDINGUSERS', obj)
   },
@@ -265,8 +270,9 @@ const actions = {
     }
   },
   deleteFloorOfHouse({ commit }, id){
+    var deleteList = id.split(',')
     var obj = state.buildingfloorOfHouse.filter((item) => {
-        return item.id !== id
+        return deleteList.findIndex(obj=> obj === item.id) == -1
     })
     commit('SET_BUILDINGFLOOROFHOUSE', obj)
   },
@@ -289,8 +295,9 @@ const actions = {
     }
   },
   deleteDevice({ commit }, id){
+    var deleteList = id.split(',')
     var obj = state.buildingdevices.filter((item) => {
-        return item.id !== id
+        return deleteList.findIndex(obj=> obj === item.id) == -1
     })
     commit('SET_BUILDINGDEVICES', obj)
   },
@@ -313,10 +320,17 @@ const actions = {
     }
   },
   deleteDeviceType({ commit }, id){
+    var deleteList = id.split(',')
     var obj = state.buildingdeviceType.filter((item) => {
-        return item.id !== id
+        return deleteList.findIndex(obj=> obj === item.id) == -1
     })
     commit('SET_DEVICETYPE', obj)
+  },
+  updateDeviceOfDeviceType({ commit }, id){
+    // var deviceList = state.buildingdevices
+    // var obj = deviceList.filter((item)=>{
+    //   return
+    // })
   },
   //點位
   async setAddressManagement({ commit }) {
@@ -337,8 +351,9 @@ const actions = {
     }
   },
   deleteAddressManagement({ commit }, id){
+    var deleteList = id.split(',')
     var obj = state.buildingaddress.filter((item) => {
-        return item.id !== id
+        return deleteList.findIndex(obj=> obj === item.id) == -1
     })
     commit('SET_ADDRESSMANAGEMENT', obj)
   },
@@ -351,7 +366,7 @@ const actions = {
           var v = item.value
           for(let children of item.children){
             var c = children.value
-            var childrenValueArray = c.split('.') 
+            var childrenValueArray = c.split('.')
             if(children.children == undefined){
               data.push({
                 value:children.value,
@@ -365,7 +380,7 @@ const actions = {
             }else{
                 for(let element of children.children){
                   var e = element.value
-                  var elementValueArray = e.split('.') 
+                  var elementValueArray = e.split('.')
                   data.push({
                     value:element.value,
                     label:element.label,

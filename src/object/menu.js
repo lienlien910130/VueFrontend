@@ -73,7 +73,7 @@ class Menu extends Parent {
         return this.code
     }
     getLink(){
-        return this.linkMainMenus
+        return this.linkMainMenus.sort((x,y) => x.sort - y.sort)
     }
     getAccessAuthorities(){
         return this.linkAccessAuthorities
@@ -111,10 +111,10 @@ class Menu extends Parent {
             { label:'圖示' , prop:'icon', mandatory:false,
             maxlength:'40',isHidden:false,placeholder:'請輸入圖示名稱',
             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
-            { label:'描述' , prop:'description',format:'textarea', mandatory:false, 
+            { label:'描述' , prop:'description',format:'textarea', mandatory:false,
             maxlength:'200',isHidden:false,
             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
-            { label:'狀態' , prop:'status',format:'accountStatusSelect', 
+            { label:'狀態' , prop:'status',format:'accountStatusSelect',
             mandatory:true, message:'請選擇狀態',
             type:'boolean',typemessage:'',isHidden:false,
             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
@@ -123,7 +123,7 @@ class Menu extends Parent {
                 type:'number',typemessage:'',placeholder:'請輸入0~999',
                 isHidden:false,maxlength:'3',isSearch:true,
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
-            { label:'刪除' , prop:'removable',format:'removableSelect', 
+            { label:'刪除' , prop:'removable',format:'removableSelect',
                 mandatory:true, message:'請選擇是否允許刪除',
                type:'boolean',typemessage:'',
                isHidden:false,isSearch:false,
@@ -132,7 +132,7 @@ class Menu extends Parent {
     }
     static async get(){
         var data = await api.authority.apiGetBuildingMainMenuAuthority().then(response => {
-            var result = response.result.sort((x,y) => x.sort - y.sort).map(item=>{ 
+            var result = response.result.sort((x,y) => x.sort - y.sort).map(item=>{
                 return new Menu(item)})
             result.forEach(element => {
                 element.getLink().sort((x,y) => x.sort - y.sort)
@@ -150,6 +150,14 @@ class Menu extends Parent {
             return false
         })
         return data
+    }
+    static async deleteMany(data){
+      var data = await api.authority.apiDeleteMainMenuAuthority(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
     }
 }
 

@@ -8,13 +8,13 @@ class AccessAuthority extends Parent {
         const { name, action, description, status, sort, removable, linkRoles,
             linkMainMenus } = data
         var mainMenu = linkMainMenus !== undefined ? linkMainMenus.map(item=>{ return new Menu(item)}) : []
-        var roles = linkRoles !== undefined ? linkRoles.map(item=>{ return new Role(item)})  : []      
-        this.name = name 
+        var roles = linkRoles !== undefined ? linkRoles.map(item=>{ return new Role(item)})  : []
+        this.name = name
         this.class = data.class
-        this.description = description 
-        this.status = status 
-        this.sort = sort 
-        this.removable = removable 
+        this.description = description
+        this.status = status
+        this.sort = sort
+        this.removable = removable
         this.action = action
         this.linkMainMenus = mainMenu
         this.linkRoles = roles
@@ -88,7 +88,7 @@ class AccessAuthority extends Parent {
             { label:'描述' , prop:'description',format:'textarea', mandatory:false,
             maxlength:'200',isHidden:false,isSearch:true,
             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
-            { label:'狀態' , prop:'status',format:'accountStatusSelect', 
+            { label:'狀態' , prop:'status',format:'accountStatusSelect',
             mandatory:true, message:'請選擇狀態',type:'boolean',typemessage:'',
             isHidden:false,isSearch:false,
             isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
@@ -97,12 +97,12 @@ class AccessAuthority extends Parent {
                 type:'number',typemessage:'',placeholder:'請輸入0~999',
                 isHidden:false,maxlength:'3',isSearch:true,
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
-            { label:'角色' , prop:'linkRoles',format:'roleSelect', 
+            { label:'角色' , prop:'linkRoles',format:'roleSelect',
             mandatory:true, message:'請選擇角色',
             type:'array',typemessage:'',
             isHidden:false,isSearch:false,
             isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true },
-            { label:'刪除' , prop:'removable',format:'removableSelect', 
+            { label:'刪除' , prop:'removable',format:'removableSelect',
              mandatory:true, message:'請選擇是否允許刪除',
             type:'boolean',typemessage:'',
             isHidden:false,isSearch:false,
@@ -136,7 +136,14 @@ class AccessAuthority extends Parent {
         })
         return data
     }
-    
+    static async deleteMany(data){
+      var data = await api.authority.apiDeleteAccessAuthority(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
+    }
 }
 
 export default AccessAuthority

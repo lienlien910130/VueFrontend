@@ -1,6 +1,6 @@
 import api from '@/api'
-import Parent from './parent' 
-import Device from './device' 
+import Parent from './parent'
+import Device from './device'
 
 class DeviceAddressManagement extends Parent {
     constructor (data) {
@@ -131,18 +131,18 @@ class DeviceAddressManagement extends Parent {
     }
     static getManyEmptyTableConfig(){
         return [
-            { 
-                label:'火警總機' , 
+            {
+                label:'火警總機' ,
                 prop:'linkAssignDevices',
-                format:'assignFireDeviceSelect', 
+                format:'assignFireDeviceSelect',
                 mandatory:true,message:'請選擇火警總機',type:'array',typemessage:'',
                 isHidden:true,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
             },
-            { 
-                label:'樓層' , 
+            {
+                label:'樓層' ,
                 prop:'floorsId',
-                format:'floorSelect', 
+                format:'floorSelect',
                 mandatory:true,message:'請選擇樓層',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
@@ -182,26 +182,26 @@ class DeviceAddressManagement extends Parent {
     }
     static getTableConfig(){
         return [
-            { 
-                label:'火警總機' , 
+            {
+                label:'火警總機' ,
                 prop:'linkAssignDevices',
-                format:'assignFireDeviceSelect', 
+                format:'assignFireDeviceSelect',
                 mandatory:true,message:'請選擇火警總機',type:'array',typemessage:'',
                 isHidden:true,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
             },
-            { 
-                label:'樓層' , 
+            {
+                label:'樓層' ,
                 prop:'floorsId',
-                format:'floorSelect', 
+                format:'floorSelect',
                 mandatory:true,message:'請選擇樓層',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            { 
-                label:'點位' , 
+            {
+                label:'點位' ,
                 prop:'addressStr',
-                format:'addressStr', 
+                format:'addressStr',
                 mandatory:false,message:'請輸入點位',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
@@ -248,29 +248,29 @@ class DeviceAddressManagement extends Parent {
             },
             {
                 label: '類型',
-                prop: 'value', format:'valueType', 
+                prop: 'value', format:'valueType',
                 mandatory:true, message:'請選擇類型',isHidden:false,maxlength:'5',
                 isSearch:true,placeholder:'請選擇類型',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            { 
-                label:'圖示' , 
+            {
+                label:'圖示' ,
                 prop:'iconId',
-                format:'iconSelect', 
+                format:'iconSelect',
                 mandatory:true,message:'請選擇圖示',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            { 
-                label:'圖控使用狀態' , prop:'systemUsed',format:'systemUsedBoolean', 
-                mandatory:false, 
+            {
+                label:'圖控使用狀態' , prop:'systemUsed',format:'systemUsedBoolean',
+                mandatory:false,
                 type:'boolean',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true
             },
-            { 
-                label:'設備' , 
+            {
+                label:'設備' ,
                 prop:'linkDevices',
-                format:'addressdeviceSelect', 
+                format:'addressdeviceSelect',
                 mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
@@ -279,26 +279,26 @@ class DeviceAddressManagement extends Parent {
     }
     static getPLCTableConfig(){
         return [
-            { 
-                label:'PLC' , 
+            {
+                label:'PLC' ,
                 prop:'linkAssignDevices',
-                format:'assignPLCDeviceSelect', 
+                format:'assignPLCDeviceSelect',
                 mandatory:false,message:'請選擇PLC',type:'array',typemessage:'',
                 isHidden:true,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
             },
-            { 
-                label:'樓層' , 
+            {
+                label:'樓層' ,
                 prop:'floorsId',
-                format:'floorSelect', 
+                format:'floorSelect',
                 mandatory:true,message:'請選擇樓層',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            { 
-                label:'點位' , 
+            {
+                label:'點位' ,
                 prop:'addressStr',
-                format:'addressStr', 
+                format:'addressStr',
                 mandatory:false,message:'請輸入點位',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
@@ -343,37 +343,37 @@ class DeviceAddressManagement extends Parent {
             },
             {
                 label: '類型',
-                prop: 'value',format:'valueType', 
+                prop: 'value',format:'valueType',
                 mandatory:true, message:'請選擇類型',isHidden:false,maxlength:'5',
                 isSearch:true,placeholder:'請選擇類型',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            { 
-                label:'值' , 
+            {
+                label:'值' ,
                 prop:'valueType',
-                format:'valueSelect', 
+                format:'valueSelect',
                 mandatory:false,message:'請選擇值',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            { 
-                label:'圖示' , 
+            {
+                label:'圖示' ,
                 prop:'iconId',
-                format:'iconSelect', 
+                format:'iconSelect',
                 mandatory:true,message:'請選擇圖示',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
-            { 
-                label:'圖控使用狀態' , prop:'systemUsed',format:'systemUsedBoolean', 
-                mandatory:false, 
+            {
+                label:'圖控使用狀態' , prop:'systemUsed',format:'systemUsedBoolean',
+                mandatory:false,
                 type:'boolean',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true
             },
-            { 
-                label:'設備' , 
+            {
+                label:'設備' ,
                 prop:'linkDevices',
-                format:'addressdeviceSelect', 
+                format:'addressdeviceSelect',
                 mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
                 isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
@@ -420,6 +420,23 @@ class DeviceAddressManagement extends Parent {
             return data
         }
     }
+    static async deleteMany(data, isPLC = null){
+      if(isPLC == null){
+          var data = await api.device.apiDeleteDevicesAddress(data).then(async(response) => {
+              return true
+          }).catch(error=>{
+              return false
+          })
+          return data
+      }else{
+          var data = await api.device.apiDeleteDevicesPLCAddress(data).then(async(response) => {
+              return true
+          }).catch(error=>{
+              return false
+          })
+          return data
+      }
+  }
     // static async postMany(data, isPLC = null){
     //     if(isPLC == null){
     //         var data = await api.device.apiPostDevicesAddresses(data).then(response => {

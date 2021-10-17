@@ -41,8 +41,8 @@ export default {
                 return function (type,value) {
                     var array = []
                     var temp = []
-                    type === 'user' ?  temp = this.buildingusers : 
-                    type === 'contactunit' ?  temp = this.buildingcontactunit : 
+                    type === 'user' ?  temp = this.buildingusers :
+                    type === 'contactunit' ?  temp = this.buildingcontactunit :
                     type === 'floorOfHouse' ? temp = this.selectData : this.deviceList
                     if(value !== null && value !== undefined ){
                         value.forEach(item=>{
@@ -57,7 +57,7 @@ export default {
                     }else{
                         return ""
                     }
-                }   
+                }
             },
             label() {
                 if (this.device === 'mobile') {
@@ -73,8 +73,8 @@ export default {
                         this.$store.dispatch('record/saveSettingRecord',1)
                     }
                     if(value !== null){
-                        let _array = this.buildingoptions.filter((item, index) => 
-                            item.id == value 
+                        let _array = this.buildingoptions.filter((item, index) =>
+                            item.id == value
                         )
                         return _array.length !== 0 ? _array[0].textName : ''
                     }
@@ -87,7 +87,7 @@ export default {
                     return val.map(item=>{ return item.getName() }).toString()
                   }
                   return ''
-                } 
+                }
             },
             changeUserName(){ //住戶名稱
                 return function (val) {
@@ -95,12 +95,20 @@ export default {
                       return val.map(item=>{ return item.getName() }).toString()
                     }
                     return ''
-                } 
+                }
             },
             changeFloorName(){
                 return function (val) {
-                    if(val !== null){
-                        return val.map(item=>{ return item.getName() }).toString()
+                    if(val !== null && typeof val !== 'string' && typeof val !== 'undefined'){
+                      return val.map(item=>{ return item.getName() }).toString()
+                    }else if(val !== null){
+                      if(this.floor_record == 0){
+                          this.$store.dispatch('building/setFloors')
+                          this.$store.dispatch('record/saveFloorRecord',1)
+                      }
+                      let _array = this.buildingfloors.filter((item, index) =>
+                           item.id == val)
+                      return _array.length !== 0 ? _array[0].floor : ''
                     }
                     return ''
                 }
@@ -115,12 +123,12 @@ export default {
             fullscreen:{
                 handler:async function(){
                     if(this.fullscreen == true){
-                        this.title == 'committee' || this.title == 'contactUnit' || 
-                        this.title == 'floorOfHouse' || this.title == 'user' ? 
+                        this.title == 'committee' || this.title == 'contactUnit' ||
+                        this.title == 'floorOfHouse' || this.title == 'user' ?
                         this.infiniteheight = 710 : this.infiniteheight= 850
                     }else{
-                        this.title == 'committee' || this.title == 'contactUnit' || 
-                        this.title == 'floorOfHouse' || this.title == 'user'   ? 
+                        this.title == 'committee' || this.title == 'contactUnit' ||
+                        this.title == 'floorOfHouse' || this.title == 'user'   ?
                         this.infiniteheight = 510 : this.infiniteheight = 710
                     }
                     this.height = (this.infiniteheight -10).toString() + 'px'
@@ -143,7 +151,7 @@ export default {
                         case 'systemUsedBoolean':
                             return '已設置'
                     }
-                }else{  
+                }else{
                     switch(format){
                         case 'accountStatusSelect':
                             return '禁用'

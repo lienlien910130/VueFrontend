@@ -11,9 +11,9 @@ class Account extends Parent {
         var buildings = linkBuildings !== undefined ? linkBuildings.map(item=>{ return new Building(item)}) : []
         this.account = account
         this.password = password
-        this.name = name 
+        this.name = name
         this.description = description
-        this.status = status 
+        this.status = status
         this.removable = removable
         this.linkRoles = roles
         this.linkBuildings = buildings
@@ -131,6 +131,14 @@ class Account extends Parent {
             return []
         })
         return data
+    }
+    static async deleteMany(data){
+      var data = await api.authority.apiDeleteAccountAuthority(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
     }
 }
 

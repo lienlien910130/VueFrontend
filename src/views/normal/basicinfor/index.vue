@@ -4,35 +4,35 @@
                 <el-col :xs="24" :sm="24" :md="24" :lg="6">
                     <div class="block-wrapper">
                         <h3>基本資料</h3>
-                        <Form 
+                        <Form
                         v-on:handleBuildingInfo="handleBuildingInfo"
                         />
                     </div>
                 </el-col>
                 <el-col :xs="24" :sm="24" :md="24" :lg="18">
                     <div class="block-wrapper" >
-                        <el-tabs v-model="activeName" type="border-card" 
+                        <el-tabs v-model="activeName" type="border-card"
                         >
                           <el-tab-pane label="管委會" name="MC" >
-                            <Block 
+                            <Block
                             v-if="activeName == 'MC'"
                             ref="block"
                             :list-query-params.sync="listQueryParams"
-                            v-bind="blockAttrs" 
+                            v-bind="blockAttrs"
                             v-on="ManagementListblockEvent">
                             </Block>
                           </el-tab-pane>
                           <el-tab-pane label="廠商資料" name="Vender" >
-                            <Block 
+                            <Block
                             v-if="activeName == 'Vender'"
                             ref="block"
                             :list-query-params.sync="listQueryParams"
-                            v-bind="blockAttrs" 
+                            v-bind="blockAttrs"
                             v-on="ContactunitListblockEvent">
                             </Block>
                           </el-tab-pane>
                           <el-tab-pane label="大樓相關資料" name="BOT" >
-                            <Upload 
+                            <Upload
                             v-if="activeName == 'BOT'"
                             v-bind="buildingUploadAttrs"
                             v-on:handleFilesUpload="handleFilesUpload"></Upload>
@@ -50,18 +50,18 @@
                   <div class="block-wrapper">
                         <el-tabs v-model="activeFloor" type="border-card">
                             <el-tab-pane label="大樓住戶資料" name="US" >
-                              <Block 
+                              <Block
                               ref="downblock"
                               :list-query-params.sync="downlistQueryParams"
-                              v-bind="downBlockAttrs" 
+                              v-bind="downBlockAttrs"
                               v-on="UserblockEvent"></Block>
                             </el-tab-pane>
                             <el-tab-pane label="樓層門牌資料" name="IN" :disabled="!isChoose">
-                              <Block 
+                              <Block
                               v-if="activeFloor == 'IN' && isChoose"
                               ref="downblock"
                               :list-query-params.sync="downlistQueryParams"
-                              v-bind="downBlockAttrs" 
+                              v-bind="downBlockAttrs"
                               v-on="FloorblockEvent"></Block>
                             </el-tab-pane>
                             <el-tab-pane label="樓層平面圖" name="IM" :disabled="!isChoose">
@@ -70,22 +70,22 @@
                               v-bind="floorImageAttrs"></FloorImage>
                             </el-tab-pane>
                             <el-tab-pane  label="樓層相關資料" name="OT" :disabled="!isChoose">
-                              <Upload 
+                              <Upload
                               ref="floorsupload"
                               v-if="activeFloor == 'OT' && isChoose"
-                              v-bind="floorUploadAttrs" 
+                              v-bind="floorUploadAttrs"
                               v-on:handleFilesUpload="handleFilesUpload"></Upload>
                             </el-tab-pane>
                         </el-tabs>
                   </div>
                 </el-col>
-                <!-- <Dialog 
+                <!-- <Dialog
                 ref="dialog"
                 v-bind="dialogAttrs"
-                :files="floorFiles" 
+                :files="floorFiles"
                 v-on:handleDialog="handleDialog"></Dialog> -->
 
-                <DialogForm 
+                <DialogForm
                 ref="dialogform"
                 v-if="innerVisible === true"
                 v-bind="dialogAttrs"
@@ -97,7 +97,7 @@
                 v-bind="uploadAttrs"
                 v-on:handleDialog="handleDialog"></DialogUpload>
 
-                <DialogExcel 
+                <DialogExcel
                 ref="dialogexcel"
                 v-if="excelVisible === true"
                 v-bind="excelAttrs"
@@ -113,7 +113,7 @@ import { Files, Committee, UsageOfFloor,Setting ,User,Contactunit,Building,Floor
 export default {
   name: 'Tab',
   mixins:[sharemixin,blockmixin,dialogmixin, excelmixin],
-  components: { 
+  components: {
     Form: () => import('./components/Form'),
     FloorImage: () => import('./components/Floor'),
     Range: () => import('./components/Range')
@@ -236,6 +236,7 @@ export default {
       this.downButtonsName = [
         { name:'刪除',icon:'el-icon-delete',status:'delete'},
         { name:'編輯',icon:'el-icon-edit',status:'open'}]
+      if(this.$refs.downblock !== undefined)  this.$refs.downblock.clearSelectArray()
       if(val == 'US'){
         this.downTitle = 'user'
         this.downConfig = User.getTableConfig()
@@ -258,16 +259,16 @@ export default {
           this.downTitle = 'floorFiles'
           this.floorFiles = await this.selectFloor.files()
         }
-      } 
+      }
     },
-    async activeName(val){ 
+    async activeName(val){
       this.blockData = []
       this.usageOfFloorSelectList = []
       this.selectSetting = []
+      if(this.$refs.block !== undefined)  this.$refs.block.clearSelectArray()
       if(val == 'MC'){
         this.title = 'committee'
         this.tableConfig = Committee.getTableConfig()
-        // await this.getFloorOfHouse()
       }else if(val == 'Vender'){
         this.title = 'contactUnit'
         this.tableConfig = Contactunit.getTableConfig()
@@ -278,13 +279,12 @@ export default {
       await this.resetlistQueryParams()
     }
   },
-  methods: { 
+  methods: {
     async init(){
       this.title = 'committee'
       this.downTitle = 'user'
       this.tableConfig = Committee.getTableConfig()
       this.downConfig = User.getTableConfig()
-      // await this.getFloorOfHouse()
       await this.getManagementList()
       await this.getUserList()
     },
@@ -324,9 +324,9 @@ export default {
     async getFloorOfHouse(){ //取得大樓所有門牌
       // var data = await UsageOfFloor.getAll()
       // this.usageOfFloorSelectList = data.map(v => {
-      //     this.$set(v, 'id', v.id) 
-      //     this.$set(v, 'label', v.houseNumber) 
-      //     this.$set(v, 'value', v.id) 
+      //     this.$set(v, 'id', v.id)
+      //     this.$set(v, 'label', v.houseNumber)
+      //     this.$set(v, 'value', v.id)
       //     return v
       // })
     },
@@ -372,7 +372,7 @@ export default {
     async handleBuildingFloorSelect(content){ //選擇樓層後的操作-儲存樓層&儲存樓層平面圖ID
       this.isChoose = true
       this.selectFloor = content
-      this.floorImageId = content.floorPlanID == null ? 
+      this.floorImageId = content.floorPlanID == null ?
          null : content.getImageID()
       if(this.activeFloor  == 'IN'){
         this.downTitle = 'floorOfHouse'
@@ -394,9 +394,9 @@ export default {
         content.forEach(item => {
           formData.append('file', item.raw)
         })
-        isOk = 
-          title === 'buildingFiles' ? 
-            await this.building.createfiles(formData) : 
+        isOk =
+          title === 'buildingFiles' ?
+            await this.building.createfiles(formData) :
           title === 'floorFiles' ?
             await this.selectFloor.createfiles(formData) :
             await this.floorofhouse.createfiles(formData)
@@ -412,14 +412,14 @@ export default {
           this.$store.dispatch('building/setFloors')
           this.$socket.sendMsg('floor', 'update' , result)
         }else{
-          this.$message.error('系統錯誤') 
+          this.$message.error('系統錯誤')
         }
       }
       if(isOk){
-        index === 'createfile' ? this.$message('上傳成功') : 
+        index === 'createfile' ? this.$message('上傳成功') :
         index === 'deletefile' ? this.$message('刪除成功') : this.$message('更新成功')
-        title === 'buildingFiles' ? 
-          this.buildingFiles = await this.building.files() :  
+        title === 'buildingFiles' ?
+          this.buildingFiles = await this.building.files() :
         title === 'floorFiles' ?
           this.floorFiles = await this.selectFloor.files() : this.floorFiles = await this.floorofhouse.files()
       }else{
@@ -429,42 +429,38 @@ export default {
     async handleBlock(title,index, content) { //管委會、廠商資料、樓層門牌相關操作
       console.log(title,index,JSON.stringify(content))
       var empty = []
-      var exportdata = [] 
+      var exportdata = []
       this.dialogData = []
       this.dialogSelect =  []
       this.dialogTitle =  title
       this.dialogConfig = []
       this.dialogButtonsName = []
+      var constructor = null
       switch(title){
         case 'committee':
-          // if(index == 'open' || index == 'empty'){
-          //   var data = await UsageOfFloor.getAll()
-          //   this.dialogSelect =  data.map(v => {
-          //       this.$set(v, 'id', v.id) 
-          //       this.$set(v, 'label', v.houseNumber) 
-          //       this.$set(v, 'value', v.id) 
-          //       return v
-          //   })
-          // }
           this.dialogConfig = Committee.getTableConfig()
           empty = Committee.empty()
           exportdata = this.blockData
+          constructor = Committee
           break;
         case 'contactUnit':
           this.dialogConfig = Contactunit.getTableConfig()
           empty = Contactunit.empty()
           exportdata = this.blockData
+          constructor = Contactunit
           break;
         case 'floorOfHouse':
           this.dialogConfig = UsageOfFloor.getTableConfig()
           empty = UsageOfFloor.empty()
           exportdata = this.downData
+          constructor = UsageOfFloor
           break;
         case 'user':
           this.dialogConfig = User.getTableConfig()
           empty = User.empty()
           exportdata = this.downData
-          break;  
+          constructor = User
+          break;
       }
       if (index === 'open') {
         this.dialogStatus = 'update'
@@ -479,16 +475,25 @@ export default {
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
         this.innerVisible = true
-      }else if(index === 'delete'){
-        var isDelete = await content.delete()
+      }else if(index === 'delete'  || index === 'deleteMany'){
+        var isDelete = false
+        if(index === 'delete'){
+          isDelete = await content.delete()
+        }else{
+          var deleteArray = []
+          content.forEach(item=>{
+            deleteArray.push(item.id)
+          })
+          isDelete = await constructor.deleteMany(deleteArray.toString())
+        }
         if(isDelete){
             this.$message('刪除成功')
             switch(title){
               case 'contactUnit':
                 this.$store.dispatch('building/setContactunit')
-                this.$socket.sendMsg('contactUnit', 'delete' , content.getID())
+                this.$socket.sendMsg('contactUnit', 'delete' ,
+                        index === 'delete'  ? content.getID() : deleteArray.toString())
               case 'committee': case 'contactUnit':
-                // await this.resetlistQueryParams()
                 if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
                   this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
                 }
@@ -497,15 +502,18 @@ export default {
                 }else if(this.activeName == 'Vender'){
                   await this.getContactunitList()
                 }
+                this.$refs.block.clearSelectArray()
                 break;
               case 'floorOfHouse':
-                this.$socket.sendMsg('floorOfHouse', 'delete' , content.getID())
+                this.$socket.sendMsg('floorOfHouse', 'delete' ,
+                        index === 'delete'  ? content.getID() : deleteArray.toString())
               case 'user': //刪除user時重整建築物資料(可能會更改到所有權人&防火管理人的資料)&管委會資料(有關聯住戶)
                 var data = await Building.getInfo()
                 this.$store.dispatch('building/setBuildingInfo', data)
                 this.$socket.sendMsg('building', 'info' , data)
                 this.$store.dispatch('building/setHouseHolders')
-                this.$socket.sendMsg('houseHolder', 'delete' , content.getID())
+                this.$socket.sendMsg('houseHolder', 'delete' ,
+                        index === 'delete'  ? content.getID() : deleteArray.toString())
               case 'user': case 'floorOfHouse':
                 if(this.downlistQueryParams.pageIndex !== 1 && this.downData.length == 1){
                   this.downlistQueryParams.pageIndex = this.downlistQueryParams.pageIndex-1
@@ -518,7 +526,7 @@ export default {
                 if(this.activeName == 'MC'){ //重整管委會
                   await this.getManagementList()
                 }
-                //await this.resetdownlistQueryParams()
+                this.$refs.downblock.clearSelectArray()
                 break;
             }
         }else{
@@ -551,6 +559,16 @@ export default {
         // this.dialogStatus = 'uploadExcel'
         this.excelVisible = true
         this.excelType = 'uploadExcel'
+      }else if(index === 'updateMany'){
+        this.dialogStatus = 'updateMany'
+        content.forEach(item=>{
+          var obj = _.cloneDeep(item)
+          this.dialogData.push(obj)
+        })
+        this.dialogButtonsName = [
+          { name:'儲存',type:'primary',status:'updateManySave'},
+          { name:'取消',type:'info',status:'cancel'}]
+        this.innerVisible = true
       }
     },
     async handleDialog(title ,index, content){ //Dialog相關操作
@@ -559,6 +577,11 @@ export default {
         this.innerVisible = false
         this.excelVisible = false
         this.uploadVisible = false
+        if(title == 'committee' || title == 'contactUnit'){
+          this.$refs.block.clearSelectArray()
+        }else{
+          this.$refs.downblock.clearSelectArray()
+        }
       }else{
         switch(title){
           case 'user':
@@ -569,61 +592,39 @@ export default {
             break;
           case 'contactUnit':
             this.onContactUnitActions(index, content)
-            break;  
+            break;
           case 'floorOfHouse':
             this.onFloorOfHouseActions(index, content)
-            break; 
+            break;
           case 'buildingInfo':
             this.onBuildingActions(index, content)
-            break; 
+            break;
         }
       }
     },
     async onCommitteeActions(index, content){
-      var isOk = index === 'update' ? await content.update() : 
+      var isOk = index === 'update' || index === 'updateManySave' ? await content.update() :
         index === 'create' ? await content.create() : await Committee.postMany(content)
       if(isOk){
-          index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+          index === 'update' || index === 'updateManySave' ?
+            this.$message('更新成功') : this.$message('新增成功')
           await this.getManagementList()
-          this.innerVisible = false
+          if(index !== 'updateManySave') this.innerVisible = false
       }else{
           this.$message.error('系統錯誤')
       }
-      // if(index !== 'selectData'){
-      //   var isOk = index === 'update' ? await content.update() : 
-      //   index === 'create' ? await content.create() : await Committee.postMany(content)
-      //   if(isOk){
-      //     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-      //     await this.getManagementList()
-      //     this.innerVisible = false
-      //   }else{
-      //     this.$message.error('系統錯誤')
-      //   }
-      // }
-      // else if(index == 'selectData'){
-      //   // await this.getFloorOfHouse()
-      //   var data = await UsageOfFloor.getAll()
-      //   this.dialogSelect =  data.map(v => {
-      //       this.$set(v, 'id', v.id) 
-      //       this.$set(v, 'label', v.houseNumber) 
-      //       this.$set(v, 'value', v.id) 
-      //       return v
-      //   })
-      // }
-      // else{
-      //   this.innerVisible = false
-      // }
     },
     async onContactUnitActions(index, content){
-      var result = index === 'update' ? await content.update() : 
+      var result = index === 'update' || index === 'updateManySave' ? await content.update() :
         index === 'create' ? await content.create() : await Contactunit.postMany(content)
       var condition = index !== 'uploadExcelSave' ? Object.keys(result).length !== 0 : result.result.length !== 0
       if(condition){
-          index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+          index === 'update' || index === 'updateManySave' ?
+            this.$message('更新成功') : this.$message('新增成功')
           this.$store.dispatch('building/setContactunit')
           this.$socket.sendMsg('contactUnit', index , index !== 'uploadExcelSave' ? result: result.result)
           await this.getContactunitList()
-          this.innerVisible = false
+          if(index !== 'updateManySave') this.innerVisible = false
       }else{
           if(index !== 'uploadExcelSave'){
             this.$message.error('該公司名稱已存在，請重新輸入')
@@ -638,20 +639,21 @@ export default {
       }
     },
     async onFloorOfHouseActions(index, content){
-      if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
-        var result = 
-            index === 'update' ? await content.update(this.selectFloor.getID()) :
-            index === 'create' ? 
-              await content.create(this.selectFloor.getID()) : 
+      if(index === 'update' || index === 'create' ||
+      index === 'uploadExcelSave'  || index === 'updateManySave'){
+        var result =
+            index === 'update'  || index === 'updateManySave' ?
+              await content.update(this.selectFloor.getID()) :
+            index === 'create' ?
+              await content.create(this.selectFloor.getID()) :
               await UsageOfFloor.postMany(this.selectFloor.getID(),content)
         var condition = index !== 'uploadExcelSave' ? Object.keys(result).length !== 0 : result.result.length !== 0
         if(condition){
-          index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-          //this.$store.dispatch('building/setHouseHolders') //門牌有選擇住戶 住戶會更新居住的樓層
-          //this.$socket.sendMsg('houseHolder', 'update' , result)
+          index === 'update'  || index === 'updateManySave' ?
+            this.$message('更新成功') : this.$message('新增成功')
           this.$store.dispatch('building/setBuildingInfo',await Building.getInfo())
           this.$socket.sendMsg('floorOfHouse', index , index !== 'uploadExcelSave' ? result: result.result)
-          this.innerVisible = false
+          if(index !== 'updateManySave') this.innerVisible = false
           if(this.selectFloor !== null && this.activeFloor == 'IN'){
             await this.getFloorOfHouseList()
           }
@@ -677,36 +679,36 @@ export default {
       }
     },
     async onUserActions(index, content){
-      if(index == 'create' || index == 'update'){
+      if(index == 'create' || index == 'update' || index == 'updateManySave'){
         var data = await User.getSearchPage({
           identityCard:'{LIKE}'+content.identityCard,
           pageIndex: 1,
           pageSize: 12,
           total:0
         })
-        var canSave = data.totalPageCount == 0 ? true : 
-        data.totalPageCount !==0 && data.result[0].getID() == content.id ?
-        true : false
+        var canSave =
+          data.totalPageCount == 0 ? true :
+          data.totalPageCount !==0 && data.result[0].getID() == content.id ?
+          true : false
         if(canSave){
-          var result = index === 'update' ? await content.update() : await content.create()
+          var result = index === 'update'  || index == 'updateManySave' ?
+            await content.update() : await content.create()
           if(Object.keys(result).length !== 0){
             this.$store.dispatch('building/setHouseHolders')
             this.$socket.sendMsg('houseHolder', index , result)
             await this.getUserList()
-            if(index === 'update'){
+            if(index === 'update'  || index == 'updateManySave'){
               this.$message('更新成功')
               var data = await Building.getInfo()
               this.$store.dispatch('building/setBuildingInfo', data)
               this.$socket.sendMsg('building', 'info' , data)
               if(this.activeName == 'MC'){ //重整管委會
-                // await this.getFloorOfHouse()
                 await this.getManagementList()
               }
             }else{
               this.$message('新增成功')
-              //this.$refs.dialogform.insertSuccess('userInfo')
             }
-            this.innerVisible = false
+            if(index !== 'updateManySave') this.innerVisible = false
           }else{
             this.$message.error('該姓名已存在，請重新輸入')
           }
@@ -730,9 +732,6 @@ export default {
           this.$message.error('【'+list.toString()+'】姓名已存在，請重新上傳')
         }
       }
-      // else{
-      //   this.innerVisible = false
-      // }
     },
     async onBuildingActions(index, content){
       if(index == 'update'){
@@ -764,7 +763,7 @@ export default {
         }else if(typeof this.$route.params.target == 'object' && this.$route.params.type == 'contactunit'){
           this.activeName = 'Vender'
           this.title = 'contactUnit'
-          this.tableConfig = Contactunit.getTableConfig() 
+          this.tableConfig = Contactunit.getTableConfig()
           await this.resetlistQueryParams()
           this.$nextTick(async()=>{
             await this.handleBlock('contactUnit','open',this.$route.params.target)
@@ -776,7 +775,7 @@ export default {
         }else if(this.$route.query.type == 'contactunit'){
           this.activeName = 'Vender'
           this.title = 'contactUnit'
-          this.tableConfig = Contactunit.getTableConfig() 
+          this.tableConfig = Contactunit.getTableConfig()
           await this.resetlistQueryParams()
           this.$nextTick(async()=>{
             await this.handleBlock('contactUnit','empty','')
@@ -818,7 +817,7 @@ export default {
   }
 
 .files {
-  
+
   max-height: 200px;
   overflow: auto;
   .filesdiv{

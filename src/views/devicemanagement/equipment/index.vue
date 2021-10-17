@@ -3,37 +3,37 @@
         <el-row  :gutter="32">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper">
-                    <Block 
+                    <Block
                     ref="block"
                     :list-query-params.sync="listQueryParams"
-                    v-bind="blockAttrs" 
+                    v-bind="blockAttrs"
                     v-on="blockEvent"></Block>
                 </div>
             </el-col>
         </el-row>
-        <!-- <Dialog 
+        <!-- <Dialog
         ref="dialog"
         v-if="innerVisible === true"
-        v-bind="dialogAttrs" 
+        v-bind="dialogAttrs"
         :formtableData="formtableData"
         :formtableconfig="formtableconfig"
         :listQueryParams="maintainlistQueryParams"
         v-on:handleDialog="handleDialog"></Dialog> -->
 
-        <DialogForm 
+        <DialogForm
         ref="dialogform"
         v-if="innerVisible === true"
         v-bind="dialogAttrs"
         v-on:handleDialog="handleDialog"
         v-on:handleChangeConfig="handleChangeConfig"></DialogForm>
 
-        <DialogTable 
+        <DialogTable
         ref="dialogtable"
         v-if="tableVisible === true"
         v-bind="tableAttrs"
         v-on="tableEvent"></DialogTable>
-        
-        <DialogExcel 
+
+        <DialogExcel
         ref="dialogexcel"
         v-if="excelVisible === true"
         v-bind="excelAttrs"
@@ -123,7 +123,7 @@ export default {
             var data =  await this.selectdevice.getDeviceAddresss(this.tablelistQueryParams,this.searchType)
             this.tableTitle = 'deviceaddress'
             this.isHasHeaderButtons = false
-            this.dialogtableConfig= this.searchType == 'fire' ? 
+            this.dialogtableConfig= this.searchType == 'fire' ?
                 DeviceAddressManagement.getTableConfig() : DeviceAddressManagement.getPLCTableConfig()
             this.dialogtableConfig.shift()
             this.tableData = data.result
@@ -154,19 +154,29 @@ export default {
                 { name:'儲存',type:'primary',status:'update'},
                 { name:'取消',type:'info',status:'cancel'}]
                 this.innerVisible = true
-            }else if(index === 'delete'){
-                var isDelete = await content.delete()
+            }else if(index === 'delete'  || index === 'deleteMany'){
+                var isDelete = false
+                if(index === 'delete'){
+                  isDelete = await content.delete()
+                }else{
+                  var deleteArray = []
+                  content.forEach(item=>{
+                    deleteArray.push(item.id)
+                  })
+                  isDelete = await Device.deleteMany(deleteArray.toString())
+                }
                 if(isDelete){
                     this.$message('刪除成功')
                     this.$store.dispatch('building/setDevice')
-                    this.$socket.sendMsg('device', 'delete' , content.getID())
+                    this.$socket.sendMsg('device', 'delete' ,
+                        index === 'delete'  ? content.getID() : deleteArray.toString())
                     if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
                         this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
                     }
                     await this.getBuildingDevicesManage()
-                    // await this.resetlistQueryParams()
+                    this.$refs.block.clearSelectArray()
                 }else{
-                    this.$message.error('系統錯誤') 
+                    this.$message.error('系統錯誤')
                 }
             }else if(index === 'empty'){
                 this.dialogData.push( Device.empty() )
@@ -190,23 +200,36 @@ export default {
                  this.selectdevice = content
                 await this.resettablelistQueryParams(false)
                 this.tableVisible = true
+            }else if(index === 'updateMany'){
+              this.dialogStatus = 'updateMany'
+              content.forEach(item=>{
+                var obj = _.cloneDeep(item)
+                this.dialogData.push(obj)
+              })
+              this.dialogButtonsName = [
+                { name:'儲存',type:'primary',status:'updateManySave'},
+                { name:'取消',type:'info',status:'cancel'}]
+              this.innerVisible = true
             }
         },
         async handleDialog(resetLink ,index, content){ //Dialog相關操作
             console.log(index,JSON.stringify(content))
-            if(index === 'update' || index === 'create' || index === 'uploadExcelSave'){
+            if(index === 'update' || index === 'create' || index === 'uploadExcelSave'
+            || index === 'updateManySave'){
                 if(content.internetNumber == ''){
                     content.internetNumber = null
                 }
-                var result = index === 'update' ? await content.update(resetLink) : 
+                var result =
+                index === 'update' || index === 'updateManySave' ? await content.update(resetLink) :
                 index === 'create' ? await content.create() : await Device.postMany(content)
                 // var condition = index !== 'uploadExcelSave' ? Object.keys(result).length !== 0 : result.result.length !== 0
                 if(Object.keys(result).length !== 0){
-                    index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
+                    index === 'update' || index === 'updateManySave' ?
+                        this.$message('更新成功') : this.$message('新增成功')
                     this.$store.dispatch('building/setDevice')
                     this.$socket.sendMsg('device', index, index !== 'uploadExcelSave' ? result: result.result)
                     await this.getBuildingDevicesManage()
-                    this.innerVisible = false
+                    if(index !== 'updateManySave') this.innerVisible = false
                     this.excelVisible = false
                 }else{
                     this.$message.error('網路編號已存在，請重新輸入')
@@ -224,6 +247,7 @@ export default {
             }else{
                 this.innerVisible = false
                 this.excelVisible = false
+                this.$refs.block.clearSelectArray()
             }
         },
         async handleTableClick(index, content){
@@ -241,7 +265,7 @@ export default {
                 this.tablelistQueryParams = content
                 if(this.tableTitle == 'devicemaintain'){
                     await this.getDevicesManageMaintain()
-                }else{  
+                }else{
                     await this.getDevicesAddress()
                 }
             }else{
