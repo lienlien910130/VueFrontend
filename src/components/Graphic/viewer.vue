@@ -32,6 +32,8 @@ export default {
     },
     methods:{
         async loadBackgroundImage(objects,imgsrc){ //載入背景圖
+            this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
+            this.canvas.setHeight(this.$refs.canvasdiv.clientHeight)
             this.canvas.clear()
             fabric.Image.fromURL(imgsrc, (img) => {
                 const background = img.set({

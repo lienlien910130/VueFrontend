@@ -39,19 +39,22 @@ function addRouter(routerlist) {
       e.meta = { title: e.name, icon: e.icon }
       e.name = e.code
     }
-
-    if (e.redirect === '') { //第二階層
+    if(e.code.indexOf('sys-') !== -1){ //第一階層
+      e.component = Layout
+    }else{
       e.component = _import(e.code) // 動態匹配元件
       e.meta = { title: e.name, icon: e.icon }
       e.name = e.code
       delete e.redirect
-    }else{ //第一階層
-      e.component = Layout
     }
+    // if (e.redirect === '') { //第二階層
+      
+    // }else if(e.code.indexOf('sys-') !== -1){ //第一階層
+    //   e.component = Layout
+    // }
     delete e.linkMainMenus
     delete e.code
     delete e.icon
-
     if (e.children !== undefined && hasToCycle == true) {
       // 存在子路由就遞迴
       addRouter(e.children)
@@ -116,6 +119,9 @@ const actions = {
       for(let element of menu){
           array.push(element)
           array.push(element.linkMainMenus)
+          element.linkMainMenus.forEach(obj=>{
+            array.push(obj.linkMainMenus)
+          })
       }
       var concatarray = array.reduce(
           function(a, b) {

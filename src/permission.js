@@ -10,7 +10,6 @@ NProgress.configure({ showSpinner: false })
 const whiteList = ['/login'] // no redirect whitelist
 
 router.beforeEach(async(to, from, next) => {
- 
     console.log(to.name, from.name, to.meta.title)
     NProgress.start()
     document.title = `${to.meta.title == null ? `載入中` : to.meta.title } - 智慧消防管理平台`

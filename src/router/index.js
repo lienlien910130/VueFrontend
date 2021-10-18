@@ -70,6 +70,18 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/actions',
+    component: Layout,
+    redirect: '/actions',
+    children: [{
+      path: 'index',
+      name: 'actions',
+      component: () => import('@/views/emergency/emergencyState/historyActions.vue'),
+      meta: { title: '緊急應變動作歷程', icon: 'icon', needLogin: true }
+    }],
+    hidden: true
+  },
+  {
     path: '/',
     component: Layout,
     redirect: '/dashboard',

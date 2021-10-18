@@ -64,7 +64,7 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col :xs="24" :sm="24" :md="24" :lg="16">
+            <!-- <el-col :xs="24" :sm="24" :md="24" :lg="16">
               <div class="collapse-wrapper" >
                 <GraphicTable
                   :list-query-params.sync="listQueryParams"
@@ -72,7 +72,7 @@
                   v-on="tableEvent">
                 </GraphicTable>
               </div>
-            </el-col>
+            </el-col> -->
             <!-- <el-col :xs="24" :sm="24" :md="24" :lg="8">
               <div class="wrapper">
                 <ObjectList
@@ -133,20 +133,20 @@ export default {
       //       type:this.type
       //   }
       // },
-      tableAttrs(){
-        return {
-            title:'graphic',
-            tableData: this.tableData,
-            config:this.config,
-            hasColumn:false,
-            pageSizeList:[5,30,50]
-        }
-      },
-      tableEvent(){
-        return {
-            clickPagination:this.clickPagination
-        }
-      }
+      // tableAttrs(){
+      //   return {
+      //       title:'graphic',
+      //       tableData: this.tableData,
+      //       config:this.config,
+      //       hasColumn:false,
+      //       pageSizeList:[5,30,50]
+      //   }
+      // },
+      // tableEvent(){
+      //   return {
+      //       clickPagination:this.clickPagination
+      //   }
+      // }
     },
     data() {
         return {
@@ -163,19 +163,19 @@ export default {
           isEdit:false, //是否可編輯圖控
           actionObj:null, //正在做動的物件
           origindata:[], //即時訊息
-          tableData:[],
-          config:[
-                { label:'時間' , prop:'date'},
-                { label:'樓層' , prop:'floor'},
-                { label:'事件' , prop:'action'},
-                { label:'設備名稱' , prop:'name'},
-                { label:'點位名稱' , prop:'point'},
-          ],
-          listQueryParams:{
-            page: 1,
-            limit: 5,
-            total: 0
-          }
+          // tableData:[],
+          // config:[
+          //       { label:'時間' , prop:'date'},
+          //       { label:'樓層' , prop:'floor'},
+          //       { label:'事件' , prop:'action'},
+          //       { label:'設備名稱' , prop:'name'},
+          //       { label:'點位名稱' , prop:'point'},
+          // ],
+          // listQueryParams:{
+          //   page: 1,
+          //   limit: 5,
+          //   total: 0
+          // }
         }
     },
     watch: {
@@ -386,7 +386,7 @@ export default {
   height: 100%;
 }
 .graphic-editor-container {
-  padding: 0 20px 5px;
+  padding: 10 20px 5px;
   background-color: rgb(209, 226, 236);
   position: relative;
   min-height: calc(100vh - 50px);
