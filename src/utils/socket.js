@@ -25,7 +25,8 @@ import { Account, Building, Contactunit, Device, DeviceAddressManagement, Device
       let backIP = '192.168.88.110'
       let backPort = '5000'
       let backWsProtocol = 'clRywHL4CrkA3OUw7qBoFMhx6ZG1bDXTskdhZP6qc07D3U54D6I6FQSEkgHODJUPM3ZcUocC7m64O2XcZYT8VBX4SoHpfiYfkiop2cvRBFzG5jFLTQ98RI2rJe8wiIZz'
-      this.backWs.$ws = new WebSocket('ws://'+backIP+':'+backPort+'/', backWsProtocol);
+      // this.backWs.$ws = new WebSocket('ws://'+backIP+':'+backPort+'/', backWsProtocol);
+      this.backWs.$ws = new WebSocket(process.env.VUE_APP_WEBSOCKET, backWsProtocol);
       this.backWs.$ws.onopen = function(){
         console.log('ws open-BACK')
         wsConnection.startWsHeartbeat(_this.backWs)
@@ -49,7 +50,6 @@ import { Account, Building, Contactunit, Device, DeviceAddressManagement, Device
       let dataWsProtocol = 'JonUmZbPuQj69GnQdefx6w1ygkeU8PkzHO0EknOSdTmTYEhgg7HpDOeniThA96f4PlGlGFKBsVSbICqlEsb91xf15tVt7FGddY80p6AfcBIknQqsEWiPhKf9hByJL1Vt'
       // this.dataWs.$ws = new WebSocket('ws://'+wsIP+':'+wsPort+'/', dataWsProtocol);
       this.dataWs.$ws = new WebSocket(process.env.VUE_APP_WEBSOCKET, dataWsProtocol);
-
       this.dataWs.$ws.onopen = function(){
         console.log('ws open')
         wsConnection.startWsHeartbeat(_this.dataWs)
