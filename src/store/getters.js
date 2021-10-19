@@ -25,6 +25,7 @@ const getters = {
   vercom: state => state.version.components,
 
   wsmsg: state => state.websocket.wsmsg,
+  actions: state => state.websocket.actions,
   wsuserId: state => state.websocket.wsuserId,
   graphicMsg: state => state.websocket.graphicMsg,
 

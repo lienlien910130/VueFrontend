@@ -27,7 +27,8 @@ export default {
             objectName:'', //圖層標題
             addressId:'',
             connectId:'',
-            srcId:''
+            srcId:'',
+            hasAnimationStarted:false,
         }
     },
     methods:{
@@ -53,7 +54,7 @@ export default {
                 self.imgEl.onerror = ()=>reject("加載失敗")
                 self.imgEl.src = require('@assets/equipment/'+src)
             })
-            },
+        },
         async loadObjects(val){ //載入初始物件
             if(val !== null){ 
                 var self = this
@@ -67,23 +68,36 @@ export default {
                         item.id == object[i].srcId
                         )[0]
                         await self.addImageProcess(item.status[0].imgSrc).then((respone) => {
-                        const image = new fabric.Image(respone, {
-                            scaleX: object[i].scaleX,
-                            scaleY: object[i].scaleY,
-                            top: object[i].top,
-                            left: object[i].left,
-                            visible: false,
-                            opacity: 1,
-                            hasControls:false
-                        }) 
-                        self.canvas.add(image)
-                        self.addCustomize(image,object[i].objId,object[i].objectName,object[i].blockType,
-                        object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
+                            const image = new fabric.Image(respone, {
+                                scaleX: object[i].scaleX,
+                                scaleY: object[i].scaleY,
+                                top: object[i].top,
+                                left: object[i].left,
+                                visible: true,
+                                opacity: 1,
+                                hasControls:false
+                            }) 
+                            self.canvas.add(image)
+                            self.addCustomize(image,object[i].objId,object[i].objectName,object[i].blockType,
+                            object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
                         }).catch((err)=>{
-                            console.log(err)  
+                            console.log(err) 
+                            var imgElement = document.getElementById('img')
+                            const image = new fabric.Image(imgElement, {
+                                scaleX: object[i].scaleX,
+                                scaleY: object[i].scaleY,
+                                top: object[i].top,
+                                left: object[i].left,
+                                visible: true,
+                                opacity: 1,
+                                hasControls:false
+                            }) 
+                            self.canvas.add(image)
+                            self.addCustomize(image,object[i].objId,object[i].objectName,object[i].blockType,
+                            object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
                         })
                     }else{
-                        object[i].visible = false
+                        object[i].visible = true
                         self.canvas.add(object[i])
                         self.addCustomize(object[i],object[i].objId,object[i].objectName,object[i].blockType,
                         object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
@@ -91,6 +105,7 @@ export default {
                     }
                     self.canvas.renderOnAddRemove = origRenderOnAddRemove
                     self.canvas.renderAll()
+                    console.log(JSON.stringify(self.canvas.getObjects()))
                 })
             }
         },
@@ -119,6 +134,28 @@ export default {
                 canvasObject.set("connectId",connectId == null ? '' : connectId) //關聯，區塊要關聯探測器物件的id(uuid)，下拉選單選取所有scrid=探測器的
                 canvasObject.set("status",status)
                 canvasObject.set("action",action)
+        },
+        actionObj(str){
+            console.log(JSON.stringify(this.canvas.getObjects()))
+            var index = this.canvas.getObjects().findIndex(o=>o.addressId == '001-001-02-999')
+            var obj = this.canvas.getObjects()[index]
+            console.log(JSON.stringify(obj))
+            var src = obj.status.filter(obj=>{ return obj.value == 1})[0]
+            // obj.set({ src: require('@assets/equipment/'+src.imgSrc)})
+            obj.set({ visible : true})
+            this.setAnimate(obj)
+            this.canvas.renderAll()
+        },
+        setAnimate(obj){ //動畫
+            this.hasAnimationStarted = true
+            obj.animate('opacity', obj.opacity === 0.5 ? 1 : 0.5, {
+                duration: 500,
+                onChange: this.canvas.renderAll.bind(this.canvas),
+                onComplete: () => this.setAnimate(obj),
+                abort: () => !this.hasAnimationStarted,
+                easing: fabric.util.ease.easeInOutCubic
+            })
+            console.log('setAnimate')
         },
     }
 }

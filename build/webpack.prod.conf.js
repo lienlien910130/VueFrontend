@@ -22,17 +22,17 @@ module.exports = merge(baseWebpackConfig, {
       threshold: 10240,
       minRatio: 0.8
     }),
-    new UglifyJsPlugin({
-      uglifyOptions:{
-        compress:{
-          drop_debugger: true,
-          drop_console: true,
-          pure_funcs: ["console.log"]
-        }
-      },
-      sourceMap: false,
-      cache: true,
-      parallel: true
-    })
+    // new UglifyJsPlugin({
+    //   uglifyOptions:{
+    //     compress:{
+    //       drop_debugger: true,
+    //       drop_console: true,
+    //       pure_funcs: ["console.log"]
+    //     }
+    //   },
+    //   sourceMap: false,
+    //   cache: true,
+    //   parallel: true
+    // })
   ]
 });

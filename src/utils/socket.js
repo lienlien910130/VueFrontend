@@ -1,6 +1,7 @@
 
 import store from '../store'
 import { Account, Building, Contactunit, Device, DeviceAddressManagement, DeviceType, Floors, Role, UsageOfFloor, User } from '../object'
+import moment from 'moment';
  let wsConnection = {
    backWs:{
       $ws: null,
@@ -41,6 +42,27 @@ import { Account, Building, Contactunit, Device, DeviceAddressManagement, Device
         var data = JSON.parse(msg.data)
         wsConnection.resetHeartbeat(_this.backWs)
         console.log(data)
+        data.address.forEach(element => {
+          var mode = ''
+          var label = ''
+          if(data.mode == 'main'){
+            mode = '防災盤'
+            label = element.internet + '-' + element.memeryLoc
+          }else if(data.mode == 'locPlc'){
+            mode = 'PLC'
+            label = element.system + '-' + element.memeryLoc
+          }else if(data.mode == 'loc'){
+            mode = '火警'
+            
+          }
+          store.dispatch('websocket/sendMsg',{
+            mode:mode,
+            date:moment(new Date()).format('YYYY/MM/DD HH:mm:ss'),
+            action:element.status,
+            point:label
+          })
+        })
+        store.dispatch('websocket/sendActions',msg.data)
         // store.dispatch('websocket/sendMsg',data)
       }
       this.backWs.$ws.onerror = function(){

@@ -18,6 +18,17 @@ export default {
     created(){
         this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
     },
+    watch: {
+      actions:{
+          handler:async function(){
+            console.log(this.actions)
+            var data = JSON.parse(this.actions)
+            console.log(data)
+            this.$refs.graphicviewer.actionObj('123')
+          },
+          immediate:true
+      },
+    },
     methods:{
         async init(){
             if(this.$route.query.f !== undefined){

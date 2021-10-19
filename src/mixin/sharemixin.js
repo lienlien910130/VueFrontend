@@ -19,6 +19,7 @@ export default {
             'device',
             'menu',
             'wsmsg',
+            'actions',
             'wsuserId',
             'graphicMsg',
             'menuAuthority',

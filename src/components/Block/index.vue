@@ -309,6 +309,7 @@
                     :max-height="height"
                     >
                         <el-table-column
+                        v-if="title !== 'historyActions'"
                         reserve-selection
                         type="selection"
                         width="40">
@@ -439,12 +440,12 @@
 
                                         <span v-else>{{  scope.row[item.prop] }}</span>
                                 </template>
-                            </el-table-column>
+                        </el-table-column>
 
-                            <el-table-column
+                        <el-table-column
                             fixed="right"
                             label="操作"
-                            v-if="title !== 'address'"
+                            v-if="headerButtonsName.length !== 0 && buttonsName.length !== 0"
                             width="180px"
                             >
                                 <template slot="header">
@@ -484,7 +485,7 @@
                                         </span>
                                     </div>
                                 </template>
-                            </el-table-column>
+                        </el-table-column>
                 </el-table>
             </div>
         </div>

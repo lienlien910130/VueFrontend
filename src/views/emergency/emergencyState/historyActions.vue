@@ -3,50 +3,68 @@
         <el-row  :gutter="32">
             <el-col :xs="24" :sm="24" :md="24" :lg="24">
                 <div class="block-wrapper">
-                    <GraphicTable
+                    <Block
+                    ref="block"
                     :list-query-params.sync="listQueryParams"
-                    v-bind="tableAttrs"
-                    v-on="tableEvent">
-                    </GraphicTable>
+                    v-bind="blockAttrs"
+                    v-on="blockEvent"></Block>
                 </div>
             </el-col>
         </el-row>
     </div>
 </template>
 <script>
+import { blockmixin, sharemixin } from '@/mixin/index'
 export default {
+    mixins:[sharemixin, blockmixin],
     computed:{
-        tableAttrs(){
-            return {
-                title:'historyActions',
-                tableData: this.tableData,
-                config:this.config,
-                hasColumn:false,
-                pageSizeList:[5,30,50]
-            }
-        },
-        tableEvent(){
-            return {
-                clickPagination:this.clickPagination
+        blockEvent(){
+            return{
+                clickPagination:this.clickPagination,
+                resetlistQueryParams:this.resetlistQueryParams
             }
         }
     },
+    watch: {
+      wsmsg:{
+          handler:async function(){
+            console.log(this.wsmsg)
+            this.blockData = this.wsmsg
+            this.listQueryParams.total = this.wsmsg.length
+          },
+          immediate:true
+      },
+    },
     data(){
         return{
-            tableData:[],
-            config:[
-                    { label:'時間' , prop:'date'},
-                    { label:'樓層' , prop:'floor'},
-                    { label:'事件' , prop:'action'},
-                    { label:'設備名稱' , prop:'name'},
-                    { label:'點位名稱' , prop:'point'},
-            ],
-            listQueryParams:{
-                page: 1,
-                limit: 5,
-                total: 0
-            }
+           
         }
+    },
+    methods:{
+        async init(){
+            this.title = 'historyActions'
+            this.tableConfig = [
+                { label:'時間' , prop:'date', isHidden:false},
+                { label:'系統' , prop:'mode', isHidden:false},
+                { label:'事件' , prop:'action', isHidden:false},
+                { label:'點位' , prop:'point', isHidden:false}
+            ]
+            this.headerButtonsName = []
+            this.isHasButtons = false
+            this.buttonsName = []
+        },
+        async clickPagination(){
+
+        },
+        async resetlistQueryParams(){
+            this.listQueryParams = {
+                pageIndex: 1,
+                pageSize: 12,
+                total:0
+            }
+            await this.clickPagination()
+        },
+        async changeTable(){},
     }
 }
 </script>
