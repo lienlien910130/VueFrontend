@@ -67,35 +67,24 @@ export default {
                         var item = constant.Equipment.filter((item,index) => 
                         item.id == object[i].srcId
                         )[0]
-                        await self.addImageProcess(item.status[0].imgSrc).then((respone) => {
-                            const image = new fabric.Image(respone, {
+                        var item = require('@/icons/svg/fire_'+item.id+'.svg')
+                        var text = item.default.content.replace(/http:\/\//g, 'https://')
+                        text = text.replace('symbol', 'svg')
+                        text = text.replace('/symbol', '/svg')
+                        fabric.loadSVGFromString(text, function(objects, options) { 
+                            var svgItems = fabric.util.groupSVGElements(objects, options);
+                            svgItems.set({
                                 scaleX: object[i].scaleX,
                                 scaleY: object[i].scaleY,
                                 top: object[i].top,
                                 left: object[i].left,
-                                visible: true,
-                                opacity: 1,
-                                hasControls:false
-                            }) 
-                            self.canvas.add(image)
-                            self.addCustomize(image,object[i].objId,object[i].objectName,object[i].blockType,
+                            })
+                            self.canvas.add(svgItems);
+                            self.addCustomize(svgItems,object[i].objId,object[i].objectName,object[i].blockType,
                             object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
-                        }).catch((err)=>{
-                            console.log(err) 
-                            var imgElement = document.getElementById('img')
-                            const image = new fabric.Image(imgElement, {
-                                scaleX: object[i].scaleX,
-                                scaleY: object[i].scaleY,
-                                top: object[i].top,
-                                left: object[i].left,
-                                visible: true,
-                                opacity: 1,
-                                hasControls:false
-                            }) 
-                            self.canvas.add(image)
-                            self.addCustomize(image,object[i].objId,object[i].objectName,object[i].blockType,
-                            object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
-                        })
+                            self.canvas.renderAll();
+                        });
+
                     }else{
                         object[i].visible = true
                         self.canvas.add(object[i])
@@ -106,6 +95,8 @@ export default {
                     self.canvas.renderOnAddRemove = origRenderOnAddRemove
                     self.canvas.renderAll()
                     console.log(JSON.stringify(self.canvas.getObjects()))
+                    self.actionObj('001-001-02-999')
+                    self.actionObj('001-001-02-07')
                 })
             }
         },
@@ -136,26 +127,41 @@ export default {
                 canvasObject.set("action",action)
         },
         actionObj(str){
-            console.log(JSON.stringify(this.canvas.getObjects()))
-            var index = this.canvas.getObjects().findIndex(o=>o.addressId == '001-001-02-999')
+            var index = this.canvas.getObjects().findIndex(o=>o.addressId == str)
             var obj = this.canvas.getObjects()[index]
-            console.log(JSON.stringify(obj))
-            var src = obj.status.filter(obj=>{ return obj.value == 1})[0]
-            // obj.set({ src: require('@assets/equipment/'+src.imgSrc)})
+            obj.set({
+                fill:'rgb(255, 0, 0)'
+            });
+            if(obj._objects !== undefined){
+                obj.getObjects()[1].set({
+                    fill:'rgb(255, 0, 0)'
+                })
+            }
+            var equ = constant.Equipment.filter(ele=>{ return ele.id == obj.srcId})[0]
+            var src = equ.status.filter(obj=>{ return obj.value == 1})[0]
+            obj.set({
+                fill:src.color
+            });
+            if(obj._objects !== undefined){
+                obj.getObjects()[1].set({
+                    fill:src.color
+                })
+            }
             obj.set({ visible : true})
-            this.setAnimate(obj)
+            if(src.color !== '#00ff00'){
+                this.setAnimate(obj)
+            }
             this.canvas.renderAll()
         },
         setAnimate(obj){ //動畫
             this.hasAnimationStarted = true
-            obj.animate('opacity', obj.opacity === 0.5 ? 1 : 0.5, {
-                duration: 500,
+            obj.animate('opacity', obj.opacity === 0.2 ? 1 : 0.2, {
+                duration: 600,
                 onChange: this.canvas.renderAll.bind(this.canvas),
                 onComplete: () => this.setAnimate(obj),
                 abort: () => !this.hasAnimationStarted,
                 easing: fabric.util.ease.easeInOutCubic
             })
-            console.log('setAnimate')
         },
     }
 }

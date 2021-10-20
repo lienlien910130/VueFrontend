@@ -23,8 +23,8 @@ export default {
             name:'室內消防栓',
             type:'FFE_IndoorFireHydrant',
             status:[
-                {value:'0',imgSrc:"b/2.png"},
-                {value:'1',imgSrc:"r/r2.png"}
+                {value:'0',imgSrc:"b/2.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r2.png",color:'#ff0000'}
             ]
         },
         {
@@ -32,8 +32,8 @@ export default {
             name:'室外消防栓',
             type:'FFE_OutdoorFireHydrant',
             status:[
-                {value:'0',imgSrc:"b/9.png"},
-                {value:'1',imgSrc:"r/r9.png"}
+                {value:'0',imgSrc:"b/9.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r9.png",color:'#ff0000'}
             ]
         },
         {
@@ -41,8 +41,8 @@ export default {
             name:'自動撒水',
             type:'FFE_AutomaticSprinklerSystem',
             status:[
-                {value:'0',imgSrc:"b/3.png"},
-                {value:'1',imgSrc:"r/r3.png"}
+                {value:'0',imgSrc:"b/3.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r3.png",color:'#ff0000'}
             ]
         },
         {
@@ -50,8 +50,8 @@ export default {
             name:'泡沫',
             type:'FFE_FoamFireExtinguisher',
             status:[
-                {value:'0',imgSrc:"b/5.png"},
-                {value:'1',imgSrc:"r/r5.png"}
+                {value:'0',imgSrc:"b/5.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r5.png",color:'#ff0000'}
             ]
         },
         {
@@ -59,8 +59,8 @@ export default {
             name:'水霧',
             type:'FFE_WaterMistSystem',
             status:[
-                {value:'0',imgSrc:"b/4.png"},
-                {value:'1',imgSrc:"r/r4.png"}
+                {value:'0',imgSrc:"b/4.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r4.png",color:'#ff0000'}
             ]
         },
         {
@@ -68,8 +68,8 @@ export default {
             name:'惰性氣體',
             type:'FFE_InertGasSystem',
             status:[
-                {value:'0',imgSrc:"b/6.png"},
-                {value:'1',imgSrc:"r/r6.png"}
+                {value:'0',imgSrc:"b/6.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r6.png",color:'#ff0000'}
             ]
         },
         {
@@ -77,8 +77,8 @@ export default {
             name:'鹵化烴',
             type:'FFE_HalohydrocarbonSystem',
             status:[
-                {value:'0',imgSrc:"b/7.png"},
-                {value:'1',imgSrc:"r/r7.png"}
+                {value:'0',imgSrc:"b/7.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r7.png",color:'#ff0000'}
             ]
         },
         {
@@ -86,8 +86,8 @@ export default {
             name:'乾粉',
             type:'FFE_DryPowderSystem',
             status:[
-                {value:'0',imgSrc:"b/8.png"},
-                {value:'1',imgSrc:"r/r8.png"}
+                {value:'0',imgSrc:"b/8.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r8.png",color:'#ff0000'}
             ]
         },
         {
@@ -95,12 +95,12 @@ export default {
             name:'加壓送水裝置',
             type:'PressurizedWater',
             status:[
-                {value:'0',imgSrc:"b/22.png"},
-                {value:'1',imgSrc:"r/r22.png"}
+                {value:'0',imgSrc:"b/22.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r22.png",color:'#00ff00'}
             ],
             action:[
-                {value:'0',label:'停止'},
-                {value:'1',label:'啟動'}
+                {value:'0',label:'停止',color:'#00a0e9'},
+                {value:'1',label:'啟動',color:'#ff0000'}
             ]
         },
         {
@@ -108,8 +108,8 @@ export default {
             name:'火警授信總機',
             type:'AE_FireDetectorCentralControl',
             status:[
-                {value:'0',imgSrc:"b/33.png"},
-                {value:'1',imgSrc:"r/r33.png"}
+                {value:'0',imgSrc:"b/33.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r33.png",color:'#ff0000'}
             ]
         },
         {
@@ -117,8 +117,8 @@ export default {
             name:'偵煙式探測器',
             type:'AE_SmokeDetector',
             status:[
-                {value:'0',imgSrc:"b/10.png"},
-                {value:'1',imgSrc:"r/r1.png"}
+                {value:'0',imgSrc:"b/10.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r1.png",color:'#ff0000'}
             ]
         },
         {
@@ -126,8 +126,8 @@ export default {
             name:'光電式分離型探測器',
             type:'AE_PhotoelectricSeparationDetector',
             status:[
-                {value:'0',imgSrc:"b/11.png"},
-                {value:'1',imgSrc:"r/r1.png"}
+                {value:'0',imgSrc:"b/11.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r1.png",color:'#ff0000'}
             ]
         },
         {
@@ -135,8 +135,8 @@ export default {
             name:'感熱式探測器',
             type:'AE_ThermalDetector',
             status:[
-                {value:'0',imgSrc:"b/14.png"},
-                {value:'1',imgSrc:"r/r1.png"}
+                {value:'0',imgSrc:"b/14.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r1.png",color:'#ff0000'}
             ]
         },
         {
@@ -144,8 +144,8 @@ export default {
             name:'火焰式探測器',
             type:'AE_FlameDetector',
             status:[
-                {value:'0',imgSrc:"b/15.png"},
-                {value:'1',imgSrc:"r/r1.png"}
+                {value:'0',imgSrc:"b/15.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r1.png",color:'#ff0000'}
             ]
         },
         {
@@ -153,8 +153,8 @@ export default {
             name:'瓦斯漏氣檢知器',
             type:'AE_TileLeakDetector',
             status:[
-                {value:'0',imgSrc:"b/17.png"},
-                {value:'1',imgSrc:"r/r17.png"}
+                {value:'0',imgSrc:"b/17.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r17.png",color:'#ff0000'}
             ]
         },
         {
@@ -162,8 +162,8 @@ export default {
             name:'火警發信機',
             type:'AE_ManualAlarmDevice',
             status:[
-                {value:'0',imgSrc:"b/16.png"},
-                {value:'1',imgSrc:"r/r16.png"}
+                {value:'0',imgSrc:"b/16.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r16.png",color:'#ff0000'}
             ]
         },
         {
@@ -171,8 +171,8 @@ export default {
             name:'緊急廣播設備',
             type:'AE_EmergencyBroadcastDevice',
             status:[
-                {value:'0',imgSrc:"b/19.png"},
-                {value:'1',imgSrc:"r/r19.png"}
+                {value:'0',imgSrc:"b/19.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r19.png",color:'#ff0000'}
             ]
         },
         {
@@ -180,11 +180,11 @@ export default {
             name:'防火捲門',
             type:'FPE_RollingFireDoor',
             status:[
-                {value:'0',imgSrc:"b/24.png"},
-                {value:'1',imgSrc:"r/r24.png"}
+                {value:'0',imgSrc:"b/24.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r24.png",color:'#00ff00'}
             ],
             action:[
-                {value:'0',label:'關'}
+                {value:'0',label:'關',color:'#ff0000'}
             ]
         },
         {
@@ -192,8 +192,8 @@ export default {
             name:'防火門',
             type:'FPE_FireDoor',
             status:[
-                {value:'0',imgSrc:"b/23.png"},
-                {value:'1',imgSrc:"r/r23.png"}
+                {value:'0',imgSrc:"b/23.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r23.png",color:'#00ff00'}
             ]
         },
         {
@@ -201,12 +201,12 @@ export default {
             name:'防煙垂壁',
             type:'SPE_SmokeBarrier',
             status:[
-                {value:'0',imgSrc:"b/25.png"},
-                {value:'1',imgSrc:"r/r25.png"}
+                {value:'0',imgSrc:"b/25.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r25.png",color:'#00ff00'}
             ],
             action:[
-                {value:'0',label:'關'},
-                {value:'1',label:'開'}
+                {value:'0',label:'關',color:'#00a0e9'},
+                {value:'1',label:'開',color:'#ff0000'}
             ]
         },
         {
@@ -214,14 +214,14 @@ export default {
             name:'自然排煙窗',
             type:'SPE_NaturalSmokeExhaustWindow',
             status:[
-                {value:'0',imgSrc:"b/27.png"},
-                {value:'1',imgSrc:"r/r27.png"},
-                {value:'2',imgSrc:"r/r27.png"}
+                {value:'0',imgSrc:"b/27.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r27.png",color:'#00ff00'},
+                {value:'2',imgSrc:"r/r27.png",color:'#00ff00'}
             ],
             action:[
-                {value:'0',label:'關'},
-                {value:'1',label:'開'},
-                {value:'2',label:'停止'}
+                {value:'0',label:'關',color:'#00a0e9'},
+                {value:'1',label:'開',color:'#ff0000'},
+                {value:'2',label:'停止',color:'#ff0000'}
             ]
         },
         {
@@ -229,8 +229,8 @@ export default {
             name:'排煙機',
             type:'RE_SmokeExtractionDevice',
             status:[
-                {value:'0',imgSrc:"b/34.png"},
-                {value:'1',imgSrc:"r/r34.png"}
+                {value:'0',imgSrc:"b/34.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r34.png",color:'#00ff00'}
             ]
         },
         {
@@ -238,50 +238,50 @@ export default {
             name:'排煙口',
             type:'RE_SmokeOutlet',
             status:[
-                {value:'0',imgSrc:"b/21.png"},
-                {value:'1',imgSrc:"r/r21.png"}
-            ]
-        },
-        {
-            id:'r6',
-            name:'特別安全梯排煙口進風口',
-            type:'SpecialSmokeOutlet',
-            status:[
-                {value:'0',imgSrc:"b/26.png"},
-                {value:'1',imgSrc:"r/r26.png"}
+                {value:'0',imgSrc:"b/21.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r21.png",color:'#00ff00'}
             ]
         },
         {
             id:'r5',
-            name:'防火閘門',
-            type:'RE_SmokeOutlet',
+            name:'特別安全梯排煙口進風口',
+            type:'SpecialSmokeOutlet',
             status:[
-                {value:'0',imgSrc:"b/28.png"},
-                {value:'1',imgSrc:"r/r28.png"}
+                {value:'0',imgSrc:"b/26.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r26.png",color:'#00ff00'}
             ]
         },
         {
             id:'r6',
-            name:'連結送水口',
-            type:'ConnectWaterOutlet',
+            name:'防火閘門',
+            type:'RE_SmokeOutlet',
             status:[
-                {value:'0',imgSrc:"b/30.png"}
+                {value:'0',imgSrc:"b/28.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r28.png",color:'#00ff00'}
             ]
         },
         {
             id:'r7',
-            name:'緊急電源插座',
-            type:'RE_EmergencyPowerSocket',
+            name:'連結送水口',
+            type:'ConnectWaterOutlet',
             status:[
-                {value:'0',imgSrc:"b/31.png"}
+                {value:'0',imgSrc:"b/30.png",color:'#00a0e9'}
             ]
         },
         {
             id:'r8',
+            name:'緊急電源插座',
+            type:'RE_EmergencyPowerSocket',
+            status:[
+                {value:'0',imgSrc:"b/31.png",color:'#00a0e9'}
+            ]
+        },
+        {
+            id:'r9',
             name:'無線電通信輔助',
             type:'RE_RadioEquipment',
             status:[
-                {value:'0',imgSrc:"b/32.png"}
+                {value:'0',imgSrc:"b/32.png",color:'#00a0e9'}
             ]
         },
         {
@@ -289,7 +289,7 @@ export default {
             name:'緊急升降機',
             type:'CE_Elevator',
             status:[
-                {value:'0',imgSrc:"b/29.png"}
+                {value:'0',imgSrc:"b/29.png",color:'#00a0e9'}
             ]
         },
         {
@@ -297,8 +297,8 @@ export default {
             name:'避難引導燈具',
             type:'SRE_EscapeGuideLights',
             status:[
-                {value:'0',imgSrc:"b/20.png"},
-                {value:'1',imgSrc:"r/r20.png"}
+                {value:'0',imgSrc:"b/20.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r20.png",color:'#00ff00'}
             ]
         },
         {
@@ -306,8 +306,8 @@ export default {
             name:'緊急照明燈',
             type:'SRE_EmergencyLighting',
             status:[
-                {value:'0',imgSrc:"b/20.png"},
-                {value:'1',imgSrc:"r/r20.png"}
+                {value:'0',imgSrc:"b/20.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r20.png",color:'#ff0000'}
             ]
         },
         {
@@ -315,12 +315,12 @@ export default {
             name:'電燈',
             type:'OE_ElectricLight',
             status:[
-                {value:'0',imgSrc:"b/20.png"},
-                {value:'1',imgSrc:"r/r20.png"}
+                {value:'0',imgSrc:"b/20.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r20.png",color:'#ff0000'}
             ],
             action:[
-                {value:'0',label:'關'},
-                {value:'1',label:'開'}
+                {value:'0',label:'關',color:'#00a0e9'},
+                {value:'1',label:'開',color:'#ff0000'}
             ]
         },
         {
@@ -328,8 +328,8 @@ export default {
             name:'緊急門鎖',
             type:'OE_EmergencyDoorLock',
             status:[
-                {value:'0',imgSrc:"b/20.png"},
-                {value:'1',imgSrc:"r/r20.png"}
+                {value:'0',imgSrc:"b/20.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r20.png",color:'#ff0000'}
             ]
         },
         {
@@ -337,7 +337,7 @@ export default {
             name:'監視攝影機',
             type:'OE_CCTV',
             status:[
-                {value:'0',imgSrc:"b/20.png"}
+                {value:'0',imgSrc:"b/20.png",color:'#00a0e9'}
             ]
         },
         {
@@ -345,7 +345,7 @@ export default {
             name:'PLC',
             type:'OE_ProgrammableLogicController',
             status:[
-                {value:'0',imgSrc:"b/20.png"}
+                {value:'0',imgSrc:"b/20.png",color:'#00a0e9'}
             ]
         },
         {
@@ -353,8 +353,8 @@ export default {
             name:'緊急電話',
             type:'EmergencyCall',
             status:[
-                {value:'0',imgSrc:"b/18.png"},
-                {value:'1',imgSrc:"r/r18.png"}
+                {value:'0',imgSrc:"b/18.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r18.png",color:'#ff0000'}
             ]
         },
         {
@@ -362,7 +362,7 @@ export default {
             name:'高壓氣體容器儲存場所',
             type:'HighPressurePlace',
             status:[
-                {value:'0',imgSrc:"b/12.png"}
+                {value:'0',imgSrc:"b/12.png",color:'#00a0e9'}
             ]
         },
         {
@@ -370,7 +370,7 @@ export default {
             name:'公共危險物品儲存場所',
             type:'PublicDangerousPlace',
             status:[
-                {value:'0',imgSrc:"b/13.png"}
+                {value:'0',imgSrc:"b/13.png",color:'#00a0e9'}
             ]
         }
     ],

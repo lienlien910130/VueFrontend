@@ -1,7 +1,6 @@
 const path = require('path')
 const { merge } = require('webpack-merge')
 const baseWebpackConfig = require('./webpack.base.conf')
-const CopyPlugin = require('copy-webpack-plugin')
 const webpack = require('webpack')
 
 function resolve (dir) {
@@ -17,7 +16,7 @@ module.exports = merge(baseWebpackConfig, {
     inline: true,
     progress: true,
     stats: 'errors-only',
-    contentBase: path.resolve(__dirname, '../dist'),
+    contentBase: path.resolve(__dirname, './dist'),
     publicPath: '/',
     port: 59111
   },
@@ -56,14 +55,6 @@ module.exports = merge(baseWebpackConfig, {
         VUE_APP_BASE_API: '"/api"',
         VUE_APP_WEBSOCKET:'"ws://localhost:8088/ws/"'
       }
-    }),
-    new CopyPlugin({
-      patterns: [
-        {
-          from: 'public/pin.png',
-          to: 'pin.png'
-        }
-      ]
-    }),
+    })
   ]
 })

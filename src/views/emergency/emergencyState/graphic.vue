@@ -24,7 +24,7 @@ export default {
             console.log(this.actions)
             var data = JSON.parse(this.actions)
             console.log(data)
-            this.$refs.graphicviewer.actionObj('123')
+            //this.$refs.graphicviewer.actionObj('123')
           },
           immediate:true
       },

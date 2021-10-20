@@ -244,7 +244,7 @@ class DeviceAddressManagement extends Parent {
                 mandatory:false, message:'請輸入記憶體位址',isHidden:true,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入記憶體位址',
-                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false
             },
             {
                 label: '類型',
