@@ -3,160 +3,211 @@ import store from '../store'
 import { Account, Building, Contactunit, Device, DeviceAddressManagement, DeviceType, Floors, Role, UsageOfFloor, User } from '../object'
 import moment from 'moment';
 import { Notification } from 'element-ui'
+import { getUUID } from '.';
 
  let wsConnection = {
-   backWs:{
-      $ws: null,
-      lockReturn: false,
-      timeout: 60 * 1000 * 5,
-      timeoutObj: null,
-      timeoutNum: null,
-      serverTimeoutObj: null,
-   },
-   dataWs:{
-      $ws: null,
-      lockReturn: false,
-      timeout: 60 * 1000 * 5,
-      timeoutObj: null,
-      timeoutNum: null,
-      serverTimeoutObj: null,
-   },
-   //初始化websocket
-   initWebSocket: function () {
-      let _this = this;
-      //back
-      let backIP = '192.168.88.110'
-      let backPort = '5000'
-      let backWsProtocol = 'clRywHL4CrkA3OUw7qBoFMhx6ZG1bDXTskdhZP6qc07D3U54D6I6FQSEkgHODJUPM3ZcUocC7m64O2XcZYT8VBX4SoHpfiYfkiop2cvRBFzG5jFLTQ98RI2rJe8wiIZz'
-      // this.backWs.$ws = new WebSocket('ws://'+backIP+':'+backPort+'/', backWsProtocol);
-      this.backWs.$ws = new WebSocket(process.env.VUE_APP_WEBSOCKET, backWsProtocol);
-      this.backWs.$ws.onopen = function(){
-        console.log('ws open-BACK')
-        wsConnection.startWsHeartbeat(_this.backWs)
-      }
-      this.backWs.$ws.onclose = function(){
-        console.log('ws close-BACK')
-        wsConnection.reconnect(_this.backWs)
-      }
-      this.backWs.$ws.onmessage = function(msg){
-        console.log('ws message-BACK')
-        var data = JSON.parse(msg.data)
-        wsConnection.resetHeartbeat(_this.backWs)
-        console.log(data)
-        // Notification.warning({
-        //   title: '警告',
-        //   message: '收到訊號',
-        //   type: 'warning'
-        // })
-        data.address.forEach(element => {
-          var mode = ''
-          var label = ''
-          if(data.mode == 'main'){
-            mode = '防災盤'
-            label = element.internet + '-' + element.memeryLoc
-          }else if(data.mode == 'locPlc'){
-            mode = 'PLC'
-            label = element.internet + '-' + element.system + '-' + element.memeryLoc
-            if(element.system == 'R100'){
+    backWs:{
+        $ws: null,
+        lockReturn: false,
+        timeout: 60 * 1000 * 5,
+        timeoutObj: null,
+        timeoutNum: null,
+        serverTimeoutObj: null,
+    },
+    processWs:{
+        $ws: null,
+        lockReturn: false,
+        timeout: 60 * 1000 * 5,
+        timeoutObj: null,
+        timeoutNum: null,
+        serverTimeoutObj: null,
+        cPId:null,
+        cNode:null
+    },
+    dataWs:{
+        $ws: null,
+        lockReturn: false,
+        timeout: 60 * 1000 * 5,
+        timeoutObj: null,
+        timeoutNum: null,
+        serverTimeoutObj: null,
+    },
+    //初始化websocket
+    initWebSocket: function () {
+        let _this = this;
+        //back
+        let backIP = '192.168.88.110'
+        let backPort = '5000'
+        let backWsProtocol = 'clRywHL4CrkA3OUw7qBoFMhx6ZG1bDXTskdhZP6qc07D3U54D6I6FQSEkgHODJUPM3ZcUocC7m64O2XcZYT8VBX4SoHpfiYfkiop2cvRBFzG5jFLTQ98RI2rJe8wiIZz'
+        // this.backWs.$ws = new WebSocket('ws://'+backIP+':'+backPort+'/', backWsProtocol);
+        this.backWs.$ws = new WebSocket(process.env.VUE_APP_WEBSOCKET, backWsProtocol);
+        this.backWs.$ws.onopen = function(){
+          console.log('ws open-BACK')
+          wsConnection.startWsHeartbeat(_this.backWs)
+        }
+        this.backWs.$ws.onclose = function(){
+          console.log('ws close-BACK')
+          wsConnection.reconnect(_this.backWs)
+        }
+        this.backWs.$ws.onmessage = function(msg){
+          console.log('ws message-BACK')
+          var data = JSON.parse(msg.data)
+          wsConnection.resetHeartbeat(_this.backWs)
+          console.log(data)
+          data.address.forEach(element => {
+            var mode = ''
+            var label = ''
+            if(data.mode == 'main'){
+              mode = '防災盤'
+              label = element.internet + '-' + element.memeryLoc
+            }else if(data.mode == 'locPlc'){
+              mode = 'PLC'
+              label = element.internet + '-' + element.system + '-' + element.memeryLoc
+              if(element.system == 'R100'){
+                element.mode = data.mode
+                element.label = label
+                store.dispatch('websocket/sendActions', element)
+              }
+            }else if(data.mode == 'loc'){
+              mode = '火警'
+              label = element.internet + '-' + element.system + '-' + element.address + '-' + element.number
               element.mode = data.mode
               element.label = label
               store.dispatch('websocket/sendActions', element)
             }
-          }else if(data.mode == 'loc'){
-            mode = '火警'
-            label = element.internet + '-' + element.system + '-' + element.address + '-' + element.number
-            element.mode = data.mode
-            element.label = label
-            store.dispatch('websocket/sendActions', element)
-          }
-          store.dispatch('websocket/sendMsg',{
-            mode:mode,
-            date:moment(new Date()).format('YYYY/MM/DD HH:mm:ss'),
-            action:element.status,
-            point:label
+            store.dispatch('websocket/sendMsg',{
+              mode:mode,
+              date:moment(new Date()).format('YYYY/MM/DD HH:mm:ss'),
+              action:element.status,
+              point:label
+            })
           })
-        })
-        //store.dispatch('websocket/sendActions',msg.data)
-        // store.dispatch('websocket/sendMsg',data)
+          //store.dispatch('websocket/sendActions',msg.data)
+          // store.dispatch('websocket/sendMsg',data)
+        }
+        this.backWs.$ws.onerror = function(){
+          wsConnection.reconnect(_this.backWs)
+        }
+        //前端給前端內部溝通
+        let dataWsProtocol = 'JonUmZbPuQj69GnQdefx6w1ygkeU8PkzHO0EknOSdTmTYEhgg7HpDOeniThA96f4PlGlGFKBsVSbICqlEsb91xf15tVt7FGddY80p6AfcBIknQqsEWiPhKf9hByJL1Vt'
+        this.dataWs.$ws = new WebSocket(process.env.VUE_APP_WEBSOCKET, dataWsProtocol);
+        this.dataWs.$ws.onopen = function(){
+          console.log('ws open')
+          wsConnection.startWsHeartbeat(_this.dataWs)
+        }
+        this.dataWs.$ws.onclose = function(){
+          console.log('ws close')
+          wsConnection.reconnect(_this.dataWs)
+        }
+        this.dataWs.$ws.onmessage = function(msg){
+          console.log('ws message')
+          console.log(msg)
+          wsConnection.resetHeartbeat(_this.dataWs)
+          var data = JSON.parse(msg.data)
+          if(data.SenderName == 'MercuryfireWS65'){
+            store.dispatch('websocket/saveUserId',data.Id)
+          }else{
+            getMessage(msg)
+          }
+        }
+        this.dataWs.$ws.onerror = function(){
+          wsConnection.reconnect(_this.dataWs)
+        }
+    },
+    initProcessWebSocket: function(){
+      let _this = this;
+      //process
+      let processWsProtocol = 'Tm7wHKS4JrvrOMYuMfl28xgJ9sWBjFnfq0wXkyYewG12vkyqRunm74bVUyvXwr97tLsrZ9kZB76WIJ5nvZOy06xsEAGKXPgSph3yx3L3ObyCDqeOKtXmP6AoQDI77DqV'
+      this.processWs.$ws = new WebSocket(process.env.VUE_APP_WEBSOCKET, processWsProtocol);
+      this.processWs.$ws.onopen = function(){
+        console.log('ws open-PROCESS')
+        wsConnection.startWsHeartbeat(_this.processWs)
+        const msg = {
+          accountCToken:store.getters.mToken
+        }
+        _this.processWs.$ws.send(JSON.stringify(msg))
       }
-      this.backWs.$ws.onerror = function(){
-        wsConnection.reconnect(_this.backWs)
+      this.processWs.$ws.onclose = function(){
+        console.log('ws close-PROCESS')
+        wsConnection.reconnect(_this.processWs)
       }
-      //前端給前端內部溝通
-      let dataWsProtocol = 'JonUmZbPuQj69GnQdefx6w1ygkeU8PkzHO0EknOSdTmTYEhgg7HpDOeniThA96f4PlGlGFKBsVSbICqlEsb91xf15tVt7FGddY80p6AfcBIknQqsEWiPhKf9hByJL1Vt'
-      // this.dataWs.$ws = new WebSocket('ws://'+wsIP+':'+wsPort+'/', dataWsProtocol);
-      this.dataWs.$ws = new WebSocket(process.env.VUE_APP_WEBSOCKET, dataWsProtocol);
-      this.dataWs.$ws.onopen = function(){
-        console.log('ws open')
-        wsConnection.startWsHeartbeat(_this.dataWs)
-      }
-      this.dataWs.$ws.onclose = function(){
-        console.log('ws close')
-        wsConnection.reconnect(_this.dataWs)
-      }
-      this.dataWs.$ws.onmessage = function(msg){
-        console.log('ws message')
-        console.log(msg)
-        wsConnection.resetHeartbeat(_this.dataWs)
+      this.processWs.$ws.onmessage = function(msg){
+        console.log('ws message-PROCESS')
         var data = JSON.parse(msg.data)
+        wsConnection.resetHeartbeat(_this.processWs)
+        console.log(data)
         if(data.SenderName == 'MercuryfireWS65'){
           store.dispatch('websocket/saveUserId',data.Id)
         }else{
-          getMessage(msg)
+          _this.process.cPId = data.cPId
+          _this.process.cNode = data.cNode
+          if(data.cOptions !== undefined){
+            store.dispatch('websocket/sendOptions', data.cOptions)
+          }
         }
-        // store.dispatch('websocket/sendMsg',msg)
       }
-      this.dataWs.$ws.onerror = function(){
-        wsConnection.reconnect(_this.dataWs)
+      this.processWs.$ws.onerror = function(){
+        wsConnection.reconnect(_this.processWs)
       }
-   },
-   //重啟
-   reconnect: function (ws) {
-     let _this = this
-     if (ws.lockReturn) {
-       return
-     }
-     ws.lockReturn = true
-     ws.timeoutNum && clearTimeout(ws.timeoutNum)
-     ws.timeoutNum = setTimeout(function () {
-       _this.initWebSocket()
-       ws.lockReturn = false
-     }, 3000)
-   },
-   //開啟心跳
-   startWsHeartbeat: function (ws) {
-     let _this = this
-     ws.timeoutObj && clearTimeout(ws.timeoutObj)
-     ws.serverTimeoutObj && clearTimeout(ws.serverTimeoutObj)
-     ws.timeoutObj = setInterval(function () {
-       //判斷當前的狀態
-       if (ws.$ws.readyState != 1) {
-         _this.reconnect(ws)
-       }
-     }, ws.timeout)
-   },
-   //重置心跳
-   resetHeartbeat: function (ws) {
-     let _this = this
-     clearTimeout(ws.timeoutObj)
-     clearTimeout(ws.serverTimeoutObj)
-     _this.startWsHeartbeat(ws)
-   },
-   //內部發送訊息
-   sendMsg: function(dataType, sendType, content, Bid = null){
+    },
+    //重啟
+    reconnect: function (ws) {
+      let _this = this
+      if (ws.lockReturn) {
+        return
+      }
+      ws.lockReturn = true
+      ws.timeoutNum && clearTimeout(ws.timeoutNum)
+      ws.timeoutNum = setTimeout(function () {
+        _this.initWebSocket()
+        ws.lockReturn = false
+      }, 3000)
+    },
+    //開啟心跳
+    startWsHeartbeat: function (ws) {
+      let _this = this
+      ws.timeoutObj && clearTimeout(ws.timeoutObj)
+      ws.serverTimeoutObj && clearTimeout(ws.serverTimeoutObj)
+      ws.timeoutObj = setInterval(function () {
+        //判斷當前的狀態
+        if (ws.$ws.readyState != 1) {
+          _this.reconnect(ws)
+        }
+      }, ws.timeout)
+    },
+    //重置心跳
+    resetHeartbeat: function (ws) {
+      let _this = this
+      clearTimeout(ws.timeoutObj)
+      clearTimeout(ws.serverTimeoutObj)
+      _this.startWsHeartbeat(ws)
+    },
+    //內部發送訊息
+    sendMsg: function(dataType, sendType, content, Bid = null){
+        let _this = this
+        const msg = {
+          DataType:dataType,
+          SendType:sendType,
+          SenderName:store.getters.name,
+          Data:{
+            Id: store.getters.wsuserId,
+            Bid: Bid == null ? store.getters.buildingid : Bid,
+            Content: content
+          }
+        }
+        _this.dataWs.$ws.send(JSON.stringify(msg))
+    },
+    //手機選擇選項後發送回去的訊息
+    sendProcess: function(cOptionID){
       let _this = this
       const msg = {
-        DataType:dataType,
-        SendType:sendType,
-        SenderName:store.getters.name,
-        Data:{
-          Id: store.getters.wsuserId,
-          Bid: Bid == null ? store.getters.buildingid : Bid,
-          Content: content
-        }
+        accountCToken:store.getters.mToken,
+        cOptionID:cOptionID,
+        cPId:_this.process.cPId,
+        cNodeID:_this.process.cNode
       }
-      _this.dataWs.$ws.send(JSON.stringify(msg))
-   }
+      _this.processWs.$ws.send(JSON.stringify(msg))
+    }
  }
 
  function getMessage(msg){

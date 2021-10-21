@@ -2,7 +2,7 @@ const getters = {
   sidebar: state => state.app.sidebar,
   device: state => state.app.device,
   fullscreen: state => state.app.fullscreen,
-  
+
   menuId: state => state.permission.menuId,
   menuAuthority: state => state.permission.menuAuthority,
   menu: state => state.permission.menu,
@@ -26,6 +26,7 @@ const getters = {
 
   wsmsg: state => state.websocket.wsmsg,
   actions: state => state.websocket.actions,
+  options: state => state.websocket.options,
   wsuserId: state => state.websocket.wsuserId,
   graphicMsg: state => state.websocket.graphicMsg,
 
@@ -46,7 +47,7 @@ const getters = {
   account: state => state.building.account,
 
   json: state => state.graphic.json,
-  
+
   role_record : state => state.record.role_record,
   menu_record: state => state.record.role_record,
   setting_record: state => state.record.setting_record,
@@ -58,6 +59,6 @@ const getters = {
   deviceType_record: state => state.record.deviceType_record,
   addressManagement_record :state => state.record.addressManagement_record,
   account_record:state => state.record.account_record,
-  
+
 }
 export default getters

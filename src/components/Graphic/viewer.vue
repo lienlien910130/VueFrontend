@@ -1,6 +1,6 @@
 <template>
-    <div ref="canvasdiv" class="canvasdiv" >
-        <canvas 
+    <div ref="canvasdiv" class="canvasdiv" id="canvasdiv" >
+        <canvas
             id="canvas"
         ></canvas>
     </div>
@@ -13,12 +13,18 @@ import { getUUID } from '@/utils'
 
 export default {
     name:'GraphicViewer',
+    props:{
+      canvasHeight: {
+        type: Number,
+        default: 0
+      },
+    },
     mounted() {
         this.canvas = new fabric.Canvas("canvas")
         // this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
         // this.canvas.setHeight(this.$refs.canvasdiv.clientHeight)
         this.canvas.setWidth(1650)
-        this.canvas.setHeight(750)
+        this.canvas.setHeight(0)
         this.canvas.skipTargetFind = true
         this.canvas.selection = false
     },
@@ -32,20 +38,20 @@ export default {
             srcId:'',
             hasAnimationStarted:false,
             leftsize:1,
-            topsize:1
+            topsize:1,
+            canvasheight:0
         }
     },
     methods:{
         async loadBackgroundImage(objects,imgsrc){ //載入背景圖
             this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
-            this.canvas.setHeight(this.$refs.canvasdiv.clientHeight)
-            console.log(this.$refs.canvasdiv.clientWidth,this.$refs.canvasdiv.clientHeight)
+            this.canvasheight = this.canvasHeight == 0 ? this.$refs.canvasdiv.clientHeight : this.canvasHeight
+            this.canvas.setHeight(this.canvasheight)
+            console.log(this.$refs.canvasdiv.clientWidth,this.canvasheight)
             console.log(this.$refs.canvasdiv.clientWidth/1650)
-            console.log(this.$refs.canvasdiv.clientHeight/750)
+            console.log(this.canvasheight/750)
             this.leftsize = this.$refs.canvasdiv.clientWidth/1650
-            this.topsize = this.$refs.canvasdiv.clientHeight/750
-            // this.canvas.setWidth(1650)
-            // this.canvas.setHeight(750)
+            this.topsize = this.canvasheight/750
             this.canvas.clear()
             fabric.Image.fromURL(imgsrc, (img) => {
                 const background = img.set({
@@ -67,7 +73,7 @@ export default {
             })
         },
         async loadObjects(val){ //載入初始物件
-            if(val !== null){ 
+            if(val !== null){
                 var self = this
                 var obj = JSON.parse(val)
                 fabric.util.enlivenObjects(obj, async function(object) {
@@ -75,18 +81,18 @@ export default {
                     self.canvas.renderOnAddRemove = false
                     for(let i=0;i<object.length;i++){
                         if(object[i].type == 'image'){
-                            var item = constant.Equipment.filter((item,index) => 
+                            var item = constant.Equipment.filter((item,index) =>
                             item.id == object[i].srcId
                             )[0]
                             var item = require('@/icons/svg/fire_'+item.id+'.svg')
                             var text = item.default.content.replace(/http:\/\//g, 'https://')
                             text = text.replace('symbol', 'svg')
                             text = text.replace('/symbol', '/svg')
-                            fabric.loadSVGFromString(text, function(objects, options) { 
+                            fabric.loadSVGFromString(text, function(objects, options) {
                                 var svgItems = fabric.util.groupSVGElements(objects, options);
                                 svgItems.set({
-                                    scaleX: object[i].scaleX * self.topsize,
-                                    scaleY: object[i].scaleY * self.leftsize,
+                                    scaleX: object[i].scaleX * self.leftsize,
+                                    scaleY: object[i].scaleY * self.topsize,
                                     top: object[i].top * self.topsize,
                                     left: object[i].left * self.leftsize,
                                 })
@@ -132,7 +138,7 @@ export default {
                     }
                 })(canvasObject.toObject)
                 canvasObject.set("objId",objId == null ? getUUID() : objId) //唯一性，用來新增icon
-                canvasObject.set("objectName",objectname !== null ? objectname : this.objectName == '' ?  
+                canvasObject.set("objectName",objectname !== null ? objectname : this.objectName == '' ?
                 (new Date()).getTime() : this.objectName) //+'_'+ (new Date()).getTime()
                 canvasObject.set("blockType",blocktype == null ? this.blockType : blocktype) //區塊才有
                 canvasObject.set("srcId",srcId == null ? '' : srcId) //圖示的id
@@ -184,8 +190,4 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-.canvasdiv{
-    min-height: calc(100vh - 80px);
-}
-</style>
+

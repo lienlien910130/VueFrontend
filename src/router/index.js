@@ -77,7 +77,7 @@ export const constantRoutes = [
       path: 'index',
       name: 'emergencyClass',
       component: () => import('@/views/emergency/emergencyState/mviewer.vue'),
-      meta: { title: '緊急應變', icon: 'icon', needLogin: true }
+      meta: { title: '緊急應變', icon: 'icon', needLogin: false }
     }],
     hidden: true
   },
@@ -174,7 +174,7 @@ export const mercuryfireRoutes = [
     ],
     hidden: true
   },
-  
+
 ]
 export const notfound = [
   { path: '*', redirect: '/404', hidden: true }

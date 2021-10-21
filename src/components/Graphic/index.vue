@@ -2,21 +2,21 @@
   <div class="maintenancePlanAdd">
     <div class="middle">
         <header>
-            <HeaderOperate  
-            ref="operate" 
-            :operateMenu="operateMenu" 
+            <HeaderOperate
+            ref="operate"
+            :operateMenu="operateMenu"
             @handleOperateMenu="handleOperateMenu" />
         </header>
         <div class="section" ref="section">
             <div ref="canvasdiv" class="canvasdiv" >
-              <canvas 
+              <canvas
                 id="canvas"
               ></canvas>
             </div>
         </div>
     </div>
     <div class="flow-attr">
-        
+
         <el-alert
           v-if="isSave == true"
           title="請先存檔後再離開畫面"
@@ -28,17 +28,17 @@
         </el-alert>
 
         <div v-if="type == 'edit' && selectType == null">
-          <EquipmentType 
+          <EquipmentType
           ref="equipmentType"
           :imgAddress="imgAddress"
           v-on:sendAddressImageIcon="sendAddressImageIcon"></EquipmentType>
         </div>
 
-        <el-form v-if="selectType !== null" class="form-inline" label-position="left" style="padding:10px 8px">  
+        <el-form v-if="selectType !== null" class="form-inline" label-position="left" style="padding:10px 8px">
 
                 <el-form-item label="名稱" label-width="70px" >
-                  <el-input v-model="objectName"  
-                  placeholder="請輸入名稱" 
+                  <el-input v-model="objectName"
+                  placeholder="請輸入名稱"
                   @input="sendLabelChange"
                   ></el-input>
                 </el-form-item>
@@ -54,9 +54,9 @@
                     </el-option>
                   </el-select>
                 </el-form-item>
-                
+
                 <el-form-item v-if="selectType == 'path'" label="區塊" label-width="70px" >
-                   <el-select 
+                   <el-select
                    v-model="blockType" placeholder="請選擇區塊類型" @change="sendBlockChange" style="width:100%">
                     <el-option
                       v-for="item in options"
@@ -68,7 +68,7 @@
                 </el-form-item>
 
                 <el-form-item v-if="selectType == 'image'" label="關聯" label-width="70px" >
-                   <el-select 
+                   <el-select
                    v-model="connectId" placeholder="請選擇關聯的圖示或區塊" @change="sendConnectChange"  style="width:100%">
                     <el-option
                       v-for="(item,index) in connectArray"
@@ -95,25 +95,25 @@
                   </el-select>
                 </el-form-item>
                 <el-form-item v-if="selectType == 'path'" label="寬度" label-width="70px" >
-                  <el-input-number 
-                  v-model="strokeWidth" 
+                  <el-input-number
+                  v-model="strokeWidth"
                   controls-position="right" :min="0" :max="10"
                   style="width:100%"
                   @change="changeAttributes('strokeWidth')"></el-input-number>
                 </el-form-item>
                 <el-form-item v-if="selectType == 'textbox'" label="顏色" label-width="70px" >
-                  <el-color-picker v-model="fontcolor" 
-                  show-alpha 
+                  <el-color-picker v-model="fontcolor"
+                  show-alpha
                   :predefine="predefineColors" @change="changeAttributes('fontcolor')"></el-color-picker>
                 </el-form-item>
                 <el-form-item v-if="selectType == 'path'" label="填充" label-width="70px" >
-                  <el-color-picker v-model="fillcolor" 
-                  show-alpha 
+                  <el-color-picker v-model="fillcolor"
+                  show-alpha
                   :predefine="predefineColors" @change="changeAttributes('fillcolor')"></el-color-picker>
                 </el-form-item>
                 <el-form-item v-if="selectType == 'path'" label="邊框" label-width="70px" >
-                  <el-color-picker v-model="strokecolor" 
-                  show-alpha 
+                  <el-color-picker v-model="strokecolor"
+                  show-alpha
                   :predefine="predefineColors" @change="changeAttributes('strokecolor')"></el-color-picker>
                 </el-form-item>
         </el-form>
@@ -162,7 +162,7 @@
                     <div @click="stopAnim">
                       <i class="el-icon-remove-outline" style="font-size:25px"></i>
                     </div>
-                  </div>  
+                  </div>
                 </el-form-item>
                 <el-alert
                   v-if="isSave == true"
@@ -174,8 +174,8 @@
                   style="margin-bottom:5px">
                 </el-alert>
                 <el-form-item label="名稱" label-width="90px" >
-                  <el-input v-model="objectName"  
-                  placeholder="請輸入名稱" 
+                  <el-input v-model="objectName"
+                  placeholder="請輸入名稱"
                   @input="sendLabelChange"
                   :disabled="isTextBox == null"
                   ></el-input>
@@ -218,25 +218,25 @@
                   </el-select>
                 </el-form-item>
                 <el-form-item v-if="isTextBox == false" label="邊框寬度" label-width="90px" >
-                  <el-input-number 
-                  v-model="strokeWidth" 
+                  <el-input-number
+                  v-model="strokeWidth"
                   controls-position="right" :min="0" :max="10"
                   style="width:100%"
                   @change="changeAttributes('strokeWidth')"></el-input-number>
                 </el-form-item>
                 <el-form-item v-if="isTextBox == true" label="字體" label-width="90px" >
-                  <el-color-picker v-model="fontcolor" 
-                  show-alpha 
+                  <el-color-picker v-model="fontcolor"
+                  show-alpha
                   :predefine="predefineColors" @change="changeAttributes('fontcolor')"></el-color-picker>
                 </el-form-item>
                 <el-form-item v-if="isTextBox == false" label="填充" label-width="90px" >
-                  <el-color-picker v-model="fillcolor" 
-                  show-alpha 
+                  <el-color-picker v-model="fillcolor"
+                  show-alpha
                   :predefine="predefineColors" @change="changeAttributes('fillcolor')"></el-color-picker>
                 </el-form-item>
                 <el-form-item v-if="isTextBox == false" label="邊框" label-width="90px" >
-                  <el-color-picker v-model="strokecolor" 
-                  show-alpha 
+                  <el-color-picker v-model="strokecolor"
+                  show-alpha
                   :predefine="predefineColors" @change="changeAttributes('strokecolor')"></el-color-picker>
                 </el-form-item>
           </el-form>
@@ -249,7 +249,7 @@
         <span>點位資訊</span>
         <i class="el-icon-circle-close" style="float:right;" @click="disableVisible"></i>
       </el-row>
-      
+
       <el-table
         style="width: 100%"
         :data="getValues"
@@ -319,7 +319,7 @@ export default {
     connectArray(value){
       var all = this.canvas.getObjects()
       return all.filter(item=>{
-        return item.type !== 'textbox' && item.addressId !== this.addressId 
+        return item.type !== 'textbox' && item.addressId !== this.addressId
       })
     }
   },
@@ -393,7 +393,7 @@ export default {
       mouseFrom: {},
       mouseTo: {},
       //縮放
-      zoom: window.zoom ? window.zoom : 1, 
+      zoom: window.zoom ? window.zoom : 1,
       zoomPoint: new fabric.Point(0, 0), //初始时缩放原点的位置设为（0,0），这是页面的左上顶点
       lastzoomPoint: { x: 0, y: 0 }, //初始时，前一次缩放原点同样为(0,0)
       lastmousePoint: { x: 0, y: 0 }, //进行缩放，需要对此刻缩放位置进行保存，来计算出缩放原点，此刻初始时设为0,0
@@ -465,38 +465,25 @@ export default {
           handler:async function(){
             var data = _.cloneDeep(this.pointarray)
             this.imgAddress = data.map(item => {
-                this.$set(item, 'systemUsed',item.systemUsed) 
-                this.$set(item, 'id', item.id) 
+                this.$set(item, 'systemUsed',item.systemUsed)
+                this.$set(item, 'id', item.id)
                 var str = item.internet+'-'+item.system
                 if(item.type == 'fire'){
                   str = str.concat('-'+item.address)
                   if(item.number !== '' && item.number !== null && item.number !== undefined){
                      str = str.concat('-'+item.number)
-                  } 
+                  }
                 }else{
                   if(item.memeryLoc !== '' && item.memeryLoc !== null && item.memeryLoc !== undefined){
                      str = str.concat('-'+item.memeryLoc)
-                  } 
+                  }
                 }
                 this.$set(item, 'label',str)
                 return item
             })
           },
           immediate:true
-      },
-      // actionObj:{
-      //   handler:async function(){
-      //     if(this.actionObj !== null){
-      //       console.log('actionObj',this.actionObj,this.actionObj.LinkDevice.DeviceId)
-      //       var index = this.canvas.getObjects().findIndex(o=>o.deviceId == this.actionObj.LinkDevice.DeviceId)
-      //       var obj = this.canvas.getObjects()[index]
-      //       obj.set({ visible : true})
-      //       this.setAnimate(obj,this.actionObj.Action)
-      //       this.canvas.renderAll()
-      //     }
-      //   },
-      //   immediate:true
-      // }
+      }
   },
   mounted() {
     this.canvas = new fabric.Canvas("canvas")
@@ -582,7 +569,7 @@ export default {
                   'r':{'x':item.points[2].x,'y':item.points[2].y},
                   'lb':{'x':item.points[3].x,'y':item.points[3].y},
               }
-              a.push(b)  
+              a.push(b)
             }
         })
         var canvas = document.getElementById('canvas')
@@ -604,14 +591,14 @@ export default {
       this.zoom = 1
       this.zoomPoint= new fabric.Point(0, 0)
       this.lastzoomPoint= { x: 0, y: 0 }
-      this.lastmousePoint= { x: 0, y: 0 } 
+      this.lastmousePoint= { x: 0, y: 0 }
       this.lastzoom= 1
-      
+
       this.panning = false
       this.lastMovePos= {x:0, y:0}
       this.relativeMouseX = 0
       this.relativeMouseY = 0
-      
+
       this.resetOriginAfterZoom()
     },
     async loadBackgroundImage(objects,imgsrc){ //載入背景圖
@@ -636,7 +623,7 @@ export default {
       })
     },
     async loadObjects(val){ //載入初始物件
-      if(val !== null){ 
+      if(val !== null){
         var self = this
         var obj = JSON.parse(val)
         fabric.util.enlivenObjects(obj, async function(object) {
@@ -648,7 +635,7 @@ export default {
             })
             for(let i=0;i<object.length;i++){
               if(object[i].type == 'image'){
-                var item = constant.Equipment.filter((item,index) => 
+                var item = constant.Equipment.filter((item,index) =>
                   item.id == object[i].srcId
                 )[0]
                 await self.addImageProcess(item.status[0].imgSrc).then((respone) => {
@@ -660,12 +647,12 @@ export default {
                     visible: false,
                     opacity: 1,
                     hasControls:false
-                  }) 
+                  })
                   self.canvas.add(image)
                   self.addCustomize(image,object[i].objId,object[i].objectName,object[i].blockType,
                   object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
                 }).catch((err)=>{
-                    console.log(err)  
+                    console.log(err)
                 })
               }else{
                 object[i].visible = false
@@ -724,7 +711,7 @@ export default {
       if(items.length === 1){
         //this.objId = items[0].objId
         this.objectName = items[0].objectName
-        this.blockType = items[0].blockType  
+        this.blockType = items[0].blockType
         if(items[0].type === 'textbox'){
           this.selectType = 'textbox'
           this.fontsize = items[0].fontSize
@@ -769,7 +756,7 @@ export default {
       this.strokecolor = 'rgb(0, 0, 0)'
       this.strokeDash = '0'
       this.strokedash = [0,0]
-      this.strokeWidth = 1 
+      this.strokeWidth = 1
       this.selectType = null
       this.connectId = ''
       this.addressId = ''
@@ -780,13 +767,13 @@ export default {
       if(item.length == 0){
         this.$message.error('請選擇要刪除的物件')
         return false
-      } 
+      }
       item.forEach(obj => {
         this.canvas.remove(obj)
-        var index = this.imgAddress.findIndex(item=>{ 
+        var index = this.imgAddress.findIndex(item=>{
           return item.label == obj.addressId })
-        if(index !== -1){ 
-          this.imgAddress[index].systemUsed = false 
+        if(index !== -1){
+          this.imgAddress[index].systemUsed = false
           this.$refs.equipmentType.setDisableDraggle(this.imgAddress[index].id,true)
         }
       })
@@ -881,8 +868,8 @@ export default {
       //     this.canvas.skipTargetFind = true
       //     this.drop(e)
       //   }
-      // }else 
-      if (this.drawType == "text") { 
+      // }else
+      if (this.drawType == "text") {
         this.addTextBox()
       }else if (this.drawType == "polygon") {
         if (this.pointArray.length > 1) {
@@ -947,8 +934,8 @@ export default {
         return
       }
       //新增圖例的狀況下應關閉所有選取,才可在方框上新增圖例
-      
-      if(this.imgSource.length === 0 ){ 
+
+      if(this.imgSource.length === 0 ){
         this.canvas.skipTargetFind = false
         this.canvas.selection = true
       }
@@ -982,7 +969,7 @@ export default {
       //   window.child.close()
       //   this.imgSource = []
       // }
-      
+
       if(this.drawType == 'text' && this.textbox !== null){
         this.textbox.exitEditing() //關閉文字框編輯
         this.textbox = null
@@ -1017,7 +1004,7 @@ export default {
         if(this.imgSource[7] !== null){
           this.$refs.equipmentType.setDisableDraggle(this.imgSource[7],false)
         }
-        var index = this.imgAddress.findIndex(item=>{ 
+        var index = this.imgAddress.findIndex(item=>{
           return item.label == this.imgSource[4] })
         if(index !== -1){ this.imgAddress[index].systemUsed = true }
         this.imgSource = []
@@ -1229,11 +1216,11 @@ export default {
           address = address.concat('-'+item.address)
           if(item.number !== '' && item.number !== null && item.number !== undefined){
             address = address.concat('-'+item.number)
-          } 
+          }
         }else{
           if(item.memeryLoc !== '' && item.memeryLoc !== null && item.memeryLoc !== undefined){
             address = address.concat('-'+item.memeryLoc)
-          } 
+          }
         }
         // if(item.address !== '' && item.address !== null && item.address !== undefined){
         //     address = address.concat('-'+item.address)
@@ -1245,28 +1232,28 @@ export default {
         //     address = address.concat('-'+item.memeryLoc)
         // }
         var icon = constant.Equipment.filter(icon=>{
-          return icon.id == item.iconId 
+          return icon.id == item.iconId
         })[0]
-        this.imgSource = [item.iconId, event.offsetX, event.offsetY, item.deviceFullType, address, 
-        icon.status !== undefined ? icon.status : [], 
-        icon.action !== undefined ? icon.action : [], 
+        this.imgSource = [item.iconId, event.offsetX, event.offsetY, item.deviceFullType, address,
+        icon.status !== undefined ? icon.status : [],
+        icon.action !== undefined ? icon.action : [],
         item.id, icon.status[0].imgSrc]
         this.objectSelect(address)
       }else{
         var icon = constant.Equipment.filter(icon=>{
-          return icon.id == item.id 
+          return icon.id == item.id
         })[0]
-        this.imgSource = [item.id, event.offsetX, event.offsetY, item.name, null, 
-        icon.status !== undefined ? icon.status : [], 
-        icon.action !== undefined ? icon.action : [], 
+        this.imgSource = [item.id, event.offsetX, event.offsetY, item.name, null,
+        icon.status !== undefined ? icon.status : [],
+        icon.action !== undefined ? icon.action : [],
         null, icon.status[0].imgSrc]
       }
-      
+
     },
     // receiveMessage(event) { //子視窗傳來的
     //     //event.origin是指發送的消息源，一定要進行驗證！！！
     //     // if (event.origin !== "http://localhost:9528")return
-    //     if (event.data.source === 'vue-devtools-backend-injection' 
+    //     if (event.data.source === 'vue-devtools-backend-injection'
     //     || event.data.source === 'vue-devtools-proxy' || event.data.source === 'undefined')return
     //     if(event.data !== "" && event.data !== 'null'){
     //       this.imgSource = event.data.split('|')
@@ -1298,7 +1285,7 @@ export default {
                 this.strokeDash = this.strokeDash !== '-1' ?  this.strokeDash : '0'
                 this.strokedash =  this.strokedash !== null ?  this.strokedash : [0,0]
             }
-            this.canvas.getActiveObject().set({ 
+            this.canvas.getActiveObject().set({
               strokeWidth:this.strokeWidth , strokeDashArray:this.strokedash })
             break;
           case 'strokeDash':
@@ -1312,15 +1299,15 @@ export default {
               this.strokedash = [5,10]
               this.strokeWidth = this.strokeWidth !== 0 ? this.strokeWidth : 1
             }
-            this.canvas.getActiveObject().set({ 
+            this.canvas.getActiveObject().set({
                 strokeWidth:this.strokeWidth , strokeDashArray:this.strokedash })
             break;
           case 'fillcolor':
-            this.canvas.getActiveObject().set({ fill: this.fillcolor })  
+            this.canvas.getActiveObject().set({ fill: this.fillcolor })
             break;
           case 'strokecolor':
-            this.canvas.getActiveObject().set({ stroke: this.strokecolor }) 
-            break;  
+            this.canvas.getActiveObject().set({ stroke: this.strokecolor })
+            break;
         }
         this.isEditChange(true)
         this.canvas.renderAll()
@@ -1358,17 +1345,17 @@ export default {
         var original = this.canvas.getActiveObject().addressId
         var newaddress = this.addressId
         if(original !== newaddress){
-          var originalIndex = this.imgAddress.findIndex(item=>{ 
+          var originalIndex = this.imgAddress.findIndex(item=>{
           return item.label == original })
-          if(originalIndex !== -1){ 
-            this.imgAddress[originalIndex].systemUsed = false 
+          if(originalIndex !== -1){
+            this.imgAddress[originalIndex].systemUsed = false
             this.$refs.equipmentType.setDisableDraggle(this.imgAddress[originalIndex].id,true)
           }
         }
         this.canvas.getActiveObject().set({ addressId: this.addressId })
         var newindex = this.imgAddress.findIndex(item=>{ return item.label == this.addressId })
-        if(newindex !== -1){ 
-          this.imgAddress[newindex].systemUsed = true 
+        if(newindex !== -1){
+          this.imgAddress[newindex].systemUsed = true
           this.$refs.equipmentType.setDisableDraggle(this.imgAddress[newindex].id,false)
         }
         this.isEditChange(true)
@@ -1398,7 +1385,7 @@ export default {
             }
         })(canvasObject.toObject)
         canvasObject.set("objId",objId == null ? getUUID() : objId) //唯一性，用來新增icon
-        canvasObject.set("objectName",objectname !== null ? objectname : this.objectName == '' ?  
+        canvasObject.set("objectName",objectname !== null ? objectname : this.objectName == '' ?
         (new Date()).getTime() : this.objectName) //+'_'+ (new Date()).getTime()
         canvasObject.set("blockType",blocktype == null ? this.blockType : blocktype) //區塊才有
         canvasObject.set("srcId",srcId == null ? '' : srcId) //圖示的id
@@ -1412,7 +1399,7 @@ export default {
       // this.$emit('sendObjectListToLayer',this.canvas.getObjects())
     //},
     saveCanvasState(){ //儲存畫布狀態：物件有編輯/物件刪除/傳給父元件(貼上/初始化物件/圖例/矩形/文字/多邊)
-      if(JSON.stringify(this.canvas.toJSON()) === JSON.stringify(this.state)) return  
+      if(JSON.stringify(this.canvas.toJSON()) === JSON.stringify(this.state)) return
       this.undo.push(this.state)
       this.state = this.canvas.toJSON()
       this.redo = []
@@ -1453,13 +1440,13 @@ export default {
             clonedObj.forEachObject(function(obj) {
               canvas.add(obj)
               self.addCustomize(obj,null,_clipboard.objectName,_clipboard.blockType,
-              _clipboard.srcId,null,null,_clipboard.status,_clipboard.action) 
+              _clipboard.srcId,null,null,_clipboard.status,_clipboard.action)
             })
             clonedObj.setCoords()
           } else {
             canvas.add(clonedObj)
             self.addCustomize(clonedObj,null,_clipboard.objectName,_clipboard.blockType,
-            _clipboard.srcId,null,null,_clipboard.status,_clipboard.action)  
+            _clipboard.srcId,null,null,_clipboard.status,_clipboard.action)
           }
           _clipboard.top += 10
           _clipboard.left += 10
@@ -1527,7 +1514,7 @@ export default {
               abort: () => !this.hasAnimationStarted,
               easing: fabric.util.ease.easeInCubic
           })
-          break;  
+          break;
       }
     },
     animateAddTop(obj) {
@@ -1550,7 +1537,7 @@ export default {
     },
     disableVisible(){
       this.infovisible = false
-    }, 
+    },
     //操作列
     async handleOperateMenu(operate){
       switch(operate){
@@ -1607,10 +1594,10 @@ export default {
             }
             for(let obj of items){
               this.canvas.remove(obj)
-              var index = this.imgAddress.findIndex(item=>{ 
+              var index = this.imgAddress.findIndex(item=>{
                 return item.label == obj.addressId })
-              if(index !== -1){ 
-                this.imgAddress[index].systemUsed = false 
+              if(index !== -1){
+                this.imgAddress[index].systemUsed = false
                 this.$refs.equipmentType.setDisableDraggle(this.imgAddress[index].id, true)
               }
             }
@@ -1653,7 +1640,7 @@ export default {
     margin: auto;
     text-align: center;
   }
-  canvas {  
+  canvas {
     border: 1px dashed black;
   }
   .flow-attr {
