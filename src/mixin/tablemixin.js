@@ -26,8 +26,8 @@ export default {
           { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}
         ],
         tablebuttonsName:[
-          { name:'編輯',icon:'el-icon-edit',status:'open'},
-          { name:'刪除',icon:'el-icon-delete',status:'delete'}
+          { name:'刪除',icon:'el-icon-delete',status:'delete'},
+          { name:'編輯',icon:'el-icon-edit',status:'open'}
         ],
         dialogtableConfig:[],
         isHasHeaderButtons:true,

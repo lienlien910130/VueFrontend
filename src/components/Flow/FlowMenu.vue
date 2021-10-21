@@ -1,6 +1,6 @@
 <template>
     <div class="flow-menu" ref="tool">
-        <div style="height:300px;overflow:auto">
+        <div style="height:250px;overflow:auto">
             <!-- <span class="ef-node-pmenu" @click="processopen = !processopen">
                 <i :class="{'el-icon-caret-bottom': processopen,'el-icon-caret-right': !processopen}">
                 </i>&nbsp;{{ '流程圖' }}
@@ -12,7 +12,7 @@
             </span> -->
             <span class="ef-node-pmenu-process">
                 <i class="el-icon-caret-bottom"></i>&nbsp;{{ '流程圖' }}
-                <el-tooltip class="item" effect="dark" content="編輯流程圖" placement="bottom">
+                <el-tooltip v-if="title == 'contingencyProcess'" class="item" effect="dark" content="編輯流程圖" placement="bottom">
                     <i 
                         class="el-icon-edit" 
                         style="float:right;font-size:24px"
@@ -31,7 +31,7 @@
                 </li>
             </ul>
         </div>
-        
+        <template v-if="sampleNodeArray.length">
             <span class="ef-node-pmenu" @click="menuOpen = !menuOpen">
               <i :class="{'el-icon-caret-bottom': menuOpen,'el-icon-caret-right': !menuOpen}"></i>&nbsp;{{ '節點資料' }}</span>
             <ul v-show="menuOpen" class="ef-node-menu-ul">
@@ -42,6 +42,8 @@
                     </li>
                 </draggable>
             </ul>
+        </template>
+            
         <!-- <div v-for="menu  in  nodeArray" :key="menu.id">
             <span class="ef-node-pmenu" @click="menu.open = !menu.open">
               <i :class="{'el-icon-caret-bottom': menu.open,'el-icon-caret-right': !menu.open}"></i>&nbsp;{{menu.name}}</span>
@@ -67,6 +69,10 @@
     export default {
         name:'FlowMenu',
         props:{
+            title:{
+                type: String,
+                default: 'contingencyProcess'
+            },
             processId:{ type: String},
             processArray: {
                 type: Array,

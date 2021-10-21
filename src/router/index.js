@@ -46,9 +46,9 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '/emergencygraphic',
+    path: '/emergencyGraphic',
     component: Layout,
-    redirect: '/emergencygraphic',
+    redirect: '/emergencyGraphic',
     children: [{
       path: 'index',
       name: 'emergencygraphic',
@@ -66,6 +66,18 @@ export const constantRoutes = [
       name: 'selfDefenseClass',
       component: () => import('@/views/emergency/emergencyState/selfDefenseClass.vue'),
       meta: { title: '緊急應變班別', icon: 'icon', needLogin: true }
+    }],
+    hidden: true
+  },
+  {
+    path: '/emergencyClass',
+    component: Layout,
+    redirect: '/emergencyClass',
+    children: [{
+      path: 'index',
+      name: 'emergencyClass',
+      component: () => import('@/views/emergency/emergencyState/mviewer.vue'),
+      meta: { title: '緊急應變', icon: 'icon', needLogin: true }
     }],
     hidden: true
   },

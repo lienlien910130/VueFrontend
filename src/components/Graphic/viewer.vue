@@ -15,8 +15,10 @@ export default {
     name:'GraphicViewer',
     mounted() {
         this.canvas = new fabric.Canvas("canvas")
-        this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
-        this.canvas.setHeight(this.$refs.canvasdiv.clientHeight)
+        // this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
+        // this.canvas.setHeight(this.$refs.canvasdiv.clientHeight)
+        this.canvas.setWidth(1650)
+        this.canvas.setHeight(750)
         this.canvas.skipTargetFind = true
         this.canvas.selection = false
     },
@@ -29,12 +31,21 @@ export default {
             connectId:'',
             srcId:'',
             hasAnimationStarted:false,
+            leftsize:1,
+            topsize:1
         }
     },
     methods:{
         async loadBackgroundImage(objects,imgsrc){ //載入背景圖
             this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
             this.canvas.setHeight(this.$refs.canvasdiv.clientHeight)
+            console.log(this.$refs.canvasdiv.clientWidth,this.$refs.canvasdiv.clientHeight)
+            console.log(this.$refs.canvasdiv.clientWidth/1650)
+            console.log(this.$refs.canvasdiv.clientHeight/750)
+            this.leftsize = this.$refs.canvasdiv.clientWidth/1650
+            this.topsize = this.$refs.canvasdiv.clientHeight/750
+            // this.canvas.setWidth(1650)
+            // this.canvas.setHeight(750)
             this.canvas.clear()
             fabric.Image.fromURL(imgsrc, (img) => {
                 const background = img.set({
@@ -63,40 +74,44 @@ export default {
                     var origRenderOnAddRemove = self.canvas.renderOnAddRemove
                     self.canvas.renderOnAddRemove = false
                     for(let i=0;i<object.length;i++){
-                    if(object[i].type == 'image'){
-                        var item = constant.Equipment.filter((item,index) => 
-                        item.id == object[i].srcId
-                        )[0]
-                        var item = require('@/icons/svg/fire_'+item.id+'.svg')
-                        var text = item.default.content.replace(/http:\/\//g, 'https://')
-                        text = text.replace('symbol', 'svg')
-                        text = text.replace('/symbol', '/svg')
-                        fabric.loadSVGFromString(text, function(objects, options) { 
-                            var svgItems = fabric.util.groupSVGElements(objects, options);
-                            svgItems.set({
-                                scaleX: object[i].scaleX,
-                                scaleY: object[i].scaleY,
-                                top: object[i].top,
-                                left: object[i].left,
-                            })
-                            self.canvas.add(svgItems);
-                            self.addCustomize(svgItems,object[i].objId,object[i].objectName,object[i].blockType,
-                            object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
-                            self.canvas.renderAll();
-                        });
+                        if(object[i].type == 'image'){
+                            var item = constant.Equipment.filter((item,index) => 
+                            item.id == object[i].srcId
+                            )[0]
+                            var item = require('@/icons/svg/fire_'+item.id+'.svg')
+                            var text = item.default.content.replace(/http:\/\//g, 'https://')
+                            text = text.replace('symbol', 'svg')
+                            text = text.replace('/symbol', '/svg')
+                            fabric.loadSVGFromString(text, function(objects, options) { 
+                                var svgItems = fabric.util.groupSVGElements(objects, options);
+                                svgItems.set({
+                                    scaleX: object[i].scaleX * self.topsize,
+                                    scaleY: object[i].scaleY * self.leftsize,
+                                    top: object[i].top * self.topsize,
+                                    left: object[i].left * self.leftsize,
+                                })
+                                self.canvas.add(svgItems);
+                                self.addCustomize(svgItems,object[i].objId,object[i].objectName,object[i].blockType,
+                                object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
+                                self.canvas.renderAll();
+                            });
 
-                    }else{
-                        object[i].visible = true
-                        self.canvas.add(object[i])
-                        self.addCustomize(object[i],object[i].objId,object[i].objectName,object[i].blockType,
-                        object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
-                    }
+                        }else{
+                            object[i].visible = true
+                            object[i].scaleX = object[i].scaleX * self.leftsize
+                            object[i].scaleY = object[i].scaleY * self.topsize
+                            object[i].top = object[i].top * self.topsize
+                            object[i].left = object[i].left * self.leftsize
+                            self.canvas.add(object[i])
+                            self.addCustomize(object[i],object[i].objId,object[i].objectName,object[i].blockType,
+                            object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
+                        }
                     }
                     self.canvas.renderOnAddRemove = origRenderOnAddRemove
                     self.canvas.renderAll()
                     console.log(JSON.stringify(self.canvas.getObjects()))
-                    self.actionObj('001-001-02-999')
-                    self.actionObj('001-001-02-07')
+                    // self.actionObj('001-001-02-999')
+                    // self.actionObj('001-001-02-07')
                 })
             }
         },
@@ -128,30 +143,32 @@ export default {
         },
         actionObj(str){
             var index = this.canvas.getObjects().findIndex(o=>o.addressId == str)
-            var obj = this.canvas.getObjects()[index]
-            obj.set({
-                fill:'rgb(255, 0, 0)'
-            });
-            if(obj._objects !== undefined){
-                obj.getObjects()[1].set({
+            if(index !== -1){
+                var obj = this.canvas.getObjects()[index]
+                obj.set({
                     fill:'rgb(255, 0, 0)'
-                })
-            }
-            var equ = constant.Equipment.filter(ele=>{ return ele.id == obj.srcId})[0]
-            var src = equ.status.filter(obj=>{ return obj.value == 1})[0]
-            obj.set({
-                fill:src.color
-            });
-            if(obj._objects !== undefined){
-                obj.getObjects()[1].set({
+                });
+                if(obj._objects !== undefined){
+                    obj.getObjects()[1].set({
+                        fill:'rgb(255, 0, 0)'
+                    })
+                }
+                var equ = constant.Equipment.filter(ele=>{ return ele.id == obj.srcId})[0]
+                var src = equ.status.filter(obj=>{ return obj.value == 1})[0]
+                obj.set({
                     fill:src.color
-                })
+                });
+                if(obj._objects !== undefined){
+                    obj.getObjects()[1].set({
+                        fill:src.color
+                    })
+                }
+                obj.set({ visible : true})
+                if(src.color !== '#00ff00'){
+                    this.setAnimate(obj)
+                }
+                this.canvas.renderAll()
             }
-            obj.set({ visible : true})
-            if(src.color !== '#00ff00'){
-                this.setAnimate(obj)
-            }
-            this.canvas.renderAll()
         },
         setAnimate(obj){ //動畫
             this.hasAnimationStarted = true
@@ -162,7 +179,7 @@ export default {
                 abort: () => !this.hasAnimationStarted,
                 easing: fabric.util.ease.easeInOutCubic
             })
-        },
+        }
     }
 }
 </script>

@@ -2,7 +2,7 @@
 const getDefaultState = () => {
     return {
       wsmsg: [], //訊號
-      actions:'', //圖控只用
+      actions:[], //圖控只用
       wsuserId:'',
       graphicMsg:'', //圖控編輯限制
       flowMsg:'' //流程圖編輯限制
@@ -18,8 +18,9 @@ const getDefaultState = () => {
     SET_MSG: (state, wsmsg) => {
       state.wsmsg.unshift(wsmsg)
     },
-    SET_ACTIONS: (state, actions) => {
-      state.actions = actions
+    SET_ACTIONS: (state, action) => {
+      state.actions.push(action)
+      //state.actions = actions
     },
     SET_MSGUSERID: (state, wsuserId) => {
       state.wsuserId = wsuserId
@@ -39,7 +40,7 @@ const actions = {
   saveUserId({ commit } , wsuserId){
       commit('SET_MSGUSERID', wsuserId)
   },
-  sendGraphicMsg({ commit } , msg){
+  sendGraphicMsg({ commit } , msg){ //圖控編輯頁面使用
       commit('SET_GRAPHICMSG', msg)
   }
 }

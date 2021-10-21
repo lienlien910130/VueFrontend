@@ -30,10 +30,10 @@ router.beforeEach(async(to, from, next) => {
             await store.dispatch('permission/setmenu',await  Menu.get())
             await store.dispatch('permission/setneedreload', false)
           }
-          if(to.name == 'process'){ 
+          if(to.name == 'process' || to.name == 'selfDefenseClass'){ 
             toMenu = 'selfDefenseFireMarshalling'  
           }
-          if(to.name == 'emergencygraphic'){
+          if(to.name == 'emergencygraphic' || to.name == 'emergencyClass'){
             toMenu = 'drawingControl'
           }
           var menuarray = store.getters.menuNoLevel.filter(item=> item.code == toMenu)

@@ -1,15 +1,11 @@
 <template>
-    <div class="editor-container">
-        <GraphicViewer ref="graphicviewer">
-        </GraphicViewer>
-    </div>
+    <GraphicViewer ref="graphicviewer">
+    </GraphicViewer>
 </template>
 <script>
 import { Floors } from '@/object'
 import idb from '@/utils/indexedDB'
-
 export default {
-    name:'EmergencyGraphic',
     components:{
         GraphicViewer: () => import('@/components/Graphic/viewer.vue')
     },
@@ -44,8 +40,9 @@ export default {
         }
     },
     methods:{
-        async init(){
-            if(this.$route.query.f !== undefined){
+        async init() {
+            this.title = 'selfDefenseClass'
+            if(this.$route.query.r !== undefined && this.$route.query.u !== undefined && this.$route.query.f !== undefined){
                 var floor = await Floors.getOfId(this.$route.query.f)
                 var obj = await floor.getGraphicFiles()
                 if(floor.getImageID() == null){
@@ -56,7 +53,7 @@ export default {
                         this.$refs.graphicviewer.loadBackgroundImage(obj.codeContent,data)
                     })
                 }
-            }
+            }   
         },
     }
 }

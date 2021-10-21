@@ -232,7 +232,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .leftcontent{
-    height:450px;
+    height:600px;
     overflow: auto;
     width: 100%;
     

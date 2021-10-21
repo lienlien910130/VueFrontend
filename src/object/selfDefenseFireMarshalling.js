@@ -220,14 +220,6 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
-            // {
-            //     label:'預設流程圖',
-            //     prop:'defaultContingencyProcessId',
-            //     format:'contingencyProcessSelect',
-            //     mandatory:false, message:'請選擇流程圖',
-            //     isHidden:false,isSearch:false,
-            //     isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
-            // },
             {
                 label:'角色' , prop:'linkRoles',format:'roleSelect', mandatory:true,
                 type:'array',typemessage:'',isHidden:false,isSearch:false,

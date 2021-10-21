@@ -14,10 +14,13 @@
     </div>
 </template>
 <script>
-import { blockmixin, sharemixin } from '@/mixin/index'
+import { blockmixin } from '@/mixin/index'
 export default {
-    mixins:[sharemixin, blockmixin],
+    mixins:[blockmixin],
     computed:{
+        ...Vuex.mapGetters([
+            'buildingid'
+        ]),
         blockEvent(){
             return{
                 clickPagination:this.clickPagination,
@@ -25,15 +28,26 @@ export default {
             }
         }
     },
+    created(){
+        this.$store.dispatch('app/toggleDevice', 'mobile')
+        this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
+    },
     watch: {
-      wsmsg:{
-          handler:async function(){
-            console.log(this.wsmsg)
-            this.blockData = this.wsmsg
-            this.listQueryParams.total = this.wsmsg.length
-          },
-          immediate:true
-      },
+        buildingid:{
+            handler:async function(){
+                if(this.buildingid !== undefined){
+                    await this.init()
+                }
+            },
+            immediate:true
+        },
+        wsmsg:{
+            handler:async function(){
+                this.blockData = this.wsmsg
+                this.listQueryParams.total = this.wsmsg.length
+            },
+            immediate:true
+        }
     },
     data(){
         return{
@@ -64,7 +78,6 @@ export default {
             }
             await this.clickPagination()
         },
-        async changeTable(){},
     }
 }
 </script>

@@ -2,6 +2,8 @@
 import store from '../store'
 import { Account, Building, Contactunit, Device, DeviceAddressManagement, DeviceType, Floors, Role, UsageOfFloor, User } from '../object'
 import moment from 'moment';
+import { Notification } from 'element-ui'
+
  let wsConnection = {
    backWs:{
       $ws: null,
@@ -38,10 +40,14 @@ import moment from 'moment';
       }
       this.backWs.$ws.onmessage = function(msg){
         console.log('ws message-BACK')
-        console.log(msg)
         var data = JSON.parse(msg.data)
         wsConnection.resetHeartbeat(_this.backWs)
         console.log(data)
+        // Notification.warning({
+        //   title: '警告',
+        //   message: '收到訊號',
+        //   type: 'warning'
+        // })
         data.address.forEach(element => {
           var mode = ''
           var label = ''
@@ -50,10 +56,18 @@ import moment from 'moment';
             label = element.internet + '-' + element.memeryLoc
           }else if(data.mode == 'locPlc'){
             mode = 'PLC'
-            label = element.system + '-' + element.memeryLoc
+            label = element.internet + '-' + element.system + '-' + element.memeryLoc
+            if(element.system == 'R100'){
+              element.mode = data.mode
+              element.label = label
+              store.dispatch('websocket/sendActions', element)
+            }
           }else if(data.mode == 'loc'){
             mode = '火警'
-            
+            label = element.internet + '-' + element.system + '-' + element.address + '-' + element.number
+            element.mode = data.mode
+            element.label = label
+            store.dispatch('websocket/sendActions', element)
           }
           store.dispatch('websocket/sendMsg',{
             mode:mode,
@@ -62,7 +76,7 @@ import moment from 'moment';
             point:label
           })
         })
-        store.dispatch('websocket/sendActions',msg.data)
+        //store.dispatch('websocket/sendActions',msg.data)
         // store.dispatch('websocket/sendMsg',data)
       }
       this.backWs.$ws.onerror = function(){

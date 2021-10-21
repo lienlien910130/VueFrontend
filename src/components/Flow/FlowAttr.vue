@@ -2,7 +2,8 @@
     <div>
         <div class="ef-node-form">
             <div class="ef-node-form-body">
-                <el-form :model="node" ref="dataForm" label-width="80px" v-show="type === 'node'" @submit.native.prevent>
+                <el-form :model="node" ref="dataForm" label-position="left" 
+                label-width="50px" v-show="type === 'node'" @submit.native.prevent style="padding-left:10px">
                     <el-form-item label="ID">
                         <el-input v-model="node.nodeId" :disabled="true"></el-input>
                     </el-form-item>
@@ -10,7 +11,7 @@
                         <el-input v-model="node.nType" :disabled="true"></el-input>
                     </el-form-item>
                     <el-form-item label="名稱">
-                        <el-input v-model="node.name" @input="save"></el-input>
+                        <el-input v-model="node.name" @input="save" :disabled="disabled"></el-input>
                     </el-form-item>
                     <!-- <el-form-item label="圖標">
                         <el-input v-model="node.ico"></el-input>
@@ -36,7 +37,8 @@
                         v-model="node.nextCpId"
                         placeholder="請選擇"
                         filterable
-                        @change="save">
+                        @change="save"
+                        :disabled="disabled">
                             <el-option
                                 v-for="(item,index) in selectfilter('processSelect')"
                                 :key="index"
@@ -53,7 +55,8 @@
                         filterable
                         multiple
                         value-key="id"
-                        @change="filterAccount">
+                        @change="filterAccount"
+                        :disabled="disabled">
                             <el-option
                                 v-for="(item,index) in selectfilter('roleSelect')"
                                 :key="index"
@@ -69,7 +72,8 @@
                         filterable
                         multiple
                         value-key="id"
-                        @change="save">
+                        @change="save"
+                        :disabled="disabled">
                             <el-option
                                 v-for="(item,index) in accountArray"
                                 :key="index"
@@ -83,15 +87,15 @@
                         v-model="node.message"
                         type="textarea"
                         :autosize="{ minRows: 8, maxRows: 12}"
-                        @input="save"></el-input>
+                        @input="save" :disabled="disabled"></el-input>
                     </el-form-item>
                 </el-form>
                 <el-form :model="line" ref="dataForm" label-width="80px" v-show="type === 'line'" @submit.native.prevent>
                     <el-form-item label="備註">
-                        <el-input v-model="line.label"
+                        <el-input v-model="line.label" :disabled="disabled"
                         ></el-input>
                     </el-form-item>
-                    <el-form-item>
+                    <el-form-item v-show="!disabled">
                         <el-button type="primary" icon="el-icon-check" @click="saveLine">保存</el-button>
                     </el-form-item>
                 </el-form>
@@ -106,12 +110,20 @@
 
     export default {
         props:{
+            title:{
+                type: String,
+                default: 'contingencyProcess'
+            },
             processId:{ type: String },
             processArray: {
                 type: Array,
                 default: function () {
                     return []
                 }
+            },
+            disabled: {
+                type: Boolean,
+                default: false
             }
         },
         data() {
@@ -172,7 +184,11 @@
                     }
                 })
                 this.node.linkRoles = this.node.linkRoles.map(item=> { return new Role(item)})
-                await this.filterAccount(this.node.linkRoles)
+                if(this.title == 'selfDefenseClass'){
+                    this.accountArray = this.node.linkAccountList
+                }else{
+                    await this.filterAccount(this.node.linkRoles)
+                }
             },
             lineInit(line) {
                 this.type = 'line'

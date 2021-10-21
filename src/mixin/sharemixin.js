@@ -1,4 +1,3 @@
-// const Vuex = require('vuex')
 
 const moment = require('moment')
 export default {
@@ -49,6 +48,15 @@ export default {
             }
         }
     },
+    created(){ //因有緊急應變的情況是mobile，跳轉頁面時必須重新判定是否為電腦版
+        const rect = document.body.getBoundingClientRect()
+        const isMobile = rect.width - 1 < 992
+        if (isMobile && this.device !== 'mobile') {
+            this.$store.dispatch('app/toggleDevice', 'mobile')
+        }else if(!isMobile && this.device !== 'desktop') {
+            this.$store.dispatch('app/toggleDevice', 'desktop')
+        }
+    },
     watch: {
         buildingid:{
           handler:async function(){
@@ -69,7 +77,6 @@ export default {
         // },
         device:{
             handler:async function(){
-                console.log(this.title)
                 this.device != 'desktop' ? this.changeTable(false) : 
                     this.changeTable(true)
             }

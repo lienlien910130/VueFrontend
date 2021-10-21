@@ -10,19 +10,7 @@ export default {
   name: 'App',
   async created(){
     this.initsocket()
-    // this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
-    //   .then(async function (currentToken) {
-    //       if (currentToken) {
-    //         console.log('currentToken',currentToken)
-    //         await this.$store.dispatch('user/setMessageToken',currentToken)
-    //       } else {
-    //         //顯示訂閱的視窗
-    //          console.log('no token')
-    //       }
-    // })
-    // .catch(function (err) {
-    //       console.log('err',err)
-    // });
+  
     this.$messaging.onMessage(function (payload) {
         console.log(payload)
         //如果可以顯示通知就做顯示通知
@@ -79,6 +67,11 @@ export default {
     ])
   },
   watch:{
+    // buildingid:{
+    //   handler:async function(){
+    //     this.initsocket()
+    //   }
+    // }
     // wsmsg:{
     //   handler:async function(){
     //       var datalist = this.wsmsg.shift()

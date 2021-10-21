@@ -34,7 +34,7 @@
           v-on:sendAddressImageIcon="sendAddressImageIcon"></EquipmentType>
         </div>
 
-        <el-form v-if="selectType !== null" class="form-inline" label-position="left" style="padding:8px">  
+        <el-form v-if="selectType !== null" class="form-inline" label-position="left" style="padding:10px 8px">  
 
                 <el-form-item label="名稱" label-width="70px" >
                   <el-input v-model="objectName"  
@@ -500,8 +500,8 @@ export default {
   },
   mounted() {
     this.canvas = new fabric.Canvas("canvas")
-    this.canvas.setWidth(1500)
-    this.canvas.setHeight(600)
+    this.canvas.setWidth(1650)
+    this.canvas.setHeight(750)
     this.canvas.skipTargetFind = true
     this.canvas.selection = false
     this.canvas.selectionBorderColor ="red"
@@ -1649,7 +1649,7 @@ export default {
     flex: 1;
   }
   .canvasdiv{
-    width: 1500px;
+    width: 1650px;
     margin: auto;
     text-align: center;
   }

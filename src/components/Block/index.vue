@@ -737,6 +737,9 @@ export default {
                         case '12':
                             type = 'LinkToWorkflow';
                             break;
+                        case '13':
+                            type = 'WaitingForCall';
+                            break;
                         case '21':
                             type = 'MessageBroadcast';
                             break;

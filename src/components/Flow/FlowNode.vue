@@ -28,6 +28,10 @@
     export default {
       name:'FlowNode',
         props: {
+            title:{
+                type: String,
+                default: 'contingencyProcess'
+            },
             node: Object,
             activeElement: Object
         },
@@ -52,7 +56,11 @@
                 var nodeIcoClass = {}
                 nodeIcoClass[this.node.icon] = true
                 // 添加该class可以推拽连线出来，viewOnly 可以控制节点是否运行编辑
-                nodeIcoClass['flow-node-drag'] = this.node.viewOnly ? false : true
+                if(this.title == 'contingencyProcess'){
+                    nodeIcoClass['flow-node-drag'] = this.node.viewOnly ? false : true
+                }else{
+                    nodeIcoClass['flow-node-drag'] = false
+                }
                 return nodeIcoClass
             }
         },
@@ -88,8 +96,8 @@
 }
 
 .ef-node-container:hover {
-    /* 设置移动样式*/
     cursor: move;
+    /* 设置移动样式*/
     background-color: #F0F7FF;
     /*box-shadow: #1879FF 0px 0px 12px 0px;*/
     background-color: #F0F7FF;
@@ -117,7 +125,7 @@
     margin-left: 8px;
 }
 
-.ef-node-left-ico:hover {
+.ef-node-left-ico:hover .flow-node-drag{
     /* 设置拖拽的样式 */
     cursor: crosshair;
 }
