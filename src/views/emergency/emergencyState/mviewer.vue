@@ -88,36 +88,36 @@ export default {
     },
     data(){
       return{
-        actionList:[],
-        buttonOptions:[]
-        // actionList:[{
-        //   date:'2021/10/21 11:22:33',
-        //   mode:'防災盤',
-        //   action:'0',
-        //   point:'001-0008'
-        // },{
-        //   date:'2021/10/21 12:47:33',
-        //   mode:'PLC',
-        //   action:'1',
-        //   point:'P002-R100-7'
-        // },{
-        //   date:'2021/10/21 13:18:33',
-        //   mode:'火警',
-        //   action:'sa-1',
-        //   point:'001-01-010-7'
-        // }],
-        // buttonOptions:[{
-        //   "id": "342",
-        //   "name": "滅火中",
-        //   },
-        //   {
-        //   "id": "343",
-        //   "name": "滅火完成",
-        //   },
-        //   {
-        //   "id": "344",
-        //   "name": "滅火失敗",
-        //   }]
+        // actionList:[],
+        // buttonOptions:[]
+        actionList:[{
+          date:'2021/10/21 11:22:33',
+          mode:'防災盤',
+          action:'0',
+          point:'001-0008'
+        },{
+          date:'2021/10/21 12:47:33',
+          mode:'PLC',
+          action:'1',
+          point:'P002-R100-7'
+        },{
+          date:'2021/10/21 13:18:33',
+          mode:'火警',
+          action:'sa-1',
+          point:'001-01-010-7'
+        }],
+        buttonOptions:[{
+          "id": "342",
+          "name": "滅火中",
+          },
+          {
+          "id": "343",
+          "name": "滅火完成",
+          },
+          {
+          "id": "344",
+          "name": "滅火失敗",
+          }]
       }
     },
     methods:{

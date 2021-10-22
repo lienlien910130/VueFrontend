@@ -71,7 +71,6 @@ export const constantRoutes = [
   },
   {
     path: '/emergencyClass',
-    component: Layout,
     redirect: '/emergencyClass',
     children: [{
       path: 'index',

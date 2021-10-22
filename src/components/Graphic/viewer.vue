@@ -44,9 +44,13 @@ export default {
     },
     methods:{
         async loadBackgroundImage(objects,imgsrc){ //載入背景圖
+            if(this.canvasHeight == 0){
+                document.getElementById("canvasdiv").style.minHeight = "calc(100vh - 80px)"
+            }
             this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
             this.canvasheight = this.canvasHeight == 0 ? this.$refs.canvasdiv.clientHeight : this.canvasHeight
             this.canvas.setHeight(this.canvasheight)
+            console.log(this.$refs.canvasdiv.clientHeight)
             console.log(this.$refs.canvasdiv.clientWidth,this.canvasheight)
             console.log(this.$refs.canvasdiv.clientWidth/1650)
             console.log(this.canvasheight/750)
@@ -116,8 +120,8 @@ export default {
                     self.canvas.renderOnAddRemove = origRenderOnAddRemove
                     self.canvas.renderAll()
                     console.log(JSON.stringify(self.canvas.getObjects()))
-                    // self.actionObj('001-001-02-999')
-                    // self.actionObj('001-001-02-07')
+                    self.actionObj('001-001-02-999')
+                    self.actionObj('001-001-02-07')
                 })
             }
         },

@@ -853,7 +853,7 @@
                         }
                     }
                     if(addLineList.length){
-                      var addLineListclone = _.cloneDeep(addLineListclone)
+                      var addLineListclone = _.cloneDeep(addLineList)
                         var addLineResult = await COption.postMany(this.processId, addLineListclone)
                         if(addLineResult){
                             this.processLineArray = await COption.getOfProcess(this.processId)

@@ -5,7 +5,7 @@ import Device from './device'
 class DeviceAddressManagement extends Parent {
     constructor (data) {
         super(data)
-        const { internet, system, address, number, systemUsed, memeryLoc, iconId,  valueType, value,
+        const { internet, system, address, number, systemUsed, memeryLoc, iconId,  valueType, value, valueLength,
              floorsId, linkDevices  } = data
         var devices = linkDevices !== undefined ?
         linkDevices.map(item=>{ return new Device(item) }) :[]
@@ -19,6 +19,7 @@ class DeviceAddressManagement extends Parent {
         this.valueType = valueType
         this.memeryLoc = memeryLoc
         this.iconId = iconId
+        this.valueLength = valueLength
         this.linkDevices = devices
     }
     clone(data){
@@ -125,6 +126,7 @@ class DeviceAddressManagement extends Parent {
             value:'',
             memeryLoc:'',
             iconId:'',
+            valueLength:null,
             linkDevices:[],
             linkAssignDevices:[]
         })
@@ -241,9 +243,9 @@ class DeviceAddressManagement extends Parent {
             {
                 label: '記憶體位址',
                 prop: 'memeryLoc',
-                mandatory:false, message:'請輸入記憶體位址',isHidden:true,maxlength:'6',
+                mandatory:false, message:'請輸入記憶體位址',isHidden:false,maxlength:'6',
                 isSearch:true,placeholder:'請輸入0000~FFFF',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
                 label: '類型',
@@ -338,6 +340,13 @@ class DeviceAddressManagement extends Parent {
                 mandatory:false, message:'請輸入記憶體位址',isHidden:false,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
                 isSearch:true,placeholder:'請輸入記憶體位址',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
+                label: '記憶體長度',
+                prop: 'valueLength',
+                mandatory:false, message:'請輸入記憶體長度',isHidden:false,maxlength:'10',
+                isSearch:true,placeholder:'請輸入記憶體長度',
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {

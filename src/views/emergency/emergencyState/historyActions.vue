@@ -29,8 +29,8 @@ export default {
         }
     },
     created(){
-        this.$store.dispatch('app/toggleDevice', 'mobile')
-        this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
+        // this.$store.dispatch('app/toggleDevice', 'mobile')
+        // this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
     },
     watch: {
         buildingid:{

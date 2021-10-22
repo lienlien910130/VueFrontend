@@ -22,7 +22,9 @@ import { getUUID } from '.';
         timeoutNum: null,
         serverTimeoutObj: null,
         cPId:null,
-        cNode:null
+        cNode:null,
+        uid:null,
+        accessToken:null,
     },
     dataWs:{
         $ws: null,
@@ -136,8 +138,10 @@ import { getUUID } from '.';
         var data = JSON.parse(msg.data)
         wsConnection.resetHeartbeat(_this.processWs)
         console.log(data)
-        if(data.SenderName == 'MercuryfireWS65'){
-          store.dispatch('websocket/saveUserId',data.Id)
+        if(data.userId !== undefined){
+          _this.process.uid = data.userId
+          _this.process.accessToken = data.accessToken
+          // store.dispatch('websocket/saveUserId',data.Id)
         }else{
           _this.process.cPId = data.cPId
           _this.process.cNode = data.cNode

@@ -82,7 +82,7 @@
                             </el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item v-if="node.nType == 21" label="訊息">
+                    <el-form-item v-if="node.nType == 21 || node.nType == 25" label="訊息">
                         <el-input
                         v-model="node.message"
                         type="textarea"

@@ -223,9 +223,11 @@
                                 </span>
 
                                 <span v-else-if="option.format == 'iconSelect' " >
-                                    <template v-if="changeIcon(item[option.prop]) !== ''">
-                                        <img class="avatar" :src="changeIcon(item[option.prop])"
-                                        style="height:25px;width:25px;margin:auto;vertical-align:middle">
+
+                                    <template v-if="item[option.prop] !== '' && item[option.prop] !== undefined && item[option.prop] !== null">
+                                        <svg-icon :icon-class="'fire_'+item[option.prop]" style="font-size:30px"/>
+                                        <!-- <img class="avatar" :src="changeIcon(item[option.prop])"
+                                        style="height:25px;width:25px;margin:auto;vertical-align:middle"> -->
                                     </template>
                                 </span>
 
@@ -398,10 +400,14 @@
                                         </span>
 
                                         <span v-else-if="item.format == 'iconSelect' " >
-                                            <template v-if="changeIcon(scope.row[item.prop]) !== ''">
+                                            <svg-icon :icon-class="'fire_'+scope.row[item.prop]" style="font-size:30px"/>
+                                            <!-- <template v-if="scope.row[item.prop] !== '' && scope.row[item.prop] !== undefined && scope.row[item.prop] !== null">
+                                                <svg-icon :icon-class="'fire_'+scope.row[item.prop]" style="font-size:30px"/>
+                                            </template> -->
+                                            <!-- <template v-if="changeIcon(scope.row[item.prop]) !== ''">
                                                 <img class="avatar" :src="changeIcon(scope.row[item.prop])"
                                                 style="height:25px;width:25px;margin:auto;vertical-align:middle">
-                                            </template>
+                                            </template> -->
                                         </span>
 
                                         <span v-else-if="item.format == 'contactunitSelect' "

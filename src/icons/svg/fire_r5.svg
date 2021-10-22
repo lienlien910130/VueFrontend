@@ -1,6 +1,5 @@
 <?xml version="1.0" standalone="yes"?>
 <svg width="300" height="280">
-<path style="fill:#ffffff; stroke:none;" d="M0 0L0 280L300 280L300 0L0 0z"/>
 <path style="fill:#00a0e9; stroke:none;" d="M44 37L44 244L252 244L252 37L44 37z"/>
 <path style="fill:#ffffff; stroke:none;" d="M57 50L57 221L85 194L140.004 138L198 80L227 50L57 50M238 58C200.498 95.5023 163.481 133.519 126 171C106.878 190.122 82.5612 208.909 67 231L239 231L239 110L239 75L238 58z"/>
 </svg>

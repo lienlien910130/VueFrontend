@@ -372,6 +372,33 @@ export default {
             status:[
                 {value:'0',imgSrc:"b/13.png",color:'#00a0e9'}
             ]
+        },
+        {
+            id:'p4',
+            name:'空調',
+            type:'CE_AirConditioning',
+            status:[
+                {value:'0',imgSrc:"b/18.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r18.png",color:'#ff0000'}
+            ]
+        },
+        {
+            id:'p5',
+            name:'消防專用蓄水池',
+            type:'RE_FireReservoir',
+            status:[
+                {value:'0',imgSrc:"b/18.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r18.png",color:'#ff0000'}
+            ]
+        },
+        {
+            id:'p6',
+            name:'定位',
+            type:'People',
+            status:[
+                {value:'0',imgSrc:"b/18.png",color:'#00a0e9'},
+                {value:'1',imgSrc:"r/r18.png",color:'#ff0000'}
+            ]
         }
     ],
     AreaCode:[

@@ -72,9 +72,9 @@
                     <el-row>
                         <span style="width:23%;display:inline-block;text-align:center"> 總機編號 </span>
                         <span> - </span>
-                        <span style="width:23%;display:inline-block;text-align:center"> 迴路編號 </span>
+                        <span style="width:23%;display:inline-block;text-align:center"> 系統 </span>
                         <span> - </span>
-                        <span style="width:23%;display:inline-block;text-align:center"> 系統編號 </span>
+                        <span style="width:23%;display:inline-block;text-align:center"> 位址 </span>
                         <span> - </span>
                         <span style="width:23%;display:inline-block;text-align:center"> 編號 </span>
                     </el-row>
@@ -156,7 +156,8 @@
                     style="width:100%"
                     >
                     <template v-if="item.format == 'iconSelect' && selectfilter('iconShow') !== null" slot="prefix">
-                        <img class="avatar" :src="selectfilter('iconShow')" style="height:25px;width:25px;margin:auto;vertical-align:middle">
+                        <svg-icon :icon-class="'fire_'+temp[item.prop]" style="font-size:20px"/>
+                        <!-- <img class="avatar" :src="selectfilter('iconShow')" style="height:25px;width:25px;margin:auto;vertical-align:middle"> -->
                     </template>
                     <el-option
                         v-for="(obj,index) in selectfilter(item.format)"
@@ -165,7 +166,8 @@
                         :value="obj.id"
                         >
                             <template v-if="item.format == 'iconSelect'">
-                                <img class="avatar" :src="obj.imgsrc" style="height:30px;width:30px;margin:auto;vertical-align:middle">
+                                <svg-icon :icon-class="'fire_'+obj.id" style="font-size:20px"/>
+                                <!-- <img class="avatar" :src="obj.imgsrc" style="height:30px;width:30px;margin:auto;vertical-align:middle"> -->
                                 <span>{{ obj.label }}</span>
                             </template>
                     </el-option>
@@ -186,7 +188,7 @@
                         >
                         </el-option>
                 </el-select>
-                <!-- 設備種類 -->
+                <!-- 設備種類 :disabled="dialogStatus == 'create' ? false : true"-->
                 <el-select
                     v-else-if="item.format =='deviceTypeSelect'"
                     v-model="temp[item.prop]"
@@ -196,7 +198,7 @@
                     value-key="id"
                     placeholder="請選擇"
                     style="width:100%"
-                    :disabled="dialogStatus == 'create' ? false : true"
+                    
                     @change="checkMode($event, item.format)"
                     >
                         <el-option
@@ -503,7 +505,7 @@ export default {
                             var icon = constant.Equipment.filter(item=>{
                                 return item.id == this.temp['iconId']
                             })[0]
-                            return icon !== undefined ? require('@assets/equipment/'+icon.status[0].imgSrc)  : null
+                            return icon !== undefined ? require('@/icons/svg/fire_'+icon.id+'.svg')  : null
                         case 'valueType':
                             return [{label:'監視狀態',id:'status'},{label:'監視電源',id:'power'},{label:'控制動作',id:'action'}]
                         case 'addressdeviceSelect':
