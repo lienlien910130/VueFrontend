@@ -311,8 +311,12 @@
                     this.jsPlumb.importDefaults(this.jsplumbSetting)
                     this.jsPlumb.setSuspendDrawing(false, true)
                     this.loadFlow() // 繪製json
+                    // this.jsPlumb.registerConnectionType("selected",{
+                    //   paintStyle:{stroke:"red",strokeWidth:5},
+                    // });
                     //點擊線-傳遞資訊到右側
                     this.jsPlumb.bind('click', (conn, originalEvent) => {
+                        // conn.toggleType("selected")
                         this.activeElement.type = 'line'
                         this.activeElement.sourceId = conn.sourceId
                         this.activeElement.targetId = conn.targetId
@@ -418,6 +422,7 @@
                 if(this.data.lineList !== undefined){
                     this.data.lineList.forEach(line => {
                         var connParam = {
+                            id:line.id,
                             source: line.from,
                             target: line.to,
                             label: line.label ? line.label : '',
@@ -425,7 +430,8 @@
                             anchors: line.anchors ? line.anchors : undefined,
                             paintStyle: line.paintStyle ? line.paintStyle : undefined,
                         }
-                        this.jsPlumb.connect(connParam, this.jsplumbConnectOptions)
+                        var conn = this.jsPlumb.connect(connParam, this.jsplumbConnectOptions)
+                        conn.id = line.id
                     })
                 }
                 this.$nextTick(function () {
@@ -454,7 +460,29 @@
                     source: from,
                     target: to
                 })
-                var conn = connects.filter(item =>{ return item.id == connId})[0]
+                var index = connects.findIndex(obj => obj.id == connId)
+                var conn = connects[index]
+                var location = 0.5
+                switch(index){
+                  case 0:
+                    location = 0.5
+                    break;
+                  case 1:
+                    location = 0.2
+                    break;
+                  case 2:
+                    location = 0.8
+                    break;
+                  case 3:
+                    location = 0.1
+                    break;
+                  case 4:
+                    location = 0.9
+                    break;
+                  default:
+                    location = 0.5
+                    break;
+                }
                 this.$nextTick(()=>{
                     if (!label || label === '') {
                         conn.removeClass('flowLabel')
@@ -463,14 +491,12 @@
                         conn.addClass('flowLabel')
                     }
                     conn.setLabel({
-                        label: label
+                        label: label,
+                        location: location
                     })
                 })
-                this.data.lineList.forEach(function (line) {
-                    if (line.id == connId) {
-                        line.label = label
-                    }
-                })
+                var index = this.data.lineList.findIndex(obj => obj.id == connId)
+                this.data.lineList[index].label = label
             },
             repaintEverything() {
                 this.jsPlumb.repaint()
@@ -525,7 +551,7 @@
                     icon: nodeMenu.icon,
                     state: 0,
                     message:'',
-                    nextCpId:'',
+                    nextCpId:'0',
                     linkRoles:[],
                     linkAccountList:[]
                 }
@@ -780,7 +806,8 @@
                     var lineList = this.data.lineList
                     var addLineList = []
                     var deleteLineList = []
-                    //新增的線
+                    var updateLineList = []
+                    //判斷新增與更新的關聯
                     lineList.forEach(item=>{
                         var indexline = this.processLineArray.findIndex(obj=> obj.optionId === item.id )
                         if(indexline == -1){
@@ -790,6 +817,16 @@
                                 optionId:item.id,
                                 name:item.label !== undefined ? item.label : ''
                             })
+                        }else{
+                          var itemName = item.label !== undefined ? item.label : ''
+                          var lineName = this.processLineArray[indexline].name !== undefined ?
+                                          this.processLineArray[indexline].name : ''
+                          if(itemName !== lineName){
+                            updateLineList.push({
+                              id:this.processLineArray[indexline].id,
+                              name:item.label
+                            })
+                          }
                         }
                     })
                     //刪除的線
@@ -814,18 +851,23 @@
                               name:item.name,
                               message:item.message,
                               nextCpId:item.nextCpId,
-                              linkRoles:item.linkRoles,
-                              linkAccountList:item.linkAccountList
+                              linkRoles:item.linkRoles.sort((x,y) => x.id - y.id),
+                              linkAccountList:item.linkAccountList.sort((x,y) => x.id - y.id)
                             }
                             var processItem = {
                               name:this.processNodeArray[indexnode].name,
                               message:this.processNodeArray[indexnode].message == undefined ? '' : this.processNodeArray[indexnode].message,
                               nextCpId:this.processNodeArray[indexnode].nextCpId == undefined ? '' : this.processNodeArray[indexnode].nextCpId,
-                              linkRoles:this.processNodeArray[indexnode].linkRoles,
-                              linkAccountList:this.processNodeArray[indexnode].linkAccountList
+                              linkRoles:this.processNodeArray[indexnode].linkRoles.sort((x,y) => x.id - y.id),
+                              linkAccountList:this.processNodeArray[indexnode].linkAccountList.sort((x,y) => x.id - y.id)
                             }
-                            var sameResult = isObjectValueEqual(nodeItem,processItem)
 
+                            var sameResult = isObjectValueEqual(nodeItem,processItem)
+                            if(sameResult == false){
+                              var updateNode = _.cloneDeep(nodeItem)
+                              updateNode.id = this.processNodeArray[indexnode].id
+                              updateNodeList.push(updateNode)
+                            }
                         }
                     })
                     //刪除的節點
@@ -837,35 +879,44 @@
                     })
                     console.log('addNodeList',JSON.stringify(addNodeList))
                     console.log('deleteNodeList',JSON.stringify(deleteNodeList))
+                    console.log('updateNodeList',JSON.stringify(updateNodeList))
                     console.log('addLineList',JSON.stringify(addLineList))
                     console.log('deleteLineList',JSON.stringify(deleteLineList))
+                    console.log('updateLineList',JSON.stringify(updateLineList))
+                    var resetNode = false
+                    var resetLine = false
                     if(addNodeList.length){
-                        var addNodeListclone = _.cloneDeep(addNodeList)
-                        var addNodeResult = await CNode.postMany(this.processId, addNodeListclone)
-                        if(addNodeResult){
-                            this.processNodeArray = await CNode.get(this.processId)
-                        }
+                      var addNodeListclone = _.cloneDeep(addNodeList)
+                      resetNode = await CNode.postMany(this.processId, addNodeListclone)
                     }
                     if(deleteNodeList.length){
-                        var deleteNodeResult = await CNode.deleteMany(deleteNodeList.toString())
-                        if(deleteNodeResult){
-                            this.processNodeArray = await CNode.get(this.processId)
-                        }
+                      resetNode = await CNode.deleteMany(deleteNodeList.toString())
                     }
+                    if(updateNodeList.length){
+                      var updateNodeListclone = _.cloneDeep(updateNodeList)
+                      resetNode= await CNode.updateMany(updateNodeListclone)
+                    }
+
                     if(addLineList.length){
                       var addLineListclone = _.cloneDeep(addLineList)
-                        var addLineResult = await COption.postMany(this.processId, addLineListclone)
-                        if(addLineResult){
-                            this.processLineArray = await COption.getOfProcess(this.processId)
-                        }
+                      resetLine = await COption.postMany(this.processId, addLineListclone)
                     }
                     if(deleteLineList.length){
-                        var deleteLineResult = await COption.deleteMany(deleteLineList.toString())
-                        if(deleteLineResult){
-                            this.processLineArray = await COption.getOfProcess(this.processId)
-                        }
+                      resetLine = await COption.deleteMany(deleteLineList.toString())
+                    }
+                    if(updateLineList.length){
+                      var updateLineListclone = _.cloneDeep(updateLineList)
+                      resetLine = await COption.updateMany(updateLineListclone)
                     }
                     this.$message('儲存成功')
+                    if(resetNode){
+                      this.processNodeArray = await CNode.get(this.processId)
+                    }
+                    if(resetLine){
+                      this.processLineArray = await COption.getOfProcess(this.processId)
+                    }
+                    console.log(JSON.stringify(this.processNodeArray))
+                    console.log(JSON.stringify(this.processLineArray))
                 }else{
                     this.$message.error('系統錯誤')
                 }
@@ -875,8 +926,8 @@
                     var result = await ContingencyProcess.getJson(pid)
                     this.processId = pid
                     this.processNodeArray = await CNode.get(this.processId)
-                    console.log(JSON.stringify(this.processNodeArray))
                     this.processLineArray = await COption.getOfProcess(this.processId)
+                    console.log(JSON.stringify(this.processLineArray))
                     if(result.codeContent !== undefined){
                         this.$nextTick(() => {
                             this.dataReload(JSON.parse(result.codeContent))

@@ -155,23 +155,34 @@ export default {
             var index = this.canvas.getObjects().findIndex(o=>o.addressId == str)
             if(index !== -1){
                 var obj = this.canvas.getObjects()[index]
-                obj.set({
-                    fill:'rgb(255, 0, 0)'
-                });
-                if(obj._objects !== undefined){
-                    obj.getObjects()[1].set({
-                        fill:'rgb(255, 0, 0)'
-                    })
-                }
+                // obj.set({
+                //     fill:'rgb(255, 0, 0)'
+                // });
+                // if(obj._objects !== undefined){
+                //     obj.getObjects().forEach(item=>{
+                //       if(item.fill !== '#ffffff'){
+                //         item.set({
+                //             fill:'rgb(255, 0, 0)'
+                //         })
+                //       }
+                //     })
+                // }
                 var equ = constant.Equipment.filter(ele=>{ return ele.id == obj.srcId})[0]
                 var src = equ.status.filter(obj=>{ return obj.value == 1})[0]
                 obj.set({
                     fill:src.color
                 });
                 if(obj._objects !== undefined){
-                    obj.getObjects()[1].set({
-                        fill:src.color
+                    obj.getObjects().forEach(item=>{
+                      if(item.fill !== '#ffffff'){
+                        item.set({
+                            fill:src.color
+                        })
+                      }
                     })
+                    // obj.getObjects()[1].set({
+                    //     fill:src.color
+                    // })
                 }
                 obj.set({ visible : true})
                 if(src.color !== '#00ff00'){

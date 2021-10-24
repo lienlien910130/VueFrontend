@@ -137,7 +137,6 @@ export function getUUID() {
 }
 
 export function isObjectValueEqual(a, b) {
-
   var aProps = Object.getOwnPropertyNames(a);
   var bProps = Object.getOwnPropertyNames(b);
   if (aProps.length != bProps.length) {
@@ -150,18 +149,16 @@ export function isObjectValueEqual(a, b) {
         return false;
       }
     }else if(typeof a[propName] == 'object'){ //陣列
-      console.log(a[propName],b[propName])
       if (a[propName].length !== b[propName].length) {
         return false;
       }else{
-        // a[propName] = a[propName].sort((x,y) => x.id - y.id)
-        // b[propName] = b[propName].sort((x,y) => x.id - y.id)
-        // for(var i=0;i<a[propName].length;i++){
-        //   console.log(a[propName][i])
-        //   if(a[propName][i].id !== b[propName][i].id){
-        //     return false;
-        //   }
-        // }
+        if(a[propName].length !== 0 ){ //有數量才開始檢查
+          for (const [i, v] of a[propName].entries()) {
+            if(v.id !== b[propName][i].id){
+              return false;
+            }
+          }
+        }
       }
     }
   }

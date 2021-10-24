@@ -202,13 +202,20 @@ class CNode extends Parent {
     }
     static async postMany(processId,data){
         var data = await api.nodeList.apiPostNodes(processId,data).then(response => {
-            response.result = response.result.map(item=>{ return new CNode(item)})
             return true
         }).catch(error=>{
             return false
         })
         return data
     }
+    static async updateMany(data){
+      var data = await api.nodeList.apiPatchNode(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
+  }
 }
 //關聯線
 class COption extends Parent {
@@ -294,5 +301,13 @@ class COption extends Parent {
         })
         return data
     }
+    static async updateMany(data){
+      var data = await api.nodeList.apiPatchOption(data).then(response => {
+          return true
+      }).catch(error=>{
+          return false
+      })
+      return data
+  }
 }
 export { SampleNodeList, CNode, COption }

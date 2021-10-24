@@ -2,7 +2,7 @@
     <div>
         <div class="ef-node-form">
             <div class="ef-node-form-body">
-                <el-form :model="node" ref="dataForm" label-position="left" 
+                <el-form :model="node" ref="dataForm" label-position="left"
                 label-width="50px" v-show="type === 'node'" @submit.native.prevent style="padding-left:10px">
                     <el-form-item label="ID">
                         <el-input v-model="node.nodeId" :disabled="true"></el-input>
