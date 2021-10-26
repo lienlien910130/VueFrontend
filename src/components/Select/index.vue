@@ -49,8 +49,10 @@ export default {
       selectData:{
         handler:async function(){
           if(this.title == 'Building' || this.title == 'GraphicFloor'){
-            this.defaultvalue = this.selectData[0].getID()
-            this.currentSel(this.defaultvalue)
+            if(this.selectData.length){
+              this.defaultvalue = this.selectData[0].getID()
+              this.currentSel(this.defaultvalue)
+            }
           }else if(this.title == 'contactunit' || this.title == 'equipment'){
             this.defaultvalue = 'all'
           }

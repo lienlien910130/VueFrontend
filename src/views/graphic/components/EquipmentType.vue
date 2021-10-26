@@ -25,14 +25,19 @@
                         :key="index"
                         >
                             <el-tooltip class="item" effect="dark" :content="item.label" placement="top-start">
-                                <el-image
+                                <!-- <el-image
                                 :class="[{active:item.draggable == false},{icon:true}]"
                                 :src="getImg(item.iconId)"
                                 :alt="item.deviceFullType"
                                 @mousedown="handleImage(item,$event)"
                                 :draggable="item.draggable"
                                 >
-                                </el-image>
+                                </el-image> -->
+                                <svg-icon 
+                                :class="[{active:item.draggable == false},{icon:true},{selected:select == item}]"
+                                :alt="item.deviceFullType"
+                                @mousedown="addSvg(item,$event)"
+                                :icon-class="'fire_'+item.iconId" style="font-size:55px"  />
                             </el-tooltip>
                         </div>
                     </div>
@@ -62,14 +67,19 @@
                             :key="index"
                             >
                                 <el-tooltip class="item" effect="dark" :content="item.name" placement="top-start">
-                                    <el-image
+                                    <svg-icon 
+                                    :class="[{icon:true},{selected:select == item}]"
+                                    :alt="item.name"
+                                    @mousedown="addSvg(item,$event)"
+                                    :icon-class="'fire_'+item.id" style="font-size:55px"  />
+                                    <!-- <el-image
                                     :class="[{active:select == item},{icon:true}]"
                                     :src="getImg(item.id)"
                                     :alt="item.name"
                                     @mousedown="handleImage(item,$event)"
                                     :draggable="item.draggable"
                                     >
-                                    </el-image>
+                                    </el-image> -->
                                 </el-tooltip>
                             </div>
                     </div>
@@ -89,41 +99,6 @@
             </div>
         </el-tab-pane>
     </el-tabs>
-    <!-- <div
-    class="leftcontent"
-    >
-        <div v-if="type =='icon'">
-            <div
-            class="imagediv"
-            v-for="(item,index) in imgList"
-            :key="index"
-            >
-                <el-tooltip class="item" effect="dark" :content="getAddress(item)" placement="top-start">
-                    <el-image
-                    :class="[{active:select == item},{icon:true}]"
-                    :src="getImg(item.iconId)"
-                    :alt="item.deviceFullType"
-                    @mousedown="handleImage(item,$event)"
-                    :draggable="item.draggable"
-                    >
-                    </el-image>
-                </el-tooltip>
-            </div>
-        </div>
-        <div v-else>
-            <div
-            class="linkdiv"
-            v-for="(item,index) in imgList"
-            :key="index">
-                <el-tooltip class="item" effect="dark" :content="getAddress(item)" placement="top-start">
-                    <el-link
-                    class="link"
-                    type="info">{{ parseInt(index)+1 }} . {{ item.deviceFullType }}
-                    </el-link>
-                </el-tooltip>
-            </div>
-        </div>
-    </div> -->
 </div>
 </template>
 
@@ -151,19 +126,19 @@ export default {
           immediate:true
       }
     },
-    computed: {
-        getImg(){
-            return function (value) {
-                if(value !== null){
-                    let icon = constant.Equipment.filter((item, index) => 
-                        item.id == value 
-                    )[0]
-                    return icon !== undefined ?  require('@assets/equipment/'+icon.status[0].imgSrc)  : ""
-                }
-                return null
-            }
-        }
-    },
+    // computed: {
+    //     getImg(){
+    //         return function (value) {
+    //             if(value !== null){
+    //                 let icon = constant.Equipment.filter((item, index) => 
+    //                     item.id == value 
+    //                 )[0]
+    //                 return icon !== undefined ?  require('@assets/equipment/'+icon.status[0].imgSrc)  : ""
+    //             }
+    //             return null
+    //         }
+    //     }
+    // },
     data(){
         return{
             viewlist:constant.Equipment,
@@ -182,21 +157,9 @@ export default {
         handleChange(type){
             this.type = type
         },
-        handleImage(item,e){
-            if(e.target.localName == 'img'){
-                this.$emit('sendAddressImageIcon', item, e)
-                // if(this.select == item){
-                //     this.select = null
-                //     //window.opener.postMessage('null', window.location)
-                //     // this.$emit('sendAddressImageIcon', null, null)
-                // }else{
-                //     this.select = item
-                //     this.$emit('sendAddressImageIcon', item, e)
-                //     // var str = item.id+'|'+e.offsetX+'|'+e.offsetY+'|'+
-                //     // e.target.naturalWidth+'|'+e.target.naturalHeight+'|'+item.name+'|'+JSON.stringify(item.status)+'|'+JSON.stringify(item.action)
-                //     // window.opener.postMessage(str, window.location)
-                // }
-            }
+        addSvg(item,e){
+            this.select = item
+            this.$emit('sendAddressImageIcon', item, e)
         },
         handleSearch(){
             this.imgList = []
@@ -253,11 +216,16 @@ export default {
     height: 55px;
     border: 1px solid black ;
     margin: 5px;
+    cursor: pointer;
+}
+.selected{
+    background-color: red;
 }
 .link{
     padding: 8px;
 }
 .active{
     background-color: rgb(194, 193, 193);
+    cursor: no-drop;
 }
 </style>

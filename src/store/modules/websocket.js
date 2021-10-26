@@ -21,7 +21,6 @@ const getDefaultState = () => {
     },
     SET_ACTIONS: (state, action) => {
       state.actions.push(action)
-      //state.actions = actions
     },
     SET_MSGUSERID: (state, wsuserId) => {
       state.wsuserId = wsuserId

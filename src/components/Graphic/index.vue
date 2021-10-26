@@ -413,6 +413,7 @@ export default {
       //複製貼上
       clipboard:null,
       //客製化的元素
+      objId:null,
       blockType: '未分類',
       objectName:'', //圖層標題
       //上一步下一步
@@ -613,15 +614,6 @@ export default {
       })
       await this.loadObjects(objects)
     },
-    addImageProcess(src){ //載入圖片
-      var self = this
-      return new Promise((resolve, reject) => {
-          self.imgEl = new Image()
-          self.imgEl.onload = () => resolve(self.imgEl)
-          self.imgEl.onerror = ()=>reject("加載失敗")
-          self.imgEl.src = require('@assets/equipment/'+src)
-      })
-    },
     async loadObjects(val){ //載入初始物件
       if(val !== null){
         var self = this
@@ -629,31 +621,26 @@ export default {
         fabric.util.enlivenObjects(obj, async function(object) {
             var origRenderOnAddRemove = self.canvas.renderOnAddRemove
             self.canvas.renderOnAddRemove = false
-            var original = []
-            obj.forEach(item=>{
-              original.push(item)
-            })
             for(let i=0;i<object.length;i++){
-              if(object[i].type == 'image'){
-                var item = constant.Equipment.filter((item,index) =>
-                  item.id == object[i].srcId
-                )[0]
-                await self.addImageProcess(item.status[0].imgSrc).then((respone) => {
-                  const image = new fabric.Image(respone, {
-                    scaleX: object[i].scaleX,
-                    scaleY: object[i].scaleY,
-                    top: object[i].top,
-                    left: object[i].left,
-                    visible: false,
-                    opacity: 1,
-                    hasControls:false
+              if(object[i].srcId !== ''){ //載入svg圖
+                var item = require('@/icons/svg/fire_'+object[i].srcId+'.svg')
+                var text = item.default.content.replace(/http:\/\//g, 'https://')
+                text = text.replace('symbol', 'svg')
+                text = text.replace('/symbol', '/svg')
+                fabric.loadSVGFromString(text, function(objects, options) {
+                  var svgItems = fabric.util.groupSVGElements(objects, options);
+                  svgItems.set({
+                      scaleX: object[i].scaleX,
+                      scaleY:object[i].scaleY,
+                      top: object[i].top,
+                      left: object[i].left,
+                      hasControls:false,
+                      visible:false
                   })
-                  self.canvas.add(image)
-                  self.addCustomize(image,object[i].objId,object[i].objectName,object[i].blockType,
+                  self.canvas.add(svgItems)
+                  self.addCustomize(svgItems,object[i].objId,object[i].objectName,object[i].blockType,
                   object[i].srcId,object[i].addressId,object[i].connectId,object[i].status,object[i].action)
-                }).catch((err)=>{
-                    console.log(err)
-                })
+                });
               }else{
                 object[i].visible = false
                 self.canvas.add(object[i])
@@ -664,7 +651,6 @@ export default {
             self.canvas.renderOnAddRemove = origRenderOnAddRemove
             self.canvas.renderAll()
             self.state = self.canvas.toJSON()
-            //self.sendAllobj()
         })
       }
     },
@@ -709,14 +695,16 @@ export default {
       //this.isTextBox = null
       this.selectType = null
       if(items.length === 1){
-        //this.objId = items[0].objId
+        this.objId = items[0].objId
         this.objectName = items[0].objectName
         this.blockType = items[0].blockType
-        if(items[0].type === 'textbox'){
+        var objectType = items[0].type !== 'path' && items[0].type !== 'group' ? 
+                items[0].type : items[0].srcId !== ''  ? 'image' : 'path'
+        if(objectType === 'textbox'){
           this.selectType = 'textbox'
           this.fontsize = items[0].fontSize
           this.fontcolor = items[0].fill
-        }else if(items[0].type === 'path' || items[0].type === 'polygon' ){
+        }else if(objectType === 'path' || objectType === 'polygon' ){
           this.selectType = 'path'
           this.opacity = items[0].opacity*100
           this.fillcolor = items[0].fill
@@ -733,7 +721,7 @@ export default {
               this.strokeDash = '1'
             }
           }
-        }else if(items[0].type === 'image'){
+        }else if(objectType === 'image'){
           this.selectType = 'image'
           this.srcId = items[0].srcId
           this.addressId = items[0].addressId
@@ -779,9 +767,6 @@ export default {
       })
       this.saveCanvasState()
       this.canvas.renderAll()
-      // if(item.length !== 0){
-      //   await this.$emit('sendActionToLayer','del',item)
-      // }
     },
     //座標相關調整
     getX(o) {
@@ -860,15 +845,11 @@ export default {
         return
       }
 
-      // if(this.canvas.getActiveObject() == null && this.imgSource.length !== 0 && this.drawType == 'icon'){ //可以點選圖片新增
-      //   if(window.child.closed){
-      //     this.imgSource = []
-      //     this.canvas.skipTargetFind = false
-      //   }else{
-      //     this.canvas.skipTargetFind = true
-      //     this.drop(e)
-      //   }
-      // }else
+      if(this.canvas.getActiveObject() == null && this.imgSource.length !== 0){ //可以點選圖片新增
+        this.canvas.skipTargetFind = true
+        this.drop(e)
+      }
+
       if (this.drawType == "text") {
         this.addTextBox()
       }else if (this.drawType == "polygon") {
@@ -943,13 +924,14 @@ export default {
       if(this.drawType === 'rectangle'){
         if(this.canvas.getObjects().length !== this.objectCount){
           this.isEditChange(true)
-          var imageSelect = this.canvas.getActiveObjects().filter(item=> { return item.type == 'image'})
+          var imageSelect = this.canvas.getActiveObjects().filter(item=> { return item.addressId !== ''})
           //若再有一個框住的話，是否想要可以覆蓋?
-          var path = this.canvas.getActiveObjects().filter(item=> { return item.type == 'path'})
+          var path = this.canvas.getActiveObjects().filter(item=> { return item.addressId == ''})
           imageSelect.forEach(item=>{
             item.set({ connectId: path[0].objId })
             this.isEditChange(true)
           })
+          this.drawType = null
         }
       }
       this.drawingObject = null
@@ -985,31 +967,33 @@ export default {
     drop(e){ //新增圖例
       window.event.stopPropagation()
       window.event.preventDefault()
-      const imgEl = document.createElement('img')
-      imgEl.src = require('@assets/equipment/'+this.imgSource[8])
-      imgEl.onload = () => {
-        const image = new fabric.Image(imgEl, {
-          scaleX: 0.1,
-          scaleY: 0.1,
-          top: this.getY(e) - this.imgSource[2]*0.05,
-          left: this.getX(e) - this.imgSource[1]*0.05,
-          visible:true,
-          opacity:1,
-          hasControls:false
+      var self = this
+      var item = require('@/icons/svg/fire_'+this.imgSource[0]+'.svg')
+      var text = item.default.content.replace(/http:\/\//g, 'https://')
+      text = text.replace('symbol', 'svg')
+      text = text.replace('/symbol', '/svg')
+      fabric.loadSVGFromString(text, function(objects, options) {
+        var svgItems = fabric.util.groupSVGElements(objects, options);
+        svgItems.set({
+            scaleX: 0.1,
+            scaleY: 0.1,
+            top: self.getY(e) - self.imgSource[2]*0.05,
+            left:  self.getX(e) - self.imgSource[1]*0.05,
+            hasControls:false
         })
-        this.canvas.add(image)
-        this.addCustomize(image,null,this.imgSource[3],null,this.imgSource[0],this.imgSource[4],null,this.imgSource[5],this.imgSource[6])
-        this.canvas.renderAll()
-        this.isEditChange(true)
-        if(this.imgSource[7] !== null){
-          this.$refs.equipmentType.setDisableDraggle(this.imgSource[7],false)
-        }
-        var index = this.imgAddress.findIndex(item=>{
-          return item.label == this.imgSource[4] })
-        if(index !== -1){ this.imgAddress[index].systemUsed = true }
-        this.imgSource = []
-        this.canvas.skipTargetFind = false
+        self.canvas.add(svgItems)
+        self.addCustomize(svgItems,null,self.imgSource[3],null,self.imgSource[0],self.imgSource[4],null,self.imgSource[5],self.imgSource[6])
+      });
+      this.canvas.renderAll()
+      this.isEditChange(true)
+      if(this.imgSource[7] !== null){
+        this.$refs.equipmentType.setDisableDraggle(this.imgSource[7],false)
       }
+      var index = this.imgAddress.findIndex(item=>{
+        return item.label == this.imgSource[4] })
+      if(index !== -1){ this.imgAddress[index].systemUsed = true }
+      this.imgSource = []
+      this.canvas.skipTargetFind = false
     },
     drawing() { //新增矩形
       if(this.canvas.getActiveObjects().length === 0){
@@ -1198,17 +1182,6 @@ export default {
       this.doDrawing = false
       this.drawType = null
     },
-    // openLegendWindows(){ // 打開圖例
-    //   this.drawType = 'icon'
-    //   const { href } = this.$router.resolve({
-    //     name: 'Graphic_equipmentType'
-    //   })
-    //   if(window.child && window.child.open && !window.child.closed){
-    //     window.child.focus()
-    //   }else{
-    //     window.child = window.open(href, '_blank', 'toolbar=no, width=400, height=600,location=no')
-    //   }
-    // },
     sendAddressImageIcon(item,event){ //樓層點位-火警&plc + 圖例新增
       if(item.internet !== undefined){
         var address = item.internet+'-'+item.system
@@ -1222,15 +1195,6 @@ export default {
             address = address.concat('-'+item.memeryLoc)
           }
         }
-        // if(item.address !== '' && item.address !== null && item.address !== undefined){
-        //     address = address.concat('-'+item.address)
-        // }
-        // if(item.number !== '' && item.number !== null && item.number !== undefined){
-        //     address = address.concat('-'+item.number)
-        // }
-        // if(item.type == 'plc' && item.memeryLoc !== '' && item.memeryLoc !== null && item.memeryLoc !== undefined){
-        //     address = address.concat('-'+item.memeryLoc)
-        // }
         var icon = constant.Equipment.filter(icon=>{
           return icon.id == item.iconId
         })[0]
@@ -1250,20 +1214,6 @@ export default {
       }
 
     },
-    // receiveMessage(event) { //子視窗傳來的
-    //     //event.origin是指發送的消息源，一定要進行驗證！！！
-    //     // if (event.origin !== "http://localhost:9528")return
-    //     if (event.data.source === 'vue-devtools-backend-injection'
-    //     || event.data.source === 'vue-devtools-proxy' || event.data.source === 'undefined')return
-    //     if(event.data !== "" && event.data !== 'null'){
-    //       this.imgSource = event.data.split('|')
-    //       console.log(this.imgSource)
-    //       this.canvas.skipTargetFind = true
-    //     }else if (event.data == 'null'){
-    //       this.imgSource = []
-    //       this.canvas.skipTargetFind = false
-    //     }
-    // },
     //屬性修改
     changeAttributes(type){
       if(this.canvas.getActiveObject() !== undefined && this.canvas.getActiveObject() !== null){
@@ -1373,7 +1323,7 @@ export default {
         canvasObject.toObject = (function (toObject) {
             return function () {
                 return fabric.util.object.extend(toObject.call(this), {
-                    objId: getUUID(),
+                    objId: this.objId,
                     objectName: this.objectName,
                     blockType: this.blockType,
                     srcId:this.srcId,
@@ -1413,8 +1363,8 @@ export default {
       window.event.preventDefault()
       var currState =JSON.parse(JSON.stringify(this.canvas.getObjects()))
       currState.forEach(item=>{
-        if(item.type=='image'){
-          item.src = ''
+        if(item.srcId !== ''){
+          item.path = ''
         }
       })
       this.$emit('sendFloorGraphicFile', currState, this.imgAddress)
@@ -1495,46 +1445,24 @@ export default {
             this.$socket.$ws
         }
     },
-    //動畫
-    stopAnim(){
-      this.hasAnimationStarted = false
-    },
-    setAnimate(obj,type){
-      this.hasAnimationStarted = true
-      this.animateAddTop(obj)
-      switch(type){
-        case '6666':
-          this.animateAddTop(obj)
-          break;
-        case '6664':
-          obj.animate('opacity', obj.opacity === 0.5 ? 1 : 0.5, {
-              duration: 500,
-              onChange: this.canvas.renderAll.bind(this.canvas),
-              onComplete: () => this.setAnimate(obj,'6664'),
-              abort: () => !this.hasAnimationStarted,
-              easing: fabric.util.ease.easeInCubic
-          })
-          break;
-      }
-    },
-    animateAddTop(obj) {
-      obj.animate('top', obj.top += 10  , {
-        duration: 250,
-        onChange: this.canvas.renderAll.bind(this.canvas),
-        onComplete: () => this.animateLessTop(obj),
-        abort: () => !this.hasAnimationStarted,
-        easing: fabric.util.ease.easeInSine
-      })
-    },
-    animateLessTop(obj) {
-      obj.animate('top', obj.top -= 10  , {
-        duration: 250,
-        onChange: this.canvas.renderAll.bind(this.canvas),
-        onComplete: () => this.animateAddTop(obj),
-        abort: () => !this.hasAnimationStarted,
-        easing: fabric.util.ease.easeInSine
-      })
-    },
+    // animateAddTop(obj) {
+    //   obj.animate('top', obj.top += 10  , {
+    //     duration: 250,
+    //     onChange: this.canvas.renderAll.bind(this.canvas),
+    //     onComplete: () => this.animateLessTop(obj),
+    //     abort: () => !this.hasAnimationStarted,
+    //     easing: fabric.util.ease.easeInSine
+    //   })
+    // },
+    // animateLessTop(obj) {
+    //   obj.animate('top', obj.top -= 10  , {
+    //     duration: 250,
+    //     onChange: this.canvas.renderAll.bind(this.canvas),
+    //     onComplete: () => this.animateAddTop(obj),
+    //     abort: () => !this.hasAnimationStarted,
+    //     easing: fabric.util.ease.easeInSine
+    //   })
+    // },
     disableVisible(){
       this.infovisible = false
     },

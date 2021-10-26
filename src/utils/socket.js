@@ -124,10 +124,6 @@ import { getUUID } from '.';
       this.processWs.$ws.onopen = function(){
         console.log('ws open-PROCESS')
         wsConnection.startWsHeartbeat(_this.processWs)
-        const msg = {
-          accountCToken:store.getters.mToken
-        }
-        _this.processWs.$ws.send(JSON.stringify(msg))
       }
       this.processWs.$ws.onclose = function(){
         console.log('ws close-PROCESS')
@@ -138,16 +134,23 @@ import { getUUID } from '.';
         var data = JSON.parse(msg.data)
         wsConnection.resetHeartbeat(_this.processWs)
         console.log(data)
-        if(data.userId !== undefined){
-          _this.process.uid = data.userId
-          _this.process.accessToken = data.accessToken
-          // store.dispatch('websocket/saveUserId',data.Id)
+        if(data.SenderName == 'MercuryfireWS65'){
+          var str = 'accountCToken:'+store.getters.mToken
+          console.log(str)
+          _this.processWs.$ws.send(str)
+        }else if(data.userId !== undefined){
+          console.log('登入回傳訊息已存入')
+          _this.processWs.uid = data.userId
+          _this.processWs.accessToken = data.accessToken
+          store.dispatch('user/saveToken', data.accessToken)
+          store.dispatch('user/saveUserID', data.userId)
+          // store.dispatch('websocket/saveProcessUserId',data.userId)
         }else{
-          _this.process.cPId = data.cPId
-          _this.process.cNode = data.cNode
-          if(data.cOptions !== undefined){
-            store.dispatch('websocket/sendOptions', data.cOptions)
-          }
+          // _this.processWs.cPId = data.cPId
+          // _this.processWs.cNode = data.cNode
+          // if(data.cOptions !== undefined){
+          //   store.dispatch('websocket/sendOptions', data.cOptions)
+          // }
         }
       }
       this.processWs.$ws.onerror = function(){

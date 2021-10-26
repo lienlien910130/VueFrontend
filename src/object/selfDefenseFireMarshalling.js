@@ -216,17 +216,17 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
-                label:'樓層' , prop:'linkFloors',format:'manyFloorSelect', mandatory:true,
+                label:'樓層' , prop:'linkFloors',format:'manyFloorSelect', mandatory:true,message:'請選擇樓層',
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
             {
-                label:'角色' , prop:'linkRoles',format:'roleSelect', mandatory:true,
+                label:'角色' , prop:'linkRoles',format:'roleSelect', mandatory:true,message:'請選擇角色',
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },
             {
-                label:'帳號' , prop:'linkAccountList',format:'accountSelect', mandatory:false,
+                label:'帳號' , prop:'linkAccountList',format:'accountSelect', mandatory:false,message:'請選擇帳號',
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
             },

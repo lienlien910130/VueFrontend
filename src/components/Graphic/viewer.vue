@@ -67,15 +67,6 @@ export default {
             })
             await this.loadObjects(objects)
         },
-        addImageProcess(src){ //載入圖片
-            var self = this
-            return new Promise((resolve, reject) => {
-                self.imgEl = new Image()
-                self.imgEl.onload = () => resolve(self.imgEl)
-                self.imgEl.onerror = ()=>reject("加載失敗")
-                self.imgEl.src = require('@assets/equipment/'+src)
-            })
-        },
         async loadObjects(val){ //載入初始物件
             if(val !== null){
                 var self = this
@@ -84,7 +75,7 @@ export default {
                     var origRenderOnAddRemove = self.canvas.renderOnAddRemove
                     self.canvas.renderOnAddRemove = false
                     for(let i=0;i<object.length;i++){
-                        if(object[i].type == 'image'){
+                        if(object[i].srcId !== ''){
                             var item = constant.Equipment.filter((item,index) =>
                             item.id == object[i].srcId
                             )[0]
@@ -99,6 +90,8 @@ export default {
                                     scaleY: object[i].scaleY * self.topsize,
                                     top: object[i].top * self.topsize,
                                     left: object[i].left * self.leftsize,
+                                    hasControls:false,
+                                    visible:true
                                 })
                                 self.canvas.add(svgItems);
                                 self.addCustomize(svgItems,object[i].objId,object[i].objectName,object[i].blockType,
@@ -120,8 +113,7 @@ export default {
                     self.canvas.renderOnAddRemove = origRenderOnAddRemove
                     self.canvas.renderAll()
                     console.log(JSON.stringify(self.canvas.getObjects()))
-                    self.actionObj('001-001-02-999')
-                    self.actionObj('001-001-02-07')
+                    // self.actionObj('001-01-012-4',1)
                 })
             }
         },
@@ -151,52 +143,75 @@ export default {
                 canvasObject.set("status",status)
                 canvasObject.set("action",action)
         },
-        actionObj(str){
+        actionObj(str,value){
             var index = this.canvas.getObjects().findIndex(o=>o.addressId == str)
             if(index !== -1){
                 var obj = this.canvas.getObjects()[index]
-                // obj.set({
-                //     fill:'rgb(255, 0, 0)'
-                // });
-                // if(obj._objects !== undefined){
-                //     obj.getObjects().forEach(item=>{
-                //       if(item.fill !== '#ffffff'){
-                //         item.set({
-                //             fill:'rgb(255, 0, 0)'
-                //         })
-                //       }
-                //     })
-                // }
                 var equ = constant.Equipment.filter(ele=>{ return ele.id == obj.srcId})[0]
-                var src = equ.status.filter(obj=>{ return obj.value == 1})[0]
-                obj.set({
-                    fill:src.color
-                });
-                if(obj._objects !== undefined){
-                    obj.getObjects().forEach(item=>{
-                      if(item.fill !== '#ffffff'){
-                        item.set({
-                            fill:src.color
+                var src = equ.status.filter(obj=>{ return obj.value == value})[0]
+                var self = this
+                if(obj.srcId == 'a2' && value == 1){ //需更換svg圖片：探測器動作更換成火災圖片
+                    obj.set({ visible : false})
+                    var item = require('@/icons/svg/'+src.imgSrc)
+                    var text = item.default.content.replace(/http:\/\//g, 'https://')
+                    text = text.replace('symbol', 'svg')
+                    text = text.replace('/symbol', '/svg')
+                    fabric.loadSVGFromString(text, function(objects, options) {
+                        var svgItems = fabric.util.groupSVGElements(objects, options);
+                        svgItems.set({
+                            scaleX: obj.scaleX * self.leftsize,
+                            scaleY: obj.scaleY * self.topsize,
+                            top: obj.top * self.topsize,
+                            left: obj.left * self.leftsize,
+                            hasControls:false,
+                            visible:true
                         })
-                      }
+                        self.canvas.add(svgItems);
+                        svgItems.set({
+                            fill:'#ff0000'
+                        });
+                        self.addCustomize(svgItems,obj.objId,obj.objectName,obj.blockType,
+                        'fs',obj.addressId,obj.connectId,obj.status,obj.action)
+                        self.canvas.renderAll();
+                        self.setAnimate(svgItems)
+                    });
+                }else{
+                    obj.set({
+                        fill:src.color
                     })
-                    // obj.getObjects()[1].set({
-                    //     fill:src.color
-                    // })
+                    if(obj._objects !== undefined){
+                        obj.getObjects().forEach(item=>{
+                            if(item.fill !== '#ffffff'){
+                                item.set({
+                                    fill:src.color
+                                })
+                            }
+                        })
+                    }
+                    obj.set({ visible : true})
+                    if(src.color !== '#00ff00'){
+                        this.setAnimate(obj)
+                    }
                 }
-                obj.set({ visible : true})
-                if(src.color !== '#00ff00'){
-                    this.setAnimate(obj)
+
+                if(obj.connectId !== ''){
+                    var connectindex = this.canvas.getObjects().findIndex(o=>o.objId == obj.connectId)
+                    if(connectindex !== -1){
+                        var connectObj = this.canvas.getObjects()[connectindex]
+                        connectObj.set({fill: 'rgba(230, 83, 83, 1)'})
+                        this.setAnimate(connectObj, 0.7)
+                    }
+
                 }
                 this.canvas.renderAll()
             }
         },
-        setAnimate(obj){ //動畫
+        setAnimate(obj, maximum = 1){ //動畫
             this.hasAnimationStarted = true
-            obj.animate('opacity', obj.opacity === 0.2 ? 1 : 0.2, {
+            obj.animate('opacity', obj.opacity === 0.2 ? maximum : 0.2, {
                 duration: 600,
                 onChange: this.canvas.renderAll.bind(this.canvas),
-                onComplete: () => this.setAnimate(obj),
+                onComplete: () => this.setAnimate(obj, maximum),
                 abort: () => !this.hasAnimationStarted,
                 easing: fabric.util.ease.easeInOutCubic
             })

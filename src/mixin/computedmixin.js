@@ -175,16 +175,17 @@ export default {
         },
         methods: {
             //表格排序
-            sortChange(column){
+            sortChange(column, data = null){
                 var self = this
+                var sortList = data == null ?  this.blockData : data
                 if (column.order === "descending") {
-                    this.blockData = this.blockData.sort(function(str1,str2){
+                    sortList = sortList.sort(function(str1,str2){
                         var s1 = str1[column.prop] == null ? '' : str1[column.prop]
                         var s2 = str2[column.prop] == null ? '' : str2[column.prop]
                         return self.sortRule(s2,s1)
                     })
                 } else if (column.order === "ascending") {
-                    this.blockData = this.blockData.sort(function(str1,str2){
+                    sortList = sortList.sort(function(str1,str2){
                         var s1 = str1[column.prop] == null ? '' : str1[column.prop]
                         var s2 = str2[column.prop] == null ? '' : str2[column.prop]
                         return self.sortRule(s1,s2)

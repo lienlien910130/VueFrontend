@@ -31,18 +31,17 @@ export default {
     },
     computed:{
         ...Vuex.mapGetters([
-            'buildingid',
             'actions',
-            'options'
-        ]),
+            'options',
+            'id'
+        ])
     },
     mounted(){
-      this.$socket.initProcessWebSocket()
       this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
         .then(async function (currentToken) {
             if (currentToken) {
               console.log('currentToken',currentToken)
-              await store.dispatch('user/setMessageToken',currentToken)
+              await store.dispatch('user/saveMToken',currentToken)
             } else {
               //顯示訂閱的視窗
               console.log('no token')
@@ -51,13 +50,14 @@ export default {
       .catch(function (err) {
             console.log('err',err)
       });
+      this.$socket.initProcessWebSocket()
     },
     watch: {
-        buildingid:{
+        id:{ //有登入ws才繪製畫面
             handler:async function(){
-                if(this.buildingid !== undefined){
-                    await this.init()
-                }
+              if(this.id !== undefined){
+                await this.init()
+              }
             },
             immediate:true
         },
@@ -123,7 +123,7 @@ export default {
     methods:{
         async init() {
             this.title = 'selfDefenseClass'
-            if(this.$route.query.r !== undefined && this.$route.query.u !== undefined && this.$route.query.f !== undefined){
+            if(this.$route.query.f !== undefined){
                 var floor = await Floors.getOfId(this.$route.query.f)
                 var obj = await floor.getGraphicFiles()
                 if(floor.getImageID() == null){

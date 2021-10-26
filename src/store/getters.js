@@ -28,6 +28,7 @@ const getters = {
   actions: state => state.websocket.actions,
   options: state => state.websocket.options,
   wsuserId: state => state.websocket.wsuserId,
+  processuId: state => state.websocket.processuId,
   graphicMsg: state => state.websocket.graphicMsg,
 
   buildingroles : state => state.building.roles,

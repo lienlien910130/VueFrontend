@@ -118,7 +118,7 @@ export default {
             type:'AE_SmokeDetector',
             status:[
                 {value:'0',imgSrc:"b/10.png",color:'#00a0e9'},
-                {value:'1',imgSrc:"r/r1.png",color:'#ff0000'}
+                {value:'1',imgSrc:"fire_fs.svg",color:'#ff0000'}
             ]
         },
         {
@@ -391,10 +391,28 @@ export default {
                 {value:'1',imgSrc:"r/r18.png",color:'#ff0000'}
             ]
         },
+        // {
+        //     id:'p6',
+        //     name:'定位中',
+        //     type:'PeopleWaitting',
+        //     status:[
+        //         {value:'0',imgSrc:"b/18.png",color:'#00a0e9'},
+        //         {value:'1',imgSrc:"r/r18.png",color:'#ff0000'}
+        //     ]
+        // },
+        // {
+        //     id:'fs',
+        //     name:'火災發生中',
+        //     type:'Fire',
+        //     status:[
+        //         {value:'0',imgSrc:"b/18.png",color:'#00a0e9'},
+        //         {value:'1',imgSrc:"r/r18.png",color:'#ff0000'}
+        //     ]
+        // },
         {
-            id:'p6',
-            name:'定位',
-            type:'People',
+            id:'p7',
+            name:'已定位',
+            type:'PeopleReady',
             status:[
                 {value:'0',imgSrc:"b/18.png",color:'#00a0e9'},
                 {value:'1',imgSrc:"r/r18.png",color:'#ff0000'}

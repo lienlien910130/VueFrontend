@@ -41,9 +41,6 @@ const tip = msg => {
 
 const service = axios.create({
    baseURL: process.env.VUE_APP_BASE_API,
-     // url = base url + request url
-  // withCredentials: true, // send cookies when cross-domain requests
-    //baseUrl: 'http://192.168.88.65:49119',
     timeout: 20000, 
     headers: { 
         'Content-Type': 'application/json; charset=utf-8;'
@@ -76,7 +73,8 @@ service.interceptors.request.use(
   config => {
     showLoading()
     if (store.getters.token) { 
-        config.headers.Authorization = 'Bearer ' + getToken()
+        var token = getToken() == undefined ? store.getters.token : getToken()
+        config.headers.Authorization = 'Bearer ' + token
     }
     if(store.getters.menuId){
         config.headers.menu = store.getters.menuId

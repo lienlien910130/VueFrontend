@@ -21,55 +21,59 @@
 
       <Screenfull v-if="device!=='mobile'" id="screenfull" class="right-menu-item hover-effect" />
 
-      <el-dropdown
+      <template v-if="buildingarray.length">
+        <el-dropdown
+            class="avatar-container right-menu-item" trigger="click">
+              <div class="avatar-wrapper">
+                <i class="el-icon-office-building icon" />
+                <span  v-if="device!=='mobile'" style="margin-left:3px">{{  buildingName  }}</span>
+                <i class="el-icon-caret-bottom" />
+              </div>
+              <el-dropdown-menu
+              slot="dropdown"
+              class="user-dropdown"
+              >
+                <el-dropdown-item
+                v-for="item in selectData"
+                :key="item.id"
+                @click.native="handleSelect(item)">
+                  {{ item.buildingName }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+        </el-dropdown>
+      </template>
+      
+      <template v-if="token !== undefined">
+        <el-dropdown
           class="avatar-container right-menu-item" trigger="click">
             <div class="avatar-wrapper">
-              <i class="el-icon-office-building icon" />
-              <span  v-if="device!=='mobile'" style="margin-left:3px">{{  buildingName  }}</span>
-               <i class="el-icon-caret-bottom" />
+              <svg-icon icon-class="user"/>
+              <span v-if="device!=='mobile'" style="margin-left:3px">{{ name }}</span>
+              <i class="el-icon-caret-bottom" />
             </div>
-            <el-dropdown-menu
-            slot="dropdown"
-            class="user-dropdown"
-            >
-              <el-dropdown-item
-              v-for="item in selectData"
-              :key="item.id"
-              @click.native="handleSelect(item)">
-                {{ item.buildingName }}
+            <el-dropdown-menu slot="dropdown" class="user-dropdown">
+              <router-link to="/">
+                <el-dropdown-item>
+                  首頁
+                </el-dropdown-item>
+              </router-link>
+              <router-link v-if="buildingid !== undefined" to="/membersetting">
+                <el-dropdown-item>
+                  設定
+                </el-dropdown-item>
+              </router-link>
+              <router-link v-if="buildingid !== undefined" to="/building/files">
+                <el-dropdown-item>
+                  檔案
+                </el-dropdown-item>
+              </router-link>
+              <el-dropdown-item divided @click.native="logout">
+                <span style="display:block;">登出</span>
               </el-dropdown-item>
             </el-dropdown-menu>
         </el-dropdown>
-
-      <el-dropdown
-        class="avatar-container right-menu-item" trigger="click">
-          <div class="avatar-wrapper">
-            <svg-icon icon-class="user"/>
-            <span v-if="device!=='mobile'" style="margin-left:3px">{{ name }}</span>
-            <i class="el-icon-caret-bottom" />
-          </div>
-          <el-dropdown-menu slot="dropdown" class="user-dropdown">
-            <router-link to="/">
-              <el-dropdown-item>
-                首頁
-              </el-dropdown-item>
-            </router-link>
-            <router-link v-if="buildingid !== undefined" to="/membersetting">
-              <el-dropdown-item>
-                設定
-              </el-dropdown-item>
-            </router-link>
-            <router-link v-if="buildingid !== undefined" to="/building/files">
-              <el-dropdown-item>
-                檔案
-              </el-dropdown-item>
-            </router-link>
-            <el-dropdown-item divided @click.native="logout">
-              <span style="display:block;">登出</span>
-            </el-dropdown-item>
-          </el-dropdown-menu>
-      </el-dropdown>
-
+      </template>
+      
       <div v-if="device!=='mobile'" class="avatar-container right-menu-item" style="margin-right:0px">
           <div class="avatar-wrapper">
             <span class="timer">{{ date | formatDate }}</span>
@@ -96,7 +100,9 @@ export default {
       'roles',
       'buildinginfo',
       'buildingid',
-      'navbarButton'
+      'navbarButton',
+      'token',
+      'permission_routes'
     ]),
     selectAttrs() {
       return {
@@ -167,6 +173,9 @@ export default {
       this.$router.push('/building')
     },
     toggleSideBar() {
+      if(this.permission_routes.length == 0){
+        this.$message.error('現在為緊急應變時刻')
+      }
       this.$store.dispatch('app/toggleSideBar')
     },
     async logout() {

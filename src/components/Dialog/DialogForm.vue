@@ -498,7 +498,6 @@ export default {
                                 this.$set(v, 'value', v.id)
                                 this.$set(v, 'id', v.id)
                                 this.$set(v, 'label', v.name)
-                                this.$set(v, 'imgsrc',require('@assets/equipment/'+v.status[0].imgSrc))
                                 return v
                             })
                         case 'iconShow':

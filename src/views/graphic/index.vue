@@ -91,11 +91,11 @@
 
 <script>
 import idb from '@/utils/indexedDB'
-import sharemixin  from '@/mixin/sharemixin'
+import { sharemixin,computedmixin } from '@/mixin/index'
 import DrawingControl from '@/object/drawingControl'
 
 export default {
-    mixins:[sharemixin],
+    mixins:[sharemixin,computedmixin],
     components:{
       ObjectList: () => import('./components/ObjectList')
     },
@@ -286,6 +286,7 @@ export default {
         this.floor = content
         this.pointarray = [] //儲存樓層點位
         this.pointarray  = await DrawingControl.getOfFloor(this.floor.getID())
+        this.sortChange({prop: 'iconId', order:'ascending'}, this.pointarray )
         var obj = await this.floor.getGraphicFiles()
         this.codeContentId = obj.id
         if(content.getImageID() == null){

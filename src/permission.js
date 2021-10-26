@@ -7,7 +7,7 @@ import { Building,DeviceType, Menu } from './object/index'
 
 NProgress.configure({ showSpinner: false }) 
 
-const whiteList = ['/login'] // no redirect whitelist
+const whiteList = ['/login','/emergencyClass/index'] // no redirect whitelist
 
 router.beforeEach(async(to, from, next) => {
     console.log(to.name, from.name, to.meta.title)

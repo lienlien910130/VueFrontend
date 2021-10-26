@@ -13,8 +13,8 @@ const getDefaultState = () => {
   return {
     token: getToken(),
     id: getID(),
-    account: '',
-    name: '',
+    account: null,
+    name: null,
     roles: '',
     level: '',
     mToken:''
@@ -87,7 +87,15 @@ const actions = {
       })
     })
   },
-
+  saveToken({ commit } , token){ //手機_ws登入後取回token儲存
+    commit('SET_TOKEN', token)
+  },
+  saveMToken({ commit } , cToken){ //手機_取得messageToken後儲存
+    commit('SET_MToken', cToken)
+  },
+  saveUserID({ commit } , uid){ //手機_ws登入後取回userid儲存
+    commit('SET_USER', uid)
+  },
   async setMessageToken({ commit }, token ) {
     return new Promise((resolve, reject) => {
       user.apiPatchUserInfo({id:state.id, cToken:token }).then(async(response) => {
@@ -98,6 +106,7 @@ const actions = {
         commit('SET_MToken', cToken)
         resolve()
       }).catch(error => {
+        commit('SET_MToken', token)
         reject(error)
       })
     })
