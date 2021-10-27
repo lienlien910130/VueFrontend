@@ -72,8 +72,8 @@ const errorHandle = (status,error) =>{
 service.interceptors.request.use(
   config => {
     showLoading()
-    if (store.getters.token) { 
-        var token = getToken() == undefined ? store.getters.token : getToken()
+    if (store.getters.token) { //沒有cookies代表沒登入，就取得已存入的token，有cookies就判斷是否為緊急應變情況，是的話就使用ws回來的token
+        var token = getToken() == undefined ? store.getters.token : store.getters.processUserId !== null ? store.getters.token : getToken()
         config.headers.Authorization = 'Bearer ' + token
     }
     if(store.getters.menuId){

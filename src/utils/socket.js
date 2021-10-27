@@ -2,10 +2,9 @@
 import store from '../store'
 import { Account, Building, Contactunit, Device, DeviceAddressManagement, DeviceType, Floors, Role, UsageOfFloor, User } from '../object'
 import moment from 'moment';
-import { Notification } from 'element-ui'
-import { getUUID } from '.';
+const ElementUI = require('element-ui')
 
- let wsConnection = {
+let wsConnection = {
     backWs:{
         $ws: null,
         lockReturn: false,
@@ -23,8 +22,9 @@ import { getUUID } from '.';
         serverTimeoutObj: null,
         cPId:null,
         cNode:null,
-        uid:null,
-        accessToken:null,
+        floorId:null,
+        firstTriggerDeviceAddress:null,
+        //大項id&流程圖id
     },
     dataWs:{
         $ws: null,
@@ -56,36 +56,40 @@ import { getUUID } from '.';
           var data = JSON.parse(msg.data)
           wsConnection.resetHeartbeat(_this.backWs)
           console.log(data)
-          data.address.forEach(element => {
-            var mode = ''
-            var label = ''
-            if(data.mode == 'main'){
-              mode = '防災盤'
-              label = element.internet + '-' + element.memeryLoc
-            }else if(data.mode == 'locPlc'){
-              mode = 'PLC'
-              label = element.internet + '-' + element.system + '-' + element.memeryLoc
-              if(element.system == 'R100'){
+          if(data.mode == 'emergency'){
+            if(_this.processWs.$ws == null){ //尚未連線緊急應變時收到才要處理
+              _this.initProcessWebSocket()
+            }
+          }else{
+            data.address.forEach(element => {
+              var mode = ''
+              var label = ''
+              if(data.mode == 'main'){
+                mode = '防災盤'
+                label = element.internet + '-' + element.memeryLoc
+              }else if(data.mode == 'locPlc'){
+                mode = 'PLC'
+                label = element.internet + '-' + element.system + '-' + element.memeryLoc
+                if(element.system == 'R100'){
+                  element.mode = data.mode
+                  element.label = label
+                  store.dispatch('websocket/sendActions', element)
+                }
+              }else if(data.mode == 'loc'){
+                mode = '火警'
+                label = element.internet + '-' + element.system + '-' + element.address + '-' + element.number
                 element.mode = data.mode
                 element.label = label
                 store.dispatch('websocket/sendActions', element)
               }
-            }else if(data.mode == 'loc'){
-              mode = '火警'
-              label = element.internet + '-' + element.system + '-' + element.address + '-' + element.number
-              element.mode = data.mode
-              element.label = label
-              store.dispatch('websocket/sendActions', element)
-            }
-            store.dispatch('websocket/sendMsg',{
-              mode:mode,
-              date:moment(new Date()).format('YYYY/MM/DD HH:mm:ss'),
-              action:element.status,
-              point:label
+              store.dispatch('websocket/sendMsg',{
+                mode:mode,
+                date:moment(new Date()).format('YYYY/MM/DD HH:mm:ss'),
+                action:element.status,
+                point:label
+              })
             })
-          })
-          //store.dispatch('websocket/sendActions',msg.data)
-          // store.dispatch('websocket/sendMsg',data)
+          }
         }
         this.backWs.$ws.onerror = function(){
           wsConnection.reconnect(_this.backWs)
@@ -131,26 +135,38 @@ import { getUUID } from '.';
       }
       this.processWs.$ws.onmessage = function(msg){
         console.log('ws message-PROCESS')
-        var data = JSON.parse(msg.data)
+        var data = msg.data !== '0x052E' ? JSON.parse(msg.data) : msg.data
         wsConnection.resetHeartbeat(_this.processWs)
         console.log(data)
-        if(data.SenderName == 'MercuryfireWS65'){
-          var str = 'accountCToken:'+store.getters.mToken
-          console.log(str)
-          _this.processWs.$ws.send(str)
-        }else if(data.userId !== undefined){
-          console.log('登入回傳訊息已存入')
-          _this.processWs.uid = data.userId
-          _this.processWs.accessToken = data.accessToken
-          store.dispatch('user/saveToken', data.accessToken)
-          store.dispatch('user/saveUserID', data.userId)
-          // store.dispatch('websocket/saveProcessUserId',data.userId)
+        if(data == '0x052E'){
+          ElementUI.Message.error('尚未訂閱智慧消防平台')
         }else{
-          // _this.processWs.cPId = data.cPId
-          // _this.processWs.cNode = data.cNode
-          // if(data.cOptions !== undefined){
-          //   store.dispatch('websocket/sendOptions', data.cOptions)
-          // }
+          if(data.SenderName == 'MercuryfireWS65'){
+            var str = 'accountCToken:'+store.getters.mToken
+            _this.processWs.$ws.send(str)
+          }else if(data.mode == 'wsLogin'){
+            console.log('登入回傳訊息已存入')
+            if(data.emergencyInfo !== undefined){
+              store.dispatch('building/setBuildingID',data.emergencyInfo.buildingId)
+              _this.processWs.floorId = data.emergencyInfo.floorId
+              _this.processWs.firstTriggerDeviceAddress = data.emergencyInfo.firstTriggerDeviceAddress
+              store.dispatch('websocket/saveProcess', true)
+            }
+            store.dispatch('user/saveToken', data.accessToken)
+            store.dispatch('user/saveUserID', data.userId)
+            
+          }else if(data.mode == 'emergency'){ //避免已登入後才發生狀況
+            store.dispatch('building/setBuildingID',data.emergencyInfo.buildingId)
+            _this.processWs.floorId = data.emergencyInfo.floorId
+            _this.processWs.firstTriggerDeviceAddress = data.emergencyInfo.firstTriggerDeviceAddress
+            store.dispatch('websocket/saveProcess', true)
+          }else{
+            // _this.processWs.cPId = data.cPId
+            // _this.processWs.cNode = data.cNode
+            // if(data.cOptions !== undefined){
+            //   store.dispatch('websocket/sendOptions', data.cOptions)
+            // }
+          }
         }
       }
       this.processWs.$ws.onerror = function(){
@@ -215,13 +231,14 @@ import { getUUID } from '.';
       }
       _this.processWs.$ws.send(JSON.stringify(msg))
     }
- }
+}
 
- function getMessage(msg){
+function getMessage(msg){
     var data = JSON.parse(msg.data)
     console.log('getMessage',data.Data.Id, store.getters.wsuserId)
-    if(data.Data.Id !== undefined && data.Data.Id !== store.getters.wsuserId){
-      console.log('收到別人的訊息!', data.DataType)
+    if(data.Data.Id !== undefined ){
+      // console.log('收到別人的訊息!', data.DataType)
+      console.log('收到訊息!', data.DataType)
       if(data.DataType == 'building' || data.DataType == 'account'){
         switch(data.DataType){
           case 'building':
@@ -269,7 +286,7 @@ import { getUUID } from '.';
         }
       }
     }
- }
+}
 
  function handleRoles(index,content){
   console.log('handleRoles',index,content)

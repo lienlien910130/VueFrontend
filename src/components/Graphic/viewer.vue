@@ -17,20 +17,21 @@ export default {
       canvasHeight: {
         type: Number,
         default: 0
-      },
+      }
     },
     mounted() {
         this.canvas = new fabric.Canvas("canvas")
-        // this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
-        // this.canvas.setHeight(this.$refs.canvasdiv.clientHeight)
         this.canvas.setWidth(1650)
         this.canvas.setHeight(0)
         this.canvas.skipTargetFind = true
         this.canvas.selection = false
+        this.canvas.on("touchstart", this.mouseDown)
+        this.canvas.on("touchmove", this.move)
     },
     data(){
         return{
             canvas: {},
+            objId:null,
             blockType: '未分類',
             objectName:'', //圖層標題
             addressId:'',
@@ -39,11 +40,19 @@ export default {
             hasAnimationStarted:false,
             leftsize:1,
             topsize:1,
-            canvasheight:0
+            canvasheight:0,
+            lastMovePos:{x:0, y:0},
+            relativeMouseX: 0,
+            relativeMouseY: 0, 
+            zoom: window.zoom ? window.zoom : 1,
+            zoomPoint: new fabric.Point(0, 0), //初始时缩放原点的位置设为（0,0），这是页面的左上顶点
+            lastzoomPoint: { x: 0, y: 0 }, //初始时，前一次缩放原点同样为(0,0)
+            lastmousePoint: { x: 0, y: 0 }, //进行缩放，需要对此刻缩放位置进行保存，来计算出缩放原点，此刻初始时设为0,0
+            lastzoom: 1, //表示为上一次的缩放倍数，此刻设为1
         }
     },
     methods:{
-        async loadBackgroundImage(objects,imgsrc){ //載入背景圖
+        async loadBackgroundImage(objects,imgsrc,startAddress = null){ //載入背景圖
             if(this.canvasHeight == 0){
                 document.getElementById("canvasdiv").style.minHeight = "calc(100vh - 80px)"
             }
@@ -66,8 +75,19 @@ export default {
                 this.canvas.renderAll()
             })
             await this.loadObjects(objects)
+            if(startAddress !== null){
+                var array = []
+                for (const key in startAddress) {
+                  if(key !== 'status'){
+                    array.push(startAddress[key])
+                  }
+                }
+                var address = array.join('-')
+                this.setStartView(address)
+                this.actionObj(address,startAddress['status'])
+            }
         },
-        async loadObjects(val){ //載入初始物件
+        async loadObjects(val){ //載入初始物件，預設關閉顯示
             if(val !== null){
                 var self = this
                 var obj = JSON.parse(val)
@@ -122,7 +142,7 @@ export default {
                 canvasObject.toObject = (function (toObject) {
                     return function () {
                         return fabric.util.object.extend(toObject.call(this), {
-                            objId: getUUID(),
+                            objId: this.objId,
                             objectName: this.objectName,
                             blockType: this.blockType,
                             srcId:this.srcId,
@@ -142,6 +162,66 @@ export default {
                 canvasObject.set("connectId",connectId == null ? '' : connectId) //關聯，區塊要關聯探測器物件的id(uuid)，下拉選單選取所有scrid=探測器的
                 canvasObject.set("status",status)
                 canvasObject.set("action",action)
+        },
+        resetOriginAfterZoom() {  // 縮放後重置原點
+            this.lastzoomPoint.x =
+            this.lastzoomPoint.x +
+            (this.zoomPoint.x - this.lastmousePoint.x - this.relativeMouseX) / this.lastzoom
+            this.lastzoomPoint.y =
+            this.lastzoomPoint.y +
+            (this.zoomPoint.y - this.lastmousePoint.y - this.relativeMouseY) / this.lastzoom
+
+            this.lastmousePoint.x = this.zoomPoint.x
+            this.lastmousePoint.y = this.zoomPoint.y
+            this.lastzoom = this.zoom
+
+            this.relativeMouseX = 0
+            this.relativeMouseY = 0
+        },
+        setStartView(startAddress){ //設定起始點的視圖
+            var index = this.canvas.getObjects().findIndex(o=>o.addressId == startAddress)
+            if(index !== -1){
+                console.log(this.canvas.getObjects()[index])
+                var left = this.canvas.getObjects()[index].left
+                var top = this.canvas.getObjects()[index].top
+                this.zoomPoint = new fabric.Point(left, top)
+                this.canvas.zoomToPoint(this.zoomPoint, 2)
+                this.resetOriginAfterZoom()
+                this.canvas.renderAll()
+            }
+        },
+        zoomCanvas(){ //放大縮小
+            console.log(this.canvas.getZoom(),this.canvas.getCenter())
+            // this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom()
+            // this.zoom = Math.max(0.5, this.zoom)
+            // this.zoom = Math.min(3, this.zoom)
+            const center = this.canvas.getCenter()
+            this.zoomPoint = new fabric.Point(center.left, center.top)
+            this.canvas.zoomToPoint(this.zoomPoint, 2)
+            this.resetOriginAfterZoom()
+            this.canvas.renderAll()
+        },
+        mouseDown(e){
+            console.log('down')
+            this.lastMovePos.x = e.e.clientX
+            this.lastMovePos.y = e.e.clientY
+        },
+        move(e){
+            console.log('move')
+            let deltaX = 0
+            let deltaY = 0
+            if (this.lastMovePos.x) {
+              deltaX = e.e.clientX - this.lastMovePos.x
+            }
+            if (this.lastMovePos.y) {
+              deltaY = e.e.clientY - this.lastMovePos.y
+            }
+            this.lastMovePos.x = e.e.clientX
+            this.lastMovePos.y = e.e.clientY
+            let delta = new fabric.Point(deltaX, deltaY)
+            this.canvas.relativePan(delta)
+            this.relativeMouseX += e.e.movementX //累计每一次移动时候的偏差
+            this.relativeMouseY += e.e.movementY
         },
         actionObj(str,value){
             var index = this.canvas.getObjects().findIndex(o=>o.addressId == str)

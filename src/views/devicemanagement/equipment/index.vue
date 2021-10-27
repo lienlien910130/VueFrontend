@@ -167,11 +167,13 @@ export default {
                 }
                 if(isDelete){
                     this.$message('刪除成功')
-                    this.$store.dispatch('building/setDevice')
+                    // this.$store.dispatch('building/setDevice')
                     this.$socket.sendMsg('device', 'delete' ,
                         index === 'delete'  ? content.getID() : deleteArray.toString())
-                    if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
-                        this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+                    var length = content.length !== undefined ? content.length : 1
+                    var page = Math.ceil((this.listQueryParams.total-length) / this.listQueryParams.pageSize)
+                    if(this.listQueryParams.pageIndex > page){
+                    this.listQueryParams.pageIndex = page
                     }
                     await this.getBuildingDevicesManage()
                     this.$refs.block.clearSelectArray()
@@ -226,7 +228,7 @@ export default {
                 if(Object.keys(result).length !== 0){
                     index === 'update' || index === 'updateManySave' ?
                         this.$message('更新成功') : this.$message('新增成功')
-                    this.$store.dispatch('building/setDevice')
+                    // this.$store.dispatch('building/setDevice')
                     this.$socket.sendMsg('device', index, index !== 'uploadExcelSave' ? result: result.result)
                     await this.getBuildingDevicesManage()
                     if(index !== 'updateManySave') this.innerVisible = false

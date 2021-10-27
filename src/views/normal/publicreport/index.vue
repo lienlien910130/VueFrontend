@@ -226,8 +226,10 @@ export default {
         }
         if(isDelete){
           this.$message('刪除成功')
-          if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
-            this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+          var length = content.length !== undefined ? content.length : 1
+          var page = Math.ceil((this.listQueryParams.total-length) / this.listQueryParams.pageSize)
+          if(this.listQueryParams.pageIndex > page){
+            this.listQueryParams.pageIndex = page
           }
           await this.getBuildingPublicSafeReport()
           this.$refs.block.clearSelectArray()

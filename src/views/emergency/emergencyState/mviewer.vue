@@ -1,5 +1,8 @@
 <template>
-    <div>
+    <div v-if="floorId == null" style="text-align:center;margin-top:10px">
+      <span>尚未啟動緊急應變</span>
+    </div>
+    <div v-else>
       <div style="text-align:center;margin:8px 0px">
         <template template v-for="(item,index) in buttonOptions">
           <el-button :key="index" @click="sendSelect(item.id)" type="danger" round>{{ item.name }}</el-button>
@@ -11,7 +14,6 @@
       </div>
       <div class="list">
         <template v-for="(item,index) in actionList">
-
           <div :key="index" style="text-align:center;padding:5px 8px">
             <span style= "display:block">時間：{{ item.date }} / 系統：{{ item.mode }}</span>
             <span style= "display:block">動作：{{ item.action }} / 點位：{{ item.point }}</span>
@@ -19,12 +21,18 @@
           </div>
         </template>
       </div>
+      <div class="videobox">
+        <img src="http://192.168.88.221/videourl0.cgi?user=viewer&pass=viewer" width="100%" height="auto">
+        <!-- <iframe src="http://192.168.88.221/videourl0.cgi?user=viewer&pass=viewer">
+        </iframe> -->
+      </div>
     </div>
 </template>
 <script>
 import { Floors } from '@/object'
 import idb from '@/utils/indexedDB'
 import store from '@/store'
+import ws from '@/utils/socket'
 export default {
     components:{
         GraphicViewer: () => import('@/components/Graphic/viewer.vue')
@@ -33,7 +41,7 @@ export default {
         ...Vuex.mapGetters([
             'actions',
             'options',
-            'id'
+            'process'
         ])
     },
     mounted(){
@@ -42,6 +50,9 @@ export default {
             if (currentToken) {
               console.log('currentToken',currentToken)
               await store.dispatch('user/saveMToken',currentToken)
+              if(ws.processWs.$ws == null){
+                ws.initProcessWebSocket()
+              }
             } else {
               //顯示訂閱的視窗
               console.log('no token')
@@ -50,13 +61,17 @@ export default {
       .catch(function (err) {
             console.log('err',err)
       });
-      this.$socket.initProcessWebSocket()
+      // var ifm = document.getElementById('cctv')
+      // ifm.height = 300
+      // ifm.width = document.documentElement.clientWidth
+      // this.$socket.initProcessWebSocket()
     },
     watch: {
-        id:{ //有登入ws才繪製畫面
+        process:{ //有登入ws&有發生緊急應變才繪製畫面
             handler:async function(){
-              if(this.id !== undefined){
-                await this.init()
+              if(this.process == true && ws.processWs.floorId !== null){
+                this.floorId = ws.processWs.floorId
+                await this.init(ws.processWs.firstTriggerDeviceAddress)
               }
             },
             immediate:true
@@ -90,6 +105,7 @@ export default {
       return{
         // actionList:[],
         // buttonOptions:[]
+        floorId:null,
         actionList:[{
           date:'2021/10/21 11:22:33',
           mode:'防災盤',
@@ -117,23 +133,21 @@ export default {
           {
           "id": "344",
           "name": "滅火失敗",
-          }]
+        }]
       }
     },
     methods:{
-        async init() {
+        async init(startAddress) {
             this.title = 'selfDefenseClass'
-            if(this.$route.query.f !== undefined){
-                var floor = await Floors.getOfId(this.$route.query.f)
-                var obj = await floor.getGraphicFiles()
-                if(floor.getImageID() == null){
-                    this.$message.error('該樓層尚未設定緊急應變圖控相關資料')
-                }else{
-                    var data = await idb.loadCacheImage((floor.getImageID()))
-                    this.$nextTick(() => {
-                        this.$refs.graphicviewer.loadBackgroundImage(obj.codeContent,data)
-                    })
-                }
+            var floor = await Floors.getOfId(this.floorId)
+            var obj = await floor.getGraphicFiles()
+            if(floor.getImageID() == null){
+                this.$message.error('該樓層尚未設定圖控相關資料')
+            }else{
+                var data = await idb.loadCacheImage((floor.getImageID()))
+                this.$nextTick(() => {
+                    this.$refs.graphicviewer.loadBackgroundImage(obj.codeContent,data,startAddress)
+                })
             }
         },
         sendSelect(optionID){
@@ -154,4 +168,6 @@ export default {
   background-color:#eee;
   overflow-y: auto;
 }
+
+
 </style>

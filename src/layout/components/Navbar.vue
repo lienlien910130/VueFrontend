@@ -43,7 +43,7 @@
         </el-dropdown>
       </template>
       
-      <template v-if="token !== undefined">
+      <template v-if="name !== null">
         <el-dropdown
           class="avatar-container right-menu-item" trigger="click">
             <div class="avatar-wrapper">

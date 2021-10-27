@@ -244,7 +244,7 @@
       </el-col>
     </el-row> -->
 
-    <div v-if="infovisible" id="addressInfo" class="addressInfo" draggable="true" :style="{ left: addressDiv.x +'px'  , top:addressDiv.y +'px'}">
+    <!-- <div v-if="infovisible" id="addressInfo" class="addressInfo" draggable="true" :style="{ left: addressDiv.x +'px'  , top:addressDiv.y +'px'}">
       <el-row style="background-color:gray">
         <span>點位資訊</span>
         <i class="el-icon-circle-close" style="float:right;" @click="disableVisible"></i>
@@ -262,7 +262,7 @@
         >
         </el-table-column>
       </el-table>
-    </div>
+    </div> -->
 
     <JsonViewer v-if="jsonInfoVisible" ref="jsonInfo" :data="jsondata"></JsonViewer>
 
@@ -421,27 +421,27 @@ export default {
       undo:[], //之前的步驟
       redo:[],
       //點位資訊
-      addressDiv:{x:0,y:0},
-      infovisible:false,
-      headers: [
-        {
-          prop: 'date',
-          label: '日期',
-        },
-        {
-          prop: 'name',
-          label: '姓名',
-        },
-        {
-          prop: 'address',
-          label: '地址',
-        },
-      ],
-      addressInfo:[{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '123'
-      }],
+      // addressDiv:{x:0,y:0},
+      // infovisible:false,
+      // headers: [
+      //   {
+      //     prop: 'date',
+      //     label: '日期',
+      //   },
+      //   {
+      //     prop: 'name',
+      //     label: '姓名',
+      //   },
+      //   {
+      //     prop: 'address',
+      //     label: '地址',
+      //   },
+      // ],
+      // addressInfo:[{
+      //   date: '2016-05-02',
+      //   name: '王小虎',
+      //   address: '123'
+      // }],
       jsonInfoVisible:false,
       jsondata:[]
     }
@@ -815,7 +815,6 @@ export default {
       window.event.stopPropagation()
       window.event.preventDefault()
       this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom()
-      //this.zoom = (e.key.toLowerCase() =="q" ? 0.1 : -0.1) + this.canvas.getZoom()
       this.zoom = Math.max(0.5, this.zoom)
       this.zoom = Math.min(3, this.zoom)
       const center = this.canvas.getCenter()
@@ -1463,9 +1462,9 @@ export default {
     //     easing: fabric.util.ease.easeInSine
     //   })
     // },
-    disableVisible(){
-      this.infovisible = false
-    },
+    // disableVisible(){
+    //   this.infovisible = false
+    // },
     //操作列
     async handleOperateMenu(operate){
       switch(operate){

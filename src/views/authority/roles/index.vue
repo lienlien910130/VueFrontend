@@ -90,10 +90,10 @@ export default {
                 { name:'編輯',icon:'el-icon-edit',status:'open'},
                 { name:'分配權限',icon:'el-icon-magic-stick',status:'distribution'}
             ]
-            if(this.role_record == 0){
-                this.$store.dispatch('building/setroles')
-                this.$store.dispatch('record/saveRoleRecord',1)
-            }
+            // if(this.role_record == 0){
+            //     this.$store.dispatch('building/setroles')
+            //     this.$store.dispatch('record/saveRoleRecord',1)
+            // }
         },
         async resetlistQueryParams(){
             this.listQueryParams = {
@@ -156,10 +156,12 @@ export default {
                 }
                 if(isDelete){
                     this.$message('刪除成功')
-                    if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
-                        this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+                    var length = content.length !== undefined ? content.length : 1
+                    var page = Math.ceil((this.listQueryParams.total-length) / this.listQueryParams.pageSize)
+                    if(this.listQueryParams.pageIndex > page){
+                        this.listQueryParams.pageIndex = page
                     }
-                    this.$store.dispatch('building/setroles')
+                    //this.$store.dispatch('building/setroles')
                     this.$socket.sendMsg('roles','delete' ,
                         index === 'delete'  ? content.getID() : deleteArray.toString())
                     await this.getAllRole()
@@ -208,7 +210,7 @@ export default {
                 var condition = index !== 'uploadExcelSave' ? Object.keys(result).length !== 0 : result.result.length !== 0
                 if(condition){
                     index === 'update' ? this.$message('更新成功') : this.$message('新增成功')
-                    this.$store.dispatch('building/setroles')
+                    // this.$store.dispatch('building/setroles')
                     this.$socket.sendMsg('roles', index , index !== 'uploadExcelSave' ? result: result.result)
                     await this.getAllRole()
                     if(index !== 'updateManySave') this.innerVisible = false

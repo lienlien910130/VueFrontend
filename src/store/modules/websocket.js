@@ -5,6 +5,7 @@ const getDefaultState = () => {
       actions:[], //圖控只用
       options:[],
       wsuserId:'',
+      process:false,
       graphicMsg:'', //圖控編輯限制
       flowMsg:'' //流程圖編輯限制
     }
@@ -31,6 +32,9 @@ const getDefaultState = () => {
     SET_OPTIONS: (state, options) => {
       state.options = options
     },
+    SET_PROCESS: (state, process) => {
+      state.process = process
+    },
 }
 
 const actions = {
@@ -48,6 +52,9 @@ const actions = {
   },
   sendOptions({ commit } , options){ //手機通知網址使用
     commit('SET_OPTIONS', options)
+  },
+  saveProcess({ commit } , process){ //手機通知網址使用
+    commit('SET_PROCESS', process)
   },
 }
 

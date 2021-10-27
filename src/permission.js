@@ -83,12 +83,9 @@ router.beforeEach(async(to, from, next) => {
         }
       }
     } else {
-      /* has no token*/
-      if (whiteList.indexOf(to.path) !== -1) {
-        // in the free login whitelist, go directly
+      if (whiteList.indexOf(to.path) !== -1) { // 直接通行
         next()
       } else {
-        // other pages that do not have permission to access are redirected to the login page.
         next(`/login?redirect=${to.path}`)
         NProgress.done()
       }
@@ -96,6 +93,5 @@ router.beforeEach(async(to, from, next) => {
 })
 
 router.afterEach(() => {
-  // finish progress bar
   NProgress.done()
 })

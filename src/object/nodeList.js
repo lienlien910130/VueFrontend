@@ -92,6 +92,7 @@ class SampleNodeList extends Parent {
     // }
     static async getSearchPage(data){
         var data = await api.nodeList.apiGetSampleNodeSearchPages(data).then(response => {
+            console.log(JSON.stringify(response))
             response.result = response.result.map(item=>{ return new SampleNodeList(item)})
             return response
         }).catch(error=>{

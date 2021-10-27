@@ -494,8 +494,10 @@ export default {
                 this.$socket.sendMsg('contactUnit', 'delete' ,
                         index === 'delete'  ? content.getID() : deleteArray.toString())
               case 'committee': case 'contactUnit':
-                if(this.listQueryParams.pageIndex !== 1 && this.blockData.length == 1){
-                  this.listQueryParams.pageIndex = this.listQueryParams.pageIndex-1
+                var length = content.length !== undefined ? content.length : 1
+                var page = Math.ceil((this.listQueryParams.total-length) / this.listQueryParams.pageSize)
+                if(this.listQueryParams.pageIndex > page){
+                  this.listQueryParams.pageIndex = page
                 }
                 if(this.activeName == 'MC'){
                   await this.getManagementList()
@@ -515,8 +517,10 @@ export default {
                 this.$socket.sendMsg('houseHolder', 'delete' ,
                         index === 'delete'  ? content.getID() : deleteArray.toString())
               case 'user': case 'floorOfHouse':
-                if(this.downlistQueryParams.pageIndex !== 1 && this.downData.length == 1){
-                  this.downlistQueryParams.pageIndex = this.downlistQueryParams.pageIndex-1
+                var length = content.length !== undefined ? content.length : 1
+                var page = Math.ceil((this.downlistQueryParams.total-length) / this.downlistQueryParams.pageSize)
+                if(this.downlistQueryParams.pageIndex > page){
+                  this.downlistQueryParams.pageIndex = page
                 }
                 if(this.activeFloor == 'US'){
                   await this.getUserList()
