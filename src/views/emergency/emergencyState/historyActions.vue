@@ -19,7 +19,7 @@ export default {
     mixins:[blockmixin],
     computed:{
         ...Vuex.mapGetters([
-            'buildingid'
+            'wsmsg'
         ]),
         blockEvent(){
             return{
@@ -28,21 +28,11 @@ export default {
             }
         }
     },
-    created(){
-        // this.$store.dispatch('app/toggleDevice', 'mobile')
-        // this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
-    },
     watch: {
-        buildingid:{
-            handler:async function(){
-                if(this.buildingid !== undefined){
-                    await this.init()
-                }
-            },
-            immediate:true
-        },
         wsmsg:{
             handler:async function(){
+                await this.init()
+                await this.changeTable(true)
                 this.blockData = this.wsmsg
                 this.listQueryParams.total = this.wsmsg.length
             },
@@ -57,6 +47,7 @@ export default {
     methods:{
         async init(){
             this.title = 'historyActions'
+            this.hasSearch = false
             this.tableConfig = [
                 { label:'時間' , prop:'date', isHidden:false},
                 { label:'系統' , prop:'mode', isHidden:false},
@@ -78,6 +69,9 @@ export default {
             }
             await this.clickPagination()
         },
+        async changeTable(value){
+            this.isTable = value
+        }
     }
 }
 </script>

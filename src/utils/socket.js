@@ -23,8 +23,9 @@ let wsConnection = {
         cPId:null,
         cNode:null,
         floorId:null,
-        firstTriggerDeviceAddress:null,
-        //大項id&流程圖id
+        addressChangeList:null, //有異動的清單
+        selfDefenseFireMarshallingListId:null,
+        contingencyProcessId:null
     },
     dataWs:{
         $ws: null,
@@ -38,8 +39,6 @@ let wsConnection = {
     initWebSocket: function () {
         let _this = this;
         //back
-        let backIP = '192.168.88.110'
-        let backPort = '5000'
         let backWsProtocol = 'clRywHL4CrkA3OUw7qBoFMhx6ZG1bDXTskdhZP6qc07D3U54D6I6FQSEkgHODJUPM3ZcUocC7m64O2XcZYT8VBX4SoHpfiYfkiop2cvRBFzG5jFLTQ98RI2rJe8wiIZz'
         // this.backWs.$ws = new WebSocket('ws://'+backIP+':'+backPort+'/', backWsProtocol);
         this.backWs.$ws = new WebSocket(process.env.VUE_APP_WEBSOCKET, backWsProtocol);
@@ -60,34 +59,24 @@ let wsConnection = {
             if(_this.processWs.$ws == null){ //尚未連線緊急應變時收到才要處理
               _this.initProcessWebSocket()
             }
-          }else{
-            data.address.forEach(element => {
-              var mode = ''
-              var label = ''
-              if(data.mode == 'main'){
-                mode = '防災盤'
-                label = element.internet + '-' + element.memeryLoc
-              }else if(data.mode == 'locPlc'){
-                mode = 'PLC'
-                label = element.internet + '-' + element.system + '-' + element.memeryLoc
-                if(element.system == 'R100'){
-                  element.mode = data.mode
-                  element.label = label
-                  store.dispatch('websocket/sendActions', element)
-                }
-              }else if(data.mode == 'loc'){
-                mode = '火警'
-                label = element.internet + '-' + element.system + '-' + element.address + '-' + element.number
-                element.mode = data.mode
-                element.label = label
-                store.dispatch('websocket/sendActions', element)
+          }else if(data.mode == 'signalHistory'){ //初始歷史資料
+            data.addressChangeList.forEach(element=>{
+              if(element.internet.indexOf('P') !== -1){ //PLC點位
+                combineAddress(element,'PLC')
+              }else{
+                combineAddress(element,'LOC')
               }
-              store.dispatch('websocket/sendMsg',{
-                mode:mode,
-                date:moment(new Date()).format('YYYY/MM/DD HH:mm:ss'),
-                action:element.status,
-                point:label
-              })
+            })
+          }else{ //平常接收訊息
+            data.address.forEach(element => {
+              element.createTime = new Date()
+              if(data.mode == 'main'){
+                combineAddress(element,'MAIN')
+              }else if(data.mode == 'locPlc'){
+                combineAddress(element,'PLC')
+              }else if(data.mode == 'loc'){
+                combineAddress(element,'LOC')
+              }
             })
           }
         }
@@ -145,21 +134,14 @@ let wsConnection = {
             var str = 'accountCToken:'+store.getters.mToken
             _this.processWs.$ws.send(str)
           }else if(data.mode == 'wsLogin'){
-            console.log('登入回傳訊息已存入')
             if(data.emergencyInfo !== undefined){
-              store.dispatch('building/setBuildingID',data.emergencyInfo.buildingId)
-              _this.processWs.floorId = data.emergencyInfo.floorId
-              _this.processWs.firstTriggerDeviceAddress = data.emergencyInfo.firstTriggerDeviceAddress
+              emergencyInfo(data.emergencyInfo)
               store.dispatch('websocket/saveProcess', true)
             }
             store.dispatch('user/saveToken', data.accessToken)
             store.dispatch('user/saveUserID', data.userId)
-            
           }else if(data.mode == 'emergency'){ //避免已登入後才發生狀況
-            store.dispatch('building/setBuildingID',data.emergencyInfo.buildingId)
-            _this.processWs.floorId = data.emergencyInfo.floorId
-            _this.processWs.firstTriggerDeviceAddress = data.emergencyInfo.firstTriggerDeviceAddress
-            store.dispatch('websocket/saveProcess', true)
+            emergencyInfo(data.information)
           }else{
             // _this.processWs.cPId = data.cPId
             // _this.processWs.cNode = data.cNode
@@ -231,6 +213,45 @@ let wsConnection = {
       }
       _this.processWs.$ws.send(JSON.stringify(msg))
     }
+}
+
+function combineAddress(element, type){
+  var mode = ''
+  var label = ''
+  switch(type){
+    case 'PLC':
+      mode = 'PLC'
+      label = element.internet + '-' + element.system + '-' + element.memeryLoc
+      break;
+    case 'LOC':
+      mode = '火警'
+      label = element.internet + '-' + element.system + '-' + element.address + '-' + element.number
+      break;
+    case 'MAIN':
+      mode = '防災盤'
+      label = element.internet + '-' + element.memeryLoc
+      break;
+  }
+  store.dispatch('websocket/sendMsg',{
+    mode:mode,
+    date:moment(element.createTime).format('YYYY/MM/DD HH:mm:ss'),
+    action:element.status,
+    point:label
+  })
+}
+
+function emergencyInfo(data){
+  store.dispatch('building/setBuildingID',data.buildingId)
+  wsConnection.processWs.floorId = data.floorId
+  wsConnection.processWs.addressChangeList = data.addressChangeList
+  var marList = data.selfDefenseFireMarshallingListId.split(',')
+  wsConnection.processWs.selfDefenseFireMarshallingListId = marList.filter(function(element, index, arr){
+      return arr.indexOf(element) === index;
+  })
+  var processList = data.contingencyProcessId.split(',')
+  wsConnection.processWs.contingencyProcessId = processList.filter(function(element, index, arr){
+    return arr.indexOf(element) === index;
+  })
 }
 
 function getMessage(msg){

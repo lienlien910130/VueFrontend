@@ -109,7 +109,7 @@ export default {
       identifyCodes: "0123456789",
       loginForm: {
         username: 'System',
-        password: '1234567',
+        password: '',
         identifyinputCode: ''
       },
       loginRules: {

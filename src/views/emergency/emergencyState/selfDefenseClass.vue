@@ -68,6 +68,8 @@
 import '@/utils/jsplumb'
 import { flowmixin } from '@/mixin/index'
 import { CNode, ContingencyProcess, COption, SelfDefenseFireMarshalling } from '@/object'
+import ws from '@/utils/socket'
+import store from '@/store'
 export default {
     mixins: [flowmixin],
     created(){
@@ -75,6 +77,12 @@ export default {
         this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
     },
     computed:{
+        ...Vuex.mapGetters([
+            'actions',
+            'options',
+            'process',
+            'wsmsg'
+        ]),
         flowMenuAttrs(){
             return{
                 processId:this.processId,
@@ -92,6 +100,19 @@ export default {
                 clickNode:this.clickNode
             }
         }
+    },
+    watch: {
+        process:{ //有登入ws&有發生緊急應變才繪製畫面
+            handler:async function(){
+              if(this.process == true && ws.processWs.floorId !== null){
+                this.$nextTick(async() => {
+                    this.processArray = await SelfDefenseFireMarshalling.getProcess(ws.processWs.selfDefenseFireMarshallingListId)
+                    await this.getJsonFile(ws.processWs.contingencyProcessId)
+                })  
+              }
+            },
+            immediate:true
+        },
     },
     data(){
         return{
@@ -130,11 +151,27 @@ export default {
     async mounted() {
         this.jsPlumb = jsPlumb.getInstance({ Container: "zll-index" })
         this.title = 'selfDefenseClass'
-        if(this.$route.query.l !== undefined && this.$route.query.p !== undefined){
-            //取得所有流程圖
-            this.processArray = await SelfDefenseFireMarshalling.getProcess(this.$route.query.l)
-            await this.getJsonFile(this.$route.query.p)
-        }
+        this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
+        .then(async function (currentToken) {
+            if (currentToken) {
+                console.log('currentToken',currentToken)
+                await store.dispatch('user/saveMToken',currentToken)
+                if(ws.processWs.$ws == null){
+                    ws.initProcessWebSocket()
+                }
+            } else {
+                //顯示訂閱的視窗
+                console.log('no token')
+            }
+        })
+        .catch(function (err) {
+            console.log('err',err)
+        });
+        // if(this.$route.query.l !== undefined && this.$route.query.p !== undefined){
+        //     //取得所有流程圖
+        //     this.processArray = await SelfDefenseFireMarshalling.getProcess(this.$route.query.l)
+        //     await this.getJsonFile(this.$route.query.p)
+        // }
     },
     methods: {
         async getJsonFile(pid = null){ //讀取指定的process ID取得JSON，載入流程圖

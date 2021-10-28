@@ -1573,7 +1573,6 @@ export default {
   .flow-attr {
     width: 100%;
   }
-
 }
 img,
 input {

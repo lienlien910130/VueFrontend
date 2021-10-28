@@ -1,9 +1,21 @@
 <template>
-    <div ref="canvasdiv" class="canvasdiv" id="canvasdiv" >
-        <canvas
-            id="canvas"
-        ></canvas>
+<div class="maintenancePlanAdd">
+    <div class="middle">
+        <header v-if="loadFinsh">
+            <HeaderOperate
+            ref="operate"
+            :operateMenu="operateMenu"
+            @handleOperateMenu="zoomCanvas"/>
+        </header>
+        <div class="section" ref="section" style="height:100%">
+            <div id="canvasdiv" ref="canvasdiv" class="canvasdiv" >
+              <canvas
+                id="canvas"
+              ></canvas>
+            </div>
+        </div>
     </div>
+</div>
 </template>
 
 <script>
@@ -25,11 +37,20 @@ export default {
         this.canvas.setHeight(0)
         this.canvas.skipTargetFind = true
         this.canvas.selection = false
-        this.canvas.on("touchstart", this.mouseDown)
-        this.canvas.on("touchmove", this.move)
+        this.canvas.allowTouchScrolling = true
+        this.canvas.on("mouse:down", this.mouseDown)
+        this.canvas.on("mouse:up",(e) => {
+            this.moving = false
+            this.previousTouch = null
+        })
+        this.canvas.on("mouse:move", this.mouseMove)
     },
     data(){
         return{
+            loadFinsh:false,
+            operateMenu:constant.GraphicEmergencyViewer,
+            pausePanning:false,
+            moving:false,
             canvas: {},
             objId:null,
             blockType: '未分類',
@@ -49,12 +70,16 @@ export default {
             lastzoomPoint: { x: 0, y: 0 }, //初始时，前一次缩放原点同样为(0,0)
             lastmousePoint: { x: 0, y: 0 }, //进行缩放，需要对此刻缩放位置进行保存，来计算出缩放原点，此刻初始时设为0,0
             lastzoom: 1, //表示为上一次的缩放倍数，此刻设为1
+            ongoingTouches : [],
+            previousTouch:null
         }
     },
     methods:{
-        async loadBackgroundImage(objects,imgsrc,startAddress = null){ //載入背景圖
+        async loadBackgroundImage(objects,imgsrc,startAddress = null,status = null){ //載入背景圖
+            var isListenWheel = false
             if(this.canvasHeight == 0){
-                document.getElementById("canvasdiv").style.minHeight = "calc(100vh - 80px)"
+                document.getElementById("canvasdiv").style.minHeight = "calc(100vh - 120px)"
+                isListenWheel = true
             }
             this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
             this.canvasheight = this.canvasHeight == 0 ? this.$refs.canvasdiv.clientHeight : this.canvasHeight
@@ -76,15 +101,16 @@ export default {
             })
             await this.loadObjects(objects)
             if(startAddress !== null){
-                var array = []
-                for (const key in startAddress) {
-                  if(key !== 'status'){
-                    array.push(startAddress[key])
-                  }
+                this.setStartView(startAddress)
+                if(status !== null && status !== undefined){
+                    this.actionObj(startAddress,status)
                 }
-                var address = array.join('-')
-                this.setStartView(address)
-                this.actionObj(address,startAddress['status'])
+                this.loadFinsh = true
+            }
+            if(isListenWheel){
+                this.canvas.on("mouse:wheel",(e) => {
+                    this.zoomCanvas('',e)
+                })
             }
         },
         async loadObjects(val){ //載入初始物件，預設關閉顯示
@@ -190,38 +216,61 @@ export default {
                 this.canvas.renderAll()
             }
         },
-        zoomCanvas(){ //放大縮小
-            console.log(this.canvas.getZoom(),this.canvas.getCenter())
-            // this.zoom = (event.deltaY > 0 ? -0.1 : 0.1) + this.canvas.getZoom()
-            // this.zoom = Math.max(0.5, this.zoom)
-            // this.zoom = Math.min(3, this.zoom)
+        zoomCanvas(operate, e = null){ //放大縮小-有分手機版&電腦版
+            window.event.stopPropagation()
+            window.event.preventDefault()
+            var zoomNumber = 0
+            if(e !== null){ 
+                zoomNumber = event.deltaY > 0 ? -0.1 : 0.1
+            }else{
+                zoomNumber = operate == 'zoomOut' ? -0.1 : 0.1
+            }
+            this.zoom = zoomNumber + this.canvas.getZoom()
+            this.zoom = Math.max(0.5, this.zoom)
+            this.zoom = Math.min(3, this.zoom)
             const center = this.canvas.getCenter()
             this.zoomPoint = new fabric.Point(center.left, center.top)
-            this.canvas.zoomToPoint(this.zoomPoint, 2)
+            this.canvas.zoomToPoint(this.zoomPoint, this.zoom)
             this.resetOriginAfterZoom()
             this.canvas.renderAll()
         },
         mouseDown(e){
-            console.log('down')
-            this.lastMovePos.x = e.e.clientX
-            this.lastMovePos.y = e.e.clientY
+            window.event.stopPropagation()
+            window.event.preventDefault()
+            this.lastMovePos.x = e.e.type !== 'touchstart' ?  e.e.clientX : e.e.touches[0].clientX
+            this.lastMovePos.y = e.e.type !== 'touchstart' ?  e.e.clientY : e.e.touches[0].clientY
+            this.moving = true
         },
-        move(e){
-            console.log('move')
-            let deltaX = 0
-            let deltaY = 0
-            if (this.lastMovePos.x) {
-              deltaX = e.e.clientX - this.lastMovePos.x
+        mouseMove(e){
+            window.event.stopPropagation()
+            window.event.preventDefault()
+            if(this.moving){
+                if(e.e.type == 'touchmove'){
+                    const touch = e.e.touches[0]
+                    if (this.previousTouch) {
+                        e.e.movementX = touch.pageX - this.previousTouch.pageX
+                        e.e.movementY = touch.pageY - this.previousTouch.pageY
+                    }else{
+                        e.e.movementX = 0
+                        e.e.movementY = 0
+                    }
+                    this.previousTouch = touch
+                }
+                let deltaX = 0
+                let deltaY = 0
+                if (this.lastMovePos.x) {
+                    deltaX = ( e.e.type !== 'touchmove' ?  e.e.clientX : e.e.touches[0].clientX ) - this.lastMovePos.x
+                }
+                if (this.lastMovePos.y) {
+                    deltaY = ( e.e.type !== 'touchmove' ?  e.e.clientY : e.e.touches[0].clientY ) - this.lastMovePos.y
+                }
+                this.lastMovePos.x = e.e.type !== 'touchmove' ?  e.e.clientX : e.e.touches[0].clientX
+                this.lastMovePos.y = e.e.type !== 'touchmove' ?  e.e.clientY : e.e.touches[0].clientY
+                let delta = new fabric.Point(deltaX, deltaY)
+                this.canvas.relativePan(delta)
+                this.relativeMouseX += e.e.movementX //累计每一次移动时候的偏差
+                this.relativeMouseY += e.e.movementY
             }
-            if (this.lastMovePos.y) {
-              deltaY = e.e.clientY - this.lastMovePos.y
-            }
-            this.lastMovePos.x = e.e.clientX
-            this.lastMovePos.y = e.e.clientY
-            let delta = new fabric.Point(deltaX, deltaY)
-            this.canvas.relativePan(delta)
-            this.relativeMouseX += e.e.movementX //累计每一次移动时候的偏差
-            this.relativeMouseY += e.e.movementY
         },
         actionObj(str,value){
             var index = this.canvas.getObjects().findIndex(o=>o.addressId == str)
@@ -301,3 +350,15 @@ export default {
 </script>
 
 
+<style lang="scss" scoped>
+header {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    border-bottom: 1px solid #eee;
+}
+.section{
+    background-color: #fff;
+}
+</style>

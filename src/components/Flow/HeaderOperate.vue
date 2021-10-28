@@ -10,47 +10,6 @@
           <i :class="item.icon"></i>
         </el-tooltip>
       </li>
-
-      <!-- <li
-        @click.stop="handleOperateMenu('upper-step')"
-        :class="[middleSelectType === 'upper-step' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="上一步" placement="bottom">
-          <i class="el-icon-refresh-left"></i>
-        </el-tooltip>
-      </li>
-      <li
-        @click.stop="handleOperateMenu('next-step')"
-        :class="[middleSelectType === 'next-step' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="下一步" placement="bottom">
-          <i class="el-icon-refresh-right"></i>
-        </el-tooltip>
-      </li> -->
-      <!-- <li
-        @click.stop="handleOperateMenu('enlarge')"
-        :class="[middleSelectType === 'enlarge' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="放大" placement="bottom">
-          <i class="el-icon-zoom-in"></i>
-        </el-tooltip>
-      </li>
-      <li
-        @click.stop="handleOperateMenu('narrow')"
-        :class="[middleSelectType === 'narrow' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="縮小" placement="bottom">
-          <i class="el-icon-zoom-out"></i>
-        </el-tooltip>
-      </li> -->
-      <!-- <li
-        @click.stop="handleOperateMenu('delete')"
-        :class="[middleSelectType === 'delete' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="刪除" placement="bottom">
-          <i class="el-icon-delete"></i>
-        </el-tooltip>
-      </li> -->
     </ul>
     <ul class="right">
       <li
@@ -63,47 +22,6 @@
           <i :class="item.icon"></i>
         </el-tooltip>
       </li>
-
-      <!-- <li
-        @click.stop="handleOperateMenu('import')"
-        :class="[middleSelectType === 'import' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="載入檔案" placement="bottom">
-          <i class="el-icon-upload"></i>
-        </el-tooltip>
-      </li>
-      <li
-        @click.stop="handleOperateMenu('export')"
-        :class="[middleSelectType === 'export' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="下載檔案" placement="bottom">
-          <i class="el-icon-download"></i>
-        </el-tooltip>
-      </li>
-      <li
-        @click.stop="handleOperateMenu('view-code')"
-        :class="[middleSelectType === 'view-code' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="查看json數據" placement="bottom">
-          <i class="el-icon-more"></i>
-        </el-tooltip>
-      </li>
-      <li
-        @click.stop="handleOperateMenu('save')"
-        :class="[middleSelectType === 'save' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="儲存數據" placement="bottom">
-          <i class="el-icon-files"></i>
-        </el-tooltip>
-      </li>
-      <li
-        @click.stop="handleOperateMenu('clear')"
-        :class="[middleSelectType === 'clear' ? 'active' : '']"
-      >
-        <el-tooltip class="item" effect="dark" content="清空" placement="bottom">
-          <i class="el-icon-document-delete"></i>
-        </el-tooltip>
-      </li> -->
     </ul>
   </div>
 </template>

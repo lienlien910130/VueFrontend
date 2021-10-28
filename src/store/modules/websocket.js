@@ -2,10 +2,10 @@
 const getDefaultState = () => {
     return {
       wsmsg: [], //訊號
-      actions:[], //圖控只用
+      action:false, //是否有動作
       options:[],
       wsuserId:'',
-      process:false,
+      process:false, //是否有啟動應變
       graphicMsg:'', //圖控編輯限制
       flowMsg:'' //流程圖編輯限制
     }
@@ -18,10 +18,10 @@ const getDefaultState = () => {
       Object.assign(state, getDefaultState())
     },
     SET_MSG: (state, wsmsg) => {
-      state.wsmsg.unshift(wsmsg)
+      state.wsmsg.unshift(wsmsg)  //插入第0筆
     },
-    SET_ACTIONS: (state, action) => {
-      state.actions.push(action)
+    SET_ACTION: (state, action) => {
+      state.action = action
     },
     SET_MSGUSERID: (state, wsuserId) => {
       state.wsuserId = wsuserId
@@ -41,8 +41,8 @@ const actions = {
   sendMsg({ commit } , wsmsg){ //硬體設備動作資訊顯示
       commit('SET_MSG', wsmsg)
   },
-  sendActions({ commit } , actions){ //圖控動畫使用
-    commit('SET_ACTIONS', actions)
+  saveAction({ commit } , action){ //圖控動畫使用
+    commit('SET_ACTION', action)
   },
   saveUserId({ commit } , wsuserId){
       commit('SET_MSGUSERID', wsuserId)
@@ -55,7 +55,7 @@ const actions = {
   },
   saveProcess({ commit } , process){ //手機通知網址使用
     commit('SET_PROCESS', process)
-  },
+  }
 }
 
 export default {

@@ -2208,5 +2208,22 @@ export default {
                 icon:'el-icon-document-delete'
             }
         ]
+    },
+    GraphicEmergencyViewer:
+    {
+        left:[],
+        right:
+        [
+            {
+                type:'zoomIn',
+                name:'放大',
+                icon:'el-icon-zoom-in'
+            },
+            {
+                type:'zoomOut',
+                name:'縮小',
+                icon:'el-icon-zoom-out'
+            }
+        ]
     }
 }

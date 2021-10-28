@@ -1,8 +1,6 @@
 <template>
-    <div v-if="floorId == null" style="text-align:center;margin-top:10px">
-      <span>尚未啟動緊急應變</span>
-    </div>
-    <div v-else>
+
+    <div>
       <div style="text-align:center;margin:8px 0px">
         <template template v-for="(item,index) in buttonOptions">
           <el-button :key="index" @click="sendSelect(item.id)" type="danger" round>{{ item.name }}</el-button>
@@ -41,7 +39,8 @@ export default {
         ...Vuex.mapGetters([
             'actions',
             'options',
-            'process'
+            'process',
+            'wsmsg'
         ])
     },
     mounted(){
@@ -61,31 +60,35 @@ export default {
       .catch(function (err) {
             console.log('err',err)
       });
-      // var ifm = document.getElementById('cctv')
-      // ifm.height = 300
-      // ifm.width = document.documentElement.clientWidth
-      // this.$socket.initProcessWebSocket()
     },
     watch: {
         process:{ //有登入ws&有發生緊急應變才繪製畫面
             handler:async function(){
               if(this.process == true && ws.processWs.floorId !== null){
                 this.floorId = ws.processWs.floorId
-                await this.init(ws.processWs.firstTriggerDeviceAddress)
+                var startpoint = ws.processWs.addressChangeList[0]
+                var index = startpoint.internet.indexOf('P') 
+                var label = ''
+                if(index !== -1){ //PLC點位
+                  label =  startpoint.internet + '-' + startpoint.system + '-' + startpoint.memeryLoc
+                }else{
+                  label = startpoint.internet + '-' + startpoint.system + '-' + startpoint.address + '-' + startpoint.number
+                }
+                await this.init(label,startpoint.status) //起始點放大&動作
               }
             },
             immediate:true
         },
-        actions:{
-            handler:async function(){
-                if(this.actions.length){
-                    this.actions.forEach(element => {
-                        this.$refs.graphicviewer.actionObj(element.label)
-                    })
-                }
-            },
-            immediate:true
-        },
+        // actions:{
+        //     handler:async function(){
+        //         if(this.actions.length){
+        //             this.actions.forEach(element => {
+        //                 this.$refs.graphicviewer.actionObj(element.label)
+        //             })
+        //         }
+        //     },
+        //     immediate:true
+        // },
         options:{
             handler:async function(){
                 if(this.options.length){
@@ -96,32 +99,18 @@ export default {
         },
         wsmsg:{
             handler:async function(){
-                //this.actionList = this.wsmsg
+                this.actionList = this.wsmsg  
+                //需篩選R100的顯示動作
+                
             },
             immediate:true
         }
     },
     data(){
       return{
-        // actionList:[],
+        actionList:[],
         // buttonOptions:[]
         floorId:null,
-        actionList:[{
-          date:'2021/10/21 11:22:33',
-          mode:'防災盤',
-          action:'0',
-          point:'001-0008'
-        },{
-          date:'2021/10/21 12:47:33',
-          mode:'PLC',
-          action:'1',
-          point:'P002-R100-7'
-        },{
-          date:'2021/10/21 13:18:33',
-          mode:'火警',
-          action:'sa-1',
-          point:'001-01-010-7'
-        }],
         buttonOptions:[{
           "id": "342",
           "name": "滅火中",
@@ -137,7 +126,7 @@ export default {
       }
     },
     methods:{
-        async init(startAddress) {
+        async init(startAddress, status) {
             this.title = 'selfDefenseClass'
             var floor = await Floors.getOfId(this.floorId)
             var obj = await floor.getGraphicFiles()
@@ -146,7 +135,7 @@ export default {
             }else{
                 var data = await idb.loadCacheImage((floor.getImageID()))
                 this.$nextTick(() => {
-                    this.$refs.graphicviewer.loadBackgroundImage(obj.codeContent,data,startAddress)
+                    this.$refs.graphicviewer.loadBackgroundImage(obj.codeContent,data,startAddress,status)
                 })
             }
         },

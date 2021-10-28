@@ -139,7 +139,7 @@ module.exports = {
             'https://cdnjs.cloudflare.com/ajax/libs/vuex/3.1.0/vuex.min.js',
             //'https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/index.min.js',
             //'https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/locale/zh-TW.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.1.0/fabric.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js',
             'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.6/xlsx.full.min.js',
             'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.6/shim.min.js',
             'https://cdnjs.cloudflare.com/ajax/libs/echarts/4.8.0/echarts.min.js',

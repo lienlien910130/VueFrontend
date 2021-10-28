@@ -183,20 +183,7 @@ export default {
     }
   },
   async mounted() {
-    //this.initsocket()
-    this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
-      .then(async function (currentToken) {
-          if (currentToken) {
-            console.log('currentToken',currentToken)
-            await store.dispatch('user/setMessageToken',currentToken)
-          } else {
-            //顯示訂閱的視窗
-             console.log('no token')
-          }
-    })
-    .catch(function (err) {
-          console.log('err',err)
-    });
+    await this.init()
   },
   data() {
     return {
@@ -237,6 +224,25 @@ export default {
       // await this.getMaintain()
       // await this.getInspection()
       // await this.getPublicSafe()
+      this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
+      .then(async function (currentToken) {
+            if (currentToken) {
+              console.log('currentToken',currentToken)
+              await store.dispatch('user/setMessageToken',currentToken)
+            } else {
+              //顯示訂閱的視窗
+              console.log('no token')
+              Notification.requestPermission(async function (permission) {
+                console.log(permission)
+                  if (permission === "granted") {
+                    await this.init()
+                  };
+                });
+            }
+      })
+      .catch(function (err) {
+            console.log('err',err)
+      });
     },
     loadMore() {
       this.loading = true;
