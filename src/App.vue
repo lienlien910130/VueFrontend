@@ -35,22 +35,22 @@ export default {
     function showMessage(payload){
 		    console.log('onMessage: ', payload);
 
-        const notificationTitle = payload.data.title;
+        const notificationTitle = payload.notification.title;
         const notificationOptions = {
-          body: payload.data.body,
+          body: payload.notification.body,
           icon: '/static/icon.png',
           vibrate: [100, 50, 100],
           data: {
               dateOfArrival: Date.now()
           },
-          actions: [
-              {
-                  action: "confirm", title: "Go interact with this!"
-              },
-              {
-                  action: "close", title: "Ignore"
-              }
-          ]
+          // actions: [
+          //     {
+          //         action: "confirm", title: "Go interact with this!"
+          //     },
+          //     {
+          //         action: "close", title: "Ignore"
+          //     }
+          //]
         };
         navigator.serviceWorker.getRegistration().then(reg => {
           reg.showNotification(notificationTitle, notificationOptions);

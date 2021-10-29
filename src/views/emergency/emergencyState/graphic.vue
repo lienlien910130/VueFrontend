@@ -17,10 +17,7 @@ export default {
     },
     computed:{
         ...Vuex.mapGetters([
-            'actions',
-            'options',
-            'process',
-            'wsmsg'
+            'process'
         ])
     },
     created(){
@@ -40,21 +37,11 @@ export default {
                 }else{
                   label = startpoint.internet + '-' + startpoint.system + '-' + startpoint.address + '-' + startpoint.number
                 }
-                await this.init(label,startpoint.status)
+                await this.init(label,startpoint.status) //只負責起始定位&動畫
               }
             },
             immediate:true
-        },
-        // action:{
-        //     handler:async function(){
-        //         if(this.actions.length){
-        //             this.actions.forEach(element => {
-        //                 this.$refs.graphicviewer.actionObj(element.label)
-        //             })
-        //         }
-        //     },
-        //     immediate:true
-        // }
+        }
     },
     mounted(){
       this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
@@ -65,9 +52,6 @@ export default {
               if(ws.processWs.$ws == null){
                 ws.initProcessWebSocket()
               }
-            } else {
-              //顯示訂閱的視窗
-              console.log('no token')
             }
       })
       .catch(function (err) {

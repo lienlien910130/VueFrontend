@@ -21,7 +21,7 @@ let wsConnection = {
         timeoutNum: null,
         serverTimeoutObj: null,
         cPId:null,
-        cNode:null,
+        cNodeId:null,
         floorId:null,
         addressChangeList:null, //有異動的清單
         selfDefenseFireMarshallingListId:null,
@@ -71,13 +71,19 @@ let wsConnection = {
             data.address.forEach(element => {
               element.createTime = new Date()
               if(data.mode == 'main'){
-                combineAddress(element,'MAIN')
+                combineAddress(element,'MAIN',true)
               }else if(data.mode == 'locPlc'){
-                combineAddress(element,'PLC')
+                combineAddress(element,'PLC',true)
               }else if(data.mode == 'loc'){
-                combineAddress(element,'LOC')
+                combineAddress(element,'LOC',true)
               }
             })
+            // store.dispatch('websocket/saveAction',{
+            //   mode:mode,
+            //   date:moment(element.createTime).format('YYYY/MM/DD HH:mm:ss'),
+            //   status:element.status,
+            //   label:label
+            // })
           }
         }
         this.backWs.$ws.onerror = function(){
@@ -124,7 +130,8 @@ let wsConnection = {
       }
       this.processWs.$ws.onmessage = function(msg){
         console.log('ws message-PROCESS')
-        var data = msg.data !== '0x052E' ? JSON.parse(msg.data) : msg.data
+        console.log(msg)
+        var data = msg.data.indexOf('{')>-1 ? JSON.parse(msg.data) : msg.data
         wsConnection.resetHeartbeat(_this.processWs)
         console.log(data)
         if(data == '0x052E'){
@@ -142,12 +149,17 @@ let wsConnection = {
             store.dispatch('user/saveUserID', data.userId)
           }else if(data.mode == 'emergency'){ //避免已登入後才發生狀況
             emergencyInfo(data.information)
-          }else{
-            // _this.processWs.cPId = data.cPId
-            // _this.processWs.cNode = data.cNode
-            // if(data.cOptions !== undefined){
-            //   store.dispatch('websocket/sendOptions', data.cOptions)
-            // }
+            store.dispatch('websocket/saveProcess', true)
+          }else if(data.mode == 'selectOptions'){ //使用者收到選項的狀況
+            _this.processWs.cPId = data.cpId
+            _this.processWs.cNodeId = data.cNodeId
+            if(data.cOptions !== undefined){
+              store.dispatch('websocket/sendOptions', data.cOptions)
+            }
+          }else if(data.mode == 'cNodeResult'){ //每個節點執行的結果
+            store.dispatch('websocket/saveNodeResult', data)
+          }else if(data.mode == 'broadcastEmergencyResponse'){ //使用者選了選項後的廣播
+            store.dispatch('websocket/updateNodeResult', data)
           }
         }
       }
@@ -203,19 +215,21 @@ let wsConnection = {
         _this.dataWs.$ws.send(JSON.stringify(msg))
     },
     //手機選擇選項後發送回去的訊息
-    sendProcess: function(cOptionID){
+    sendProcess: function(cOption){
       let _this = this
       const msg = {
+        mode: "cOptionSelected",
         accountCToken:store.getters.mToken,
-        cOptionID:cOptionID,
-        cPId:_this.process.cPId,
-        cNodeID:_this.process.cNode
+        cPId:_this.processWs.cPId,
+        cNodeId:_this.processWs.cNodeId,
+        cOptions:new Array(cOption)
       }
       _this.processWs.$ws.send(JSON.stringify(msg))
+      store.dispatch('websocket/sendOptions', [] )
     }
 }
 
-function combineAddress(element, type){
+function combineAddress(element, type, realTimeAction = false){
   var mode = ''
   var label = ''
   switch(type){
@@ -235,9 +249,17 @@ function combineAddress(element, type){
   store.dispatch('websocket/sendMsg',{
     mode:mode,
     date:moment(element.createTime).format('YYYY/MM/DD HH:mm:ss'),
-    action:element.status,
-    point:label
+    status:element.status,
+    label:label
   })
+  if(realTimeAction){
+    store.dispatch('websocket/saveAction',{
+      mode:mode,
+      date:moment(element.createTime).format('YYYY/MM/DD HH:mm:ss'),
+      status:element.status,
+      label:label
+    })
+  }
 }
 
 function emergencyInfo(data){

@@ -56,7 +56,15 @@
     </div>
     <div class="flow-attr">
         <el-tabs v-model="activeName" tab-position="top" style="padding:10px" @tab-click="handleClick">
-            <el-tab-pane label="歷程" name="first">歷程</el-tab-pane>
+            <el-tab-pane label="歷程" name="first">
+                <template v-for="(item,index) in reversedMessage">
+                    <div :key="index" style="text-align:center;padding:5px 8px">
+                        <span style= "display:block">{{ changeName(item.nodeId) }} - {{ item.state | changeType }}</span>
+                        <span v-if="item.message" style= "display:block;color:red">{{ item.message }}</span>
+                        <span style= "display:block">-----------------------------</span>
+                    </div>
+                </template>
+            </el-tab-pane>
             <el-tab-pane label="定位回報" name="second">定位回報</el-tab-pane>
             <el-tab-pane label="撤退追蹤" name="third">撤退追蹤</el-tab-pane>
         </el-tabs>
@@ -78,10 +86,9 @@ export default {
     },
     computed:{
         ...Vuex.mapGetters([
-            'actions',
-            'options',
             'process',
-            'wsmsg'
+            'nodeResult',
+            'selectResult'
         ]),
         flowMenuAttrs(){
             return{
@@ -99,6 +106,36 @@ export default {
             return{
                 clickNode:this.clickNode
             }
+        },
+        changeName: function () {
+            return function (val) {
+                var objItem = this.data.nodeList.filter(obj=>{ return obj.nodeId == val })
+                if(objItem.length){ 
+                    return objItem[0].name
+                }
+                return ''
+            }
+        },
+        reversedMessage: function () {
+          return this.list.reverse()
+        }
+    },
+    filters:{
+        changeType: function(val) {
+            switch(val){
+                case 1:
+                    return '執行成功'
+                case 2:
+                    return '執行中'
+                case 3:
+                    return '警告'
+                case 4:
+                    return '執行異常'
+                case 5:
+                    return '執行失敗'
+                case 20:
+                    return '等待回應'
+            }
         }
     },
     watch: {
@@ -113,6 +150,18 @@ export default {
             },
             immediate:true
         },
+        nodeResult:{
+            handler:async function(){
+                if(this.nodeResult.length){ 
+                    this.list = _.cloneDeep(this.nodeResult)
+                    this.$nextTick(async() => {
+                        this.updateNodeState()
+                    })
+                }
+            },
+            immediate:true,
+            deep:true
+        }
     },
     data(){
         return{
@@ -145,7 +194,8 @@ export default {
             processId:null,
             processArray:[],
             processNodeArray:[],
-            processLineArray:[]
+            processLineArray:[],
+            list:[]
         }
     },
     async mounted() {
@@ -159,19 +209,11 @@ export default {
                 if(ws.processWs.$ws == null){
                     ws.initProcessWebSocket()
                 }
-            } else {
-                //顯示訂閱的視窗
-                console.log('no token')
             }
         })
         .catch(function (err) {
             console.log('err',err)
         });
-        // if(this.$route.query.l !== undefined && this.$route.query.p !== undefined){
-        //     //取得所有流程圖
-        //     this.processArray = await SelfDefenseFireMarshalling.getProcess(this.$route.query.l)
-        //     await this.getJsonFile(this.$route.query.p)
-        // }
     },
     methods: {
         async getJsonFile(pid = null){ //讀取指定的process ID取得JSON，載入流程圖
@@ -179,7 +221,6 @@ export default {
                     var result = await ContingencyProcess.getJson(pid)
                     this.processId = pid
                     this.processNodeArray = await CNode.get(this.processId)
-                    console.log(JSON.stringify(this.processNodeArray))
                     this.processLineArray = await COption.getOfProcess(this.processId)
                     if(result.codeContent !== undefined){
                         this.$nextTick(() => {
@@ -214,6 +255,7 @@ export default {
                     data = _.cloneDeep(data)
                     this.flowVisible = true
                     this.data = data
+                    console.log(JSON.stringify(this.data))
                     let { offsetX, offsetY } = this.data
                     if (offsetX && offsetY) {
                         this.dragMove = {
@@ -230,6 +272,7 @@ export default {
                         this.jsPlumb = jsPlumb.getInstance({ Container: "zll-index" })
                         this.$nextTick(() => {
                             this.jsPlumbInit()
+                            this.updateNodeState()
                         })
                     })
                 })
@@ -292,6 +335,14 @@ export default {
         },
         handleClick(tab, event) {
             console.log(tab, event);
+        },
+        updateNodeState(){
+            for(const [index, value] of this.nodeResult.entries()){
+                var objItem = this.data.nodeList.filter(obj=>{ return obj.nodeId == value.nodeId })
+                if(objItem.length){
+                    objItem[0].state = value.state
+                }
+            }
         }
     }
 }

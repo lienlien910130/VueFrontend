@@ -25,11 +25,13 @@ const getters = {
   vercom: state => state.version.components,
 
   wsmsg: state => state.websocket.wsmsg,
-  action: state => state.websocket.action,
+  realTimeaction: state => state.websocket.realTimeaction,
   options: state => state.websocket.options,
   wsuserId: state => state.websocket.wsuserId,
   process: state => state.websocket.process,
   graphicMsg: state => state.websocket.graphicMsg,
+  nodeResult: state => state.websocket.nodeResult,
+  selectResult: state => state.websocket.selectResult,
 
   buildingroles : state => state.building.roles,
   buildingid : state => state.building.buildingid,

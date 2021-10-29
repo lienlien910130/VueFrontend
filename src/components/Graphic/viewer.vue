@@ -31,6 +31,12 @@ export default {
         default: 0
       }
     },
+    computed:{
+        ...Vuex.mapGetters([
+            'wsmsg',
+            'realTimeaction'
+        ])
+    },
     mounted() {
         this.canvas = new fabric.Canvas("canvas")
         this.canvas.setWidth(1650)
@@ -44,6 +50,22 @@ export default {
             this.previousTouch = null
         })
         this.canvas.on("mouse:move", this.mouseMove)
+    },
+    watch:{
+        realTimeaction:{
+            handler:async function(){
+                if(this.realTimeaction.length){
+                    console.log('realTimeaction',this.realTimeaction.length)
+                    this.$nextTick(() => {
+                        for(let ac of this.realTimeaction){
+                            this.actionObj(ac.label,ac.status)
+                        }
+                    })
+                }
+            },
+            immediate:true,
+            deep:true
+        }
     },
     data(){
         return{
@@ -70,7 +92,6 @@ export default {
             lastzoomPoint: { x: 0, y: 0 }, //初始时，前一次缩放原点同样为(0,0)
             lastmousePoint: { x: 0, y: 0 }, //进行缩放，需要对此刻缩放位置进行保存，来计算出缩放原点，此刻初始时设为0,0
             lastzoom: 1, //表示为上一次的缩放倍数，此刻设为1
-            ongoingTouches : [],
             previousTouch:null
         }
     },
@@ -106,6 +127,11 @@ export default {
                     this.actionObj(startAddress,status)
                 }
                 this.loadFinsh = true
+                for(let msg of this.wsmsg){
+                    this.$nextTick(() => {
+                        this.actionObj(msg.label,msg.status)
+                    })
+                }
             }
             if(isListenWheel){
                 this.canvas.on("mouse:wheel",(e) => {
@@ -158,8 +184,6 @@ export default {
                     }
                     self.canvas.renderOnAddRemove = origRenderOnAddRemove
                     self.canvas.renderAll()
-                    console.log(JSON.stringify(self.canvas.getObjects()))
-                    // self.actionObj('001-01-012-4',1)
                 })
             }
         },
@@ -273,9 +297,11 @@ export default {
             }
         },
         actionObj(str,value){
+            console.log(str,value)
             var index = this.canvas.getObjects().findIndex(o=>o.addressId == str)
             if(index !== -1){
                 var obj = this.canvas.getObjects()[index]
+                console.log(obj)
                 var equ = constant.Equipment.filter(ele=>{ return ele.id == obj.srcId})[0]
                 var src = equ.status.filter(obj=>{ return obj.value == value})[0]
                 var self = this
@@ -318,8 +344,16 @@ export default {
                         })
                     }
                     obj.set({ visible : true})
-                    if(src.color !== '#00ff00'){
+                    if(src.color !== '#00ff00' && value == 1){
+                        console.log('obj.hasAnimationStarted',obj.hasAnimationStarted)
+                        // if(obj.hasAnimationStarted !== undefined && obj.hasAnimationStarted == false){
+                        //     obj.hasAnimationStarted = true
+                        //     this.setAnimate(obj)
+                        // }
+                        obj.hasAnimationStarted = true
                         this.setAnimate(obj)
+                    }else if(value == 0){
+                        this.stopAnimate(obj)
                     }
                 }
 
@@ -336,14 +370,16 @@ export default {
             }
         },
         setAnimate(obj, maximum = 1){ //動畫
-            this.hasAnimationStarted = true
             obj.animate('opacity', obj.opacity === 0.2 ? maximum : 0.2, {
                 duration: 600,
                 onChange: this.canvas.renderAll.bind(this.canvas),
                 onComplete: () => this.setAnimate(obj, maximum),
-                abort: () => !this.hasAnimationStarted,
+                abort: () => !obj.hasAnimationStarted,
                 easing: fabric.util.ease.easeInOutCubic
             })
+        },
+        stopAnimate(obj){
+            obj.hasAnimationStarted = false
         }
     }
 }

@@ -7,7 +7,8 @@
                     ref="block"
                     :list-query-params.sync="listQueryParams"
                     v-bind="blockAttrs"
-                    v-on="blockEvent"></Block>
+                    v-on="blockEvent"
+                    :blockData="reversedMessage"></Block>
                 </div>
             </el-col>
         </el-row>
@@ -26,6 +27,9 @@ export default {
                 clickPagination:this.clickPagination,
                 resetlistQueryParams:this.resetlistQueryParams
             }
+        },
+        reversedMessage: function () {
+          return this.actionList.reverse()
         }
     },
     watch: {
@@ -33,7 +37,7 @@ export default {
             handler:async function(){
                 await this.init()
                 await this.changeTable(true)
-                this.blockData = this.wsmsg
+                this.actionList = this.wsmsg
                 this.listQueryParams.total = this.wsmsg.length
             },
             immediate:true
@@ -41,7 +45,7 @@ export default {
     },
     data(){
         return{
-           
+           actionList:[]
         }
     },
     methods:{
@@ -51,8 +55,8 @@ export default {
             this.tableConfig = [
                 { label:'時間' , prop:'date', isHidden:false},
                 { label:'系統' , prop:'mode', isHidden:false},
-                { label:'事件' , prop:'action', isHidden:false},
-                { label:'點位' , prop:'point', isHidden:false}
+                { label:'事件' , prop:'status', isHidden:false},
+                { label:'點位' , prop:'label', isHidden:false}
             ]
             this.headerButtonsName = []
             this.isHasButtons = false

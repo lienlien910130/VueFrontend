@@ -317,6 +317,7 @@
                     //點擊線-傳遞資訊到右側
                     this.jsPlumb.bind('click', (conn, originalEvent) => {
                         // conn.toggleType("selected")
+                        console.log(conn)
                         this.activeElement.type = 'line'
                         this.activeElement.sourceId = conn.sourceId
                         this.activeElement.targetId = conn.targetId

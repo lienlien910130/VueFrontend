@@ -48,7 +48,7 @@
                             </el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item v-if="node.nType == 21" label="角色">
+                    <el-form-item v-if="node.nType == 21 || node.nType == 50" label="角色">
                         <el-select
                         v-model="node.linkRoles"
                         placeholder="請選擇"
@@ -65,7 +65,7 @@
                             </el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item v-if="node.nType == 21" label="人員">
+                    <el-form-item v-if="node.nType == 21  || node.nType == 50" label="人員">
                         <el-select
                         v-model="node.linkAccountList"
                         placeholder="請選擇"

@@ -2,12 +2,14 @@
 const getDefaultState = () => {
     return {
       wsmsg: [], //訊號
-      action:false, //是否有動作
+      realTimeaction:[], //是否有動作
       options:[],
       wsuserId:'',
       process:false, //是否有啟動應變
       graphicMsg:'', //圖控編輯限制
-      flowMsg:'' //流程圖編輯限制
+      flowMsg:'', //流程圖編輯限制
+      nodeResult:[],
+      selectResult:null
     }
   }
 
@@ -18,10 +20,10 @@ const getDefaultState = () => {
       Object.assign(state, getDefaultState())
     },
     SET_MSG: (state, wsmsg) => {
-      state.wsmsg.unshift(wsmsg)  //插入第0筆
+      state.wsmsg.push(wsmsg)  //插入第0筆
     },
     SET_ACTION: (state, action) => {
-      state.action = action
+      state.realTimeaction.push(action)
     },
     SET_MSGUSERID: (state, wsuserId) => {
       state.wsuserId = wsuserId
@@ -35,6 +37,12 @@ const getDefaultState = () => {
     SET_PROCESS: (state, process) => {
       state.process = process
     },
+    SET_NODERESULT: (state, nodeResult) =>{
+      state.nodeResult.push(nodeResult)
+    },
+    SET_SELECTRESULT: (state, selectResult) =>{
+      state.selectResult = selectResult
+    }
 }
 
 const actions = {
@@ -55,7 +63,22 @@ const actions = {
   },
   saveProcess({ commit } , process){ //手機通知網址使用
     commit('SET_PROCESS', process)
-  }
+  },
+  saveNodeResult({ commit } , nodeResult){ //儲存節點結果
+    commit('SET_NODERESULT', nodeResult)
+  },
+  saveSelectResult({ commit } , selectResult){ //儲存節點結果
+    commit('SET_SELECTRESULT', selectResult)
+  },
+  updateNodeResult({ commit }, content){
+    var index = state.nodeResult.findIndex((item) => {
+      return item.nodeId === content.nodeId
+    })
+    if(index !== -1){
+      state.nodeResult[index].state = 1
+      state.nodeResult[index].message = content.message
+    }
+  },
 }
 
 export default {
