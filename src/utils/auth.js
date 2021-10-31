@@ -4,6 +4,7 @@ const TokenKey = '_token'
 const Version = '_version'
 const USERid = '_ID'
 const BuildingID = '_buildingid'
+const Device = '_device'
 
 export function getVersion() {
   return Cookies.get(Version)
@@ -40,6 +41,7 @@ export function setID(userid) {
 export function removeID() {
   return Cookies.remove(USERid)
 }
+
 export function getBuildingid() {
   return Cookies.get(BuildingID)
 }
@@ -50,4 +52,16 @@ export function setBuildingid(buildingID) {
 
 export function removeBuildingid() {
   return Cookies.remove(BuildingID)
+}
+
+export function getDevice() {
+  return Cookies.get(Device)
+}
+
+export function setDevice(device) {
+  return Cookies.set(Device, device)
+}
+
+export function removeDevice() {
+  return Cookies.remove(Device)
 }

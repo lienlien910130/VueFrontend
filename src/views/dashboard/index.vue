@@ -7,18 +7,18 @@
         <el-row :gutter="32">
         <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
-            <pie-chart 
+            <pie-chart
             :percentage="deviceGroup"
-            v-on:handleChartClick="handleChartClick" 
+            v-on:handleChartClick="handleChartClick"
             />
           </div>
         </el-col>
         <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
-            <Tree 
+            <Tree
             :treeData="deviceGroup"
-            :currentNode="currentNode" 
-            v-on:handleNodeClick="handleNodeClick"/> 
+            :currentNode="currentNode"
+            v-on:handleNodeClick="handleNodeClick"/>
           </div>
         </el-col>
         <el-col :xs="24" :sm="24" :md="8" :lg="8">
@@ -65,20 +65,20 @@
       </el-row>
         <!-- <el-row  :gutter="32">
           <div class="infinite-list-wrapper">
-            <div 
-            class="list"  
-            v-infinite-scroll="loadMore"  
-            infinite-scroll-disabled="disabled"  
+            <div
+            class="list"
+            v-infinite-scroll="loadMore"
+            infinite-scroll-disabled="disabled"
             infinite-scroll-immediate="false">
-              <div 
-              v-for="i in count" 
+              <div
+              v-for="i in count"
               :key="i">
               <el-col :xs="24" :sm="24" :md="8" :lg="8">
                 <div class="dashboard-wrapper">
                   <p>{{ viewlist[i-1].name }}</p>
-                  <component 
-                    v-bind:is="viewlist[i-1].type" 
-                  ></component> 
+                  <component
+                    v-bind:is="viewlist[i-1].type"
+                  ></component>
                 </div>
               </el-col>
               </div>
@@ -122,7 +122,7 @@ export default {
       'account'
     ]),
     noMore () {
-      return this.count >= this.viewlist.length 
+      return this.count >= this.viewlist.length
     },
     disabled () {
       return this.loading || this.noMore
@@ -220,29 +220,29 @@ export default {
     }
   },
   methods: {
-    async init(){   
+    async init(){
       // await this.getMaintain()
       // await this.getInspection()
       // await this.getPublicSafe()
-      this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
-      .then(async function (currentToken) {
-            if (currentToken) {
-              console.log('currentToken',currentToken)
-              await store.dispatch('user/setMessageToken',currentToken)
-            } else {
-              //顯示訂閱的視窗
-              console.log('no token')
-              Notification.requestPermission(async function (permission) {
-                console.log(permission)
-                  if (permission === "granted") {
-                    await this.init()
-                  };
-                });
-            }
-      })
-      .catch(function (err) {
-            console.log('err',err)
-      });
+      // this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
+      // .then(async function (currentToken) {
+      //       if (currentToken) {
+      //         console.log('currentToken',currentToken)
+      //         await store.dispatch('user/setMessageToken',currentToken)
+      //       } else {
+      //         //顯示訂閱的視窗
+      //         console.log('no token')
+      //         Notification.requestPermission(async function (permission) {
+      //           console.log(permission)
+      //             if (permission === "granted") {
+      //               await this.init()
+      //             };
+      //           });
+      //       }
+      // })
+      // .catch(function (err) {
+      //       console.log('err',err)
+      // });
     },
     loadMore() {
       this.loading = true;
@@ -265,7 +265,7 @@ export default {
           value: obj.status,
           name: statusObj.textName,
           data: this.deviceData.filter((item, index) => item.status == obj.status).map(v => {
-                  this.$set(v, 'name', v.getOnlyName()) 
+                  this.$set(v, 'name', v.getOnlyName())
                   this.$set(v, 'type', v.linkDeviceTypes.length !== 0 ? v.linkDeviceTypes[0].getID() : '')
                   return v
               })
@@ -302,9 +302,9 @@ export default {
     },
     async handleList(title,item){
       var config = title == 'maintain' ? MaintainManagement.getTableConfig() :
-          title == 'inspection' ? Inspection.getTableConfig() : 
+          title == 'inspection' ? Inspection.getTableConfig() :
           PublicSafe.getTableConfig()
-      var titlename =  title == 'maintain' ? '維護保養' : 
+      var titlename =  title == 'maintain' ? '維護保養' :
           title == 'inspection' ? '檢修申報': '公安申報'
       var keys = Object.keys(item)
       var array = []
@@ -322,11 +322,11 @@ export default {
           }else if(i[0].format == 'inspectionSelect'){
             value = item.getInspectionLackName()
           }else if(i[0].format == 'contactunitSelect'){
-            value = item.getContactUnitsName()  
-          }else if(i[0].format == 'MaintainProcessOptions' || 
+            value = item.getContactUnitsName()
+          }else if(i[0].format == 'MaintainProcessOptions' ||
           i[0].format == 'MaintainContentOptions'){
-            let _array = this.buildingoptions.filter((item, index) => 
-              item.id == item[key] 
+            let _array = this.buildingoptions.filter((item, index) =>
+              item.id == item[key]
             )
             value = _array.length !== 0 ? _array[0].textName : ''
           }else if(i[0].format =='improvedBoolean'){
@@ -334,7 +334,7 @@ export default {
           }else if(i[0].format == 'openreportlack' ){
             if(value !== null && value.length){
               var doneobj = this.buildingoptions.filter(item=>
-              item.classType == 'LackStatusOptions' 
+              item.classType == 'LackStatusOptions'
               && item.textName == '已改善' && item.value == 'system')
               var doneid = doneobj.length !== 0 ? doneobj[0].id : 0
               var done = value.filter(item => item.getStatus() == doneid)
@@ -345,7 +345,7 @@ export default {
           }else if(i[0].format == 'openmaintain'){
             if(value !== null && value.length){
               var doneobj = this.buildingoptions.filter(item=>
-              item.classType == 'MaintainProcessOptions' 
+              item.classType == 'MaintainProcessOptions'
               && item.textName == '已保養' && item.value == 'system')
               var doneid = doneobj.length !== 0 ? doneobj[0].id : 0
               var done = value.filter(item => item.getProcessStatus() == doneid)
@@ -404,7 +404,7 @@ export default {
     handleNodeClick(data){
       console.log(data)
     }
-    
+
   }
 }
 </script>

@@ -25,7 +25,9 @@ let wsConnection = {
         floorId:null,
         addressChangeList:null, //有異動的清單
         selfDefenseFireMarshallingListId:null,
-        contingencyProcessId:null
+        contingencyProcessId:null,
+        login:false,
+        getProcess:false //用來判斷關閉後是否要重新連線
     },
     dataWs:{
         $ws: null,
@@ -55,11 +57,12 @@ let wsConnection = {
           var data = JSON.parse(msg.data)
           wsConnection.resetHeartbeat(_this.backWs)
           console.log(data)
-          if(data.mode == 'emergency'){
-            if(_this.processWs.$ws == null){ //尚未連線緊急應變時收到才要處理
-              _this.initProcessWebSocket()
-            }
-          }else if(data.mode == 'signalHistory'){ //初始歷史資料
+          // if(data.mode == 'emergency'){
+          //   if(_this.processWs.$ws == null){ //尚未連線緊急應變時收到才要處理
+          //     _this.initProcessWebSocket()
+          //   }
+          // }else
+          if(data.mode == 'signalHistory'){ //初始歷史資料
             data.addressChangeList.forEach(element=>{
               if(element.internet.indexOf('P') !== -1){ //PLC點位
                 combineAddress(element,'PLC')
@@ -67,23 +70,17 @@ let wsConnection = {
                 combineAddress(element,'LOC')
               }
             })
-          }else{ //平常接收訊息
+          }else if(data.mode !== 'emergency'){ //平常接收訊息
             data.address.forEach(element => {
               element.createTime = new Date()
               if(data.mode == 'main'){
-                combineAddress(element,'MAIN',true)
+                combineAddress(element,'MAIN')
               }else if(data.mode == 'locPlc'){
                 combineAddress(element,'PLC',true)
               }else if(data.mode == 'loc'){
                 combineAddress(element,'LOC',true)
               }
             })
-            // store.dispatch('websocket/saveAction',{
-            //   mode:mode,
-            //   date:moment(element.createTime).format('YYYY/MM/DD HH:mm:ss'),
-            //   status:element.status,
-            //   label:label
-            // })
           }
         }
         this.backWs.$ws.onerror = function(){
@@ -126,11 +123,10 @@ let wsConnection = {
       }
       this.processWs.$ws.onclose = function(){
         console.log('ws close-PROCESS')
-        wsConnection.reconnect(_this.processWs)
+        wsConnection.reconnect(_this.processWs, true)
       }
       this.processWs.$ws.onmessage = function(msg){
         console.log('ws message-PROCESS')
-        console.log(msg)
         var data = msg.data.indexOf('{')>-1 ? JSON.parse(msg.data) : msg.data
         wsConnection.resetHeartbeat(_this.processWs)
         console.log(data)
@@ -138,18 +134,39 @@ let wsConnection = {
           ElementUI.Message.error('尚未訂閱智慧消防平台')
         }else{
           if(data.SenderName == 'MercuryfireWS65'){
-            var str = 'accountCToken:'+store.getters.mToken
-            _this.processWs.$ws.send(str)
+            wsConnection.sendProcessWsLogin()
           }else if(data.mode == 'wsLogin'){
+            store.dispatch('user/saveToken', data.accessToken)
             if(data.emergencyInfo !== undefined){
               emergencyInfo(data.emergencyInfo)
               store.dispatch('websocket/saveProcess', true)
+              ElementUI.Message('已啟動緊急應變')
+              // ElementUI.MessageBox.confirm('已啟動緊急應變狀態，是否開啟相關頁面檢視', '警告', {
+              //   confirmButtonText: '確認',
+              //   cancelButtonText: '取消',
+              //   type: 'warning'
+              // }).then(() => {
+              // }).catch(() => {
+              // })
             }
-            store.dispatch('user/saveToken', data.accessToken)
-            store.dispatch('user/saveUserID', data.userId)
-          }else if(data.mode == 'emergency'){ //避免已登入後才發生狀況
-            emergencyInfo(data.information)
-            store.dispatch('websocket/saveProcess', true)
+            if(Object.keys(data.cpList).length){ //初始節點資料
+              var nodeList = Object.values(data.cpList)[0].eventCNodeList
+              for(let node in Object.keys(nodeList)){
+                var obj = nodeList[Object.keys(nodeList)[node]]
+                var temp = {
+                  mode: 'cNodeResult',
+                  cpId: obj.parentId,
+                  cNodeId: obj.instanceCNode.id,
+                  nodeId: obj.instanceCNode.nodeId,
+                  state: obj.instanceCNode.state,
+                  name: obj.instanceCNode.name
+                }
+                store.dispatch('websocket/saveNodeResult', temp)
+              }
+            }
+            _this.processWs.login = true
+          }else if(data.mode == 'emergency'){ //已啟動緊急應變時需重新登入ws要緊急應變的token
+            _this.processWs.$ws.close()
           }else if(data.mode == 'selectOptions'){ //使用者收到選項的狀況
             _this.processWs.cPId = data.cpId
             _this.processWs.cNodeId = data.cNodeId
@@ -158,17 +175,17 @@ let wsConnection = {
             }
           }else if(data.mode == 'cNodeResult'){ //每個節點執行的結果
             store.dispatch('websocket/saveNodeResult', data)
-          }else if(data.mode == 'broadcastEmergencyResponse'){ //使用者選了選項後的廣播
+          }else if(data.mode == 'broadcastEmergencyResponse'){ //使用者選了選項後收到的廣播
             store.dispatch('websocket/updateNodeResult', data)
           }
         }
       }
       this.processWs.$ws.onerror = function(){
-        wsConnection.reconnect(_this.processWs)
+        wsConnection.reconnect(_this.processWs, true)
       }
     },
     //重啟
-    reconnect: function (ws) {
+    reconnect: function (ws, isProcess = false) {
       let _this = this
       if (ws.lockReturn) {
         return
@@ -176,9 +193,9 @@ let wsConnection = {
       ws.lockReturn = true
       ws.timeoutNum && clearTimeout(ws.timeoutNum)
       ws.timeoutNum = setTimeout(function () {
-        _this.initWebSocket()
+        isProcess == false ? _this.initWebSocket() : _this.initProcessWebSocket()
         ws.lockReturn = false
-      }, 3000)
+      }, 50)
     },
     //開啟心跳
     startWsHeartbeat: function (ws) {
@@ -214,6 +231,10 @@ let wsConnection = {
         }
         _this.dataWs.$ws.send(JSON.stringify(msg))
     },
+    sendProcessWsLogin: function(){
+      var str = 'accountCToken:'+store.getters.mToken
+      this.processWs.$ws.send(str)
+    },
     //手機選擇選項後發送回去的訊息
     sendProcess: function(cOption){
       let _this = this
@@ -240,6 +261,7 @@ function combineAddress(element, type, realTimeAction = false){
     case 'LOC':
       mode = '火警'
       label = element.internet + '-' + element.system + '-' + element.address + '-' + element.number
+      element.status = element.sAction
       break;
     case 'MAIN':
       mode = '防災盤'

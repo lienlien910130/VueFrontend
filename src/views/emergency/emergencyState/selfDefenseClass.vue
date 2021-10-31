@@ -56,9 +56,9 @@
     </div>
     <div class="flow-attr">
         <el-tabs v-model="activeName" tab-position="top" style="padding:10px" @tab-click="handleClick">
-            <el-tab-pane label="歷程" name="first">
+            <el-tab-pane label="歷程" name="first" class="tabClass">
                 <template v-for="(item,index) in reversedMessage">
-                    <div :key="index" style="text-align:center;padding:5px 8px">
+                    <div :key="index" style="padding:5px 8px;">
                         <span style= "display:block">{{ changeName(item.nodeId) }} - {{ item.state | changeType }}</span>
                         <span v-if="item.message" style= "display:block;color:red">{{ item.message }}</span>
                         <span style= "display:block">-----------------------------</span>
@@ -77,7 +77,7 @@ import '@/utils/jsplumb'
 import { flowmixin } from '@/mixin/index'
 import { CNode, ContingencyProcess, COption, SelfDefenseFireMarshalling } from '@/object'
 import ws from '@/utils/socket'
-import store from '@/store'
+
 export default {
     mixins: [flowmixin],
     created(){
@@ -110,7 +110,7 @@ export default {
         changeName: function () {
             return function (val) {
                 var objItem = this.data.nodeList.filter(obj=>{ return obj.nodeId == val })
-                if(objItem.length){ 
+                if(objItem.length){
                     return objItem[0].name
                 }
                 return ''
@@ -145,14 +145,14 @@ export default {
                 this.$nextTick(async() => {
                     this.processArray = await SelfDefenseFireMarshalling.getProcess(ws.processWs.selfDefenseFireMarshallingListId)
                     await this.getJsonFile(ws.processWs.contingencyProcessId)
-                })  
+                })
               }
             },
             immediate:true
         },
         nodeResult:{
             handler:async function(){
-                if(this.nodeResult.length){ 
+                if(this.nodeResult.length){
                     this.list = _.cloneDeep(this.nodeResult)
                     this.$nextTick(async() => {
                         this.updateNodeState()
@@ -201,19 +201,6 @@ export default {
     async mounted() {
         this.jsPlumb = jsPlumb.getInstance({ Container: "zll-index" })
         this.title = 'selfDefenseClass'
-        this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
-        .then(async function (currentToken) {
-            if (currentToken) {
-                console.log('currentToken',currentToken)
-                await store.dispatch('user/saveMToken',currentToken)
-                if(ws.processWs.$ws == null){
-                    ws.initProcessWebSocket()
-                }
-            }
-        })
-        .catch(function (err) {
-            console.log('err',err)
-        });
     },
     methods: {
         async getJsonFile(pid = null){ //讀取指定的process ID取得JSON，載入流程圖
@@ -468,5 +455,10 @@ main {
   z-index: 10;
 }
 
-
+.tabClass{
+  text-align:center;
+  padding:5px 8px;
+  height:700px;
+  overflow-y: auto;
+}
 </style>

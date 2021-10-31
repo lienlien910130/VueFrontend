@@ -52,10 +52,9 @@ export default {
         this.canvas.on("mouse:move", this.mouseMove)
     },
     watch:{
-        realTimeaction:{
+        realTimeaction:{ //已開啟後監聽的動畫
             handler:async function(){
                 if(this.realTimeaction.length){
-                    console.log('realTimeaction',this.realTimeaction.length)
                     this.$nextTick(() => {
                         for(let ac of this.realTimeaction){
                             this.actionObj(ac.label,ac.status)
@@ -86,7 +85,7 @@ export default {
             canvasheight:0,
             lastMovePos:{x:0, y:0},
             relativeMouseX: 0,
-            relativeMouseY: 0, 
+            relativeMouseY: 0,
             zoom: window.zoom ? window.zoom : 1,
             zoomPoint: new fabric.Point(0, 0), //初始时缩放原点的位置设为（0,0），这是页面的左上顶点
             lastzoomPoint: { x: 0, y: 0 }, //初始时，前一次缩放原点同样为(0,0)
@@ -105,10 +104,10 @@ export default {
             this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
             this.canvasheight = this.canvasHeight == 0 ? this.$refs.canvasdiv.clientHeight : this.canvasHeight
             this.canvas.setHeight(this.canvasheight)
-            console.log(this.$refs.canvasdiv.clientHeight)
-            console.log(this.$refs.canvasdiv.clientWidth,this.canvasheight)
-            console.log(this.$refs.canvasdiv.clientWidth/1650)
-            console.log(this.canvasheight/750)
+            // console.log(this.$refs.canvasdiv.clientHeight)
+            // console.log(this.$refs.canvasdiv.clientWidth,this.canvasheight)
+            // console.log(this.$refs.canvasdiv.clientWidth/1650)
+            // console.log(this.canvasheight/750)
             this.leftsize = this.$refs.canvasdiv.clientWidth/1650
             this.topsize = this.canvasheight/750
             this.canvas.clear()
@@ -127,10 +126,12 @@ export default {
                     this.actionObj(startAddress,status)
                 }
                 this.loadFinsh = true
-                for(let msg of this.wsmsg){
+                for(const [index, value] of this.wsmsg.entries()){ //去除掉第一筆，因起始動畫上述已執行
+                  if(index !== 0){
                     this.$nextTick(() => {
-                        this.actionObj(msg.label,msg.status)
+                        this.actionObj(value.label,value.status)
                     })
+                  }
                 }
             }
             if(isListenWheel){
@@ -231,7 +232,6 @@ export default {
         setStartView(startAddress){ //設定起始點的視圖
             var index = this.canvas.getObjects().findIndex(o=>o.addressId == startAddress)
             if(index !== -1){
-                console.log(this.canvas.getObjects()[index])
                 var left = this.canvas.getObjects()[index].left
                 var top = this.canvas.getObjects()[index].top
                 this.zoomPoint = new fabric.Point(left, top)
@@ -244,7 +244,7 @@ export default {
             window.event.stopPropagation()
             window.event.preventDefault()
             var zoomNumber = 0
-            if(e !== null){ 
+            if(e !== null){
                 zoomNumber = event.deltaY > 0 ? -0.1 : 0.1
             }else{
                 zoomNumber = operate == 'zoomOut' ? -0.1 : 0.1
@@ -306,18 +306,18 @@ export default {
                 var src = equ.status.filter(obj=>{ return obj.value == value})[0]
                 var self = this
                 if(obj.srcId == 'a2' && value == 1){ //需更換svg圖片：探測器動作更換成火災圖片
-                    obj.set({ visible : false})
-                    var item = require('@/icons/svg/'+src.imgSrc)
+                    obj.set({ visible: false })
+                    var item = require('@/icons/svg/fire_fs.svg')
                     var text = item.default.content.replace(/http:\/\//g, 'https://')
                     text = text.replace('symbol', 'svg')
                     text = text.replace('/symbol', '/svg')
                     fabric.loadSVGFromString(text, function(objects, options) {
                         var svgItems = fabric.util.groupSVGElements(objects, options);
                         svgItems.set({
-                            scaleX: obj.scaleX * self.leftsize,
-                            scaleY: obj.scaleY * self.topsize,
-                            top: obj.top * self.topsize,
-                            left: obj.left * self.leftsize,
+                            scaleX: obj.scaleX,
+                            scaleY: obj.scaleY,
+                            top: obj.top,
+                            left: obj.left,
                             hasControls:false,
                             visible:true
                         })
@@ -326,14 +326,17 @@ export default {
                             fill:'#ff0000'
                         });
                         self.addCustomize(svgItems,obj.objId,obj.objectName,obj.blockType,
-                        'fs',obj.addressId,obj.connectId,obj.status,obj.action)
+                        'fs','000-00-000-0',obj.connectId,obj.status,obj.action)
                         self.canvas.renderAll();
+                        svgItems.hasAnimationStarted = true
                         self.setAnimate(svgItems)
                     });
-                }else{
-                    obj.set({
-                        fill:src.color
-                    })
+                }else if(obj.srcId == 'a2' && value == 0){ //刪除火災的svg
+                  var index = this.canvas.getObjects().findIndex(o=>o.addressId == '000-00-000-0')
+                  var fire = this.canvas.getObjects()[index]
+                  this.canvas.remove(fire)
+                  obj.set({ visible: true })
+                }else{ //其餘的動畫顯示
                     if(obj._objects !== undefined){
                         obj.getObjects().forEach(item=>{
                             if(item.fill !== '#ffffff'){
@@ -343,28 +346,28 @@ export default {
                             }
                         })
                     }
-                    obj.set({ visible : true})
+                    obj.set({ fill:src.color, visible : true})
                     if(src.color !== '#00ff00' && value == 1){
-                        console.log('obj.hasAnimationStarted',obj.hasAnimationStarted)
-                        // if(obj.hasAnimationStarted !== undefined && obj.hasAnimationStarted == false){
-                        //     obj.hasAnimationStarted = true
-                        //     this.setAnimate(obj)
-                        // }
                         obj.hasAnimationStarted = true
                         this.setAnimate(obj)
                     }else if(value == 0){
                         this.stopAnimate(obj)
                     }
                 }
-
+                //關聯區塊的動畫顯示
                 if(obj.connectId !== ''){
                     var connectindex = this.canvas.getObjects().findIndex(o=>o.objId == obj.connectId)
                     if(connectindex !== -1){
                         var connectObj = this.canvas.getObjects()[connectindex]
-                        connectObj.set({fill: 'rgba(230, 83, 83, 1)'})
-                        this.setAnimate(connectObj, 0.7)
+                        if(value == 1){
+                          connectObj.set({fill: 'rgba(230, 83, 83, 1)'})
+                          connectObj.hasAnimationStarted = true
+                          this.setAnimate(connectObj, 0.7)
+                        }else{
+                          connectObj.set({fill: 'rgba(197, 195, 195, 1)'})
+                          this.stopAnimate(connectObj, 0.5)
+                        }
                     }
-
                 }
                 this.canvas.renderAll()
             }
@@ -378,8 +381,10 @@ export default {
                 easing: fabric.util.ease.easeInOutCubic
             })
         },
-        stopAnimate(obj){
+        stopAnimate(obj, opacity = 1){
             obj.hasAnimationStarted = false
+            obj.opacity = opacity
+            // obj.set({ visible: false})
         }
     }
 }

@@ -2,8 +2,8 @@
     <div>
       <div style="text-align:center;margin:8px 0px">
         <template template v-for="(item,index) in buttonOptions">
-          <el-button 
-            :key="index" 
+          <el-button
+            :key="index"
             @click="sendSelect(item)" type="danger" round>
             {{ item.name }}
           </el-button>
@@ -24,8 +24,6 @@
       </div>
       <div v-if="process == true" class="videobox">
         <img src="http://192.168.88.221/videourl0.cgi?user=viewer&pass=viewer" width="100%" height="auto">
-        <!-- <iframe src="http://192.168.88.221/videourl0.cgi?user=viewer&pass=viewer">
-        </iframe> -->
       </div>
     </div>
 </template>
@@ -69,7 +67,7 @@ export default {
               if(this.process == true && ws.processWs.floorId !== null){
                 this.floorId = ws.processWs.floorId
                 var startpoint = ws.processWs.addressChangeList[0]
-                var index = startpoint.internet.indexOf('P') 
+                var index = startpoint.internet.indexOf('P')
                 var label = ''
                 if(index !== -1){ //PLC點位
                   label =  startpoint.internet + '-' + startpoint.system + '-' + startpoint.memeryLoc

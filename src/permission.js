@@ -1,13 +1,13 @@
 import router from './router'
 import store from './store'
 import NProgress from 'nprogress'
-import 'nprogress/nprogress.css' 
-import { getToken, getBuildingid } from '@/utils/auth' 
+import 'nprogress/nprogress.css'
+import { getToken, getBuildingid } from '@/utils/auth'
 import { Building,DeviceType, Menu } from './object/index'
+const ElementUI = require('element-ui')
+NProgress.configure({ showSpinner: false })
 
-NProgress.configure({ showSpinner: false }) 
-
-const whiteList = ['/login','/emergencyClass/index'] // no redirect whitelist
+const whiteList = ['/login','/emergencyGraphic/index'] // no redirect whitelist
 
 router.beforeEach(async(to, from, next) => {
     console.log(to.name, from.name, to.meta.title)
@@ -20,18 +20,17 @@ router.beforeEach(async(to, from, next) => {
 
     if (hasToken) { //已經登入過了
       if (to.path === '/login') {
-        // if is logged in, redirect to the home page
         next({ path: '/' })
         NProgress.done()
       } else {
-        if(to.name !== null){ 
+        if(to.name !== null){
           var isNeedReload = store.getters.needreload
           if(isNeedReload){
             await store.dispatch('permission/setmenu',await  Menu.get())
             await store.dispatch('permission/setneedreload', false)
           }
-          if(to.name == 'process' || to.name == 'selfDefenseClass'){ 
-            toMenu = 'selfDefenseFireMarshalling'  
+          if(to.name == 'process' || to.name == 'selfDefenseClass'){
+            toMenu = 'selfDefenseFireMarshalling'
           }
           if(to.name == 'emergencygraphic' || to.name == 'emergencyClass'){
             toMenu = 'drawingControl'
@@ -43,7 +42,7 @@ router.beforeEach(async(to, from, next) => {
             console.log('setMenuId',menuarray[0].id)
           }
         }
-        
+
         const hasGetUserInfo = store.getters.name
         if (hasGetUserInfo) {
           next()
@@ -60,7 +59,7 @@ router.beforeEach(async(to, from, next) => {
             if(buildingID){ //已經有選過大樓
               console.log('已選擇過建築物大樓')
               await store.dispatch('building/setBuildingID', buildingID)
-              //if(!isSystem) await store.dispatch('building/setBuildingList', await Building.get()) 
+              //if(!isSystem) await store.dispatch('building/setBuildingList', await Building.get())
               await store.dispatch('permission/setRoutes') //設定選單資料庫&側邊選單欄
               await store.dispatch('building/setBuildingInfo', await Building.getInfo())
               // await store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
@@ -72,7 +71,7 @@ router.beforeEach(async(to, from, next) => {
               const accessRoutes = await store.dispatch('permission/generateRoutes', isSystem) //設定選單
               router.addRoutes(accessRoutes)
             }
-            next({ ...to, replace: true }) 
+            next({ ...to, replace: true })
           } catch (error) {
             // remove token and go to login page to re-login
             await store.dispatch('user/logout')
@@ -90,6 +89,7 @@ router.beforeEach(async(to, from, next) => {
         NProgress.done()
       }
     }
+
 })
 
 router.afterEach(() => {

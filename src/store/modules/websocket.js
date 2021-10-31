@@ -9,7 +9,8 @@ const getDefaultState = () => {
       graphicMsg:'', //圖控編輯限制
       flowMsg:'', //流程圖編輯限制
       nodeResult:[],
-      selectResult:null
+      selectResult:null,
+      firstNodeList:[] //processws初始節點資料
     }
   }
 
@@ -38,7 +39,14 @@ const getDefaultState = () => {
       state.process = process
     },
     SET_NODERESULT: (state, nodeResult) =>{
-      state.nodeResult.push(nodeResult)
+      var index = state.nodeResult.findIndex(obj=>
+          obj.cNodeId == nodeResult.cNodeId &&
+          obj.nodeId == nodeResult.nodeId &&
+          obj.state == nodeResult.state
+      )
+      if(index == -1){ //不重複
+        state.nodeResult.push(nodeResult)
+      }
     },
     SET_SELECTRESULT: (state, selectResult) =>{
       state.selectResult = selectResult
@@ -70,7 +78,7 @@ const actions = {
   saveSelectResult({ commit } , selectResult){ //儲存節點結果
     commit('SET_SELECTRESULT', selectResult)
   },
-  updateNodeResult({ commit }, content){
+  updateNodeResult({ commit }, content){ //更新節點狀態
     var index = state.nodeResult.findIndex((item) => {
       return item.nodeId === content.nodeId
     })
@@ -78,7 +86,7 @@ const actions = {
       state.nodeResult[index].state = 1
       state.nodeResult[index].message = content.message
     }
-  },
+  }
 }
 
 export default {

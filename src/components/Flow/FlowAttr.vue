@@ -13,25 +13,6 @@
                     <el-form-item label="名稱">
                         <el-input v-model="node.name" @input="save" :disabled="disabled"></el-input>
                     </el-form-item>
-                    <!-- <el-form-item label="圖標">
-                        <el-input v-model="node.ico"></el-input>
-                    </el-form-item>
-                    <el-form-item label="left座標">
-                        <el-input v-model="node.left" :disabled="true"></el-input>
-                    </el-form-item>
-                    <el-form-item label="top座標">
-                        <el-input v-model="node.top" :disabled="true"></el-input>
-                    </el-form-item> -->
-                    <!-- <el-form-item label="狀態">
-                        <el-select v-model="node.state" placeholder="請選擇" @change="save">
-                            <el-option
-                                v-for="item in stateList"
-                                :key="item.state"
-                                :label="item.label"
-                                :value="item.state">
-                            </el-option>
-                        </el-select>
-                    </el-form-item> -->
                     <el-form-item v-if="node.nType == 12" label="流程圖">
                         <el-select
                         v-model="node.nextCpId"

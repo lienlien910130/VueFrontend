@@ -5,12 +5,12 @@
 </template>
 
 <script>
-
+import { setDevice } from '@/utils/auth'
 export default {
   name: 'App',
   async created(){
-    this.initsocket()
-  
+    setDevice(this._isMobile())
+    const _this = this
     this.$messaging.onMessage(function (payload) {
         console.log(payload)
         //如果可以顯示通知就做顯示通知
@@ -19,22 +19,74 @@ export default {
             console.log("不支援通知");
           }
           else if (Notification.permission === "granted") { //顯示訊息
-            showMessage(payload);
+            _this.showMessage(payload);
           }
           else if (Notification.permission !== 'denied' || Notification.permission === "default") {
               Notification.requestPermission(function (permission) {
                 if (permission === "granted") {
-                  showMessage(payload);
+                  _this.showMessage(payload);
                 };
               });
           };
         }
-        
     });
-
-    function showMessage(payload){
+  },
+  computed: {
+    ...Vuex.mapGetters([
+        'wsmsg',
+        'wsuserId',
+        'buildingid',
+        'id'
+    ])
+  },
+  watch: {
+    id:{ //有登入才連線ws
+        handler:async function(){
+          if(this.id !== undefined ){
+            await this.initsocket()
+          }
+        },
+        immediate:true
+    }
+  },
+  methods: {
+    async initsocket(){
+      if ("WebSocket" in window){
+        this.$socket.initWebSocket()
+        await this.getMToken()
+      }else{
+        console.log("您的瀏覽器不支援 WebSocket!")
+      }
+    },
+    async getMToken(){
+      const _this = this
+      this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
+        .then(async function (currentToken) {
+              if (currentToken) {
+                console.log('currentToken',currentToken)
+                await _this.$store.dispatch('user/setMessageToken',currentToken)
+                _this.$socket.initProcessWebSocket()
+              } else {
+                //顯示訂閱的視窗
+                console.log('no token')
+                Notification.requestPermission(async function (permission) {
+                  console.log(permission)
+                    if (permission === "granted") {
+                      await _this.getMToken()
+                    };
+                  });
+              }
+        })
+        .catch(function (err) {
+              console.log('err',err)
+        });
+    },
+    _isMobile(){
+      let flag = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
+      return flag;
+    },
+    showMessage(payload){
 		    console.log('onMessage: ', payload);
-
         const notificationTitle = payload.notification.title;
         const notificationOptions = {
           body: payload.notification.body,
@@ -57,103 +109,16 @@ export default {
           console.log('displayNotification');
         });
 		}
-  },
-  computed: {
-    ...Vuex.mapGetters([
-        'wsmsg',
-        'wsuserId',
-        'buildingid',
-        'id'
-    ])
-  },
-  watch:{
-    // buildingid:{
-    //   handler:async function(){
-    //     this.initsocket()
-    //   }
-    // }
-    // wsmsg:{
-    //   handler:async function(){
-    //       var datalist = this.wsmsg.shift()
-    //       if(datalist !== undefined){
-    //         var data = JSON.parse(datalist.data)
-    //         if(data.Data.Id !== undefined && data.Data.Id !== this.wsuserId){
-    //           if(data.DataType == 'building' || data.DataType == 'account'){
-    //             switch(data.DataType){
-    //               case 'building':
-    //                 this.handleBuilding(data.SendType, data.Data.Bid, data.Data.Content)
-    //                 break;
-    //               case 'account':
-    //                 this.handleAccount(data.SendType, data.Data.Content)
-    //                 break;
-    //             }
-                
-    //           }else if(data.Data.Bid == this.buildingid){
-    //             console.log('收到別人的訊息!', data.DataType)
-    //             switch(data.DataType){
-    //                 case 'roles':
-    //                   this.handleRoles(data.SendType, data.Data.Content)
-    //                   break;
-    //                 case 'account':
-    //                   this.handleAccount(data.SendType, data.Data.Content)
-    //                   break;
-    //                 case 'menus':
-    //                   this.handleMenus(data.SendType, data.Data.Content)
-    //                   break;
-    //                 case 'setting':
-    //                   this.handleSetting(data.SendType, data.Data.Content)
-    //                   break;
-    //                 case 'floor':
-    //                   this.handleFloor(data.SendType, data.Data.Content)
-    //                   break;
-    //                 case 'contactUnit':
-    //                   this.handleContactUnit(data.SendType, data.Data.Content)
-    //                   break;
-    //                 case 'houseHolder':
-    //                   this.handleHouseHolder(data.SendType, data.Data.Content)
-    //                   break;
-    //                 case 'floorOfHouse':
-    //                   this.handleFloorOfHouse(data.SendType, data.Data.Content)
-    //                   break;
-    //                 case 'device':
-    //                   this.handleDevice(data.SendType, data.Data.Content)
-    //                   break;
-    //                 case 'deviceType':
-    //                   this.handleDeviceType(data.SendType, data.Data.Content)
-    //                   break;
-    //                 case 'deviceAddress':
-    //                   this.handleDeviceAddress(data.SendType, data.Data.Content)
-    //                   break;
-    //                 case 'graphic':
-    //                   this.handleGraphic(data.SendType, data.Data.Content)
-    //                   break;
-    //             }
-    //           }
-    //         }
-    //       }
-    //   },
-    //   immediate:true
-    // }
-  },
-  methods: {
-    initsocket(){
-      if ("WebSocket" in window){
-        this.$socket.initWebSocket()
-      }else{
-        console.log("您的瀏覽器不支援 WebSocket!")
-      }
-    }
   }
-    
 }
 </script>
 <style scoped>
-#app::-webkit-scrollbar {  
-width: 0 !important;  
-}  
-#app::-webkit-scrollbar {  
-width: 0 !important;height: 0;  
-}  
+#app::-webkit-scrollbar {
+width: 0 !important;
+}
+#app::-webkit-scrollbar {
+width: 0 !important;height: 0;
+}
 
 </style>
 
@@ -249,12 +214,12 @@ width: 0 !important;height: 0;
   background-color: rgb(202, 191 , 220);
   color: rgb(29, 4, 4);
 }
- 
+
 /* 改变节点高度 */
 .el-tree-node__content {
   height: 30px;
 }
- 
+
 .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
     background-color: lightgray;
   color:black;
@@ -285,12 +250,12 @@ background-color:rgb(147, 180 , 197);
   background-color: rgb(202, 191 , 220);
   color: rgb(29, 4, 4);
 }
- 
+
 /* 改变节点高度 */
 .el-tree-node__content {
   height: 30px;
 }
- 
+
 .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
     background-color: lightgray;
   color:black;
