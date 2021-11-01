@@ -58,8 +58,18 @@
         <el-tabs v-model="activeName" tab-position="top" style="padding:10px" @tab-click="handleClick">
             <el-tab-pane label="歷程" name="first" class="tabClass">
                 <template v-for="(item,index) in reversedMessage">
+
                     <div :key="index" style="padding:5px 8px;">
-                        <span style= "display:block">{{ changeName(item.nodeId) }} - {{ item.state | changeType }}</span>
+                        <span style= "display:block">
+                            <i class="el-icon-circle-check el-node-state-success" v-show="item.state === 1"></i> 
+                            <i class="el-icon-loading el-node-state-running" v-show="item.state === 2"></i>
+                            <i class="el-icon-warning-outline el-node-state-warning" v-show="item.state === 3"></i>
+                            <i class="el-icon-warning-outline el-node-state-warning" v-show="item.state === 4"></i>
+                            <i class="el-icon-circle-close el-node-state-error" v-show="item.state === 5"></i>
+                            <i class="el-icon-refresh el-node-state-running" v-show="item.state === 20"></i>
+                            {{ item.name }}
+                        </span>
+                        <!-- <span style= "display:block">{{ item.name }} - {{ item.state | changeType }}</span> -->
                         <span v-if="item.message" style= "display:block;color:red">{{ item.message }}</span>
                         <span style= "display:block">-----------------------------</span>
                     </div>
@@ -107,15 +117,15 @@ export default {
                 clickNode:this.clickNode
             }
         },
-        changeName: function () {
-            return function (val) {
-                var objItem = this.data.nodeList.filter(obj=>{ return obj.nodeId == val })
-                if(objItem.length){
-                    return objItem[0].name
-                }
-                return ''
-            }
-        },
+        // changeName: function () {
+        //     return function (val) {
+        //         var objItem = this.data.nodeList.filter(obj=>{ return obj.nodeId == val })
+        //         if(objItem.length){
+        //             return objItem[0].name
+        //         }
+        //         return ''
+        //     }
+        // },
         reversedMessage: function () {
           return this.list.reverse()
         }
@@ -242,7 +252,6 @@ export default {
                     data = _.cloneDeep(data)
                     this.flowVisible = true
                     this.data = data
-                    console.log(JSON.stringify(this.data))
                     let { offsetX, offsetY } = this.data
                     if (offsetX && offsetY) {
                         this.dragMove = {
@@ -321,7 +330,17 @@ export default {
                 this.$refs.nodeForm.nodeInit(this.data, node.nodeId)
         },
         handleClick(tab, event) {
-            console.log(tab, event);
+            console.log(tab.index, event);
+            switch(tab.index){
+                case '0':
+                    this.list = _.cloneDeep(this.nodeResult)
+                    break;
+                case '1':
+                    
+                    break;
+                case '2':
+                    break;
+            }
         },
         updateNodeState(){
             for(const [index, value] of this.nodeResult.entries()){

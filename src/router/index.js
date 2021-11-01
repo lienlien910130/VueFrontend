@@ -70,18 +70,6 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '/emergencyClass',
-    component: Layout,
-    redirect: '/emergencyClass',
-    children: [{
-      path: 'index',
-      name: 'emergencyClass',
-      component: () => import('@/views/emergency/emergencyState/mviewer.vue'),
-      meta: { title: '緊急應變', icon: 'icon', needLogin: false }
-    }],
-    hidden: true
-  },
-  {
     path: '/actions',
     component: Layout,
     redirect: '/actions',
@@ -90,6 +78,18 @@ export const constantRoutes = [
       name: 'actions',
       component: () => import('@/views/emergency/emergencyState/historyActions.vue'),
       meta: { title: '緊急應變動作歷程', icon: 'icon', needLogin: true }
+    }],
+    hidden: true
+  },
+  {
+    path: '/floors',
+    component: Layout,
+    redirect: '/floors',
+    children: [{
+      path: 'index',
+      name: 'floors',
+      component: () => import('@/views/emergency/emergencyState/floors.vue'),
+      meta: { title: '立剖圖', icon: 'icon', needLogin: true }
     }],
     hidden: true
   },

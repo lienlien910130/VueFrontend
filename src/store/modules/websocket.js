@@ -10,7 +10,7 @@ const getDefaultState = () => {
       flowMsg:'', //流程圖編輯限制
       nodeResult:[],
       selectResult:null,
-      firstNodeList:[] //processws初始節點資料
+      firstNodeList:[], //processws初始節點資料
     }
   }
 

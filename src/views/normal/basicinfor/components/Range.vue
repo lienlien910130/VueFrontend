@@ -1,8 +1,6 @@
 <template>
 <div class="frange">
-  
-  <div v-if="!mobile"
-  >
+  <div v-if="!mobile">
     <div class="rangediv">
       <el-link 
         v-for="item in rangeOptions" 
@@ -19,11 +17,13 @@
       @click="onSelectFloor(item)"
       @mouseover="addClass(item.getID())"
       @mouseleave="removeClass(item.getID())"
-      :class="[{ active:classenable && item.getID() == current },{ select:item.getID() == selectFloor }]"
+      :class="[
+        { active:classenable && item.getID() == current },
+        { select:item.getID() == selectFloor },
+        { process:item.getID() == floorId }
+      ]"
     >
       <span>{{ item.getName() }} </span>
-      <!-- <span v-if="item.floors > 0 ">{{ item.floors }} F</span>
-      <span v-else>B{{ -(item.floors) }} F</span> -->
     </div>
   </div>
   <div v-else>
@@ -37,8 +37,7 @@
 </template>
 <script>
 
-// const Vuex = require('vuex')
-
+import ws from '@/utils/socket'
 export default {
   data() {
     return {
@@ -49,13 +48,15 @@ export default {
       selectRange:'0',
       selectFloor:'',
       current:0,
-      classenable:false
+      classenable:false,
+      floorId:null
     }
   },
   computed:{
     ...Vuex.mapGetters([
         'buildingfloors',
-        'floor_record'
+        'floor_record',
+        'process'
     ]),
     mobile(){
       if (this.$store.state.app.device === 'mobile') {
@@ -89,6 +90,14 @@ export default {
       },
       immediate:true
     },
+    process:{
+      handler:async function(){
+        if(this.process == true && ws.processWs.floorId !== null){
+          this.floorId = ws.processWs.floorId
+        }
+      },
+      immediate:true
+    }
   },
   methods: {
     setRange(){
@@ -96,25 +105,35 @@ export default {
       if(this.upFloors.length >0){
         var _count = Math.ceil(this.upFloors.length / 10)
         for(var i=1;i<=_count;i++){
-          var start = this.upFloors[i*10-10].getName()
-          var end = i == _count ? this.upFloors[this.upFloors.length-1].getName() : 
-          this.upFloors[i*10-1].getName()
-          
+          var start = this.upFloors[i*10-10]
+          var end = i == _count ? this.upFloors[this.upFloors.length-1] : 
+          this.upFloors[i*10-1]
           var _temp = {
               id:i,
-              name:start + '~'+ end
+              name:start.getName() + '~'+ end.getName(),
+              startId:start.getID(),
+              endId:end.getID()
           }
           this.rangeOptions.push(_temp)
         }
       }
       if(this.downFloors.length >0){
-          var _temp = {
+        var _temp = {
             id:0,
-            name:'地下樓層'
+            name:'地下樓層',
+            startId:null,
+            endId:null
         }
         this.rangeOptions.unshift(_temp)
       }
       this.onSelectRange(0)
+      if(this.floorId !== null){
+        var index = this.rangeOptions.findIndex(item=>
+          parseInt(item.startId) < parseInt(this.floorId) && 
+          parseInt(this.floorId) < parseInt(item.endId)
+        )
+        this.onSelectRange(index)
+      }
     },
     onSelectRange(val){
       this.selectRange = val
@@ -167,7 +186,10 @@ export default {
     background: rgb(147, 180 , 197);
     color: white;
   }
-
+  .process {
+    background: red;
+    color: white;
+  }
   .rangediv{
     margin-bottom: 20px;
     width: 100%;

@@ -127,11 +127,14 @@ export default {
                 }
                 this.loadFinsh = true
                 for(const [index, value] of this.wsmsg.entries()){ //去除掉第一筆，因起始動畫上述已執行
-                  if(index !== 0){
+                //   if(index !== 0){
+                //     this.$nextTick(() => {
+                //         this.actionObj(value.label,value.status)
+                //     })
+                //   }
                     this.$nextTick(() => {
                         this.actionObj(value.label,value.status)
                     })
-                  }
                 }
             }
             if(isListenWheel){
@@ -298,6 +301,7 @@ export default {
         },
         actionObj(str,value){
             console.log(str,value)
+            console.log(JSON.stringify(this.canvas.getObjects()))
             var index = this.canvas.getObjects().findIndex(o=>o.addressId == str)
             if(index !== -1){
                 var obj = this.canvas.getObjects()[index]
@@ -305,7 +309,7 @@ export default {
                 var equ = constant.Equipment.filter(ele=>{ return ele.id == obj.srcId})[0]
                 var src = equ.status.filter(obj=>{ return obj.value == value})[0]
                 var self = this
-                if(obj.srcId == 'a2' && value == 1){ //需更換svg圖片：探測器動作更換成火災圖片
+                if(obj.srcId == 'a2' && value == 2){ //需更換svg圖片：探測器動作更換成火災圖片
                     obj.set({ visible: false })
                     var item = require('@/icons/svg/fire_fs.svg')
                     var text = item.default.content.replace(/http:\/\//g, 'https://')
@@ -359,7 +363,8 @@ export default {
                     var connectindex = this.canvas.getObjects().findIndex(o=>o.objId == obj.connectId)
                     if(connectindex !== -1){
                         var connectObj = this.canvas.getObjects()[connectindex]
-                        if(value == 1){
+                        console.log('value', value)
+                        if(value !== 0){
                           connectObj.set({fill: 'rgba(230, 83, 83, 1)'})
                           connectObj.hasAnimationStarted = true
                           this.setAnimate(connectObj, 0.7)

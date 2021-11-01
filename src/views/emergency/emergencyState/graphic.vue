@@ -125,6 +125,7 @@ export default {
             });
         },
         async init(startAddress,status) {
+            console.log('init',startAddress  ,status)
             this.title = 'selfDefenseClass'
             var floor = await Floors.getOfId(this.floorId)
             var obj = await floor.getGraphicFiles()

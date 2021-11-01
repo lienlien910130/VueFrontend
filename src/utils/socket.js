@@ -57,11 +57,6 @@ let wsConnection = {
           var data = JSON.parse(msg.data)
           wsConnection.resetHeartbeat(_this.backWs)
           console.log(data)
-          // if(data.mode == 'emergency'){
-          //   if(_this.processWs.$ws == null){ //尚未連線緊急應變時收到才要處理
-          //     _this.initProcessWebSocket()
-          //   }
-          // }else
           if(data.mode == 'signalHistory'){ //初始歷史資料
             data.addressChangeList.forEach(element=>{
               if(element.internet.indexOf('P') !== -1){ //PLC點位
@@ -77,7 +72,7 @@ let wsConnection = {
                 combineAddress(element,'MAIN')
               }else if(data.mode == 'locPlc'){
                 combineAddress(element,'PLC',true)
-              }else if(data.mode == 'loc'){
+              }else if(data.mode == 'loc'){ //處理復歸001-01-001-1 0
                 combineAddress(element,'LOC',true)
               }
             })
@@ -195,7 +190,7 @@ let wsConnection = {
       ws.timeoutNum = setTimeout(function () {
         isProcess == false ? _this.initWebSocket() : _this.initProcessWebSocket()
         ws.lockReturn = false
-      }, 50)
+      }, 300)
     },
     //開啟心跳
     startWsHeartbeat: function (ws) {
@@ -233,6 +228,7 @@ let wsConnection = {
     },
     sendProcessWsLogin: function(){
       var str = 'accountCToken:'+store.getters.mToken
+      console.log('accountCToken', str)
       this.processWs.$ws.send(str)
     },
     //手機選擇選項後發送回去的訊息
@@ -281,6 +277,9 @@ function combineAddress(element, type, realTimeAction = false){
       status:element.status,
       label:label
     })
+  }
+  if(label == '001-01-001-1' && element.status == 0){
+    ElementUI.Message('已復歸')
   }
 }
 
