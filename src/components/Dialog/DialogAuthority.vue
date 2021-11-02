@@ -252,10 +252,10 @@ export default {
 }
 </script>
 <style scoped>
-.el-table /deep/.disabledCheck .cell .el-checkbox__inner{
+.el-table ::v-deep.disabledCheck .cell .el-checkbox__inner{
     display: none!important;
 }
-.el-table /deep/.disabledEdit  .cell .is-checked .el-checkbox__label{
+.el-table ::v-deep.disabledEdit  .cell .is-checked .el-checkbox__label{
     color: red;
 }
 </style>
