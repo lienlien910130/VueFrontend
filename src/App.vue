@@ -10,6 +10,7 @@ export default {
   name: 'App',
   async created(){
     setDevice(this._isMobile())
+    this.deviceInfo()
     const _this = this
     this.$messaging.onMessage(function (payload) {
         console.log(payload)
@@ -81,7 +82,88 @@ export default {
               console.log('err',err)
         });
     },
-    _isMobile(){
+    deviceInfo(){
+       Array.prototype.contains = function(needle) {
+        for (i in this) {
+          if (this[i].indexOf(needle) > 0)
+            return i;
+        }
+        return -1;
+      }
+      var device_type = navigator.userAgent;
+      var md = new MobileDetect(window.navigator.userAgent)      
+      var os = md.os();
+      var model = "";  
+      if(this._isMobile() == null){ //不是手機：作業系統+瀏覽器名稱版本
+        os = this.getOS()
+        model = this.getBrowser()[0] + this.getBrowser()[1]
+      }else{ //手機版本+型號
+        if (os == "iOS") {//ios 
+          os = md.os() + md.version("iPhone");  
+          model = md.mobile();  //如何準確獲取手機iphone型號
+        } else if (os == "AndroidOS") {//Android 
+            os = md.os() + md.version("Android"); 
+            var sss = device_type.split(";");
+            var i = sss.contains("Build/");
+            if (i > -1) {
+              model = sss[i].substring(0,sss[i].indexOf("Build/"));
+            }
+            model = model + md.versionStr('Build') 
+        }
+      }
+      console.log(os+'//'+model) 
+    },
+    getBrowser(){ 
+      let types = ['edge','firefox','chrome','safari','opera '] 
+      let userAgent = navigator.userAgent.toLocaleLowerCase() 
+      var res=[] 
+      types.forEach(element => { 
+        if(userAgent.indexOf(element)>0){ 
+          let rule= `${element}`+"\\/([\\d.]+)" 
+          res.push(element) 
+          res.push(userAgent.match(rule)[1]) } 
+      }) 
+      if(res.indexOf('chrome') >-1 && res.indexOf('safari') >-1){ 
+        if(res.length===4){ 
+          let temp=[] 
+          temp.push('chrome') 
+          temp.push(res[res.indexOf('chrome')+1]) 
+          return temp 
+        }else{ 
+          res.splice(res.indexOf('chrome'),2) 
+          res.splice(res.indexOf('safari'),2) 
+          return res 
+        } 
+      }else{ 
+        return res 
+      } 
+    },
+    getOS(){
+        var sUserAgent = navigator.userAgent;
+        var isWin = (navigator.platform == "Win32") || (navigator.platform == "Windows");
+        var isMac = (navigator.platform == "Mac68K") || (navigator.platform == "MacPPC") || (navigator.platform == "Macintosh") || (navigator.platform == "MacIntel");
+        if (isMac) return "Mac";
+        var isUnix = (navigator.platform == "X11") && !isWin && !isMac;
+        if (isUnix) return "Unix";
+        var isLinux = (String(navigator.platform).indexOf("Linux") > -1);
+        if (isLinux) return "Linux";
+        if (isWin) {
+            var isWin2K = sUserAgent.indexOf("Windows NT 5.0") > -1 || sUserAgent.indexOf("Windows 2000") > -1;
+            if (isWin2K) return "Win2000";
+            var isWinXP = sUserAgent.indexOf("Windows NT 5.1") > -1 || sUserAgent.indexOf("Windows XP") > -1;
+            if (isWinXP) return "WinXP";
+            var isWin2003 = sUserAgent.indexOf("Windows NT 5.2") > -1 || sUserAgent.indexOf("Windows 2003") > -1;
+            if (isWin2003) return "Win2003";
+            var isWinVista= sUserAgent.indexOf("Windows NT 6.0") > -1 || sUserAgent.indexOf("Windows Vista") > -1;
+            if (isWinVista) return "WinVista";
+            var isWin7 = sUserAgent.indexOf("Windows NT 6.1") > -1 || sUserAgent.indexOf("Windows 7") > -1;
+            if (isWin7) return "Win7";
+            var isWin10 = sUserAgent.indexOf("Windows NT 10") > -1 || sUserAgent.indexOf("Windows 10") > -1;
+            if (isWin10) return "Win10";
+        }
+        return "other";
+    },
+    _isMobile(){ //不是的話返回'null'
       let flag = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
       return flag;
     },

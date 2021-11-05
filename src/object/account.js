@@ -1,14 +1,15 @@
 import Parent from './parent'
 import api from '@/api'
-import Role from './role'
-import Building from './building'
+import { PhysicalInfo, Building, Role } from '.'
+
 
 class Account extends Parent {
     constructor (data) {
         super(data)
-        const { account,  password, name, description, status, removable, linkRoles,linkBuildings } = data
+        const { account,  password, name, description, status, removable, linkRoles,linkBuildings, linkPhysicalInfos } = data
         var roles = linkRoles !== undefined ? linkRoles.map(item=>{ return new Role(item)}) : []
         var buildings = linkBuildings !== undefined ? linkBuildings.map(item=>{ return new Building(item)}) : []
+        var physicalInfos = linkPhysicalInfos !== undefined ? linkPhysicalInfos.map(item=>{ return new PhysicalInfo(item)}) : []
         this.account = account
         this.password = password
         this.name = name
@@ -17,6 +18,7 @@ class Account extends Parent {
         this.removable = removable
         this.linkRoles = roles
         this.linkBuildings = buildings
+        this.linkPhysicalInfos = physicalInfos
     }
     clone(data){
         return new Account(data)

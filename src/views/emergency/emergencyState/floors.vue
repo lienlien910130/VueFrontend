@@ -8,6 +8,6 @@
 export default {
     components: {
         Range: () => import('../../normal/basicinfor/components/Range.vue')
-    },
+    }
 }
 </script>

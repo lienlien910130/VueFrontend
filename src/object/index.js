@@ -21,6 +21,7 @@ import UsageOfFloor from "./usageOfFloor";
 import User from "./user";
 import { SelfDefenseFireMarshalling, SelfDefenseFireMarshallingMgmt, ContingencyProcess } from "./selfDefenseFireMarshalling";
 import { SampleNodeList, CNode, COption } from "./nodeList";
+import PhysicalInfo from "./physicalInfo";
 
 export{
     AccessAuthority,
@@ -49,5 +50,6 @@ export{
     ContingencyProcess,
     SampleNodeList,
     CNode,
-    COption
+    COption,
+    PhysicalInfo
 }
