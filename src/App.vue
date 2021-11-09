@@ -10,7 +10,7 @@ export default {
   name: 'App',
   async created(){
     setDevice(this._isMobile())
-    this.deviceInfo()
+    // this.deviceInfo()
     const _this = this
     this.$messaging.onMessage(function (payload) {
         console.log(payload)
@@ -37,7 +37,8 @@ export default {
         'wsmsg',
         'wsuserId',
         'buildingid',
-        'id'
+        'id',
+        'physicalInfos'
     ])
   },
   watch: {
@@ -65,7 +66,8 @@ export default {
         .then(async function (currentToken) {
               if (currentToken) {
                 console.log('currentToken',currentToken)
-                await _this.$store.dispatch('user/setMessageToken',currentToken)
+                var OsModel = _this.deviceInfo()
+                await _this.$store.dispatch('user/setMessageToken', OsModel, currentToken)
                 _this.$socket.initProcessWebSocket()
               } else {
                 //顯示訂閱的視窗
@@ -91,52 +93,53 @@ export default {
         return -1;
       }
       var device_type = navigator.userAgent;
-      var md = new MobileDetect(window.navigator.userAgent)      
+      var md = new MobileDetect(window.navigator.userAgent)
       var os = md.os();
-      var model = "";  
+      var model = "";
       if(this._isMobile() == null){ //不是手機：作業系統+瀏覽器名稱版本
         os = this.getOS()
         model = this.getBrowser()[0] + this.getBrowser()[1]
       }else{ //手機版本+型號
-        if (os == "iOS") {//ios 
-          os = md.os() + md.version("iPhone");  
+        if (os == "iOS") {//ios
+          os = md.os() + md.version("iPhone");
           model = md.mobile();  //如何準確獲取手機iphone型號
-        } else if (os == "AndroidOS") {//Android 
-            os = md.os() + md.version("Android"); 
+        } else if (os == "AndroidOS") {//Android
+            os = md.os() + md.version("Android");
             var sss = device_type.split(";");
             var i = sss.contains("Build/");
             if (i > -1) {
               model = sss[i].substring(0,sss[i].indexOf("Build/"));
             }
-            model = model + md.versionStr('Build') 
+            model = model + md.versionStr('Build')
         }
       }
-      console.log(os+'//'+model) 
+      console.log(os+'//'+model)
+      return os+','+model
     },
-    getBrowser(){ 
-      let types = ['edge','firefox','chrome','safari','opera '] 
-      let userAgent = navigator.userAgent.toLocaleLowerCase() 
-      var res=[] 
-      types.forEach(element => { 
-        if(userAgent.indexOf(element)>0){ 
-          let rule= `${element}`+"\\/([\\d.]+)" 
-          res.push(element) 
-          res.push(userAgent.match(rule)[1]) } 
-      }) 
-      if(res.indexOf('chrome') >-1 && res.indexOf('safari') >-1){ 
-        if(res.length===4){ 
-          let temp=[] 
-          temp.push('chrome') 
-          temp.push(res[res.indexOf('chrome')+1]) 
-          return temp 
-        }else{ 
-          res.splice(res.indexOf('chrome'),2) 
-          res.splice(res.indexOf('safari'),2) 
-          return res 
-        } 
-      }else{ 
-        return res 
-      } 
+    getBrowser(){
+      let types = ['edge','firefox','chrome','safari','opera ']
+      let userAgent = navigator.userAgent.toLocaleLowerCase()
+      var res=[]
+      types.forEach(element => {
+        if(userAgent.indexOf(element)>0){
+          let rule= `${element}`+"\\/([\\d.]+)"
+          res.push(element)
+          res.push(userAgent.match(rule)[1]) }
+      })
+      if(res.indexOf('chrome') >-1 && res.indexOf('safari') >-1){
+        if(res.length===4){
+          let temp=[]
+          temp.push('chrome')
+          temp.push(res[res.indexOf('chrome')+1])
+          return temp
+        }else{
+          res.splice(res.indexOf('chrome'),2)
+          res.splice(res.indexOf('safari'),2)
+          return res
+        }
+      }else{
+        return res
+      }
     },
     getOS(){
         var sUserAgent = navigator.userAgent;

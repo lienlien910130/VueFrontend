@@ -18,6 +18,7 @@ const getters = {
   id: state => state.user.id,
   name: state => state.user.name,
   mToken: state => state.user.mToken,
+  physicalInfos: state => state.user.physicalInfos,
 
   verid: state => state.version.id,
   vername: state => state.version.name,

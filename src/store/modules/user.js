@@ -1,12 +1,12 @@
-import { 
-  getToken,setToken,removeToken, 
+import {
+  getToken,setToken,removeToken,
   getID,setID,removeID
 }  from '../../utils/auth'
 import idb from '../../utils/indexedDB'
 import { resetRouter } from '../../router'
 import user from '../../api/user.js'
 import store from '../index.js'
-import { Role, Building } from '@/object/index'
+import { Role, Building, PhysicalInfo } from '@/object/index'
 
 // 個人資料
 const getDefaultState = () => {
@@ -17,7 +17,8 @@ const getDefaultState = () => {
     name: null,
     roles: '',
     level: '',
-    mToken:''
+    mToken:'',
+    physicalInfos:[]
   }
 }
 
@@ -47,6 +48,9 @@ const mutations = {
   },
   SET_MToken: (state, token) => {
     state.mToken = token
+  },
+  SET_PHYSICALINFOS:(state, physicalInfos) => {
+    state.physicalInfos = physicalInfos
   }
 }
 
@@ -74,12 +78,16 @@ const actions = {
         if (!response) {
           reject('登入失敗，請重新登入')
         }
-        const { id, account, name, linkRoles, linkBuildings } = response.result[0]
-        var roles = linkRoles !== undefined ? linkRoles.map(item=>{ return new Role(item)})  : [] 
-        var buildingarray = linkBuildings.map(item=>{ return new Building(item)})
+        console.log(response)
+        const { id, account, name, linkRoles, linkBuildings, linkPhysicalInfos  } = response.result[0]
+        var roles = linkRoles !== undefined ? linkRoles.map(item=>{ return new Role(item)})  : []
+        var buildingarray = linkBuildings !== undefined ? linkBuildings.map(item=>{ return new Building(item)}) : []
+        var physicalInfos = linkPhysicalInfos !== undefined ?
+          linkPhysicalInfos.map(item=>{ return new PhysicalInfo(item)}) : []
         commit('SET_ACCOUNT', account)
         commit('SET_NAME', name)
         commit('SET_ROLES', roles)
+        commit('SET_PHYSICALINFOS', physicalInfos)
         store.dispatch('building/setBuildingList', id == '1' ? await Building.get() : buildingarray)
         resolve()
       }).catch(error => {
@@ -96,7 +104,7 @@ const actions = {
   saveUserID({ commit } , uid){ //手機_ws登入後取回userid儲存
     commit('SET_USER', uid)
   },
-  async setMessageToken({ commit }, token ) {
+  async setMessageToken({ commit }, OsModel, token ) {
     return new Promise((resolve, reject) => {
       user.apiPatchUserInfo({id:state.id, cToken:token }).then(async(response) => {
         if (!response) {
@@ -104,6 +112,7 @@ const actions = {
         }
         const { cToken } = response.result
         commit('SET_MToken', cToken)
+        console.log('patchDone')
         resolve()
       }).catch(error => {
         commit('SET_MToken', token)
@@ -116,7 +125,7 @@ const actions = {
     return new Promise((resolve, reject) => {
       idb.deleteDb()
       store.dispatch('app/closeSideBar', { withoutAnimation: false })
-      removeToken() 
+      removeToken()
       removeID()
       store.dispatch('building/resetBuildingid')
       commit('RESET_STATE')
@@ -128,7 +137,7 @@ const actions = {
   // remove token
   // resetToken({ commit }) {
   //   return new Promise(resolve => {
-  //     removeToken() 
+  //     removeToken()
   //     removeID()
   //     removeVersion()
   //     store.dispatch('building/resetBuildingid')

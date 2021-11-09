@@ -111,7 +111,9 @@ let wsConnection = {
       let _this = this;
       //process
       let processWsProtocol = 'Tm7wHKS4JrvrOMYuMfl28xgJ9sWBjFnfq0wXkyYewG12vkyqRunm74bVUyvXwr97tLsrZ9kZB76WIJ5nvZOy06xsEAGKXPgSph3yx3L3ObyCDqeOKtXmP6AoQDI77DqV'
-      this.processWs.$ws = new WebSocket(process.env.VUE_APP_WEBSOCKET, processWsProtocol);
+      var connectUrl = process.env.VUE_APP_WEBSOCKET +'?cToken='+store.getters.mToken
+      console.log(connectUrl)
+      this.processWs.$ws = new WebSocket(connectUrl, processWsProtocol);
       this.processWs.$ws.onopen = function(){
         console.log('ws open-PROCESS')
         wsConnection.startWsHeartbeat(_this.processWs)
@@ -129,7 +131,7 @@ let wsConnection = {
           ElementUI.Message.error('尚未訂閱智慧消防平台')
         }else{
           if(data.SenderName == 'MercuryfireWS65'){
-            wsConnection.sendProcessWsLogin()
+            //wsConnection.sendProcessWsLogin()
           }else if(data.mode == 'wsLogin'){
             store.dispatch('user/saveToken', data.accessToken)
             if(data.emergencyInfo !== undefined){
