@@ -80,7 +80,7 @@ class Contactunit extends Parent {
             format:'ContactUnitOptions',
             mandatory:true, message:'請選擇類別',
             isHidden:false,isSearch:false,
-            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true },
+            isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true,formType:'selectSetting' },
         {
             label:'電話',
             prop:'contactNumber',
@@ -119,7 +119,7 @@ class Contactunit extends Parent {
             mandatory:false,
             type:'boolean',typemessage:'',
             isHidden:false,isSearch:false,
-            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true },
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,formType:'boolean' },
         {
             label:'備註' ,
             prop:'note',format:'textarea',

@@ -110,12 +110,12 @@ class Floors extends Parent {
             { label:'平面圖檔' , prop:'floorPlanID',
                 type:'number',typemessage:'',
                 mandatory:false, isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:false,isUpload:false,isExport:false,isBlock:false },
+                isAssociate:false,isEdit:false,isUpload:false,isExport:false,isBlock:false,formType:'image'  },
             { label:'排序' , prop:'sort',format:'inputnumber', mandatory:true, message:'請輸入0~999',
                 pattern:/^[0-9]{1,3}$/,errorMsg:'請輸入0~999',isPattern:true,
                 type:'number',typemessage:'',placeholder:'請輸入0~999',
                 isHidden:false,maxlength:'3',isSearch:true,
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,formType:'inputNumber'},
        ]
     }
     static async get (){

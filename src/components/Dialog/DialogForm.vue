@@ -47,15 +47,14 @@
                     <a @click="openWindows(item.format)" style="color:#66b1ff"> {{ item.label }} </a>
                 </i>
                 <!-- 年度&日期 -->
-                <el-date-picker
-                v-if="item.format == 'YYYY' || item.format == 'YYYY-MM-DD'"
+                <el-date-picker v-if="item.formType == 'date'"
                 v-model="temp[item.prop]"
                 value-format="yyyy-MM-dd"
                 placeholder="請選擇"
                 style="width:100%"
                 :type="item.format == 'YYYY' ? 'year' : 'date' " />
                 <!-- 範圍 -->
-                <span v-else-if="item.format == 'range'">
+                <span v-else-if="item.formType == 'range'">
                     <el-date-picker
                         ref="picker"
                         v-model="rangevalue"
@@ -68,7 +67,8 @@
                         value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </span>
-                <span v-else-if="item.format == 'addressStr'">
+                <!-- 點位 -->
+                <span v-else-if="item.formType == 'addressStr'">
                     <el-row>
                         <span style="width:23%;display:inline-block;text-align:center"> 總機編號 </span>
                         <span> - </span>
@@ -113,43 +113,52 @@
                         </el-input>
                     </el-row>
                 </span>
-                <!--  設備(火警總機/PLC)關聯點位選取關聯的 / 點位選取設備 (limit-1)
-                設備 / 廠商 / 角色 / 建築物 / 門牌 / 住戶 下拉選單 (多)-->
-                <el-select
-                    v-else-if="item.format == 'assignFireDeviceSelect' ||
-                    item.format == 'assignPLCDeviceSelect'
-                    || item.format == 'addressdeviceSelect' || item.format == 'deviceSelect' ||
-                    item.format =='contactunitSelect' ||
-                    item.format =='roleSelect' ||
-                    item.format =='buildingSelect' ||
-                    item.format == 'floorOfHouseSelect'
-                    || item.format =='userInfo' || item.format == 'maintainListSelect' || item.format == 'usageOfFloorUserInfo' ||
-                    item.format == 'processList' || item.format == 'manyFloorSelect' "
+                <!-- 下拉選單-array -->
+                <el-select v-else-if="item.formType == 'select' "
                     v-model="temp[item.prop]"
                     filterable
                     multiple
-                    :multiple-limit="item.format == 'assignFireDeviceSelect' ||
-                    item.format == 'assignPLCDeviceSelect'
-                    || item.format == 'addressdeviceSelect' || item.format == 'maintainListSelect' ||
-                    item.format == 'floorOfHouseSelect' || item.format == 'contactunitSelect' || item.format == 'deviceSelect' ? 1 : 0 "
+                    :multiple-limit="item.limit"
                     value-key="id"
                     placeholder="請選擇"
                     style="width:100%"
                     @change="checkMode($event, item.format)"
+                    :disabled="
+                        item.format =='commitUserInfo' || item.format == 'accountSelect' ? disable :
+                        item.format !== 'deviceTypeSelect' ? false :
+                        dialogStatus == 'create' ? false : true"
                     >
-                        <el-option
-                        v-for="(obj,index) in selectfilter(item.format)"
-                        :key="index"
-                        :label="item.format =='maintainListSelect' ? obj.getName() : obj.label"
-                        :value="obj"
-                        :disabled="item.format =='addressdeviceSelect' || item.format == 'usageOfFloorUserInfo' ? obj.disabled : false "
-                        >
-                        </el-option>
+                        <template v-if="item.format == 'inspectionSelect'">
+                            <el-option-group
+                            v-for="group in selectfilter('inspectionSelect')"
+                            :key="group.label"
+                            :label="group.label">
+                                <el-option
+                                    v-for="item in group.children"
+                                    :key="item.id"
+                                    :label="item.label"
+                                    :value="item"
+                                    :disabled="item.status !== ''">
+                                </el-option>
+                            </el-option-group>
+                        </template>
+                        <template v-else>
+                            <el-option
+                            v-for="(obj,index) in selectfilter(item.format)"
+                            :key="index"
+                            :label="
+                            item.format =='maintainListSelect' || item.format =='commitUserInfo' 
+                            || item.format == 'accountSelect' ? obj.getName() : obj.label"
+                            :value="obj"
+                            :disabled="
+                            item.format =='addressdeviceSelect' || 
+                            item.format == 'usageOfFloorUserInfo' ? obj.disabled : false "
+                            >
+                            </el-option>
+                        </template>
                 </el-select>
-                <!-- 點位選擇樓層/PLC點位選擇值/點位選擇icon-->
-                <el-select
-                    v-else-if="item.format =='floorSelect' || item.format =='valueSelect' || item.format == 'iconSelect'
-                    || item.format == 'valueType' "
+                <!-- 下拉選單-string -->
+                <el-select v-else-if="item.formType == 'selectString'"
                     v-model="temp[item.prop]"
                     filterable
                     placeholder="請選擇"
@@ -157,7 +166,6 @@
                     >
                     <template v-if="item.format == 'iconSelect' && selectfilter('iconShow') !== null" slot="prefix">
                         <svg-icon :icon-class="'fire_'+temp[item.prop]" style="font-size:20px"/>
-                        <!-- <img class="avatar" :src="selectfilter('iconShow')" style="height:25px;width:25px;margin:auto;vertical-align:middle"> -->
                     </template>
                     <el-option
                         v-for="(obj,index) in selectfilter(item.format)"
@@ -167,13 +175,12 @@
                         >
                             <template v-if="item.format == 'iconSelect'">
                                 <svg-icon :icon-class="'fire_'+obj.id" style="font-size:20px"/>
-                                <!-- <img class="avatar" :src="obj.imgsrc" style="height:30px;width:30px;margin:auto;vertical-align:middle"> -->
                                 <span>{{ obj.label }}</span>
                             </template>
                     </el-option>
                 </el-select>
                 <!-- 流程選擇班別-->
-                <el-select
+                <!-- <el-select
                     v-else-if="item.format == 'marshallingMgmtSelect' "
                     v-model="temp[item.prop]"
                     filterable
@@ -187,9 +194,9 @@
                         :value="obj.id"
                         >
                         </el-option>
-                </el-select>
+                </el-select> -->
                 <!-- 設備種類 :disabled="dialogStatus == 'create' ? false : true"-->
-                <el-select
+                <!-- <el-select
                     v-else-if="item.format =='deviceTypeSelect'"
                     v-model="temp[item.prop]"
                     filterable
@@ -208,9 +215,9 @@
                         :value="obj"
                         >
                         </el-option>
-                </el-select>
+                </el-select> -->
                 <!-- 管委會的住戶選擇/消防編組細項選擇角色的帳號 -->
-                <el-select
+                <!-- <el-select
                     v-else-if="item.format =='commitUserInfo' || item.format == 'accountSelect'"
                     v-model="temp[item.prop]"
                     filterable
@@ -228,16 +235,9 @@
                         :value="obj"
                         >
                         </el-option>
-                </el-select>
-                <!-- 網路編號
-                <el-input v-else-if="item.format =='internetNumber'"
-                v-model="temp[item.prop]"
-                :maxlength="item.maxlength"
-                show-word-limit
-                :disabled="disable">
-                </el-input> -->
+                </el-select> -->
                 <!-- 檢修申報下拉選單(多)-->
-                <el-select
+                <!-- <el-select
                     v-else-if="item.format == 'inspectionSelect' "
                     v-model="temp[item.prop]"
                     filterable
@@ -259,10 +259,9 @@
                                 :disabled="item.status !== ''">
                             </el-option>
                         </el-option-group>
-                </el-select>
+                </el-select> -->
                 <!-- 設備種類(後端)下拉選單(單) -->
-                <el-cascader
-                    v-else-if="item.format == 'fullType' "
+                <el-cascader v-else-if="item.formType == 'fullType' "
                     v-model="fulltypevalue"
                     placeholder="請選擇"
                     :options="selectfilter('fullTypeSelect')"
@@ -272,14 +271,7 @@
                     @change="changeFullType">
                 </el-cascader>
                 <!-- 設定的下拉選單(單) -->
-                <el-select
-                    v-else-if="item.format =='BrandOptions' ||
-                    item.format =='MaintainContentOptions'
-                    || item.format =='MaintainProcessOptions' ||
-                    item.format == 'DeviceStatusOptions'
-                    || item.format == 'ContactUnitOptions' ||
-                    item.format == 'LackStatusOptions'
-                    "
+                <el-select v-else-if="item.formType == 'selectSetting'"
                     ref="settingOption"
                     v-model="temp[item.prop]"
                     filterable
@@ -298,8 +290,7 @@
                         </el-option>
                 </el-select>
                 <!-- 地址 -->
-                <span
-                 v-else-if="item.format =='address'">
+                <span v-else-if="item.formType =='address'">
                     <el-cascader
                       v-model="addressvalue"
                       :options="selectfilter(item.format)"
@@ -312,8 +303,7 @@
                       show-word-limit maxlength="100"/>
                 </span>
                 <!-- 權限設定 -->
-                <el-select
-                    v-else-if="item.format =='actionSelect'"
+                <el-select v-else-if="item.formType =='actionSelect'"
                     v-model="temp[item.prop]"
                     placeholder="請選擇"
                     style="width:100%"
@@ -326,9 +316,7 @@
                     <el-option label="匯出檔案" key="6" value="upload"></el-option>
                 </el-select>
                 <!-- Boolean:啟用禁用 允許/禁止刪除 配合 改善 -->
-                <el-select
-                    v-else-if="item.format =='accountStatusSelect' || item.format == 'collaborateBoolean'
-                    || item.format == 'removableSelect' || item.format == 'improvedBoolean'"
+                <el-select v-else-if="item.formType == 'boolean'"
                     v-model="temp[item.prop]"
                     placeholder="請選擇"
                     style="width:100%"
@@ -338,18 +326,16 @@
                     :value="val" :label="val | changeBoolean(item.format)"></el-option>
                 </el-select>
                 <!-- inputnumber -->
-                <el-input
-                v-else-if="item.format =='inputnumber'"
+                <el-input v-else-if="item.formType =='inputNumber'"
                 v-model.number="temp[item.prop]"
                 type="number" :min="0"  :placeholder="item.placeholder" >
                     <template
-                    v-if="item.prop == 'floorsOfAboveGround' ||
-                    item.prop == 'floorsOfUnderground'"
+                    v-if="item.format == 'inputPrepend' "
                     slot="prepend">
                     {{ item.prop == 'floorsOfAboveGround' ? '地上' : '地下'}}
                     </template>
                     <template
-                    v-if="item.prop !== 'sort' && item.prop !== 'port' && item.prop !== 'differentialTransmission'"
+                    v-if="item.format == 'inputAppend'"
                     slot="append">
                         <span v-if="item.prop =='area'">m<sup>2</sup></span>
                         <span v-else-if="item.prop == 'capacity'">人</span>
@@ -358,8 +344,7 @@
                     </template>
                 </el-input>
                 <!-- 專技人員 -->
-                <el-autocomplete
-                v-else-if="item.format =='searchColumn'"
+                <el-autocomplete v-else-if="item.formType =='searchColumn'"
                 class="inline-input"
                 v-model="temp[item.prop]"
                 :fetch-suggestions="querySearch"
@@ -384,7 +369,6 @@
                 :placeholder="item.placeholder"
                 >
                 </el-input>
-
             </el-form-item>
         </el-form>
         </keep-alive>
@@ -572,7 +556,17 @@ export default {
                                 this.$set(v, 'value', v.id)
                                 return v
                             })
-                            // return this.selectData
+                        case 'classLeaderSelect': // 
+                            if(this.account_record == 0){
+                                this.$store.dispatch('building/setaccounts')
+                                this.$store.dispatch('record/saveAccountRecord',1)
+                            }
+                            return this.buildingaccount.map(v => {
+                                this.$set(v, 'id', v.id)
+                                this.$set(v, 'label', v.name)
+                                this.$set(v, 'value', v.id)
+                                return v
+                            })
                         case 'deviceTypeSelect':
                             if(this.deviceType_record == 0){
                                     this.$store.dispatch('building/setDeviceType')
@@ -636,6 +630,10 @@ export default {
                             return constant.AreaCode
                         case 'marshallingMgmtSelect':
                             return this.selectData
+                        case 'commitUserInfo':
+                            return this.commitUserInfoArray
+                        case 'accountSelect':
+                            return this.accountArray
                     }
                 }else{
                     return ""
@@ -828,22 +826,6 @@ export default {
                }
             }
         },
-        // changeprotocolMode(value){
-        //     if(this.title == 'deviceAddressManagement' && this.dialogStatus == 'update'){
-        //         this.$confirm('更換【控制模式】將會重置關聯的設備，是否要更新【控制模式】?',
-        //         '提示', {
-        //             confirmButtonText: '確定',
-        //             cancelButtonText: '取消',
-        //             type: 'warning'
-        //         }).then(() => {
-        //             this.temp['linkDevices'] = []
-        //             this.$emit('handleDialog', 'openDialog', this.dialogStatus , this.temp)
-        //         }).catch(() => {
-        //             this.temp['protocolMode'] = this.originalProtocolMode
-        //             this.temp['linkDevices'] = []
-        //         })
-        //     }
-        // },
         querySearch(queryString, cb) {
             var restaurants = this.selectData
             var results = queryString ? restaurants.filter(this.createFilter(queryString)) : this.selectData
@@ -855,6 +837,7 @@ export default {
             }
         },
         openWindows(format){
+            console.log(format)
             var routeData
             switch (format) {
                 case 'userInfo':

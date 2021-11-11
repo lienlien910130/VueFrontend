@@ -86,7 +86,8 @@ class DeviceType extends Parent {
                 format:'fullType',
                 mandatory:true, message:'請選擇系統',
                 isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                formType:'fullType'
             },
             {
                 label: '種類',

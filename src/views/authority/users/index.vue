@@ -164,8 +164,8 @@ export default {
             }else if(index === 'distribution'){
                 var roles = content.getRoles()
                 var array = []
-                for(let element in roles){
-                    array.push(await roles[element].getAccess('account'))
+                for(let element of roles){
+                    array.push(await element.getAccess('account'))
                 }
                 var concatarray = array.reduce(
                     function(a, b) {

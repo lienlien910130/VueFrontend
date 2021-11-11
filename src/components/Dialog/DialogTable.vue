@@ -49,44 +49,28 @@
                                         <div v-if="scope.column.property == 'lackContent'"
                                             v-html="stringToBr(scope.row[scope.column.property])">
                                         </div>
-                                        <span v-else-if="scope.column.property == 'status'">
-                                            {{  changeOptionName(scope.row[item.prop]) }}
+                                        
+                                        <span v-else-if="item.formType == 'date'" style="width:150px"> 
+                                            {{ dataStr(scope.row[item.prop],'YYYY-MM-DD') }}
                                         </span>
-                                        <span v-else-if="scope.column.property == 'dateOfFailure' || 
-                                        scope.column.property == 'dateOfCallRepair' || 
-                                        scope.column.property == 'completedTime' " style="width:150px"> 
-                                            {{ dataStr(scope.row[scope.column.property],'YYYY-MM-DD') }}
+
+                                        <span v-else-if="item.formType == 'selectSetting'" > 
+                                            {{ changeOptionName(scope.row[item.prop]) }}
                                         </span>
-                                        <span v-else-if="scope.column.property == 'processStatus' 
-                                        || scope.column.property == 'processContent'"> 
-                                            {{  changeOptionName(scope.row[scope.column.property]) }}
+
+                                        <span v-else-if="item.formType == 'select'"> 
+                                            {{ changeShowFormat(item.format, scope.row, item.prop) }}
                                         </span>
-                                        <span v-else-if="scope.column.property == 'linkDevices'"> 
-                                            {{ scope.row.getDevicesName() }}
+
+                                        <span v-else-if="item.formType == 'selectString'"> 
+                                            {{ changeShowFormatString(item.format, scope.row, item.prop) }}
                                         </span>
-                                        <span v-else-if="scope.column.property == 'linkContactUnits' "> 
-                                            {{ changeContainUnit(scope.row[scope.column.property]) }}
+
+                                        <span v-else-if="item.formType == 'boolean'"> 
+                                            {{ scope.row[item.prop] | changeBoolean(item.format) }}
                                         </span>
-                                        <span v-else-if="scope.column.property == 'linkInspectionLacks'"> 
-                                            {{ scope.row.getInspectionLackName() }}
-                                        </span>
-                                        <span v-else-if="scope.column.property == 'linkAccountList'"> 
-                                            {{ scope.row.getAccountName() }}
-                                        </span>
-                                        <span v-else-if="scope.column.property == 'linkRoles'"> 
-                                            {{ scope.row.getRolesName() }}
-                                        </span>
-                                        <span v-else-if="scope.column.property == 'linkFloors'"> 
-                                            {{ changeFloorName(scope.row[scope.column.property]) }}
-                                        </span>
-                                        <span v-else-if="scope.column.property == 'linkContingencyProcess'"> 
-                                            {{ scope.row.getProcessName() }}
-                                        </span>
-                                       
-                                        <span v-else-if="scope.column.property == 'systemUsed'"> 
-                                            {{ scope.row[item.prop] == true ? '已設置' : '未設置' }}
-                                        </span>
-                                        <span v-else-if="scope.column.property == 'floorPlanID'"> 
+
+                                        <span v-else-if="item.formType == 'image'"> 
                                             <i 
                                             v-if="scope.row[scope.column.property] !== null && 
                                             scope.row[scope.column.property] !== ''"
@@ -94,9 +78,7 @@
                                             @click="handleTableClick('image',scope.row)" 
                                             style="cursor: pointer;font-size:25px"></i>
                                         </span>
-                                        <!-- <span v-else-if="scope.column.property == 'name' && title == 'contingencyProcess'">
-                                            <el-input v-model="scope.row[item.prop]" ></el-input>
-                                        </span> -->
+                                        
                                         <span v-else>{{  scope.row[item.prop] }}</span>
                                 </template>
                         </el-table-column>

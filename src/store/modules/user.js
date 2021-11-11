@@ -78,7 +78,6 @@ const actions = {
         if (!response) {
           reject('登入失敗，請重新登入')
         }
-        console.log(response)
         const { id, account, name, linkRoles, linkBuildings, linkPhysicalInfos  } = response.result[0]
         var roles = linkRoles !== undefined ? linkRoles.map(item=>{ return new Role(item)})  : []
         var buildingarray = linkBuildings !== undefined ? linkBuildings.map(item=>{ return new Building(item)}) : []
@@ -104,20 +103,37 @@ const actions = {
   saveUserID({ commit } , uid){ //手機_ws登入後取回userid儲存
     commit('SET_USER', uid)
   },
-  async setMessageToken({ commit }, OsModel, token ) {
-    return new Promise((resolve, reject) => {
-      user.apiPatchUserInfo({id:state.id, cToken:token }).then(async(response) => {
-        if (!response) {
-          reject('更新 Message Token 失敗')
+  saveUserRole({ commit } , role){ //手機_ws登入後取回userid儲存
+    commit('SET_ROLES', role)
+  },
+  async setMessageToken({ commit, state }, value ) {
+    return new Promise(async(resolve, reject) => {
+      var device = value.OsModel.split(',')
+      var index = state.physicalInfos.findIndex(obj => { return obj.name == device[0] && obj.model == device[1]})
+      if(index !== -1 && state.physicalInfos[index].cToken !== value.token){ //更新
+        var result = await PhysicalInfo.update({id:state.physicalInfos[index].id,cToken:value.token})
+        if(result){
+          state.physicalInfos[index].cToken = value.token
         }
-        const { cToken } = response.result
-        commit('SET_MToken', cToken)
-        console.log('patchDone')
+      }else if(index == -1){ //新增
+        var result = await PhysicalInfo.create({name:device[0], cToken:value.token, model:device[1]})
+        if(Object.keys(result).length !== 0){
+          var phy = _.cloneDeep(state.physicalInfos)
+          phy.push({id:result.id})
+          user.apiPatchUserInfo({id:state.id, linkPhysicalInfos:phy }).then(async(response) => {
+            if (!response) {
+              reject('更新訂閱失敗')
+            }
+            state.physicalInfos.push(result)
+            resolve()
+          }).catch(error => {
+            reject(error)
+          })
+        }
+      }else{
         resolve()
-      }).catch(error => {
-        commit('SET_MToken', token)
-        reject(error)
-      })
+      }
+      commit('SET_MToken', value.token)
     })
   },
   // user logout

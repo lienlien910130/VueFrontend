@@ -85,7 +85,7 @@ class User extends Parent {
          isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
          { label:'生日' , prop:'birthday',format:'YYYY-MM-DD',
          mandatory:false,isHidden:false,isSearch:false,
-         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+         isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false,formType:'date'},
          { label:'電話' , prop:'callNumber', mandatory:false,maxlength:'15',
          isHidden:true,isSearch:true,placeholder:'請輸入電話',
          isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},

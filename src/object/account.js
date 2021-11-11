@@ -96,20 +96,20 @@ class Account extends Parent {
                 ,isHidden:false,isSearch:true,isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
             { label:'角色' , prop:'linkRoles',format:'roleSelect', mandatory:false,
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
-                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true, formType:'select',limit:0},
             { label:'狀態' , prop:'status',format:'accountStatusSelect', mandatory:true, message:'請選擇狀態',
                 type:'boolean',typemessage:'',isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,formType:'boolean'},
             { label:'刪除' , prop:'removable',format:'removableSelect', mandatory:true, message:'請選擇是否允許刪除',
                 type:'boolean',typemessage:'',isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false,formType:'boolean'},
             { label:'大樓' , prop:'linkBuildings',format:'buildingSelect', mandatory:true, message:'請選擇建築物',
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true},
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true,formType:'select',limit:0},
         ]
     }
     static async get(){
-        var data = await api.authority.apiGetAllAccountAuthority().then(response => {
+        var data = await api.authority.apiGetAllAccount().then(response => {
             return response.result.sort((x,y) => x.id - y.id).map(item=>{ return new Account(item)})
         }).catch(error=>{
             return []

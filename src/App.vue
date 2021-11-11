@@ -37,14 +37,14 @@ export default {
         'wsmsg',
         'wsuserId',
         'buildingid',
-        'id',
+        'account',
         'physicalInfos'
     ])
   },
   watch: {
-    id:{ //有登入才連線ws
+    account:{ //有登入才連線ws
         handler:async function(){
-          if(this.id !== undefined ){
+          if(this.account !== null ){
             await this.initsocket()
           }
         },
@@ -67,7 +67,8 @@ export default {
               if (currentToken) {
                 console.log('currentToken',currentToken)
                 var OsModel = _this.deviceInfo()
-                await _this.$store.dispatch('user/setMessageToken', OsModel, currentToken)
+                var value = {OsModel:OsModel, token:currentToken}
+                await _this.$store.dispatch('user/setMessageToken', value)
                 _this.$socket.initProcessWebSocket()
               } else {
                 //顯示訂閱的視窗

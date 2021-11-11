@@ -117,17 +117,17 @@ class Menu extends Parent {
             { label:'狀態' , prop:'status',format:'accountStatusSelect',
             mandatory:true, message:'請選擇狀態',
             type:'boolean',typemessage:'',isHidden:false,
-            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true},
+            isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,formType:'boolean'},
             { label:'排序' , prop:'sort',format:'inputnumber', mandatory:true, message:'請輸入0~999',
                 pattern:/^[0-9]{1,3}$/,errorMsg:'請輸入0~999',isPattern:true,
                 type:'number',typemessage:'',placeholder:'請輸入0~999',
                 isHidden:false,maxlength:'3',isSearch:true,
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false,formType:'inputNumber'},
             { label:'刪除' , prop:'removable',format:'removableSelect',
                 mandatory:true, message:'請選擇是否允許刪除',
                type:'boolean',typemessage:'',
                isHidden:false,isSearch:false,
-               isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false},
+               isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false,formType:'boolean'},
         ]
     }
     static async get(){

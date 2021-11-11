@@ -8,8 +8,9 @@ import { Floors, SampleNodeList } from '.'
 class SelfDefenseFireMarshalling extends Parent {
     constructor (data) {
         super(data)
-        const { name  } = data
+        const { name, classLeaderId   } = data
         this.name = name
+        this.classLeaderId = classLeaderId
     }
     clone(data){
         return new SelfDefenseFireMarshalling(data)
@@ -56,7 +57,8 @@ class SelfDefenseFireMarshalling extends Parent {
     static empty(){
         return new SelfDefenseFireMarshalling({
             id:'',
-            name :''
+            name :'',
+            classLeaderId:''
         })
     }
     static getTableConfig(){
@@ -134,12 +136,13 @@ class SelfDefenseFireMarshalling extends Parent {
 class SelfDefenseFireMarshallingMgmt extends Parent {
     constructor (data) {
         super(data)
-        const { name, linkRoles, linkAccountList, linkContingencyProcess, linkFloors  } = data
+        const { name, classLeaderId, linkRoles, linkAccountList, linkContingencyProcess, linkFloors  } = data
         var roles = linkRoles !== undefined ?  linkRoles.map(item=>{ return new Role(item)}) : []
         var account = linkAccountList !== undefined ?  linkAccountList.map(item=>{ return new Account(item)}) : []
         var process = linkContingencyProcess !== undefined ?  linkContingencyProcess.map(item=>{ return new ContingencyProcess(item)}) : []
         var floor = linkFloors !== undefined ? linkFloors.map(item=>{ return new Floors(item)}) : new Array([]).map(item=>{ return new Floors(item)})
         this.name = name
+        this.classLeaderId = classLeaderId
         this.linkRoles = roles
         this.linkAccountList = account
         this.linkFloors = floor
@@ -191,15 +194,11 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
     getProcessName(){
         return this.linkContingencyProcess.map(item => item.getName()).toString()
     }
-    // getDefaultProcessName(){
-    //     var name = this.defaultContingencyProcessId !== null && this.linkContingencyProcess.length !== 0  ?
-    //     this.linkContingencyProcess.filter(item=>{ return item.id == this.defaultContingencyProcessId})[0].name : ''
-    //     return name
-    // }
     static empty(){
         return new SelfDefenseFireMarshallingMgmt({
             id:'',
             name :'',
+            classLeaderId:null,
             linkRoles:[],
             linkAccountList:[],
             linkFloors:[],
@@ -218,23 +217,32 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
             {
                 label:'樓層' , prop:'linkFloors',format:'manyFloorSelect', mandatory:true,message:'請選擇樓層',
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
-                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true, formType:'select',limit:0
             },
             {
                 label:'角色' , prop:'linkRoles',format:'roleSelect', mandatory:true,message:'請選擇角色',
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
-                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true, formType:'select',limit:0
             },
             {
                 label:'帳號' , prop:'linkAccountList',format:'accountSelect', mandatory:false,message:'請選擇帳號',
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
-                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true, formType:'select',limit:0
+            },
+            {
+                label:'班長' ,
+                prop:'classLeaderId',
+                format:'classLeaderSelect',
+                mandatory:true,message:'請選擇班長',type:'string',typemessage:'',
+                isHidden:false,isSearch:false,
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                formType:'selectString'
             },
             {
                 label:'流程圖名稱' , prop:'linkContingencyProcess',format:'processList',
                 mandatory:false,
                 type:'array',typemessage:'',isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true
+                isAssociate:false,isEdit:false,isUpload:false,isExport:true,isBlock:true, formType:'select',limit:0
             }
        ]
     }
@@ -292,7 +300,8 @@ class ContingencyProcess extends Parent {
                 label:'選擇班別' , prop:'selfDefenseFireMarshallingMgmt',format:'marshallingMgmtSelect',
                 mandatory:true, message:'請選擇班別',
                 isHidden:false,isSearch:false,
-                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                formType:'selectString'
             },
             {
                 label:'流程圖名稱' ,

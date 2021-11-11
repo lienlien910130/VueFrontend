@@ -27,7 +27,7 @@ let wsConnection = {
         selfDefenseFireMarshallingListId:null,
         contingencyProcessId:null,
         login:false,
-        getProcess:false //用來判斷關閉後是否要重新連線
+        getProcess:false, //用來判斷關閉後是否要重新連線
     },
     dataWs:{
         $ws: null,
@@ -112,7 +112,6 @@ let wsConnection = {
       //process
       let processWsProtocol = 'Tm7wHKS4JrvrOMYuMfl28xgJ9sWBjFnfq0wXkyYewG12vkyqRunm74bVUyvXwr97tLsrZ9kZB76WIJ5nvZOy06xsEAGKXPgSph3yx3L3ObyCDqeOKtXmP6AoQDI77DqV'
       var connectUrl = process.env.VUE_APP_WEBSOCKET +'?cToken='+store.getters.mToken
-      console.log(connectUrl)
       this.processWs.$ws = new WebSocket(connectUrl, processWsProtocol);
       this.processWs.$ws.onopen = function(){
         console.log('ws open-PROCESS')
@@ -130,38 +129,34 @@ let wsConnection = {
         if(data == '0x052E'){
           ElementUI.Message.error('尚未訂閱智慧消防平台')
         }else{
-          if(data.SenderName == 'MercuryfireWS65'){
-            //wsConnection.sendProcessWsLogin()
-          }else if(data.mode == 'wsLogin'){
+          if(data.mode == 'wsLogin'){
             store.dispatch('user/saveToken', data.accessToken)
+            store.dispatch('user/saveUserID', data.accountListId)
+            store.dispatch('user/saveUserRole', data.roleList)
+            _this.processWs.login = true
+          }else if(data.mode == 'wsLoginInfo'){
             if(data.emergencyInfo !== undefined){
               emergencyInfo(data.emergencyInfo)
               store.dispatch('websocket/saveProcess', true)
               ElementUI.Message('已啟動緊急應變')
-              // ElementUI.MessageBox.confirm('已啟動緊急應變狀態，是否開啟相關頁面檢視', '警告', {
-              //   confirmButtonText: '確認',
-              //   cancelButtonText: '取消',
-              //   type: 'warning'
-              // }).then(() => {
-              // }).catch(() => {
-              // })
             }
             if(Object.keys(data.cpList).length){ //初始節點資料
               var nodeList = Object.values(data.cpList)[0].eventCNodeList
               for(let node in Object.keys(nodeList)){
                 var obj = nodeList[Object.keys(nodeList)[node]]
-                var temp = {
-                  mode: 'cNodeResult',
-                  cpId: obj.parentId,
-                  cNodeId: obj.instanceCNode.id,
-                  nodeId: obj.instanceCNode.nodeId,
-                  state: obj.instanceCNode.state,
-                  name: obj.instanceCNode.name
+                if(obj !== undefined){
+                  var temp = {
+                    mode: 'cNodeResult',
+                    cpId: obj.parentId,
+                    cNodeId: obj.instanceCNode.id,
+                    nodeId: obj.instanceCNode.nodeId,
+                    state: obj.instanceCNode.state,
+                    name: obj.instanceCNode.name
+                  }
+                  store.dispatch('websocket/saveNodeResult', temp)
                 }
-                store.dispatch('websocket/saveNodeResult', temp)
               }
             }
-            _this.processWs.login = true
           }else if(data.mode == 'emergency'){ //已啟動緊急應變時需重新登入ws要緊急應變的token
             _this.processWs.$ws.close()
           }else if(data.mode == 'selectOptions'){ //使用者收到選項的狀況
@@ -255,6 +250,11 @@ function combineAddress(element, type, realTimeAction = false){
     case 'PLC':
       mode = 'PLC'
       label = element.internet + '-' + element.system + '-' + element.memeryLoc
+      if(element.system == 'R400'){
+        label = element.internet + '-' + element.system
+        element.actionName = element.status
+        element.deviceName = '水位計'
+      }
       break;
     case 'LOC':
       mode = '火警'
@@ -264,12 +264,18 @@ function combineAddress(element, type, realTimeAction = false){
     case 'MAIN':
       mode = '防災盤'
       label = element.internet + '-' + element.memeryLoc
+      if(label == '001-0003' && element.status == '1'){ //復歸
+        store.dispatch('websocket/saveReturn',true)
+      }
       break;
   }
   store.dispatch('websocket/sendMsg',{
     mode:mode,
     date:moment(element.createTime).format('YYYY/MM/DD HH:mm:ss'),
     status:element.status,
+    actionName:element.actionName,
+    areaName:element.areaName,
+    deviceName:element.deviceName,
     label:label
   })
   if(realTimeAction){
@@ -279,9 +285,6 @@ function combineAddress(element, type, realTimeAction = false){
       status:element.status,
       label:label
     })
-  }
-  if(label == '001-01-001-1' && element.status == 0){
-    ElementUI.Message('已復歸')
   }
 }
 

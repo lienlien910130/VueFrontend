@@ -5,8 +5,7 @@
             <el-col
                 v-if="isTable == true"
                 :xs="24" :sm="24" :md="24" :lg="24">
-                    <el-input
-                    v-if="hasSearch == true"
+                    <el-input v-if="hasSearch == true"
                     placeholder="請輸入內容，多條件搜尋請依左側'勾選條件'依序輸入值並以'逗號'區隔"
                     v-model="inputSearch" class="input-with-select" style="width:42%;float:right" clearable
                     @clear="clearInputSearch" @keyup.enter.native="handleSearchWord"
@@ -32,15 +31,13 @@
                         </el-select>
                         <el-button slot="append" icon="el-icon-search" @click="handleSearchWord"></el-button>
                     </el-input>
-                    <el-button
-                        v-if="title == 'maintain' || title == 'maintainList'"
+                    <el-button v-if="title == 'maintain' || title == 'maintainList'"
                         class="filter-item"
                         type="primary"
                         @click="change">
                             <span> 檢視大項 </span>
                     </el-button>
-                    <el-select
-                        v-if="title == 'deviceAddressManagement' || title == 'devicePLCAddressManagement'"
+                    <el-select v-if="title == 'deviceAddressManagement' || title == 'devicePLCAddressManagement'"
                         v-model="deviceIdSelect"
                         filterable
                         placeholder="請選擇設備"
@@ -57,89 +54,6 @@
                         >
                         </el-option>
                     </el-select>
-            </el-col>
-            <el-col v-else
-                :xs="24" :sm="24" :md="24" :lg="24">
-                <!-- <el-collapse v-model="activeNames">
-                    <el-collapse-item title="篩選條件搜尋" name="1">
-                        <el-cascader
-                        v-model="filterSearch"
-                        :options="selectSetting"
-                        :props="{ multiple: true }"
-                        filterable
-                        collapse-tags
-                        size="mini"
-                        placeholder="請選擇篩選條件"
-                        clearable
-                        style="width:100%"
-                        >
-                        </el-cascader>
-                        <el-button icon="el-icon-search"
-                        circle
-                        @click="handleFilterSearch"
-                        ></el-button>
-                    </el-collapse-item>
-                    <el-collapse-item title="資料排序" name="3">
-                        <el-select
-                        v-model="sortValue"
-                        placeholder="請選擇排序欄位"
-                        style="width:100%"
-                        clearable
-                        >
-                            <el-option
-                            v-for="item in selectSetting"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value">
-                            </el-option>
-                        </el-select>
-                        <el-select
-                        v-model="sortOrder"
-                        placeholder="請選擇排序欄位"
-                        style="width:100%"
-                        clearable
-                        >
-                            <el-option  key="1" value="ascending">
-                                <i icon="el-icon-caret-top" ></i>
-                            </el-option>
-                             <el-option  key="2" value="descending">
-                                <i icon="el-icon-caret-bottom" ></i>
-                            </el-option>
-                        </el-select>
-                         <el-button icon="el-icon-caret-top"
-                         circle
-                         @click="sortChange({prop:sortValue,order:'ascending'})"
-                         ></el-button>
-                          <el-button icon="el-icon-caret-bottom"
-                          circle
-                          @click="sortChange({prop:sortValue,order:'descending'})"
-                          ></el-button>
-                    </el-collapse-item>
-                </el-collapse> -->
-                    <el-button
-                        v-if="title == 'maintain' || title == 'maintainList'"
-                        class="filter-item"
-                        type="primary"
-                        size="mini"
-                        @click="change">
-                            <span> 檢視細項 </span>
-                    </el-button>
-                    <!-- <el-button
-                        v-if="isTable == false"
-                        class="filter-item"
-                        size="mini"
-                        type="primary"
-                        >
-                        搜尋
-                    </el-button> -->
-                    <el-button
-                        v-if="isTable == false"
-                        class="filter-item"
-                        size="mini"
-                        type="primary"
-                        @click="handleClickOption('empty','')">
-                        新增
-                    </el-button>
             </el-col>
         </div>
         <div class="infinite-list-wrapper" :style="{ height: infiniteheight+'px' }">
@@ -231,9 +145,9 @@
                                     </template>
                                 </span>
 
-                                <span v-else-if="option.format == 'nTypeChange' " >
+                                <!-- <span v-else-if="option.format == 'nTypeChange' " >
                                     {{ changenType(item[option.prop]) }}
-                                </span>
+                                </span> -->
 
                                 <span v-else-if="option.format == 'deviceTypeSelect' "
                                 @click="clickMessageBox('設備種類',option.format,item[option.prop])"
@@ -335,113 +249,43 @@
                         <!-- :filters="getFilterItems(item.prop)"
                             :filter-method="filterHandler" -->
                                 <template slot-scope="scope">
+                                        <span v-if="item.formType == 'date'" style="width:150px">
+                                            {{ dataStr(scope.row[scope.column.property],item.format)  }}
+                                        </span>
 
-                                        <span v-if="item.format== 'YYYY-MM-DD' ||
-                                        item.format== 'YYYY'" style="width:150px">
-                                            {{ dataStr(scope.row[scope.column.property],item.format)  }}</span>
-
-                                        <span v-else-if="item.format == 'range' ">
+                                        <span v-else-if="item.formType == 'range'">
                                             {{ dataStr(scope.row['checkStartDate'],'YYYY-MM-DD') }}
                                             <span v-if="scope.row['checkStartDate'] !== null ||
                                             scope.row['checkStartDate'] !== undefined"><br></span>
                                             {{ dataStr(scope.row['checkEndDate'],'YYYY-MM-DD') }}
                                         </span>
 
-                                        <span v-else-if="item.format == 'MaintainContentOptions' ||
-                                        item.format == 'MaintainProcessOptions' ||
-                                        item.format == 'BrandOptions' ||
-                                        item.format == 'ContactUnitOptions' ||
-                                        item.format == 'DeviceStatusOptions' "
-                                        >
-                                        {{ changeOptionName(scope.row[item.prop]) }}
+                                        <span v-else-if="item.formType == 'selectSetting'">
+                                            {{ changeOptionName(scope.row[item.prop]) }}
                                         </span>
 
-                                        <span v-else-if="item.format == 'accountStatusSelect' ||
-                                        item.format == 'removableSelect' ||
-                                        item.format == 'improvedBoolean'
-                                        || item.format == 'collaborateBoolean' || item.format == 'systemUsedBoolean' ">
+                                        <span v-else-if="item.formType == 'boolean'">
                                             {{ scope.row[item.prop] | changeBoolean(item.format) }}
                                         </span>
 
-                                        <span v-else-if="item.format == 'userInfo' || item.format == 'usageOfFloorUserInfo' ||
-                                        item.format =='commitUserInfo' "
-                                        @click="clickMessageBox('住戶資料','userInfo',scope.row[item.prop])"
+                                        <span v-else-if="item.formType == 'nTypeChange'">
+                                            {{ scope.row[item.prop] | changeNType }}
+                                        </span>
+
+                                        <span v-else-if="item.formType == 'select'"
+                                        @click="clickMessageBox(item.label, item.format, scope.row[item.prop])"
                                         style="color:#66b1ff;cursor:pointer">
-                                            {{ changeUserName(scope.row[item.prop]) }}
+                                            {{ changeShowFormat(item.format, scope.row, item.prop) }}
                                         </span>
 
-                                        <span v-else-if="item.format == 'deviceTypeSelect' "
-                                        @click="clickMessageBox('設備種類',item.format,scope.row[item.prop])"
-                                        style="color:#66b1ff;cursor:pointer">
-                                            {{ scope.row.getLinkType().getSelectName()  }}
-                                        </span>
-                                        <!-- assignFireDeviceSelect -->
-                                        <span v-else-if="item.format == 'deviceSelect' || item.format == 'addressdeviceSelect'
-                                        "
-                                        @click="clickMessageBox('設備資料',item.format,scope.row[item.prop])"
-                                        style="color:#66b1ff;cursor:pointer">
-                                             {{ scope.row.getDevicesName() }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'floorSelect' " >
-                                             {{ changeFloorName(scope.row[item.prop]) }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'valueType' " >
-                                            {{ scope.row.getValueTypeName() }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'addressStr' " >
-                                            {{ scope.row.getAddressStr() }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'nTypeChange' " >
-                                            {{ changenType(scope.row[item.prop]) }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'iconSelect' " >
-                                            <svg-icon :icon-class="'fire_'+scope.row[item.prop]" style="font-size:30px"/>
-                                            <!-- <template v-if="scope.row[item.prop] !== '' && scope.row[item.prop] !== undefined && scope.row[item.prop] !== null">
+                                        <span v-else-if="item.formType == 'selectString' || 
+                                        item.formType == 'addressStr' || item.formType == 'fullType' " >
+                                            <template v-if="item.format == 'iconSelect'">
                                                 <svg-icon :icon-class="'fire_'+scope.row[item.prop]" style="font-size:30px"/>
-                                            </template> -->
-                                            <!-- <template v-if="changeIcon(scope.row[item.prop]) !== ''">
-                                                <img class="avatar" :src="changeIcon(scope.row[item.prop])"
-                                                style="height:25px;width:25px;margin:auto;vertical-align:middle">
-                                            </template> -->
-                                        </span>
-
-                                        <span v-else-if="item.format == 'contactunitSelect' "
-                                        @click="clickMessageBox('廠商資料',item.format,scope.row[item.prop])"
-                                        style="color:#66b1ff;cursor:pointer">
-                                            {{ changeContainUnit(scope.row[item.prop]) }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'floorOfHouseSelect' "
-                                        @click="clickMessageBox('門牌資料',item.format,scope.row[item.prop])"
-                                        style="color:#66b1ff;cursor:pointer">
-                                            {{ scope.row.getUsageOfFloorsName() }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'buildingSelect' "
-                                        @click="clickMessageBox('建築物資料',item.format,scope.row[item.prop])"
-                                        style="color:#66b1ff;cursor:pointer">
-                                            {{ scope.row.getBuildingsName() }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'roleSelect' "
-                                        @click="clickMessageBox('角色資料',item.format,scope.row[item.prop])"
-                                        style="color:#66b1ff;cursor:pointer">
-                                            {{ scope.row.getRolesName() }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'inspectionSelect'"
-                                        @click="clickMessageBox('缺失內容',item.format,scope.row[item.prop])"
-                                        style="color:#66b1ff;cursor:pointer">
-                                            {{ scope.row.getInspectionLackName() }}
-                                        </span>
-
-                                        <span v-else-if="item.format == 'fullType'">
-                                            {{ scope.row.getType() }}
+                                            </template>
+                                            <template v-else>
+                                                {{ changeShowFormatString(item.format, scope.row, item.prop) }}
+                                            </template>
                                         </span>
 
                                         <span v-else>{{  scope.row[item.prop] }}</span>
@@ -715,50 +559,6 @@ export default {
         },
         total: function() {
             return this.listQueryParams.total || 0
-        },
-        changenType(){
-            return function (value) {
-                if(value !== null){
-                    var type = ''
-                    switch(value){
-                        case '10':
-                            type = 'Start';
-                            break;
-                        case '11':
-                            type = 'End';
-                            break;
-                        case '12':
-                            type = 'LinkToWorkflow';
-                            break;
-                        case '13':
-                            type = 'WaitingForCall';
-                            break;
-                        case '21':
-                            type = 'MessageBroadcast';
-                            break;
-                        case '22':
-                            type = 'MobilePush';
-                            break;
-                        case '23':
-                            type = 'LinePush';
-                            break;
-                        case '24':
-                            type = 'MessagePush';
-                            break;
-                        case '25':
-                            type = 'VoiceBroadcast';
-                            break;
-                        case '31':
-                            type = 'CountDown';
-                            break;
-                        case '50':
-                            type = 'OptionEvents';
-                            break;
-                    }
-                    return type
-                }
-                return ""
-            }
         }
     },
     watch:{

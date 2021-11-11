@@ -6,7 +6,7 @@ class DeviceAddressManagement extends Parent {
     constructor (data) {
         super(data)
         const { internet, system, address, number, systemUsed, memeryLoc, iconId,  valueType, value, valueLength,
-             floorsId, linkDevices  } = data
+             floorsId, area, linkDevices  } = data
         var devices = linkDevices !== undefined ?
         linkDevices.map(item=>{ return new Device(item) }) :[]
         this.internet = internet
@@ -20,6 +20,7 @@ class DeviceAddressManagement extends Parent {
         this.memeryLoc = memeryLoc
         this.iconId = iconId
         this.valueLength = valueLength
+        this.area = area
         this.linkDevices = devices
     }
     clone(data){
@@ -126,6 +127,7 @@ class DeviceAddressManagement extends Parent {
             value:'',
             memeryLoc:'',
             iconId:'',
+            area:'',
             valueLength:null,
             linkDevices:[],
             linkAssignDevices:[]
@@ -139,7 +141,8 @@ class DeviceAddressManagement extends Parent {
                 format:'assignFireDeviceSelect',
                 mandatory:true,message:'請選擇火警總機',type:'array',typemessage:'',
                 isHidden:true,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
+                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false,
+                formType:'select',limit:1
             },
             {
                 label:'樓層' ,
@@ -147,7 +150,8 @@ class DeviceAddressManagement extends Parent {
                 format:'floorSelect',
                 mandatory:true,message:'請選擇樓層',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                formType:'selectString'
             },
             {
                 label: '總機編號',
@@ -190,7 +194,8 @@ class DeviceAddressManagement extends Parent {
                 format:'assignFireDeviceSelect',
                 mandatory:true,message:'請選擇火警總機',type:'array',typemessage:'',
                 isHidden:true,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
+                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false,
+                formType:'select',limit:1
             },
             {
                 label:'樓層' ,
@@ -198,7 +203,8 @@ class DeviceAddressManagement extends Parent {
                 format:'floorSelect',
                 mandatory:true,message:'請選擇樓層',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                formType:'selectString'
             },
             {
                 label:'點位' ,
@@ -206,10 +212,11 @@ class DeviceAddressManagement extends Parent {
                 format:'addressStr',
                 mandatory:false,message:'請輸入點位',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                formType:'addressStr'
             },
              {
-                 label: '總機編號',
+                 label: '總機',
                  prop: 'internet',format:'internetNumber',
                  mandatory:false, message:'請輸入網路編號',isHidden:true,maxlength:'5',
                  pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
@@ -217,7 +224,7 @@ class DeviceAddressManagement extends Parent {
                  isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
              },
              {
-                label: '迴路編號',
+                label: '系統',
                 prop: 'system',
                 mandatory:false, message:'請輸入系統編號',isHidden:true,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
@@ -225,7 +232,7 @@ class DeviceAddressManagement extends Parent {
                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
             },
             {
-                label: '位址編號',
+                label: '位址',
                 prop: 'address',
                 mandatory:false, message:'請輸入位址編號',isHidden:true,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
@@ -248,11 +255,19 @@ class DeviceAddressManagement extends Parent {
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
+                label: '空間描述',
+                prop: 'area',
+                mandatory:true, message:'請輸入空間描述',isHidden:false,maxlength:'50',
+                isSearch:true,placeholder:'請輸入空間描述',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
                 label: '類型',
                 prop: 'value', format:'valueType',
-                mandatory:true, message:'請選擇類型',isHidden:false,maxlength:'5',
+                mandatory:true, message:'請選擇類型',isHidden:false,
                 isSearch:true,placeholder:'請選擇類型',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                formType:'selectString'
             },
             {
                 label:'圖示' ,
@@ -260,13 +275,15 @@ class DeviceAddressManagement extends Parent {
                 format:'iconSelect',
                 mandatory:true,message:'請選擇圖示',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                formType:'selectString'
             },
             {
                 label:'圖控使用狀態' , prop:'systemUsed',format:'systemUsedBoolean',
                 mandatory:false,
                 type:'boolean',typemessage:'',isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true,
+                formType:'boolean'
             },
             {
                 label:'設備' ,
@@ -274,7 +291,8 @@ class DeviceAddressManagement extends Parent {
                 format:'addressdeviceSelect',
                 mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
                 isHidden:false,isSearch:false,
-                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                formType:'select',limit:1
             }
          ]
     }
@@ -286,7 +304,8 @@ class DeviceAddressManagement extends Parent {
                 format:'assignPLCDeviceSelect',
                 mandatory:false,message:'請選擇PLC',type:'array',typemessage:'',
                 isHidden:true,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false
+                isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:false,
+                formType:'select',limit:1
             },
             {
                 label:'樓層' ,
@@ -294,7 +313,8 @@ class DeviceAddressManagement extends Parent {
                 format:'floorSelect',
                 mandatory:true,message:'請選擇樓層',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                formType:'selectString'
             },
             {
                 label:'點位' ,
@@ -302,24 +322,25 @@ class DeviceAddressManagement extends Parent {
                 format:'addressStr',
                 mandatory:false,message:'請輸入點位',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                formType:'addressStr'
             },
              {
-                 label: '總機編號',
+                 label: '總機',
                  prop: 'internet',format:'internetNumber',
                  mandatory:false, message:'請輸入網路編號',isHidden:true,maxlength:'5',
                  isSearch:true,placeholder:'請輸入網路編號',
                  isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
              },
              {
-                label: '迴路編號',
+                label: '系統',
                 prop: 'system',
                 mandatory:false, message:'請輸入系統編號',isHidden:true,maxlength:'5',
                 isSearch:true,placeholder:'請輸入系統編號',
                 isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
             },
             {
-                label: '位址編號',
+                label: '位址',
                 prop: 'address',
                 mandatory:false, message:'請輸入位址編號',isHidden:true,maxlength:'5',
                 pattern:/^[0-9]*$/g,errorMsg:'請輸入0-9之間的字元',isPattern:true,
@@ -350,11 +371,19 @@ class DeviceAddressManagement extends Parent {
                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
             },
             {
+                label: '空間描述',
+                prop: 'area',
+                mandatory:true, message:'請輸入空間描述',isHidden:false,maxlength:'50',
+                isSearch:true,placeholder:'請輸入空間描述',
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+            },
+            {
                 label: '類型',
                 prop: 'value',format:'valueType',
-                mandatory:true, message:'請選擇類型',isHidden:false,maxlength:'5',
+                mandatory:true, message:'請選擇類型',isHidden:false,
                 isSearch:true,placeholder:'請選擇類型',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                formType:'selectString'
             },
             {
                 label:'值' ,
@@ -362,7 +391,8 @@ class DeviceAddressManagement extends Parent {
                 format:'valueSelect',
                 mandatory:false,message:'請選擇值',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                formType:'selectString'
             },
             {
                 label:'圖示' ,
@@ -370,13 +400,15 @@ class DeviceAddressManagement extends Parent {
                 format:'iconSelect',
                 mandatory:true,message:'請選擇圖示',type:'string',typemessage:'',
                 isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                formType:'selectString'
             },
             {
                 label:'圖控使用狀態' , prop:'systemUsed',format:'systemUsedBoolean',
                 mandatory:false,
                 type:'boolean',typemessage:'',isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:true,
+                formType:'boolean'
             },
             {
                 label:'設備' ,
@@ -384,7 +416,8 @@ class DeviceAddressManagement extends Parent {
                 format:'addressdeviceSelect',
                 mandatory:true,message:'請選擇設備',type:'array',typemessage:'',
                 isHidden:false,isSearch:false,
-                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                formType:'select',limit:1
             }
          ]
     }

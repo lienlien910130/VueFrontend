@@ -74,7 +74,8 @@ export default {
             this.$store.dispatch('record/saveFloorRecord',1)
         }
         var array = this.buildingfloors
-        if(this.buildingfloors.length>0 && oldValue == undefined || oldValue.length == 0 ){ //第一次建立
+        if(this.buildingfloors.length>0 && oldValue == undefined || 
+          this.buildingfloors.length>0 && oldValue.length == 0 ){ //第一次建立
           this.upFloors = array.filter((item,index) => 
           item.getName().includes("地下") == false)
           this.downFloors = array.filter((item,index) => 

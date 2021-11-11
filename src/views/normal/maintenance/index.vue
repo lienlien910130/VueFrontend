@@ -355,7 +355,7 @@ export default {
                         { label:'維護保養大項' , prop:'maintainList',format:'maintainListSelect', 
                             mandatory:true, message:'請選擇維護保養大項',
                             isHidden:false,type:'array',typemessage:'',isSearch:false,
-                            isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true}
+                            isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true,formType:'select',limit:1}
                     )
                     var maintainlist = await MaintainManagementList.get()
                     this.dialogSelect.push(maintainlist)

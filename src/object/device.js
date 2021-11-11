@@ -168,16 +168,9 @@ class Device extends Parent {
                  format:'deviceTypeSelect',
                  mandatory:true, message:'請選擇種類',isHidden:false,
                  type:'array',typemessage:'',isSearch:false,
-                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                 formType:'select',limit:1
              },
-            //  {
-            //     label: '控制模式',
-            //     prop: 'protocolMode',format:'protocolMode',
-            //     type:'number',typemessage:'',
-            //     mandatory:true,message:'請選擇控制模式',isHidden:false,
-            //     isSearch:false,placeholder:'請選擇控制模式',
-            //     isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-            // },
             {
                 label: '網路編號',
                 prop: 'internetNumber',format:'internetNumber',
@@ -200,7 +193,7 @@ class Device extends Parent {
                 type:'number',typemessage:'',placeholder:'請輸入0~99999',maxlength:'5',
                 mandatory:false, message:'請輸入Port',isHidden:true,
                 isSearch:true,
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,formType:'inputNumber'
             },
             {
                 label: '調撥號碼',
@@ -217,7 +210,7 @@ class Device extends Parent {
                 type:'number',typemessage:'',placeholder:'請輸入0~9999',maxlength:'4',
                 mandatory:false, message:'請輸入通訊速率',isHidden:true,
                 isSearch:true,
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,formType:'inputNumber'
             },
              {
                  label: '購買日期',
@@ -225,7 +218,8 @@ class Device extends Parent {
                  format:'YYYY-MM-DD',
                  mandatory:false,
                  isHidden:false,isSearch:false,
-                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                 formType:'date'
              },
              {
                  label: '保固日期',
@@ -233,7 +227,8 @@ class Device extends Parent {
                  format:'YYYY-MM-DD',
                  mandatory:false, message:'請輸入保固日期',
                  isHidden:false,isSearch:false,
-                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                 formType:'date'
              },
              {
                  label: '位置設置',
@@ -255,7 +250,7 @@ class Device extends Parent {
                  format:'contactunitSelect',
                  mandatory:true,trigger: 'change', message:'請選擇保管單位',type:'array',typemessage:'',
                  isHidden:false,isSearch:false,
-                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true,formType:'select',limit:1
              },
              {
                  label: '維護廠商',
@@ -263,7 +258,7 @@ class Device extends Parent {
                  format:'contactunitSelect',
                  mandatory:true,trigger: 'change', message:'請選擇維護廠商',type:'array',typemessage:'',
                  isHidden:false,isSearch:false,
-                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true,formType:'select',limit:1
             },
             {
                  label: '設備狀況',
@@ -271,7 +266,7 @@ class Device extends Parent {
                  format:'MaintainProcessOptions',
                  mandatory:true, message:'請選擇設備狀況',
                  isHidden:false,isSearch:false,
-                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                 isAssociate:true,isEdit:true,isUpload:false,isExport:true,isBlock:true,formType:'selectSetting'
              },
              {
                 label: '下次保養時間',
@@ -279,7 +274,8 @@ class Device extends Parent {
                 format:'YYYY-MM-DD',
                 mandatory:false, message:'請輸入保養時間',
                 isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                formType:'date'
             },
             {
                 label: '最後保養時間',
@@ -287,33 +283,10 @@ class Device extends Parent {
                 format:'YYYY-MM-DD',
                 mandatory:false,
                 isHidden:false,isSearch:false,
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
-            },
-
-            // {
-            //     label: '尚未被使用',
-            //     prop: 'systemUnUseMode',
-            //     type:'number',typemessage:'',
-            //     mandatory:false,isHidden:false,
-            //     isSearch:false,
-            //     isAssociate:false,isEdit:false,isUpload:true,isExport:true,isBlock:false
-            // }
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                formType:'date'
+            }
          ]
-    }
-    static getAddressConfig(){
-        return [
-            { label:'名稱',prop: 'name',mandatory:true, message:'請輸入名稱',isHidden:false,maxlength:'20'},
-            { label:'種類' , prop:'linkDeviceTypes',format:'deviceTypeSelect', mandatory:false,
-            message:'請輸入描述',maxlength:'200',isHidden:false},
-            { label:'設備狀況',prop: 'status',format:'DeviceStatusOptions',mandatory:true,
-            message:'請選擇設備狀況',isHidden:false},
-            { label:'系統' , prop:'systemNumber',format:'address', mandatory:true, message:'請輸入系統編號',
-            isPattern:false,errorMsg:'',maxlength:'2',isHidden:false},
-            { label:'迴路' , prop:'circuitNumber',format:'address', mandatory:true, message:'請輸入迴路編號',
-            isPattern:false,errorMsg:'',maxlength:'3',isHidden:false},
-            { label:'點位' , prop:'address',format:'address', mandatory:true, message:'請輸入點位',
-            isPattern:false,errorMsg:'',maxlength:'5',isHidden:false}
-        ]
     }
     static async get (){
         var data = await api.device.apiGetBuildingDevicesManagement().then(response => {
@@ -350,14 +323,6 @@ class Device extends Parent {
       })
       return data
     }
-    // static async updateAddress(data){
-    //     var data = await api.device.apiPutDevicesAddress(data).then(async(response) => {
-    //         return true
-    //     }).catch(error=>{
-    //         return false
-    //     })
-    //     return data
-    // }
     static async updatefromGraphic(data){
         var data = await api.device.apiPatchGraphicDevices(data).then(async(response) => {
             return true

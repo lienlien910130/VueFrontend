@@ -78,7 +78,7 @@ class PublicSafeLack extends Parent {
         { label:'處理進度' , prop:'status',format:'LackStatusOptions',
         mandatory:true, message:'請選擇處理進度',
         isHidden:false,placeholder:'請輸入名稱',
-        isAssociate:true,isEdit:true,isUpload:true,isExport:true,isBlock:true}
+        isAssociate:true,isEdit:true,isUpload:true,isExport:true,isBlock:true,formType:'selectSetting'}
       ]
     }
     static async get (publicSafeId){

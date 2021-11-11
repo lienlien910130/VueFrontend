@@ -69,7 +69,8 @@ class SampleNodeList extends Parent {
                 prop:'nType',format:'nTypeChange',
                 mandatory:true, message:'請輸入節點類型',
                 isHidden:false,maxlength:'20',isSearch:true,placeholder:'請輸入節點類型',
-                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                formType:'nTypeChange'
             },
             {
                 label:'icon',

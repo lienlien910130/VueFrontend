@@ -34,7 +34,8 @@ export default {
     computed:{
         ...Vuex.mapGetters([
             'wsmsg',
-            'realTimeaction'
+            'realTimeaction',
+            'isReturn'
         ])
     },
     mounted() {
@@ -64,6 +65,14 @@ export default {
             },
             immediate:true,
             deep:true
+        },
+        isReturn:{
+            handler:async function(){
+                if(this.isReturn == true){
+
+                }
+            },
+            immediate:true
         }
     },
     data(){
@@ -104,10 +113,6 @@ export default {
             this.canvas.setWidth(this.$refs.canvasdiv.clientWidth)
             this.canvasheight = this.canvasHeight == 0 ? this.$refs.canvasdiv.clientHeight : this.canvasHeight
             this.canvas.setHeight(this.canvasheight)
-            // console.log(this.$refs.canvasdiv.clientHeight)
-            // console.log(this.$refs.canvasdiv.clientWidth,this.canvasheight)
-            // console.log(this.$refs.canvasdiv.clientWidth/1650)
-            // console.log(this.canvasheight/750)
             this.leftsize = this.$refs.canvasdiv.clientWidth/1650
             this.topsize = this.canvasheight/750
             this.canvas.clear()
@@ -127,11 +132,6 @@ export default {
                 }
                 this.loadFinsh = true
                 for(const [index, value] of this.wsmsg.entries()){ //去除掉第一筆，因起始動畫上述已執行
-                //   if(index !== 0){
-                //     this.$nextTick(() => {
-                //         this.actionObj(value.label,value.status)
-                //     })
-                //   }
                     this.$nextTick(() => {
                         this.actionObj(value.label,value.status)
                     })
@@ -305,7 +305,6 @@ export default {
             var index = this.canvas.getObjects().findIndex(o=>o.addressId == str)
             if(index !== -1){
                 var obj = this.canvas.getObjects()[index]
-                console.log(obj)
                 var equ = constant.Equipment.filter(ele=>{ return ele.id == obj.srcId})[0]
                 var src = equ.status.filter(obj=>{ return obj.value == value})[0]
                 var self = this
@@ -315,6 +314,7 @@ export default {
                     var text = item.default.content.replace(/http:\/\//g, 'https://')
                     text = text.replace('symbol', 'svg')
                     text = text.replace('/symbol', '/svg')
+                    console.log(text)
                     fabric.loadSVGFromString(text, function(objects, options) {
                         var svgItems = fabric.util.groupSVGElements(objects, options);
                         svgItems.set({
@@ -363,7 +363,6 @@ export default {
                     var connectindex = this.canvas.getObjects().findIndex(o=>o.objId == obj.connectId)
                     if(connectindex !== -1){
                         var connectObj = this.canvas.getObjects()[connectindex]
-                        console.log('value', value)
                         if(value !== 0){
                           connectObj.set({fill: 'rgba(230, 83, 83, 1)'})
                           connectObj.hasAnimationStarted = true

@@ -100,33 +100,38 @@ class PublicSafe extends Parent {
                  prop: 'declareYear',
                  format:'YYYY',
                  mandatory:true, message:'請選擇年度',isHidden:false,isSearch:false,
-                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                 formType:'date'
              },
              {
                  label: '申報期限',
                  prop: 'declareDeadline',
                  format:'YYYY-MM-DD',
                  mandatory:true, message:'請選擇期限',isHidden:false,isSearch:false,
-                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                 formType:'date'
              },
              {
                  label: '申報日期',
                  prop: 'declareDate',
                  format:'YYYY-MM-DD',
                  mandatory:true, message:'請選擇日期',isHidden:false,isSearch:false,
-                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                 formType:'date'
              },
              {
                  label: '檢測日期',
                  prop: 'rangeDate',
                  format:'range',isHidden:false,isSearch:false,mandatory:false,
-                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true
+                 isAssociate:false,isEdit:true,isUpload:false,isExport:true,isBlock:true,
+                 formType:'range'
              },
              {
                  label: '專技人員',
                  prop: 'professName',mandatory:false,format:'searchColumn',
                  isHidden:false,maxlength:'10',isSearch:true,
-                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false
+                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:false,
+                 formType:'searchColumn'
              },
              {
                  label: '證號',
@@ -139,7 +144,8 @@ class PublicSafe extends Parent {
                  prop: 'declarationImproveDate',
                  format:'YYYY-MM-DD',mandatory:true, message:'請選擇日期',
                  isHidden:false,isSearch:false,
-                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                 formType:'date'
              },
              {
                  label: '改善狀況',
@@ -148,14 +154,16 @@ class PublicSafe extends Parent {
                  type:'boolean',typemessage:'',
                  mandatory:false, trigger:'change',
                  isHidden:false,isSearch:false,
-                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                 formType:'boolean'
              },
              {
                  label: '下次檢查日期',
                  prop: 'nextInspectionDate',
                  format:'YYYY-MM-DD',
                  mandatory:true, message:'請選擇日期',isHidden:false,isSearch:false,
-                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true
+                 isAssociate:false,isEdit:true,isUpload:true,isExport:true,isBlock:true,
+                 formType:'date'
              },
              {
                  label: '備註',

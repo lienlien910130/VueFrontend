@@ -48,12 +48,12 @@ const getters = {
   buildingaddress: state => state.building.buildingaddress,
   deviceType : state => state.building.deviceType,
   deviceTypeNoLevel: state => state.building.deviceTypeNoLevel,
-  account: state => state.building.account,
+  buildingaccount: state => state.building.account,
 
   json: state => state.graphic.json,
 
   role_record : state => state.record.role_record,
-  menu_record: state => state.record.role_record,
+  menu_record: state => state.record.menu_record,
   setting_record: state => state.record.setting_record,
   floor_record: state => state.record.floor_record,
   floorOfHouse_record: state => state.record.floorOfHouse_record,

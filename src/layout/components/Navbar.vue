@@ -125,14 +125,16 @@ export default {
   watch:{
       buildingarray:{
         handler:async function(){
+          this.selectData = this.buildingarray
           if(this.buildingid){
             var temp = this.buildingarray.filter((item,index)=>item.id == this.buildingid)
             if(temp.length == 0){
               this.$store.dispatch('building/resetBuildingid')
               location.reload()
             }
+          }else if(this.buildingarray.length){
+            this.handleSelect(this.buildingarray[0])
           }
-          this.selectData = this.buildingarray
         },
         immediate:true
       },

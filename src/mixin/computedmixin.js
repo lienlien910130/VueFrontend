@@ -26,7 +26,9 @@ export default {
                 'device_record',
                 'contactunit_record',
                 'deviceType_record',
-                'floor_record'
+                'floor_record',
+                'account_record',
+                'account'
             ]),
             dataStr(){ //日期
                 return function (a,b) {
@@ -66,6 +68,52 @@ export default {
                     return 'left'
                 }
             },
+            changeShowFormat(){
+                return function (format,row,prop) {
+                    switch(format){
+                        case 'deviceSelect': case 'addressdeviceSelect':
+                            return row.getDevicesName()
+                        case 'userInfo': case 'usageOfFloorUserInfo': case 'commitUserInfo':
+                            return this.changeUserName(row[prop])
+                        case 'floorOfHouseSelect':
+                            return row.getUsageOfFloorsName()
+                        case 'contactunitSelect':
+                            return this.changeContainUnit(row[prop])
+                        case 'buildingSelect':
+                            return row.getBuildingsName()
+                        case 'roleSelect':
+                            return row.getRolesName()
+                        case 'inspectionSelect':
+                            return row.getInspectionLackName()
+                        case 'deviceTypeSelect':
+                            return row.getLinkType().getSelectName()
+                        case 'accountSelect':
+                            return row.getAccountName()
+                        case 'manyFloorSelect':
+                            return this.changeFloorName(row[prop])
+                        case 'processList':
+                            return row.getProcessName()
+                    }
+                        
+                }
+            },
+            changeShowFormatString(){
+                return function (format,row,prop) {
+                    switch(format){
+                        case 'floorSelect':
+                            return this.changeFloorName(row[prop])
+                        case 'valueType':
+                            return row.getValueTypeName()
+                        case 'fullType':
+                            return row.getType()
+                        case 'addressStr':
+                            return row.getAddressStr()
+                        case 'classLeaderSelect':
+                            return this.changeAccountName(row[prop])
+                        
+                    }
+                }
+            },
             changeOptionName(){ //設定名稱
                 return function (value) {
                     if(this.setting_record == 0){
@@ -77,6 +125,21 @@ export default {
                             item.id == value
                         )
                         return _array.length !== 0 ? _array[0].textName : ''
+                    }
+                    return ""
+                }
+            },
+            changeAccountName(){ //帳號名稱
+                return function (value) {
+                    if(this.account_record == 0){
+                        this.$store.dispatch('building/setaccounts')
+                        this.$store.dispatch('record/saveAccountRecord',1)
+                    }
+                    if(value !== null){
+                        let _array = this.buildingaccount.filter((item, index) =>
+                            item.id == value
+                        )
+                        return _array.length !== 0 ? _array[0].name : ''
                     }
                     return ""
                 }
@@ -165,6 +228,48 @@ export default {
                             return '未設置'
                     }
                 }
+            },
+            changeNType: function(val) {
+                if(val !== null){
+                    var type = ''
+                    switch(val){
+                        case '10':
+                            type = 'Start';
+                            break;
+                        case '11':
+                            type = 'End';
+                            break;
+                        case '12':
+                            type = 'LinkToWorkflow';
+                            break;
+                        case '13':
+                            type = 'WaitingForCall';
+                            break;
+                        case '21':
+                            type = 'MessageBroadcast';
+                            break;
+                        case '22':
+                            type = 'MobilePush';
+                            break;
+                        case '23':
+                            type = 'LinePush';
+                            break;
+                        case '24':
+                            type = 'MessagePush';
+                            break;
+                        case '25':
+                            type = 'VoiceBroadcast';
+                            break;
+                        case '31':
+                            type = 'CountDown';
+                            break;
+                        case '50':
+                            type = 'OptionEvents';
+                            break;
+                    }
+                    return type
+                }
+                return ""
             }
         },
         data() {

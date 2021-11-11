@@ -63,6 +63,7 @@ const authority = {
 
     //帳號管理
     apiGetAllAccountAuthority(){ return req('get','/accountSetting/a') },
+    apiGetAllAccount(){ return req('get','/index/accounts') },
     apiGetAccountAuthority(accountId){ return req('get','/accountSetting/'+accountId) },
     apiPostAccountAuthority(data){ return req('post','/accountSetting/check',null, data) },
     // apiPatchAccountAuthority(data){ return req('patch','/accountSetting/check',data) },

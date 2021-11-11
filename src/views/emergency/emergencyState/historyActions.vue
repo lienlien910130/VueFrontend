@@ -29,14 +29,18 @@ export default {
             }
         },
         reversedMessage: function () {
-          return this.actionList.reverse()
+          return this.actionList.sort(function(a,b){
+            return new Date(b.date) - new Date(a.date)
+          })
         }
+    },
+    mounted(){
+        this.init()
+        this.changeTable(true)
     },
     watch: {
         wsmsg:{
             handler:async function(){
-                await this.init()
-                await this.changeTable(true)
                 this.actionList = this.wsmsg
                 this.listQueryParams.total = this.wsmsg.length
             },
@@ -49,13 +53,15 @@ export default {
         }
     },
     methods:{
-        async init(){
+        init(){
             this.title = 'historyActions'
             this.hasSearch = false
             this.tableConfig = [
                 { label:'時間' , prop:'date', isHidden:false},
                 { label:'系統' , prop:'mode', isHidden:false},
-                { label:'事件' , prop:'status', isHidden:false},
+                { label:'動作' , prop:'actionName', isHidden:false},
+                { label:'區域' , prop:'areaName', isHidden:false},
+                { label:'設備' , prop:'deviceName', isHidden:false},
                 { label:'點位' , prop:'label', isHidden:false}
             ]
             this.headerButtonsName = []
@@ -73,7 +79,7 @@ export default {
             }
             await this.clickPagination()
         },
-        async changeTable(value){
+        changeTable(value){
             this.isTable = value
         }
     }

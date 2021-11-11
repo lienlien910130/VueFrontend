@@ -53,10 +53,14 @@ export default {
         }
     },
     async created(){
-        await this.initsocket()
+        //await this.initsocket()
         this.$store.dispatch('app/toggleDevice', 'mobile')
         this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
     },
+    // async mounted(){
+    //   this.floorId = 452
+    //   await this.init('001-01-001-1',2)
+    // },
     watch: {
         process:{ //有登入ws&有發生緊急應變才繪製畫面
             handler:async function(){

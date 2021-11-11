@@ -11,6 +11,7 @@ const getDefaultState = () => {
       nodeResult:[],
       selectResult:null,
       firstNodeList:[], //processws初始節點資料
+      isReturn:false
     }
   }
 
@@ -50,6 +51,9 @@ const getDefaultState = () => {
     },
     SET_SELECTRESULT: (state, selectResult) =>{
       state.selectResult = selectResult
+    },
+    SET_RETURN: (state, isReturn) =>{
+      state.isReturn = isReturn
     }
 }
 
@@ -86,7 +90,10 @@ const actions = {
       state.nodeResult[index].state = 1
       state.nodeResult[index].message = content.message
     }
-  }
+  },
+  saveReturn({ commit } , isReturn){ //復歸
+    commit('SET_RETURN', isReturn)
+  },
 }
 
 export default {
