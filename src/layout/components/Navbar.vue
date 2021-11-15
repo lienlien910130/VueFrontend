@@ -1,9 +1,14 @@
 <template>
   <div class="navbar">
-    <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
-   <div v-if="backVisible" @click="backTo">
-     <i class="el-icon-caret-left hamburger-container">返回自衛消防編組</i>
-   </div>
+    <hamburger
+      id="hamburger-container"
+      :is-active="sidebar.opened"
+      class="hamburger-container"
+      @toggleClick="toggleSideBar"
+    />
+    <div v-if="backVisible" @click="backTo">
+      <i class="el-icon-caret-left hamburger-container">返回自衛消防編組</i>
+    </div>
 
     <!-- <div class="left-menu">
       <router-link to="/">
@@ -13,199 +18,210 @@
     </div> -->
 
     <div class="right-menu">
-      <div class="avatar-container right-menu-item" style="margin-right:0px">
-        <div class="avatar-wrapper">
-          <svg-icon v-if="id == '1'" icon-class="edit" @click="handleTo" style="cursor:pointer"/>
-        </div>
+      <div class="avatar-container right-menu-item" style="margin-right: 0px">
+        <template v-for="item in floorList">
+          <div :key="item" style="display: inline-block; margin: 0px 10px">
+            <span>{{ item }}</span>
+          </div>
+        </template>
       </div>
 
-      <Screenfull v-if="device!=='mobile'" id="screenfull" class="right-menu-item hover-effect" />
+      <Screenfull
+        v-if="device !== 'mobile'"
+        id="screenfull"
+        class="right-menu-item hover-effect"
+      />
 
       <template v-if="buildingarray.length">
-        <el-dropdown
-            class="avatar-container right-menu-item" trigger="click">
-              <div class="avatar-wrapper">
-                <i class="el-icon-office-building icon" />
-                <span  v-if="device!=='mobile'" style="margin-left:3px">{{  buildingName  }}</span>
-                <i class="el-icon-caret-bottom" />
-              </div>
-              <el-dropdown-menu
-              slot="dropdown"
-              class="user-dropdown"
-              >
-                <el-dropdown-item
-                v-for="item in selectData"
-                :key="item.id"
-                @click.native="handleSelect(item)">
-                  {{ item.buildingName }}
-                </el-dropdown-item>
-              </el-dropdown-menu>
-        </el-dropdown>
-      </template>
-      
-      <template v-if="name !== null">
-        <el-dropdown
-          class="avatar-container right-menu-item" trigger="click">
-            <div class="avatar-wrapper">
-              <svg-icon icon-class="user"/>
-              <span v-if="device!=='mobile'" style="margin-left:3px">{{ name }}</span>
-              <i class="el-icon-caret-bottom" />
-            </div>
-            <el-dropdown-menu slot="dropdown" class="user-dropdown">
-              <router-link to="/">
-                <el-dropdown-item>
-                  首頁
-                </el-dropdown-item>
-              </router-link>
-              <router-link v-if="buildingid !== undefined" to="/membersetting">
-                <el-dropdown-item>
-                  設定
-                </el-dropdown-item>
-              </router-link>
-              <router-link v-if="buildingid !== undefined" to="/building/files">
-                <el-dropdown-item>
-                  檔案
-                </el-dropdown-item>
-              </router-link>
-              <el-dropdown-item divided @click.native="logout">
-                <span style="display:block;">登出</span>
-              </el-dropdown-item>
-            </el-dropdown-menu>
-        </el-dropdown>
-      </template>
-      
-      <div v-if="device!=='mobile'" class="avatar-container right-menu-item" style="margin-right:0px">
+        <el-dropdown class="avatar-container right-menu-item" trigger="click">
           <div class="avatar-wrapper">
-            <span class="timer">{{ date | formatDate }}</span>
+            <i class="el-icon-office-building icon" />
+            <span v-if="device !== 'mobile'" style="margin-left: 3px">{{
+              buildingName
+            }}</span>
+            <i class="el-icon-caret-bottom" />
           </div>
-      </div>
+          <el-dropdown-menu slot="dropdown" class="user-dropdown">
+            <el-dropdown-item
+              v-for="item in selectData"
+              :key="item.id"
+              @click.native="handleSelect(item)"
+            >
+              {{ item.buildingName }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </template>
 
+      <template v-if="name !== null">
+        <el-dropdown class="avatar-container right-menu-item" trigger="click">
+          <div class="avatar-wrapper">
+            <svg-icon icon-class="user" />
+            <span v-if="device !== 'mobile'" style="margin-left: 3px">{{
+              name
+            }}</span>
+            <i class="el-icon-caret-bottom" />
+          </div>
+          <el-dropdown-menu slot="dropdown" class="user-dropdown">
+            <router-link to="/">
+              <el-dropdown-item> 首頁 </el-dropdown-item>
+            </router-link>
+            <router-link v-if="buildingid !== undefined" to="/membersetting">
+              <el-dropdown-item> 設定 </el-dropdown-item>
+            </router-link>
+            <router-link v-if="buildingid !== undefined" to="/building/files">
+              <el-dropdown-item> 檔案 </el-dropdown-item>
+            </router-link>
+            <router-link v-if="id == '1'" to="/building/index">
+              <el-dropdown-item> 編輯大樓 </el-dropdown-item>
+            </router-link>
+            <el-dropdown-item divided @click.native="logout">
+              <span style="display: block">登出</span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </template>
+
+      <div
+        v-if="device !== 'mobile'"
+        class="avatar-container right-menu-item"
+        style="margin-right: 0px"
+      >
+        <div class="avatar-wrapper">
+          <span class="timer">{{ date | formatDate }}</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 // const Vuex = require('vuex')
-import { formatTime } from '@/utils/index.js'
+import { formatTime } from "@/utils/index.js";
 
 export default {
   computed: {
     ...Vuex.mapGetters([
-      'sidebar',
-      'account',
-      'name',
-      'id',
-      'device',
-      'buildingarray',
-      'roles',
-      'buildinginfo',
-      'buildingid',
-      'navbarButton',
-      'token',
-      'permission_routes'
+      "sidebar",
+      "account",
+      "name",
+      "id",
+      "device",
+      "buildingarray",
+      "roles",
+      "buildinginfo",
+      "buildingid",
+      "navbarButton",
+      "token",
+      "permission_routes",
     ]),
     selectAttrs() {
       return {
         selectData: this.selectData,
-        title:'Building'
-      }
-    }
+        title: "Building",
+      };
+    },
   },
   async mounted() {
-      let _this = this
-	    this.timer = setInterval(() => {
-        _this.date = new Date()
-      }, 1000)
+    let _this = this;
+    this.timer = setInterval(() => {
+      _this.date = new Date();
+    }, 1000);
   },
   filters: {
-      formatDate:function (value) {
-        return formatTime(value, '{y}-{m}-{d} {h}:{i}:{s}')
-      }
+    formatDate: function (value) {
+      return formatTime(value, "{y}-{m}-{d} {h}:{i}:{s}");
+    },
   },
-  watch:{
-      buildingarray:{
-        handler:async function(){
-          this.selectData = this.buildingarray
-          if(this.buildingid){
-            var temp = this.buildingarray.filter((item,index)=>item.id == this.buildingid)
-            if(temp.length == 0){
-              this.$store.dispatch('building/resetBuildingid')
-              location.reload()
-            }
-          }else if(this.buildingarray.length){
-            this.handleSelect(this.buildingarray[0])
+  watch: {
+    buildingarray: {
+      handler: async function () {
+        this.selectData = this.buildingarray;
+        if (this.buildingid) {
+          var temp = this.buildingarray.filter(
+            (item, index) => item.id == this.buildingid
+          );
+          if (temp.length == 0) {
+            this.$store.dispatch("building/resetBuildingid");
+            location.reload();
           }
-        },
-        immediate:true
+        } else if (this.buildingarray.length) {
+          this.handleSelect(this.buildingarray[0]);
+        }
       },
-      buildinginfo:{
-        handler:async function(){
-          this.buildingName = this.buildinginfo.length === 0 ?
-           '請選擇建築物' : this.buildinginfo.buildingName !== undefined ?
-           this.buildinginfo.buildingName : ''
-        },
-        immediate:true
+      immediate: true,
+    },
+    buildinginfo: {
+      handler: async function () {
+        this.buildingName =
+          this.buildinginfo.length === 0
+            ? "請選擇建築物"
+            : this.buildinginfo.buildingName !== undefined
+            ? this.buildinginfo.buildingName
+            : "";
       },
-      navbarButton:{
-        handler:async function(){
-          this.backVisible = this.navbarButton
-        },
-        immediate:true
+      immediate: true,
+    },
+    navbarButton: {
+      handler: async function () {
+        this.backVisible = this.navbarButton;
       },
+      immediate: true,
+    },
   },
   beforeDestroy() {
-    if (this.timer)
-    {
-        clearInterval(this.timer)
+    if (this.timer) {
+      clearInterval(this.timer);
     }
   },
   data() {
     return {
-      selectData:[],
+      selectData: [],
       date: new Date(),
-      buildingName:'請選擇建築物',
-      backVisible:false
-    }
+      buildingName: "請選擇建築物",
+      backVisible: false,
+      floorList: ["直上二層", "直上層", "起火層", "直下層"],
+    };
   },
   methods: {
-    backTo(){
-      this.$router.push({name:'selfDefenseFireMarshalling'})
+    backTo() {
+      this.$router.push({ name: "selfDefenseFireMarshalling" });
     },
-    handleTo(){
-      this.$router.push('/building')
+    handleTo() {
+      this.$router.push("/building");
     },
     toggleSideBar() {
-      if(this.permission_routes.length == 0){
-        this.$message.error('現在為緊急應變時刻')
+      if (this.permission_routes.length == 0) {
+        this.$message.error("現在為緊急應變時刻");
       }
-      this.$store.dispatch('app/toggleSideBar')
+      this.$store.dispatch("app/toggleSideBar");
     },
     async logout() {
-      console.log('logout')
-      await this.$store.dispatch('user/logout')
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+      console.log("logout");
+      await this.$store.dispatch("user/logout");
+      this.$router.push(`/login?redirect=${this.$route.fullPath}`);
     },
-    async handleSelect(content){
-       if(content !== undefined){
-          this.$store.dispatch('building/setBuildingID',content.id)
-          this.$store.dispatch('permission/setRoutes')
-          this.$store.dispatch('building/setBuildingInfo', content)
-          this.$store.dispatch('record/saveRoleRecord', 0)
-          this.$store.dispatch('record/saveSettingRecord', 0)
-          this.$store.dispatch('record/saveFloorRecord', 0)
-          this.$store.dispatch('record/saveFloorOfHouseRecord', 0)
-          this.$store.dispatch('record/saveHouseHolderRecord', 0)
-          this.$store.dispatch('record/saveDeviceRecord', 0)
-          this.$store.dispatch('record/saveContactunitRecord', 0)
-          this.$store.dispatch('record/saveDeviceTypeRecord', 0)
-          this.$store.dispatch('record/saveAddressManagementRecord', 0)
-          this.$router.push('/')
-          console.log('Navbardone')
-          this.$store.dispatch('app/openSideBar')
-       }
-    }
-  }
-}
+    async handleSelect(content) {
+      if (content !== undefined) {
+        this.$store.dispatch("building/setBuildingID", content.id);
+        this.$store.dispatch("permission/setRoutes");
+        this.$store.dispatch("building/setBuildingInfo", content);
+        this.$store.dispatch("record/saveRoleRecord", 0);
+        this.$store.dispatch("record/saveSettingRecord", 0);
+        this.$store.dispatch("record/saveFloorRecord", 0);
+        this.$store.dispatch("record/saveFloorOfHouseRecord", 0);
+        this.$store.dispatch("record/saveHouseHolderRecord", 0);
+        this.$store.dispatch("record/saveDeviceRecord", 0);
+        this.$store.dispatch("record/saveContactunitRecord", 0);
+        this.$store.dispatch("record/saveDeviceTypeRecord", 0);
+        this.$store.dispatch("record/saveAddressManagementRecord", 0);
+        this.$router.push("/");
+        console.log("Navbardone");
+        this.$store.dispatch("app/openSideBar");
+      }
+    },
+  },
+};
 // background-image:url("../../assets/image/navbarimg.png");
 </script>
 
@@ -215,18 +231,18 @@ export default {
   overflow: hidden;
   position: relative;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0,21,41,.08);
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 
   .hamburger-container {
     line-height: 46px;
     height: 100%;
     float: left;
     cursor: pointer;
-    transition: background .3s;
-    -webkit-tap-highlight-color:transparent;
+    transition: background 0.3s;
+    -webkit-tap-highlight-color: transparent;
 
     &:hover {
-      background: rgba(0, 0, 0, .025)
+      background: rgba(0, 0, 0, 0.025);
     }
   }
 
@@ -258,10 +274,10 @@ export default {
 
       &.hover-effect {
         cursor: pointer;
-        transition: background .3s;
+        transition: background 0.3s;
 
         &:hover {
-          background: rgba(0, 0, 0, .025)
+          background: rgba(0, 0, 0, 0.025);
         }
       }
     }

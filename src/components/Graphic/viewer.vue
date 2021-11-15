@@ -21,6 +21,7 @@
 import constant from "@/constant/development";
 const fabric = require("fabric");
 import { getUUID } from "@/utils";
+import ws from "@/utils/socket";
 
 export default {
   name: "GraphicViewer",
@@ -99,12 +100,7 @@ export default {
     };
   },
   methods: {
-    async loadBackgroundImage(
-      objects,
-      imgsrc,
-      startAddress = null,
-      status = null
-    ) {
+    async loadBackgroundImage(objects, imgsrc) {
       //載入背景圖
       var isListenWheel = false;
       if (this.canvasHeight == 0) {
@@ -132,26 +128,14 @@ export default {
         );
         this.canvas.renderAll();
       });
-      await this.loadObjects(objects, startAddress, status);
-      //   if (startAddress !== null) {
-      //     this.setStartView(startAddress);
-      //     if (status !== null && status !== undefined) {
-      //       this.actionObj(startAddress, status);
-      //     }
-      //     this.loadFinsh = true;
-      //     for (const [index, value] of this.wsmsg.entries()) {
-      //       this.$nextTick(() => {
-      //         this.actionObj(value.label, value.status);
-      //       });
-      //     }
-      //   }
+      await this.loadObjects(objects);
       if (isListenWheel) {
         this.canvas.on("mouse:wheel", (e) => {
           this.zoomCanvas("", e);
         });
       }
     },
-    async loadObjects(val, startAddress = null, status = null) {
+    async loadObjects(val) {
       //載入初始物件，預設關閉顯示
       if (val !== null) {
         var self = this;
@@ -214,20 +198,39 @@ export default {
           }
           self.canvas.renderOnAddRemove = origRenderOnAddRemove;
           self.canvas.renderAll();
-          console.log("done");
-          if (startAddress !== null) {
-            self.setStartView(startAddress);
-            if (status !== null && status !== undefined) {
-              self.actionObj(startAddress, status);
-            }
-            self.loadFinsh = true;
-            for (const [index, value] of self.wsmsg.entries()) {
-              self.$nextTick(() => {
-                self.actionObj(value.label, value.status);
-              });
+          self.loadFinsh = true;
+          if (ws.processWs.addressChangeList !== null) {
+            for (let [
+              index,
+              value,
+            ] of ws.processWs.addressChangeList.entries()) {
+              if (value.system == "R400") {
+                //跳過水位計的動畫設定
+                continue;
+              }
+              var isPLC = value.internet.indexOf("P");
+              var label = "";
+              if (isPLC !== -1) {
+                //PLC點位
+                label =
+                  value.internet + "-" + value.system + "-" + value.memeryLoc;
+              } else {
+                label =
+                  value.internet +
+                  "-" +
+                  value.system +
+                  "-" +
+                  value.address +
+                  "-" +
+                  value.number;
+              }
+              if (index == 0) {
+                //初始起點定位
+                self.setStartView(label);
+              }
+              self.actionObj(label, value.status);
             }
           }
-          console.log(JSON.stringify(self.canvas.getObjects()));
         });
       }
     },

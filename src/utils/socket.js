@@ -157,6 +157,7 @@ let wsConnection = {
           store.dispatch("user/saveToken", data.accessToken);
           store.dispatch("user/saveUserID", data.accountListId);
           store.dispatch("user/saveUserRole", data.roleList);
+          // store.dispatch('user/getInfo')
           _this.processWs.login = true;
         } else if (data.mode == "wsLoginInfo") {
           if (data.emergencyInfo !== undefined) {
@@ -334,7 +335,7 @@ function combineAddress(element, type, realTimeAction = false) {
     deviceName: element.deviceName,
     label: label,
   });
-  if (realTimeAction) {
+  if (realTimeAction && element.system !== "R400") {
     store.dispatch("websocket/saveAction", {
       mode: mode,
       date: moment(element.createTime).format("YYYY/MM/DD HH:mm:ss"),
