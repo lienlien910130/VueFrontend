@@ -28,7 +28,7 @@ export default {
       "deviceType_record",
       "floor_record",
       "account_record",
-      "account",
+      "buildingaccount",
     ]),
     dataStr() {
       //日期
@@ -249,6 +249,8 @@ export default {
             return "已改善";
           case "systemUsedBoolean":
             return "已設置";
+          case "mainSelect":
+            return "防災盤";
         }
       } else {
         switch (format) {
@@ -262,6 +264,8 @@ export default {
             return "未改善";
           case "systemUsedBoolean":
             return "未設置";
+          case "mainSelect":
+            return "火警點位";
         }
       }
     },

@@ -12,6 +12,8 @@ const getDefaultState = () => {
     firstNodeList: [], //processws初始節點資料
     isReturn: false,
     waitingNode: [],
+    fireFloorList: [],
+    watchFireFloor: null,
   };
 };
 
@@ -23,6 +25,9 @@ const mutations = {
   },
   SET_MSG: (state, wsmsg) => {
     state.wsmsg.push(wsmsg); //插入第0筆
+    // state.wsmsg = state.wsmsg.sort(function (a, b) {
+    //   return new Date(b.date) - new Date(a.date);
+    // });
   },
   SET_ACTION: (state, action) => {
     state.realTimeaction.push(action);
@@ -59,6 +64,12 @@ const mutations = {
   },
   SET_WAITINGNODE: (state, waitingNode) => {
     state.waitingNode.push(waitingNode);
+  },
+  SET_FIREFLOOR: (state, fireFloors) => {
+    state.fireFloorList = fireFloors;
+  },
+  SET_WATCHFLOOR: (state, fireFloor) => {
+    state.watchFireFloor = fireFloor;
   },
 };
 
@@ -116,6 +127,12 @@ const actions = {
       return item.nodeId !== content.nodeId;
     });
     commit("SET_WAITINGNODE", waitingNode);
+  },
+  saveFireFloorList({ commit }, fireFloors) {
+    commit("SET_FIREFLOOR", fireFloors);
+  },
+  saveWatchFloor({ commit }, fireFloor) {
+    commit("SET_WATCHFLOOR", fireFloor);
   },
 };
 

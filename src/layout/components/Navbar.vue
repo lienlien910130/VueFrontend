@@ -15,19 +15,31 @@
          <svg-icon  icon-class="indexlogo"
           style="width:200px;height:90px" />
       </router-link>
-    </div> -->
+    </div> v-if="process"-->
 
     <div class="right-menu">
-      <div class="avatar-container right-menu-item" style="margin-right: 0px">
-        <template v-for="item in floorList">
-          <div :key="item" style="display: inline-block; margin: 0px 10px">
-            <span>{{ item }}</span>
+      <span @click="showToken">TOKEN</span>
+      <!-- 火災時的平面圖--有緊急應變才顯示 -->
+      <template v-if="deviceType !== 'null'">
+        <el-dropdown class="avatar-container right-menu-item" trigger="click">
+          <div class="avatar-wrapper">
+            <svg-icon icon-class="fire" />
+            <i class="el-icon-caret-bottom" />
           </div>
-        </template>
-      </div>
+          <el-dropdown-menu slot="dropdown" class="user-dropdown">
+            <el-dropdown-item
+              v-for="item in floorList"
+              :key="item"
+              @click.native="handleFireFloor(item)"
+            >
+              {{ item.name }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </template>
 
       <Screenfull
-        v-if="device !== 'mobile'"
+        v-if="deviceType == 'null'"
         id="screenfull"
         class="right-menu-item hover-effect"
       />
@@ -83,7 +95,7 @@
       </template>
 
       <div
-        v-if="device !== 'mobile'"
+        v-if="deviceType == 'null'"
         class="avatar-container right-menu-item"
         style="margin-right: 0px"
       >
@@ -98,6 +110,8 @@
 <script>
 // const Vuex = require('vuex')
 import { formatTime } from "@/utils/index.js";
+import { getDevice } from "@/utils/auth";
+import ws from "@/utils/socket";
 
 export default {
   computed: {
@@ -114,12 +128,21 @@ export default {
       "navbarButton",
       "token",
       "permission_routes",
+      "process",
+      "redirect",
+      "fireFloorList",
+      "watchFireFloor",
+      "mToken",
+      "physicalInfos",
     ]),
     selectAttrs() {
       return {
         selectData: this.selectData,
         title: "Building",
       };
+    },
+    deviceType: function () {
+      return getDevice();
     },
   },
   async mounted() {
@@ -168,6 +191,12 @@ export default {
       },
       immediate: true,
     },
+    fireFloorList: {
+      handler: async function () {
+        this.floorList = this.fireFloorList;
+      },
+      immediate: true,
+    },
   },
   beforeDestroy() {
     if (this.timer) {
@@ -180,7 +209,8 @@ export default {
       date: new Date(),
       buildingName: "請選擇建築物",
       backVisible: false,
-      floorList: ["直上二層", "直上層", "起火層", "直下層"],
+      floorList: [],
+      watchId: undefined,
     };
   },
   methods: {
@@ -218,7 +248,27 @@ export default {
         this.$router.push("/");
         console.log("Navbardone");
         this.$store.dispatch("app/openSideBar");
+        if (this.redirect !== undefined) {
+          this.$router.push({ path: this.redirect });
+          this.$store.dispatch("app/saveRedirect", undefined);
+        } else {
+          this.$router.push("/");
+        }
       }
+    },
+    async handleFireFloor(item) {
+      if (this.$route.path == "/emergencyGraphic/index") {
+        this.$socket.saveWatchFloor(item.id);
+      } else {
+        this.$router.push({ path: "/emergencyGraphic/index" });
+      }
+    },
+    showToken() {
+      var hastoken = this.physicalInfos.filter((item) => {
+        return item.cToken == this.mToken;
+      });
+      alert(hastoken.length !== 0);
+      alert(this.mToken);
     },
   },
 };
@@ -283,7 +333,7 @@ export default {
     }
 
     .avatar-container {
-      margin-right: 30px;
+      margin-right: 20px;
 
       .avatar-wrapper {
         position: relative;

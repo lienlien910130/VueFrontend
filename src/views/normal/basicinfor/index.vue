@@ -74,6 +74,10 @@
                 v-bind="floorImageAttrs"
               ></FloorImage>
             </el-tab-pane>
+            <el-tab-pane label="自衛消防編組" name="SD" :disabled="!isChoose">
+            </el-tab-pane>
+            <el-tab-pane label="流程圖" name="FL" :disabled="!isChoose">
+            </el-tab-pane>
             <el-tab-pane label="樓層相關資料" name="OT" :disabled="!isChoose">
               <Upload
                 ref="floorsupload"
@@ -282,6 +286,8 @@ export default {
         } else if (val == "OT") {
           this.downTitle = "floorFiles";
           this.floorFiles = await this.selectFloor.files();
+        } else if (val == "SD") {
+        } else if (val == "FL") {
         }
       }
     },

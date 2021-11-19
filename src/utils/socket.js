@@ -1,4 +1,6 @@
 import store from "../store";
+import router from "@/router";
+
 import {
   Account,
   Building,
@@ -33,11 +35,13 @@ let wsConnection = {
     cPId: null,
     cNodeId: null,
     floorId: null,
-    addressChangeList: null, //有異動的清單
+    watchFloorId: null,
+    addressChangeList: [], //有異動的清單
     selfDefenseFireMarshallingListId: null,
     contingencyProcessId: null,
     login: false,
     getProcess: false, //用來判斷關閉後是否要重新連線
+    floorList: null,
   },
   dataWs: {
     $ws: null,
@@ -136,6 +140,7 @@ let wsConnection = {
       "Tm7wHKS4JrvrOMYuMfl28xgJ9sWBjFnfq0wXkyYewG12vkyqRunm74bVUyvXwr97tLsrZ9kZB76WIJ5nvZOy06xsEAGKXPgSph3yx3L3ObyCDqeOKtXmP6AoQDI77DqV";
     var connectUrl =
       process.env.VUE_APP_WEBSOCKET + "?cToken=" + store.getters.mToken;
+    console.log(connectUrl);
     this.processWs.$ws = new WebSocket(connectUrl, processWsProtocol);
     this.processWs.$ws.onopen = function () {
       console.log("ws open-PROCESS");
@@ -150,75 +155,94 @@ let wsConnection = {
       var data = msg.data.indexOf("{") > -1 ? JSON.parse(msg.data) : msg.data;
       wsConnection.resetHeartbeat(_this.processWs);
       console.log(data);
-      if (data == "0x052E") {
-        ElementUI.Message.error("尚未訂閱智慧消防平台");
-      } else {
-        if (data.mode == "wsLogin") {
-          store.dispatch("user/saveToken", data.accessToken);
-          store.dispatch("user/saveUserID", data.accountListId);
-          store.dispatch("user/saveUserRole", data.roleList);
-          // store.dispatch('user/getInfo')
-          _this.processWs.login = true;
-        } else if (data.mode == "wsLoginInfo") {
-          if (data.emergencyInfo !== undefined) {
-            emergencyInfo(data.emergencyInfo);
-            store.dispatch("websocket/saveProcess", true);
-            ElementUI.Message("已啟動緊急應變");
-          }
-          if (Object.keys(data.cpList).length) {
-            //初始節點資料
-            var nodeList = Object.values(data.cpList)[0].eventCNodeList;
-            for (let node in Object.keys(nodeList)) {
-              var obj = nodeList[Object.keys(nodeList)[node]];
-              if (obj !== undefined) {
-                var temp = {
-                  mode: "cNodeResult",
-                  cpId: obj.parentId,
+      if (data.mode == "wsLoginFailed") {
+        store.dispatch("websocket/saveProcess", data.IsEmergency);
+        if (!data.IsEmergency) {
+          //導回登入頁面
+          router.push({ path: "/login" });
+        }
+      } else if (data.mode == "wsLogin") {
+        store.dispatch("user/saveToken", data.accessToken);
+        store.dispatch("user/saveUserID", data.accountListId);
+        store.dispatch("user/saveUserRole", data.roleList);
+        _this.processWs.login = true;
+      } else if (data.mode == "wsLoginInfo") {
+        if (!_this.processWs.login) {
+          return false;
+        }
+        if (data.emergencyInfo !== undefined) {
+          emergencyInfo(data.emergencyInfo);
+          store.dispatch("websocket/saveProcess", true);
+          ElementUI.Message("已啟動緊急應變");
+        }
+        if (Object.keys(data.cpList).length) {
+          //初始節點資料
+          var nodeList = Object.values(data.cpList)[0].eventCNodeList;
+          for (let node in Object.keys(nodeList)) {
+            var obj = nodeList[Object.keys(nodeList)[node]];
+            if (obj !== undefined) {
+              var temp = {
+                mode: "cNodeResult",
+                cpId: obj.parentId,
+                cNodeId: obj.instanceCNode.id,
+                nodeId: obj.instanceCNode.nodeId,
+                state: obj.instanceCNode.state,
+                name: obj.instanceCNode.name,
+                nType: obj.instanceCNode.nType,
+                message:
+                  obj.instanceCNode.nType !== 21 &&
+                  obj.instanceCNode.message !== undefined
+                    ? obj.instanceCNode.message
+                    : "",
+              };
+              store.dispatch("websocket/saveNodeResult", temp);
+              if (obj.waitResponseOptions !== undefined) {
+                //有等待選擇的
+                var newAccount = obj.instanceCNode.linkAccountList.map(
+                  (item) => {
+                    return item.id;
+                  }
+                );
+                var waitingNode = {
                   cNodeId: obj.instanceCNode.id,
                   nodeId: obj.instanceCNode.nodeId,
                   state: obj.instanceCNode.state,
                   name: obj.instanceCNode.name,
                   nType: obj.instanceCNode.nType,
+                  accountList: newAccount.toString(),
                 };
-                store.dispatch("websocket/saveNodeResult", temp);
-                if (obj.waitResponseOptions !== undefined) {
-                  //有等待選擇的
-                  var newAccount = obj.instanceCNode.linkAccountList.map(
-                    (item) => {
-                      return item.id;
-                    }
-                  );
-                  var waitingNode = {
-                    cNodeId: obj.instanceCNode.id,
-                    nodeId: obj.instanceCNode.nodeId,
-                    state: obj.instanceCNode.state,
-                    name: obj.instanceCNode.name,
-                    nType: obj.instanceCNode.nType,
-                    accountList: newAccount.toString(),
-                  };
-                  store.dispatch("websocket/saveWaitingNode", waitingNode);
-                }
+                store.dispatch("websocket/saveWaitingNode", waitingNode);
               }
             }
           }
-        } else if (data.mode == "emergency") {
-          //已啟動緊急應變時需重新登入ws要緊急應變的token
-          _this.processWs.$ws.close();
-        } else if (data.mode == "selectOptions") {
-          //使用者收到選項的狀況
-          _this.processWs.cPId = data.cpId;
-          _this.processWs.cNodeId = data.cNodeId;
-          if (data.cOptions !== undefined) {
-            store.dispatch("websocket/sendOptions", data.cOptions);
-          }
-        } else if (data.mode == "cNodeResult") {
-          //每個節點執行的結果
-          store.dispatch("websocket/saveNodeResult", data);
-        } else if (data.mode == "broadcastEmergencyResponse") {
-          //使用者選了選項後收到的廣播
-          store.dispatch("websocket/updateNodeResult", data);
-          store.dispatch("websocket/removeWaitingNode", data);
         }
+      } else if (data.mode == "emergency") {
+        //已啟動緊急應變時需重新登入ws要緊急應變的token
+        _this.processWs.$ws.close();
+      } else if (data.mode == "selectOptions") {
+        //使用者收到選項的狀況
+        alert(data.cOptions);
+        if (!_this.processWs.login) {
+          return false;
+        }
+        _this.processWs.cPId = data.cpId;
+        _this.processWs.cNodeId = data.cNodeId;
+        if (data.cOptions !== undefined) {
+          store.dispatch("websocket/sendOptions", data.cOptions);
+        }
+      } else if (data.mode == "cNodeResult") {
+        //每個節點執行的結果
+        if (!_this.processWs.login) {
+          return false;
+        }
+        store.dispatch("websocket/saveNodeResult", data);
+      } else if (data.mode == "broadcastEmergencyResponse") {
+        //使用者選了選項後收到的廣播
+        if (!_this.processWs.login) {
+          return false;
+        }
+        store.dispatch("websocket/updateNodeResult", data);
+        store.dispatch("websocket/removeWaitingNode", data);
       }
     };
     this.processWs.$ws.onerror = function () {
@@ -272,11 +296,9 @@ let wsConnection = {
     };
     _this.dataWs.$ws.send(JSON.stringify(msg));
   },
-  // sendProcessWsLogin: function(){
-  //   var str = 'accountCToken:'+store.getters.mToken
-  //   console.log('accountCToken', str)
-  //   this.processWs.$ws.send(str)
-  // },
+  saveWatchFloor: function (floorId) {
+    this.sendMsg("floor", "saveWatchFloor", floorId);
+  },
   //手機選擇選項後發送回去的訊息
   sendProcess: function (cOption) {
     let _this = this;
@@ -326,15 +348,17 @@ function combineAddress(element, type, realTimeAction = false) {
       }
       break;
   }
-  store.dispatch("websocket/sendMsg", {
-    mode: mode,
-    date: moment(element.createTime).format("YYYY/MM/DD HH:mm:ss"),
-    status: element.status,
-    actionName: element.actionName,
-    areaName: element.areaName,
-    deviceName: element.deviceName,
-    label: label,
-  });
+  if (element.system !== "R400") {
+    store.dispatch("websocket/sendMsg", {
+      mode: mode,
+      date: moment(element.createTime).format("YYYY/MM/DD HH:mm:ss"),
+      status: element.status,
+      actionName: element.actionName,
+      areaName: element.areaName,
+      deviceName: element.deviceName,
+      label: label,
+    });
+  }
   if (realTimeAction && element.system !== "R400") {
     store.dispatch("websocket/saveAction", {
       mode: mode,
@@ -345,9 +369,40 @@ function combineAddress(element, type, realTimeAction = false) {
   }
 }
 
-function emergencyInfo(data) {
-  store.dispatch("building/setBuildingID", data.buildingId);
+async function emergencyInfo(data) {
   wsConnection.processWs.floorId = data.floorId;
+  store.dispatch("websocket/saveWatchFloor", data.floorId);
+  store.dispatch("building/setBuildingID", data.buildingId);
+  await store.dispatch("building/setFloors");
+  var floors = store.getters.buildingfloors.sort((x, y) => x.sort - y.sort);
+  var index = floors.findIndex((obj) => {
+    return obj.id == data.floorId;
+  });
+  var temp = [
+    {
+      id: floors[index + 2] !== undefined ? floors[index + 2].getID() : null,
+      name:
+        floors[index + 2] !== undefined
+          ? "直上二層-" + floors[index + 2].getFloor()
+          : "直上二層-無",
+    },
+    {
+      id: floors[index + 1] !== undefined ? floors[index + 1].getID() : null,
+      name:
+        floors[index + 1] !== undefined
+          ? "直上層-" + floors[index + 1].getFloor()
+          : "直上層-無",
+    },
+    { id: floors[index].getID(), name: "起火層-" + floors[index].getFloor() },
+    {
+      id: floors[index - 1] !== undefined ? floors[index - 1].getID() : null,
+      name:
+        floors[index - 1] !== undefined
+          ? "直下層-" + floors[index - 1].getFloor()
+          : "直下層-無",
+    },
+  ];
+  store.dispatch("websocket/saveFireFloorList", temp); //儲存樓層資料
   wsConnection.processWs.addressChangeList = data.addressChangeList;
   var marList = data.selfDefenseFireMarshallingListId.split(",");
   wsConnection.processWs.selfDefenseFireMarshallingListId = marList.filter(
@@ -499,9 +554,11 @@ function handleBuilding(index, bid, content) {
   }
 }
 function handleFloor(index, content) {
-  console.log("handleSetting", index, content);
+  console.log("handleFloor", index, content);
   if (index == "update") {
     store.dispatch("building/updateFloor", new Floors(content));
+  } else if (index == "saveWatchFloor") {
+    store.dispatch("websocket/saveWatchFloor", content);
   }
 }
 function handleContactUnit(index, content) {

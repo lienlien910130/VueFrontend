@@ -112,16 +112,21 @@ export default {
         if (os == "iOS") {
           //ios
           os = md.os() + md.version("iPhone");
+          if (md.tablet() == "iPad") {
+            os = md.os() + md.version("iPad");
+          }
           model = md.mobile(); //如何準確獲取手機iphone型號
         } else if (os == "AndroidOS") {
           //Android
           os = md.os() + md.version("Android");
-          var sss = device_type.split(";");
-          var i = sss.contains("Build/");
-          if (i > -1) {
-            model = sss[i].substring(0, sss[i].indexOf("Build/"));
-          }
-          model = model + md.versionStr("Build");
+          // var sss = device_type.split(";");
+          // console.log(sss);
+          // console.log(md.mobile());
+          // var i = sss.contains("Build/");
+          // if (i > -1) {
+          //   model = sss[i].substring(0, sss[i].indexOf("Build/"));
+          // }
+          model = md.mobile();
         }
       }
       console.log(os + "//" + model);
@@ -287,9 +292,7 @@ export default {
   background: rgb(171, 205, 3) !important;
   color: white !important;
 }
-.el-button + .el-button {
-  margin-left: 5px !important;
-}
+
 .el-button {
   margin: 5px !important;
 }

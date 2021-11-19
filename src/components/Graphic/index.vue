@@ -67,6 +67,25 @@
               </el-option>
             </el-select>
           </el-form-item>
+          <el-form-item label="關聯" label-width="70px">
+            <el-select
+              v-model="connectId"
+              placeholder="請選擇關聯的圖示或區塊"
+              @change="sendConnectChange"
+              style="width: 100%"
+              multiple
+              collapse-tags
+              :key="selectKey"
+            >
+              <el-option
+                v-for="(item, index) in connectArray"
+                :key="index"
+                :label="item.objectName"
+                :value="item.objId"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
         </template>
 
         <template v-if="selectType == 'path'">
@@ -134,6 +153,25 @@
               @change="changeAttributes('strokecolor')"
             ></el-color-picker>
           </el-form-item>
+          <el-form-item label="關聯" label-width="70px">
+            <el-select
+              :value="connectId"
+              placeholder="請選擇關聯的圖示或區塊"
+              @change="sendConnectChange"
+              style="width: 100%"
+              multiple
+              collapse-tags
+              :key="selectKey"
+            >
+              <el-option
+                v-for="(item, index) in connectArray"
+                :key="index"
+                :label="item.objectName"
+                :value="item.objId"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
         </template>
 
         <template v-if="selectType == 'textbox'">
@@ -157,30 +195,6 @@
             ></el-color-picker>
           </el-form-item>
         </template>
-
-        <el-form-item
-          v-if="selectType !== 'textbox'"
-          label="關聯"
-          label-width="70px"
-        >
-          <el-select
-            :value="connectId"
-            placeholder="請選擇關聯的圖示或區塊"
-            @change="sendConnectChange"
-            style="width: 100%"
-            :multiple="selectType == 'path' || srcId == 'p7' ? true : false"
-            collapse-tags
-            :key="selectKey"
-          >
-            <el-option
-              v-for="(item, index) in connectArray"
-              :key="index"
-              :label="item.objectName"
-              :value="item.objId"
-            >
-            </el-option>
-          </el-select>
-        </el-form-item>
       </el-form>
     </div>
 
@@ -595,7 +609,6 @@ export default {
       await this.loadObjects(objects);
     },
     async loadObjects(val) {
-      console.log(val);
       //載入初始物件
       if (val !== null) {
         var self = this;
@@ -654,6 +667,7 @@ export default {
           self.canvas.renderOnAddRemove = origRenderOnAddRemove;
           self.canvas.renderAll();
           self.state = self.canvas.toJSON();
+          self.$emit("loadFinish");
         });
       }
     },
@@ -966,7 +980,8 @@ export default {
             return item.addressId == "";
           });
           imageSelect.forEach((item) => {
-            item.set({ connectId: path[0].objId });
+            item.connectId.push(path[0].objId);
+            //item.set({ connectId: path[0].objId });
             this.isEditChange(true);
           });
           this.drawType = null;
@@ -1426,6 +1441,7 @@ export default {
       }
     },
     sendConnectChange(event) {
+      console.log(event);
       if (this.selectType == "image") {
         //圖片=>直接選取當前選中的並設置關聯id
         if (
@@ -1436,9 +1452,9 @@ export default {
           this.connectId = event;
         }
       } else {
-        if (this.connectId == "") {
-          this.connectId = [];
-        }
+        // if (this.connectId == "") {
+        //   this.connectId = [];
+        // }
         this.connectId.forEach((con) => {
           var index = event.findIndex((obj) => {
             return obj == con;
@@ -1448,7 +1464,15 @@ export default {
               return obj.objId == con;
             });
             if (index_image !== -1) {
-              this.canvas.getObjects()[index_image].set({ connectId: "" });
+              this.canvas
+                .getObjects()
+                [index_image].connectId.forEach(function (item, index, arr) {
+                  if (item === this.objId) {
+                    arr.splice(index, 1);
+                  }
+                });
+              //this.canvas.getObjects()[index_image].connectId.remove(this.objId)
+              //this.canvas.getObjects()[index_image].set({ connectId: [] });
             }
           }
         });
@@ -1457,7 +1481,8 @@ export default {
             return obj.objId == item;
           });
           if (index !== -1) {
-            this.canvas.getObjects()[index].set({ connectId: this.objId });
+            this.canvas.getObjects()[index].connectId.push(this.objId);
+            // this.canvas.getObjects()[index].set({ connectId: this.objId });
           }
         });
         this.canvas.getActiveObject().set({ connectId: event });
@@ -1507,7 +1532,7 @@ export default {
       ); //區塊才有
       canvasObject.set("srcId", srcId == null ? "" : srcId); //圖示的id
       canvasObject.set("addressId", addressId == null ? "" : addressId); //點位，用來websocket接收訊息後找icon並且動作
-      canvasObject.set("connectId", connectId == null ? "" : connectId); //關聯，區塊要關聯探測器物件的id(uuid)，下拉選單選取所有scrid=探測器的
+      canvasObject.set("connectId", connectId == null ? [] : connectId); //關聯
       canvasObject.set("status", status);
       canvasObject.set("action", action);
     },

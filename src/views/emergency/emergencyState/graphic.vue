@@ -25,14 +25,16 @@
       >
       </GraphicViewer>
     </div>
-    <div v-if="deviceType !== 'null' && actionList.length" class="list">
+    <div v-if="deviceType !== 'null' && wsmsg.length" class="list">
       <template v-for="(item, index) in reversedMessage">
         <div :key="index" style="text-align: center; padding: 5px 8px">
-          <span style="display: block"
-            >時間：{{ item.date }} / 系統：{{ item.mode }}</span
-          >
-          <span style="display: block"
-            >動作：{{ item.status }} / 點位：{{ item.label }}</span
+          <span style="display: block">時間：{{ item.date }} </span>
+          <span style="display: block">
+            系統：{{ item.mode }} / 點位：{{ item.label }}
+          </span>
+          <span style="display: block; color: red">
+            {{ item.areaName }} - {{ item.deviceName }} -
+            {{ item.actionName }}</span
           >
           <span style="display: block"
             >--------------------------------------------------</span
@@ -68,11 +70,10 @@ export default {
       "wsmsg",
       "floor_record",
       "buildingfloors",
+      "watchFireFloor",
     ]),
     reversedMessage: function () {
-      return this.actionList.sort(function (a, b) {
-        return new Date(b.date) - new Date(a.date);
-      });
+      return this.actionList.reverse();
     },
     deviceType: function () {
       return getDevice();
@@ -85,20 +86,23 @@ export default {
     },
   },
   async created() {
-    //await this.initsocket()
+    await this.initsocket();
     this.$store.dispatch("app/toggleDevice", "mobile");
     this.$store.dispatch("app/closeSideBar", { withoutAnimation: false });
   },
   async mounted() {
-    await this.init();
+    if (this.deviceType == "null") {
+      //電腦版
+      await this.init();
+    }
   },
   watch: {
-    process: {
+    watchFireFloor: {
       //手機版沒有floor可以跳轉
       handler: async function () {
-        if (this.process == true && ws.processWs.floorId !== null) {
+        if (this.watchFireFloor !== null) {
           this.$nextTick(async () => {
-            await this.handleSelect({ id: ws.processWs.floorId });
+            await this.handleSelect({ id: this.watchFireFloor });
           });
         }
       },
@@ -178,6 +182,8 @@ export default {
     async handleSelect(content) {
       var floor = await Floors.getOfId(content.id);
       var obj = await floor.getGraphicFiles();
+      console.log("obj");
+      console.log(obj);
       if (floor.getImageID() == null) {
         this.$message.error("該樓層尚未設定圖控相關資料");
       } else {

@@ -5,7 +5,7 @@
         <HeaderOperate
           ref="operate"
           :operateMenu="operateMenu"
-          @handleOperateMenu="zoomCanvas"
+          @handleOperateMenu="handleOperateMenu"
         />
       </header>
       <div class="section" ref="section" style="height: 100%">
@@ -38,7 +38,7 @@ export default {
     this.canvas = new fabric.Canvas("canvas");
     this.canvas.setWidth(1650);
     this.canvas.setHeight(0);
-    this.canvas.skipTargetFind = true;
+    this.canvas.skipTargetFind = false;
     this.canvas.selection = false;
     this.canvas.allowTouchScrolling = true;
     this.canvas.on("mouse:down", this.mouseDown);
@@ -47,6 +47,9 @@ export default {
       this.previousTouch = null;
     });
     this.canvas.on("mouse:move", this.mouseMove);
+    this.canvas.on("selection:created", this.selectioncreatedandupdated);
+    this.canvas.on("selection:updated", this.selectioncreatedandupdated);
+    // this.canvas.on("selection:cleared", this.selectioncleared);
   },
   watch: {
     realTimeaction: {
@@ -117,6 +120,7 @@ export default {
       this.leftsize = this.$refs.canvasdiv.clientWidth / 1650;
       this.topsize = this.canvasheight / 750;
       this.canvas.clear();
+      this.resetCanvas();
       fabric.Image.fromURL(imgsrc, (img) => {
         const background = img.set({
           scaleX: this.canvas.width / img.width,
@@ -137,7 +141,7 @@ export default {
     },
     async loadObjects(val) {
       //載入初始物件，預設關閉顯示
-      if (val !== null) {
+      if (val !== null && val !== undefined) {
         var self = this;
         var obj = JSON.parse(val);
         fabric.util.enlivenObjects(obj, async function (object) {
@@ -199,11 +203,11 @@ export default {
           self.canvas.renderOnAddRemove = origRenderOnAddRemove;
           self.canvas.renderAll();
           self.loadFinsh = true;
-          if (ws.processWs.addressChangeList !== null) {
-            for (let [
-              index,
-              value,
-            ] of ws.processWs.addressChangeList.entries()) {
+          var actionList = ws.processWs.addressChangeList.filter((item) => {
+            return item.system !== "R400";
+          });
+          if (actionList.length !== 0) {
+            for (let [index, value] of actionList.entries()) {
               if (value.system == "R400") {
                 //跳過水位計的動畫設定
                 continue;
@@ -232,6 +236,28 @@ export default {
             }
           }
         });
+      }
+    },
+    selectioncreatedandupdated(e) {
+      //顯示資訊-訊號內幾點幾分動作什麼
+      console.log(e);
+      var items = this.canvas.getActiveObjects();
+      if (items.length) {
+        var detailList = this.wsmsg.filter((item) => {
+          return item.label == items[0].addressId;
+        });
+        console.log(detailList);
+        const h = this.$createElement;
+        this.$msgbox({
+          title: "顯示設備歷程訊息",
+          message: h("p", null, [
+            h("span", null, "内容可以是 "),
+            h("i", { style: "color: teal" }, "VNode"),
+          ]),
+          showCancelButton: true,
+        })
+          .then(() => {})
+          .catch(() => {});
       }
     },
     addCustomize(
@@ -297,6 +323,21 @@ export default {
       this.relativeMouseX = 0;
       this.relativeMouseY = 0;
     },
+    resetCanvas() {
+      //重置
+      this.canvas.setZoom(1);
+      this.canvas.absolutePan(new fabric.Point(0, 0));
+      this.zoom = 1;
+      this.zoomPoint = new fabric.Point(0, 0);
+      this.lastzoomPoint = { x: 0, y: 0 };
+      this.lastmousePoint = { x: 0, y: 0 };
+      this.lastzoom = 1;
+      this.lastMovePos = { x: 0, y: 0 };
+      this.relativeMouseX = 0;
+      this.relativeMouseY = 0;
+
+      this.resetOriginAfterZoom();
+    },
     setStartView(startAddress) {
       //設定起始點的視圖
       var index = this.canvas
@@ -333,6 +374,8 @@ export default {
     mouseDown(e) {
       window.event.stopPropagation();
       window.event.preventDefault();
+      var items = this.canvas.getActiveObjects();
+      console.log(items.length); //打開視窗
       this.lastMovePos.x =
         e.e.type !== "touchstart" ? e.e.clientX : e.e.touches[0].clientX;
       this.lastMovePos.y =
@@ -378,7 +421,6 @@ export default {
     },
     actionObj(str, value) {
       console.log(str, value);
-      console.log(JSON.stringify(this.canvas.getObjects()));
       var index = this.canvas.getObjects().findIndex((o) => o.addressId == str);
       if (index !== -1) {
         var obj = this.canvas.getObjects()[index];
@@ -467,21 +509,24 @@ export default {
           }
         }
         //關聯區塊的動畫顯示
-        if (obj.connectId !== "") {
-          var connectindex = this.canvas
-            .getObjects()
-            .findIndex((o) => o.objId == obj.connectId);
-          if (connectindex !== -1) {
-            var connectObj = this.canvas.getObjects()[connectindex];
-            if (value !== 0) {
-              connectObj.set({ fill: "rgba(230, 83, 83, 1)" });
-              connectObj.hasAnimationStarted = true;
-              this.setAnimate(connectObj, 0.7);
-            } else {
-              connectObj.set({ fill: "rgba(197, 195, 195, 1)" });
-              this.stopAnimate(connectObj, 0.5);
+        if (obj.connectId.length !== 0) {
+          obj.connectId.forEach((item) => {
+            var connectindex = this.canvas
+              .getObjects()
+              .findIndex((o) => o.objId == item);
+            if (connectindex !== -1) {
+              var connectObj = this.canvas.getObjects()[connectindex];
+              console.log(connectObj);
+              // if (value !== 0) {
+              //   connectObj.set({ fill: "rgba(230, 83, 83, 1)" });
+              //   connectObj.hasAnimationStarted = true;
+              //   this.setAnimate(connectObj, 0.7);
+              // } else {
+              //   connectObj.set({ fill: "rgba(197, 195, 195, 1)" });
+              //   this.stopAnimate(connectObj, 0.5);
+              // }
             }
-          }
+          });
         }
         this.canvas.renderAll();
       }
@@ -500,6 +545,16 @@ export default {
       obj.hasAnimationStarted = false;
       obj.opacity = opacity;
       // obj.set({ visible: false})
+    },
+    async handleOperateMenu(operate) {
+      switch (operate) {
+        case "message":
+          break;
+        case "zoomIn":
+        case "zoomOut":
+          this.zoomCanvas(operate);
+          break;
+      }
     },
   },
 };

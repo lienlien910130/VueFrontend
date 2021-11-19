@@ -126,7 +126,7 @@ module.exports = {
       inject: false,
       hash: true,
       template: "./src/index.html",
-      favicon: "./static/mf.ico",
+      favicon: "./static/favicon.ico",
       filename: "index.html",
       title: "智慧消防管理平台",
       cdn: {
