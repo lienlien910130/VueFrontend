@@ -25,6 +25,7 @@ export default {
         { value: "0", imgSrc: "b/2.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r2.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "f2",
@@ -34,6 +35,7 @@ export default {
         { value: "0", imgSrc: "b/9.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r9.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "f3",
@@ -43,6 +45,7 @@ export default {
         { value: "0", imgSrc: "b/3.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r3.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "f4",
@@ -52,6 +55,7 @@ export default {
         { value: "0", imgSrc: "b/5.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r5.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "f5",
@@ -61,6 +65,7 @@ export default {
         { value: "0", imgSrc: "b/4.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r4.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "f6",
@@ -70,6 +75,7 @@ export default {
         { value: "0", imgSrc: "b/6.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r6.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "f7",
@@ -79,6 +85,7 @@ export default {
         { value: "0", imgSrc: "b/7.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r7.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "f8",
@@ -88,6 +95,7 @@ export default {
         { value: "0", imgSrc: "b/8.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r8.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "f9",
@@ -101,6 +109,7 @@ export default {
         { value: "0", label: "停止", color: "#00a0e9" },
         { value: "1", label: "啟動", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "a1",
@@ -110,6 +119,7 @@ export default {
         { value: "0", imgSrc: "b/33.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r33.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "a2",
@@ -119,6 +129,7 @@ export default {
         { value: "0", imgSrc: "b/10.png", color: "#00a0e9" },
         { value: "1", imgSrc: "fire_fs.svg", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "a3",
@@ -128,6 +139,7 @@ export default {
         { value: "0", imgSrc: "b/11.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r1.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "a4",
@@ -137,6 +149,7 @@ export default {
         { value: "0", imgSrc: "b/14.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r1.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "a5",
@@ -146,6 +159,7 @@ export default {
         { value: "0", imgSrc: "b/15.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r1.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "a6",
@@ -155,6 +169,7 @@ export default {
         { value: "0", imgSrc: "b/17.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r17.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "a7",
@@ -164,6 +179,7 @@ export default {
         { value: "0", imgSrc: "b/16.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r16.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "a8",
@@ -173,6 +189,7 @@ export default {
         { value: "0", imgSrc: "b/19.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r19.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "fp1",
@@ -183,6 +200,7 @@ export default {
         { value: "1", imgSrc: "r/r24.png", color: "#00ff00" },
       ],
       action: [{ value: "0", label: "關", color: "#ff0000" }],
+      hasAddress: true,
     },
     {
       id: "fp2",
@@ -192,6 +210,7 @@ export default {
         { value: "0", imgSrc: "b/23.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r23.png", color: "#00ff00" },
       ],
+      hasAddress: true,
     },
     {
       id: "r1",
@@ -205,6 +224,7 @@ export default {
         { value: "0", label: "關", color: "#00a0e9" },
         { value: "1", label: "開", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "r2",
@@ -220,6 +240,7 @@ export default {
         { value: "1", label: "開", color: "#ff0000" },
         { value: "2", label: "停止", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "r3",
@@ -229,6 +250,7 @@ export default {
         { value: "0", imgSrc: "b/34.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r34.png", color: "#00ff00" },
       ],
+      hasAddress: true,
     },
     {
       id: "r4",
@@ -238,6 +260,7 @@ export default {
         { value: "0", imgSrc: "b/21.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r21.png", color: "#00ff00" },
       ],
+      hasAddress: true,
     },
     {
       id: "r5",
@@ -247,6 +270,7 @@ export default {
         { value: "0", imgSrc: "b/26.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r26.png", color: "#00ff00" },
       ],
+      hasAddress: true,
     },
     {
       id: "r6",
@@ -256,30 +280,35 @@ export default {
         { value: "0", imgSrc: "b/28.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r28.png", color: "#00ff00" },
       ],
+      hasAddress: true,
     },
     {
       id: "r7",
       name: "連結送水口",
       type: "ConnectWaterOutlet",
       status: [{ value: "0", imgSrc: "b/30.png", color: "#00a0e9" }],
+      hasAddress: true,
     },
     {
       id: "r8",
       name: "緊急電源插座",
       type: "RE_EmergencyPowerSocket",
       status: [{ value: "0", imgSrc: "b/31.png", color: "#00a0e9" }],
+      hasAddress: false,
     },
     {
       id: "r9",
       name: "無線電通信輔助",
       type: "RE_RadioEquipment",
       status: [{ value: "0", imgSrc: "b/32.png", color: "#00a0e9" }],
+      hasAddress: false,
     },
     {
       id: "c1",
       name: "緊急升降機",
       type: "CE_Elevator",
       status: [{ value: "0", imgSrc: "b/29.png", color: "#00a0e9" }],
+      hasAddress: true,
     },
     {
       id: "s1",
@@ -289,6 +318,7 @@ export default {
         { value: "0", imgSrc: "b/20.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r20.png", color: "#00ff00" },
       ],
+      hasAddress: false,
     },
     {
       id: "s2",
@@ -298,6 +328,7 @@ export default {
         { value: "0", imgSrc: "b/20.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r20.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "o1",
@@ -311,6 +342,7 @@ export default {
         { value: "0", label: "關", color: "#00a0e9" },
         { value: "1", label: "開", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "o2",
@@ -320,6 +352,7 @@ export default {
         { value: "0", imgSrc: "b/20.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r20.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "o3",
@@ -329,12 +362,14 @@ export default {
         { value: "0", imgSrc: "b/20.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r20.png", color: "#00ff00" },
       ],
+      hasAddress: false,
     },
     {
       id: "o4",
       name: "PLC",
       type: "OE_ProgrammableLogicController",
       status: [{ value: "0", imgSrc: "b/20.png", color: "#00a0e9" }],
+      hasAddress: false,
     },
     {
       id: "p1",
@@ -344,18 +379,21 @@ export default {
         { value: "0", imgSrc: "b/18.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r18.png", color: "#ff0000" },
       ],
+      hasAddress: false,
     },
     {
       id: "p2",
       name: "高壓氣體容器儲存場所",
       type: "HighPressurePlace",
       status: [{ value: "0", imgSrc: "b/12.png", color: "#00a0e9" }],
+      hasAddress: false,
     },
     {
       id: "p3",
       name: "公共危險物品儲存場所",
       type: "PublicDangerousPlace",
       status: [{ value: "0", imgSrc: "b/13.png", color: "#00a0e9" }],
+      hasAddress: false,
     },
     {
       id: "p4",
@@ -365,6 +403,7 @@ export default {
         { value: "0", imgSrc: "b/18.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r18.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
     {
       id: "p5",
@@ -374,25 +413,8 @@ export default {
         { value: "0", imgSrc: "b/18.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r18.png", color: "#ff0000" },
       ],
+      hasAddress: true,
     },
-    // {
-    //     id:'p6',
-    //     name:'定位中',
-    //     type:'PeopleWaitting',
-    //     status:[
-    //         {value:'0',imgSrc:"b/18.png",color:'#00a0e9'},
-    //         {value:'1',imgSrc:"r/r18.png",color:'#ff0000'}
-    //     ]
-    // },
-    // {
-    //     id:'fs',
-    //     name:'火災發生中',
-    //     type:'Fire',
-    //     status:[
-    //         {value:'0',imgSrc:"b/18.png",color:'#00a0e9'},
-    //         {value:'1',imgSrc:"r/r18.png",color:'#ff0000'}
-    //     ]
-    // },
     {
       id: "p7",
       name: "已定位",
@@ -401,6 +423,7 @@ export default {
         { value: "0", imgSrc: "b/18.png", color: "#00a0e9" },
         { value: "1", imgSrc: "r/r18.png", color: "#ff0000" },
       ],
+      hasAddress: false,
     },
   ],
   AreaCode: [
@@ -2022,7 +2045,7 @@ export default {
     },
   ],
   ProcessMenu: {
-    left: [
+    editLeft: [
       {
         type: "upper-step",
         name: "上一步",
@@ -2039,7 +2062,30 @@ export default {
         icon: "el-icon-delete",
       },
     ],
+    left: [],
     right: [
+      {
+        type: "editProcess",
+        name: "編輯",
+        icon: "el-icon-edit",
+      },
+      {
+        type: "export",
+        name: "下載檔案",
+        icon: "el-icon-download",
+      },
+      {
+        type: "view-code",
+        name: "查看json數據",
+        icon: "el-icon-more",
+      },
+    ],
+    editRight: [
+      {
+        type: "copyFile",
+        name: "複製建立",
+        icon: "el-icon-copy-document",
+      },
       {
         type: "import",
         name: "載入檔案",
@@ -2064,6 +2110,11 @@ export default {
         type: "clear",
         name: "清空",
         icon: "el-icon-document-delete",
+      },
+      {
+        type: "closeEdit",
+        name: "關閉編輯",
+        icon: "el-icon-circle-close",
       },
     ],
   },
@@ -2131,6 +2182,16 @@ export default {
         icon: "el-icon-house",
       },
       {
+        type: "flipY",
+        name: "上下翻轉",
+        icon: "el-icon-arrow-up",
+      },
+      {
+        type: "flipX",
+        name: "左右翻轉",
+        icon: "el-icon-arrow-left",
+      },
+      {
         type: "upper-step",
         name: "上一步",
         icon: "el-icon-refresh-left",
@@ -2191,6 +2252,11 @@ export default {
         type: "message",
         name: "通知",
         icon: "el-icon-s-promotion",
+      },
+      {
+        type: "resetlocation",
+        name: "復原位置",
+        icon: "el-icon-map-location",
       },
       {
         type: "zoomIn",

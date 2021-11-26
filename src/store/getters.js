@@ -35,8 +35,6 @@ const getters = {
   nodeResult: (state) => state.websocket.nodeResult,
   selectResult: (state) => state.websocket.selectResult,
   waitingNode: (state) => state.websocket.waitingNode,
-  fireFloorList: (state) => state.websocket.fireFloorList,
-  watchFireFloor: (state) => state.websocket.watchFireFloor,
 
   buildingroles: (state) => state.building.roles,
   buildingid: (state) => state.building.buildingid,

@@ -63,7 +63,6 @@ class DrawingControl extends Parent {
     var data = await api.device
       .apiGetDrawingAddress(floorId)
       .then((response) => {
-        console.log(JSON.stringify(response));
         var address = response.resultDeviceAddress.filter((address) => {
           return address.isFDCC == false;
         });

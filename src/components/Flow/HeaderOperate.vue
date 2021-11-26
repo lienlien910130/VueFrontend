@@ -2,23 +2,33 @@
   <div class="operate-menu">
     <ul class="left">
       <li
-        v-for="item in operateMenu.left"
+        v-for="item in leftMenu"
         @click.stop="handleOperateMenu(item.type)"
         :class="[middleSelectType === item.type ? 'active' : '']"
       >
-        <el-tooltip class="item" effect="dark" :content="item.name" placement="bottom">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="item.name"
+          placement="bottom"
+        >
           <i :class="item.icon"></i>
         </el-tooltip>
       </li>
     </ul>
     <ul class="right">
       <li
-        v-for="item in operateMenu.right"
+        v-for="item in rightMenu"
         @click.stop="handleOperateMenu(item.type)"
-        :class="[middleSelectType === item.type ? 'active' : '' ]"
+        :class="[middleSelectType === item.type ? 'active' : '']"
         :disable="true"
       >
-        <el-tooltip class="item" effect="dark" :content="item.name" placement="bottom">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="item.name"
+          placement="bottom"
+        >
           <i :class="item.icon"></i>
         </el-tooltip>
       </li>
@@ -26,46 +36,63 @@
   </div>
 </template>
 <script>
-
 export default {
   name: "HeaderOperate",
-  props:{
+  props: {
     operateMenu: {
       type: Object,
-      default: function() {
-        return { 
-          'left': [],
-          'right':[]
-        }
-      }
+      default: function () {
+        return {
+          left: [],
+          right: [],
+        };
+      },
+    },
+    processStatus: {
+      type: String,
+      default: "view",
     },
   },
-  watch: {
-      operateMenu:{
-          handler:async function(){
-
-          },
-          immediate:true
+  computed: {
+    rightMenu() {
+      if (this.processStatus == "edit") {
+        //正在編輯
+        return this.operateMenu.editRight;
+      } else {
+        //沒有編輯
+        return this.operateMenu.right;
       }
+    },
+    leftMenu() {
+      if (this.processStatus == "edit") {
+        //正在編輯
+        return this.operateMenu.editLeft;
+      } else {
+        //沒有編輯
+        return this.operateMenu.left;
+      }
+    },
   },
   data() {
     return {
-      middleSelectType: "drag-drop",  //操作
-      disable:false
-    }
+      middleSelectType: "drag-drop", //操作
+      disable: false,
+    };
   },
   methods: {
-    handleOperateMenu(type) { //內部傳出去的
-      this.middleSelectType = type
-      this.$emit('handleOperateMenu',type)
+    handleOperateMenu(type) {
+      //內部傳出去的
+      this.middleSelectType = type;
+      this.$emit("handleOperateMenu", type);
     },
-    setDisable(disable){
-      this.disable = disable
+    setDisable(disable) {
+      this.disable = disable;
     },
-    setmiddleSelectType(type){ //外部來的
-      this.middleSelectType = type
-    }
-  }
+    setmiddleSelectType(type) {
+      //外部來的
+      this.middleSelectType = type;
+    },
+  },
 };
 </script>
 
@@ -103,13 +130,13 @@ export default {
   .left {
     padding-left: 0px;
   }
-  .left{
-    >li{
+  .left {
+    > li {
       margin-right: 18px;
     }
   }
-  .right{
-    >li{
+  .right {
+    > li {
       margin-left: 18px;
     }
   }

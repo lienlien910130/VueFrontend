@@ -10,18 +10,17 @@
         </el-button>
       </template>
     </div>
-    <div v-if="deviceType == 'null' && process == false">
-      <Select
-        style="margin-bottom: 10px"
-        v-bind="floorselectAttrs"
-        v-on:handleSelect="handleSelect"
-      >
-      </Select>
-    </div>
+    <Select
+      style="margin-bottom: 10px"
+      v-bind="floorselectAttrs"
+      v-on:handleSelect="handleSelect"
+    >
+    </Select>
     <div>
       <GraphicViewer
         ref="graphicviewer"
         :canvasHeight="deviceType !== 'null' ? 350 : 0"
+        :deviceType="deviceType"
       >
       </GraphicViewer>
     </div>
@@ -33,8 +32,8 @@
             系統：{{ item.mode }} / 點位：{{ item.label }}
           </span>
           <span style="display: block; color: red">
-            {{ item.areaName }} - {{ item.deviceName }} -
-            {{ item.actionName }}</span
+            {{ item.areaName }} {{ item.usageOfFloorName }} -
+            {{ item.deviceName }} - {{ item.actionName }}</span
           >
           <span style="display: block"
             >--------------------------------------------------</span
@@ -42,21 +41,25 @@
         </div>
       </template>
     </div>
-    <div v-if="deviceType !== 'null' && process == true" class="videobox">
+    <!-- <img
+      src="/viewer/videourl0.cgi?user=viewer&pass=viewer"
+      width="100%"
+      height="auto"
+    /> -->
+    <!-- <div v-if="deviceType !== 'null' && process == true" class="videobox">
       <img
-        src="http://192.168.88.221/videourl0.cgi?user=viewer&pass=viewer"
+        src="/viewer/videourl0.cgi?user=viewer&pass=viewer"
         width="100%"
         height="auto"
       />
-    </div>
+    </div> -->
   </div>
 </template>
 <script>
 import { Floors } from "@/object";
 import idb from "@/utils/indexedDB";
-import store from "@/store";
-import ws from "@/utils/socket";
 import { getDevice } from "@/utils/auth";
+import ws from "@/utils/socket";
 
 export default {
   name: "EmergencyGraphic",
@@ -70,7 +73,6 @@ export default {
       "wsmsg",
       "floor_record",
       "buildingfloors",
-      "watchFireFloor",
     ]),
     reversedMessage: function () {
       return this.actionList.reverse();
@@ -91,23 +93,13 @@ export default {
     this.$store.dispatch("app/closeSideBar", { withoutAnimation: false });
   },
   async mounted() {
-    if (this.deviceType == "null") {
-      //電腦版
-      await this.init();
-    }
+    await this.init();
+    // if (this.deviceType == "null") {
+    //   //電腦版
+    //   await this.init();
+    // }
   },
   watch: {
-    watchFireFloor: {
-      //手機版沒有floor可以跳轉
-      handler: async function () {
-        if (this.watchFireFloor !== null) {
-          this.$nextTick(async () => {
-            await this.handleSelect({ id: this.watchFireFloor });
-          });
-        }
-      },
-      immediate: true,
-    },
     options: {
       handler: async function () {
         this.buttonOptions = _.cloneDeep(this.options);
@@ -167,12 +159,19 @@ export default {
         await this.$store.dispatch("building/setFloors");
         await this.$store.dispatch("record/saveFloorRecord", 1);
       }
+      console.log("init");
       this.selectData = this.buildingfloors.map((v) => {
         this.$set(v, "value", v.getID());
         this.$set(v, "label", v.getName());
         this.$set(v, "id", v.getID());
         return v;
       });
+      // if (this.process) {
+      //   var floor = this.selectData.filter((item) => {
+      //     return item.id == ws.processWs.floorId;
+      //   })[0];
+      //   await this.handleSelect(floor);
+      // }
     },
     sendSelect(option) {
       console.log(option);
@@ -182,8 +181,6 @@ export default {
     async handleSelect(content) {
       var floor = await Floors.getOfId(content.id);
       var obj = await floor.getGraphicFiles();
-      console.log("obj");
-      console.log(obj);
       if (floor.getImageID() == null) {
         this.$message.error("該樓層尚未設定圖控相關資料");
       } else {

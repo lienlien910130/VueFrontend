@@ -49,7 +49,7 @@
         </el-form-item>
 
         <template v-if="selectType == 'image'">
-          <el-form-item v-if="srcId !== 'p7'" label="點位" label-width="70px">
+          <el-form-item v-if="hasAddress" label="點位" label-width="70px">
             <el-select
               v-model="addressId"
               placeholder="請選擇選位"
@@ -69,6 +69,7 @@
           </el-form-item>
           <el-form-item label="關聯" label-width="70px">
             <el-select
+              v-if="srcId !== 'o3'"
               v-model="connectId"
               placeholder="請選擇關聯的圖示或區塊"
               @change="sendConnectChange"
@@ -85,6 +86,13 @@
               >
               </el-option>
             </el-select>
+            <el-input
+              v-else
+              placeholder="請輸入監視器網址"
+              v-model="connectId[0]"
+              clearable
+            >
+            </el-input>
           </el-form-item>
         </template>
 
@@ -274,7 +282,7 @@ export default {
       } else {
         var all = this.canvas.getObjects();
         return all.filter((item) => {
-          return item.type !== "textbox" && item.addressId !== this.addressId;
+          return item.type !== "textbox" && item.objId !== this.objId;
         });
       }
     },
@@ -294,6 +302,7 @@ export default {
       selectType: null,
       selectKey: "99",
       srcId: null,
+      hasAddress: false,
       isSave: false, //是否儲存--控制是否跳視窗提醒未儲存
       drawType: "", //選取的類別
       fontsize: "14", //字體大小
@@ -610,7 +619,7 @@ export default {
     },
     async loadObjects(val) {
       //載入初始物件
-      if (val !== null) {
+      if (val !== null && val !== undefined) {
         var self = this;
         var obj = JSON.parse(val);
         fabric.util.enlivenObjects(obj, async function (object) {
@@ -632,8 +641,23 @@ export default {
                   scaleY: object[i].scaleY,
                   top: object[i].top,
                   left: object[i].left,
-                  hasControls: false,
+                  hasControls: true,
+                  padding: 5,
                   visible: false,
+                  flipY: object[i].flipY,
+                  flipX: object[i].flipX,
+                  angle: object[i].angle,
+                });
+                svgItems.setControlsVisibility({
+                  bl: false, // 左下
+                  br: false, // 右下
+                  mb: false, // 下中
+                  ml: false, // 中左
+                  mr: false, // 中右
+                  mt: false, // 上中
+                  tl: false, // 上左
+                  tr: false, // 上右
+                  mtr: true, // 旋轉控制鍵
                 });
                 self.canvas.add(svgItems);
                 self.addCustomize(
@@ -748,8 +772,12 @@ export default {
           this.selectType = "image";
           this.selectKey = "100";
           this.srcId = items[0].srcId;
+          var icon = constant.Equipment.filter((icon) => {
+            return icon.id == this.srcId;
+          })[0];
           this.addressId = items[0].addressId;
           this.connectId = items[0].connectId;
+          this.hasAddress = icon.hasAddress;
         }
       }
       items.forEach((item) => {
@@ -778,6 +806,7 @@ export default {
       this.connectId = null;
       this.addressId = "";
       this.srcId = null;
+      this.hasAddress = false;
     },
     deleteObj() {
       //圖控刪除物件
@@ -1034,7 +1063,19 @@ export default {
           scaleY: 0.1,
           top: self.getY(e) - self.imgSource[2] * 0.05,
           left: self.getX(e) - self.imgSource[1] * 0.05,
-          hasControls: false,
+          hasControls: true,
+          padding: 5,
+        });
+        svgItems.setControlsVisibility({
+          bl: false, // 左下
+          br: false, // 右下
+          mb: false, // 下中
+          ml: false, // 中左
+          mr: false, // 中右
+          mt: false, // 上中
+          tl: false, // 上左
+          tr: false, // 上右
+          mtr: true, // 旋轉控制鍵
         });
         self.canvas.add(svgItems);
         self.addCustomize(
@@ -1665,6 +1706,22 @@ export default {
         this.$socket.$ws;
       }
     },
+    flipAnimate(operate) {
+      var obj = this.canvas.getActiveObjects();
+      if (obj.length == 1) {
+        if (operate == "flipY") {
+          obj[0].set({
+            flipY: !obj[0].flipY,
+          });
+        } else {
+          obj[0].set({
+            flipX: !obj[0].flipX,
+          });
+        }
+      }
+      this.isEditChange(true);
+      this.canvas.renderAll();
+    },
     // animateAddTop(obj) {
     //   obj.animate('top', obj.top += 10  , {
     //     duration: 250,
@@ -1695,9 +1752,13 @@ export default {
         case "polygon":
           this.drawTypeChange(operate);
           break;
-        // case 'icon':
-        //   this.openLegendWindows()
-        //   break;
+        case "angle":
+          this.angleAnimate();
+          break;
+        case "flipY":
+        case "flipX":
+          this.flipAnimate(operate);
+          break;
         case "upper-step":
           this.doUndo();
           break;

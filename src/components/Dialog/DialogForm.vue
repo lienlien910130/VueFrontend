@@ -221,7 +221,9 @@
               <el-option
                 v-for="(obj, index) in selectfilter(item.format)"
                 :key="index"
-                :label="obj.label"
+                :label="
+                  item.format == 'marshallingMgmtSelect' ? obj.name : obj.label
+                "
                 :value="obj.id"
               >
                 <template v-if="item.format == 'iconSelect'">

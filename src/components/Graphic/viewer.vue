@@ -14,6 +14,12 @@
         </div>
       </div>
     </div>
+    <div v-if="deviceType !== 'null' && process == true" class="videobox">
+      <template v-for="(item, index) in viewList">
+        <span :key="index">{{ item.name }}</span>
+        <img :src="item.url" width="100%" height="auto" :key="index" />
+      </template>
+    </div>
   </div>
 </template>
 
@@ -30,9 +36,12 @@ export default {
       type: Number,
       default: 0,
     },
+    deviceType: {
+      type: String,
+    },
   },
   computed: {
-    ...Vuex.mapGetters(["wsmsg", "realTimeaction", "isReturn"]),
+    ...Vuex.mapGetters(["wsmsg", "realTimeaction", "isReturn", "process"]),
   },
   mounted() {
     this.canvas = new fabric.Canvas("canvas");
@@ -100,6 +109,7 @@ export default {
       lastmousePoint: { x: 0, y: 0 }, //进行缩放，需要对此刻缩放位置进行保存，来计算出缩放原点，此刻初始时设为0,0
       lastzoom: 1, //表示为上一次的缩放倍数，此刻设为1
       previousTouch: null,
+      viewList: [],
     };
   },
   methods: {
@@ -116,6 +126,7 @@ export default {
         this.canvasHeight == 0
           ? this.$refs.canvasdiv.clientHeight
           : this.canvasHeight;
+      console.log(this.canvasheight);
       this.canvas.setHeight(this.canvasheight);
       this.leftsize = this.$refs.canvasdiv.clientWidth / 1650;
       this.topsize = this.canvasheight / 750;
@@ -164,7 +175,12 @@ export default {
                   top: object[i].top * self.topsize,
                   left: object[i].left * self.leftsize,
                   hasControls: false,
-                  visible: true,
+                  padding: 5,
+                  visible: false,
+                  flipY: object[i].flipY,
+                  flipX: object[i].flipX,
+                  angle: object[i].angle,
+                  selectable: true,
                 });
                 self.canvas.add(svgItems);
                 self.addCustomize(
@@ -181,11 +197,12 @@ export default {
                 self.canvas.renderAll();
               });
             } else {
-              object[i].visible = true;
+              object[i].visible = false;
               object[i].scaleX = object[i].scaleX * self.leftsize;
               object[i].scaleY = object[i].scaleY * self.topsize;
               object[i].top = object[i].top * self.topsize;
               object[i].left = object[i].left * self.leftsize;
+              object[i].selectable = false;
               self.canvas.add(object[i]);
               self.addCustomize(
                 object[i],
@@ -208,10 +225,6 @@ export default {
           });
           if (actionList.length !== 0) {
             for (let [index, value] of actionList.entries()) {
-              if (value.system == "R400") {
-                //跳過水位計的動畫設定
-                continue;
-              }
               var isPLC = value.internet.indexOf("P");
               var label = "";
               if (isPLC !== -1) {
@@ -234,6 +247,7 @@ export default {
               }
               self.actionObj(label, value.status);
             }
+            self.actionObj("001-01-001-1", 2);
           }
         });
       }
@@ -438,7 +452,6 @@ export default {
           var text = item.default.content.replace(/http:\/\//g, "https://");
           text = text.replace("symbol", "svg");
           text = text.replace("/symbol", "/svg");
-          console.log(text);
           fabric.loadSVGFromString(text, function (objects, options) {
             var svgItems = fabric.util.groupSVGElements(objects, options);
             svgItems.set({
@@ -500,7 +513,7 @@ export default {
               }
             });
           }
-          obj.set({ fill: src.color, visible: true });
+          obj.set({ fill: src.color, visible: value == 0 ? false : true });
           if (src.color !== "#00ff00" && value == 1) {
             obj.hasAnimationStarted = true;
             this.setAnimate(obj);
@@ -508,28 +521,85 @@ export default {
             this.stopAnimate(obj);
           }
         }
-        //關聯區塊的動畫顯示
+        //關聯的動畫顯示-區塊or圖片
         if (obj.connectId.length !== 0) {
-          obj.connectId.forEach((item) => {
-            var connectindex = this.canvas
-              .getObjects()
-              .findIndex((o) => o.objId == item);
-            if (connectindex !== -1) {
-              var connectObj = this.canvas.getObjects()[connectindex];
-              console.log(connectObj);
-              // if (value !== 0) {
-              //   connectObj.set({ fill: "rgba(230, 83, 83, 1)" });
-              //   connectObj.hasAnimationStarted = true;
-              //   this.setAnimate(connectObj, 0.7);
-              // } else {
-              //   connectObj.set({ fill: "rgba(197, 195, 195, 1)" });
-              //   this.stopAnimate(connectObj, 0.5);
-              // }
-            }
-          });
+          self.connectAnimate(obj.connectId, value);
         }
         this.canvas.renderAll();
       }
+    },
+    connectAnimate(connectList, value) {
+      connectList.forEach((item) => {
+        var connectindex = this.canvas
+          .getObjects()
+          .findIndex((o) => o.objId == item);
+        if (connectindex == -1) {
+          return;
+        }
+        var connectObj = this.canvas.getObjects()[connectindex];
+        if (connectObj.srcId == "") {
+          if (value !== 0) {
+            connectObj.set({
+              fill: "rgba(230, 83, 83, 1)",
+              visible: true,
+            });
+            connectObj.hasAnimationStarted = true;
+            this.setAnimate(connectObj, 0.7);
+          } else {
+            connectObj.set({
+              fill: "rgba(197, 195, 195, 1)",
+              visible: false,
+            });
+            this.stopAnimate(connectObj, 0.5);
+          }
+        } else {
+          var equ = constant.Equipment.filter((ele) => {
+            return ele.id == connectObj.srcId;
+          })[0];
+          var src = equ.status.filter((obj) => {
+            return obj.value == value;
+          })[0];
+          var color = src !== undefined ? src.color : "#00ff00";
+          if (connectObj._objects !== undefined) {
+            connectObj.getObjects().forEach((item) => {
+              if (item.fill !== "#ffffff") {
+                item.set({
+                  fill: color,
+                });
+              }
+            });
+          }
+          connectObj.set({
+            fill: color,
+            visible: value !== 0 ? true : false,
+          });
+          if (color !== "#00ff00" && color !== "#00a0e9") {
+            connectObj.hasAnimationStarted = true;
+            this.setAnimate(connectObj);
+          } else if (value == 0) {
+            this.stopAnimate(connectObj);
+          }
+          if (connectObj.srcId == "o3") {
+            //如果關聯的是監視器就存入網址
+            if (value !== 0) {
+              this.viewList.push({
+                name: connectObj.objectName,
+                url: connectObj.connectId[0],
+              });
+            } else {
+              this.viewList = this.viewList.filter((item) => {
+                return item.url !== connectObj.connectId[0];
+              });
+            }
+          }
+        }
+        // if (connectObj.connectId.length !== 0) {
+        //   console.log("connectObj.connectId", connectObj.connectId);
+        //   this.connectAnimate(connectObj.connectId, value);
+        // } else {
+        //   return;
+        // }
+      });
     },
     setAnimate(obj, maximum = 1) {
       //動畫
@@ -544,11 +614,13 @@ export default {
     stopAnimate(obj, opacity = 1) {
       obj.hasAnimationStarted = false;
       obj.opacity = opacity;
-      // obj.set({ visible: false})
     },
     async handleOperateMenu(operate) {
       switch (operate) {
         case "message":
+          break;
+        case "resetlocation":
+          this.resetCanvas();
           break;
         case "zoomIn":
         case "zoomOut":

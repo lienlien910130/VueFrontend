@@ -126,7 +126,12 @@ export default {
     this.$store.dispatch("app/closeSideBar", { withoutAnimation: false });
   },
   computed: {
-    ...Vuex.mapGetters(["process", "nodeResult", "selectResult"]),
+    ...Vuex.mapGetters([
+      "process",
+      "nodeResult",
+      "selectResult",
+      "waitingNode",
+    ]),
     flowMenuAttrs() {
       return {
         processId: this.processId,
@@ -187,7 +192,6 @@ export default {
             this.processArray = await SelfDefenseFireMarshalling.getProcess(
               ws.processWs.selfDefenseFireMarshallingListId
             );
-            console.log("getJsonFile", ws.processWs.contingencyProcessId);
             await this.getJsonFile(ws.processWs.contingencyProcessId);
           });
         }
@@ -201,6 +205,15 @@ export default {
           this.$nextTick(async () => {
             this.updateNodeState();
           });
+        }
+      },
+      immediate: true,
+      deep: true,
+    },
+    waitingNode: {
+      handler: async function () {
+        if (this.waitingNode.length) {
+          console.log(JSON.stringify(this.waitingNode));
         }
       },
       immediate: true,
@@ -252,7 +265,6 @@ export default {
       //讀取指定的process ID取得JSON，載入流程圖
       if (pid !== null) {
         var result = await ContingencyProcess.getJson(pid);
-        console.log(result);
         this.processId = pid;
         this.processNodeArray = await CNode.get(this.processId);
         this.processLineArray = await COption.getOfProcess(this.processId);

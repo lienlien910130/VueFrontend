@@ -13,7 +13,7 @@ export default {
     async handleBuildingFloorSelect(content) {
       //選擇樓層後的操作-儲存樓層&儲存樓層平面圖ID
       console.log(content);
-      this.$socket.saveWatchFloor(content.id);
+      //this.$socket.saveWatchFloor(content.id);
       //this.$store.dispatch("websocket/saveWatchFloor", content.id);
     },
   },

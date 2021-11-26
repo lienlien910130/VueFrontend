@@ -20,23 +20,9 @@
     <div class="right-menu">
       <span @click="showToken">TOKEN</span>
       <!-- 火災時的平面圖--有緊急應變才顯示 -->
-      <template v-if="deviceType !== 'null'">
-        <el-dropdown class="avatar-container right-menu-item" trigger="click">
-          <div class="avatar-wrapper">
-            <svg-icon icon-class="fire" />
-            <i class="el-icon-caret-bottom" />
-          </div>
-          <el-dropdown-menu slot="dropdown" class="user-dropdown">
-            <el-dropdown-item
-              v-for="item in floorList"
-              :key="item"
-              @click.native="handleFireFloor(item)"
-            >
-              {{ item.name }}
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-      </template>
+      <div v-if="deviceType !== 'null' && process" class="avatar-wrapper">
+        <svg-icon icon-class="fire" @click.native="handleFireFloor()" />
+      </div>
 
       <Screenfull
         v-if="deviceType == 'null'"
@@ -131,7 +117,6 @@ export default {
       "process",
       "redirect",
       "fireFloorList",
-      "watchFireFloor",
       "mToken",
       "physicalInfos",
     ]),
@@ -191,12 +176,6 @@ export default {
       },
       immediate: true,
     },
-    fireFloorList: {
-      handler: async function () {
-        this.floorList = this.fireFloorList;
-      },
-      immediate: true,
-    },
   },
   beforeDestroy() {
     if (this.timer) {
@@ -209,7 +188,6 @@ export default {
       date: new Date(),
       buildingName: "請選擇建築物",
       backVisible: false,
-      floorList: [],
       watchId: undefined,
     };
   },
@@ -256,12 +234,8 @@ export default {
         }
       }
     },
-    async handleFireFloor(item) {
-      if (this.$route.path == "/emergencyGraphic/index") {
-        this.$socket.saveWatchFloor(item.id);
-      } else {
-        this.$router.push({ path: "/emergencyGraphic/index" });
-      }
+    async handleFireFloor() {
+      this.$router.push({ path: "/emergencyGraphic/index" });
     },
     showToken() {
       var hastoken = this.physicalInfos.filter((item) => {

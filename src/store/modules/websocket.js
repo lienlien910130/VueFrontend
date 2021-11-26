@@ -5,15 +5,14 @@ const getDefaultState = () => {
     options: [],
     wsuserId: "",
     process: false, //是否有啟動應變
-    graphicMsg: "", //圖控編輯限制
+    graphicMsg: null, //圖控編輯限制
+    processMsg: null,
     flowMsg: "", //流程圖編輯限制
     nodeResult: [],
     selectResult: null,
     firstNodeList: [], //processws初始節點資料
     isReturn: false,
     waitingNode: [],
-    fireFloorList: [],
-    watchFireFloor: null,
   };
 };
 
@@ -37,6 +36,9 @@ const mutations = {
   },
   SET_GRAPHICMSG: (state, graphicMsg) => {
     state.graphicMsg = graphicMsg;
+  },
+  SET_PROCESSMSG: (state, processMsg) => {
+    state.processMsg = processMsg;
   },
   SET_OPTIONS: (state, options) => {
     state.options = options;
@@ -63,13 +65,14 @@ const mutations = {
     state.isReturn = isReturn;
   },
   SET_WAITINGNODE: (state, waitingNode) => {
-    state.waitingNode.push(waitingNode);
-  },
-  SET_FIREFLOOR: (state, fireFloors) => {
-    state.fireFloorList = fireFloors;
-  },
-  SET_WATCHFLOOR: (state, fireFloor) => {
-    state.watchFireFloor = fireFloor;
+    var index = state.waitingNode.findIndex(
+      (obj) =>
+        obj.cNodeId == waitingNode.cNodeId && obj.nodeId == waitingNode.nodeId
+    );
+    if (index == -1) {
+      //不重複
+      state.waitingNode.push(waitingNode);
+    }
   },
 };
 
@@ -89,6 +92,10 @@ const actions = {
     //圖控編輯頁面使用
     commit("SET_GRAPHICMSG", msg);
   },
+  sendProcessMsg({ commit }, msg) {
+    //流程圖編輯頁面使用
+    commit("SET_PROCESSMSG", msg);
+  },
   sendOptions({ commit }, options) {
     //手機通知網址使用
     commit("SET_OPTIONS", options);
@@ -107,12 +114,22 @@ const actions = {
   },
   updateNodeResult({ commit }, content) {
     //更新節點狀態
+    console.log("updateNodeResultupdateNodeResult");
+    console.log(content);
     var index = state.nodeResult.findIndex((item) => {
       return item.nodeId === content.nodeId;
     });
     if (index !== -1) {
       state.nodeResult[index].state = 1;
       state.nodeResult[index].message = content.message;
+    }
+    var waitingNodeIndex = state.waitingNode.findIndex((item) => {
+      return item.nodeId == content.nodeId;
+    });
+    if (waitingNodeIndex !== -1) {
+      state.waitingNode[waitingNodeIndex].state = 1;
+      state.waitingNode[waitingNodeIndex].message = content.message;
+      state.waitingNode[waitingNodeIndex].cOptions = content.cOptions;
     }
   },
   saveReturn({ commit }, isReturn) {
@@ -122,18 +139,12 @@ const actions = {
   saveWaitingNode({ commit }, waitingNode) {
     commit("SET_WAITINGNODE", waitingNode);
   },
-  removeWaitingNode({ commit, state }, content) {
-    var waitingNode = state.waitingNode.filter((item) => {
-      return item.nodeId !== content.nodeId;
-    });
-    commit("SET_WAITINGNODE", waitingNode);
-  },
-  saveFireFloorList({ commit }, fireFloors) {
-    commit("SET_FIREFLOOR", fireFloors);
-  },
-  saveWatchFloor({ commit }, fireFloor) {
-    commit("SET_WATCHFLOOR", fireFloor);
-  },
+  // updateWaitingNode({ commit, state }, content) {
+  //   var waitingNode = state.waitingNode.filter((item) => {
+  //     return item.nodeId !== content.nodeId;
+  //   });
+  //   commit("SET_WAITINGNODE", waitingNode);
+  // },
 };
 
 export default {

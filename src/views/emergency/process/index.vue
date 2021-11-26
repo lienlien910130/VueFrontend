@@ -10,6 +10,7 @@
         <HeaderOperate
           ref="operate"
           :operateMenu="operateMenu"
+          :processStatus="processStatus"
           @handleOperateMenu="handleOperateMenu"
         />
       </header>
@@ -70,6 +71,7 @@
         @repaintEverything="repaintEverything"
         :processArray="processArray"
         :processId="processId"
+        :disabled="disabled"
       >
       </FlowAttr>
     </div>
@@ -172,6 +174,9 @@ export default {
       //該流程圖底下的所有節點及線
       processNodeArray: [],
       processLineArray: [],
+      copyFile: false,
+      isEdit: false, //是否可編輯
+      processStatus: "view",
     };
   },
   mixins: [sharemixin, flowmixin, tablemixin, dialogmixin],
@@ -200,6 +205,61 @@ export default {
   created() {
     this.$store.dispatch("app/closeSideBar", { withoutAnimation: false });
   },
+  watch: {
+    processMsg: {
+      handler: async function () {
+        if (this.processMsg !== null) {
+          var data = JSON.parse(this.graphicMsg.data);
+          var type = data.SendType;
+          var sendId = data.Data.Id; // 傳送的人
+          var sendProcess = data.Data.Content; //進入的流程圖
+          var senderName = data.SenderName;
+          //sendId !== this.wsuserId
+          if (senderName !== this.name) {
+            console.log(data);
+            switch (type) {
+              case "enterProcess":
+                if (
+                  this.processStatus == "edit" &&
+                  sendProcess == this.processId
+                ) {
+                  //監聽到有人進來，判斷是否正在編輯，有的話廣播
+                  this.$socket.sendMsg("process", "openEdit", this.processId);
+                }
+                break;
+              case "openEdit":
+                if (sendProcess == this.processId) {
+                  this.isEdit = true;
+                }
+                break;
+              case "closeEdit":
+                if (sendProcess == this.processId) {
+                  this.isEdit = false;
+                }
+                break;
+            }
+          }
+        }
+      },
+      immediate: true,
+    },
+    process: {
+      handler: async function () {
+        this.disabled = this.process;
+        if (this.process) {
+          this.$nextTick(() => {
+            if (this.processId !== null) {
+              this.$socket.sendMsg("graphic", "closeEdit", this.processId);
+            }
+            this.processStatus = "view";
+          });
+        } else {
+          this.disabled = this.processStatus = "view" ? true : false;
+        }
+      },
+      immediate: true,
+    },
+  },
   async mounted() {
     this.jsPlumb = jsPlumb.getInstance({ Container: "zll-index" });
     //取得預設節點資料
@@ -218,7 +278,7 @@ export default {
     }
     document.onkeydown = async (e) => {
       if (e.keyCode == 46) {
-        this.deleteElement();
+        await this.handleOperateMenu("delete");
       }
       if (e.keyCode == 67 && e.ctrlKey) {
         this.copy();
@@ -228,15 +288,15 @@ export default {
       }
       if (e.keyCode == 90 && e.ctrlKey) {
         //上一步 Z
-        this.doUndo();
+        await this.handleOperateMenu("upper-step");
       }
       if (e.keyCode == 89 && e.ctrlKey) {
         //下一步 y
-        this.doRedo();
+        await this.handleOperateMenu("next-step");
       }
       if (e.keyCode == 83 && e.ctrlKey) {
         //存檔 s
-        await this.saveFile();
+        await this.handleOperateMenu("save");
       }
     };
   },
@@ -340,7 +400,6 @@ export default {
       }
       this.viewScale = viewScale;
     },
-
     jsPlumbInit() {
       this.jsPlumb.ready(() => {
         // 默認配置
@@ -476,8 +535,12 @@ export default {
           conn.id = line.id;
         });
       }
-      this.$nextTick(function () {
+      this.$nextTick(async function () {
         this.loadFlowFinish = true;
+        if (this.copyFile) {
+          await this.saveFile();
+          this.copyFile = false;
+        }
         //this.jsPlumb.setSuspendDrawing(false, true)
         this.saveState();
       });
@@ -565,6 +628,18 @@ export default {
     },
     //menu傳來的事件
     addNode(evt, nodeMenu, mousePosition) {
+      if (this.processId == null) {
+        this.$message.error("請選擇流程圖，再進行操作");
+        return false;
+      }
+      if (this.process) {
+        this.$message.error("現在啟動緊急應變中，請勿編輯流程圖");
+        return false;
+      }
+      if (this.processStatus == "view") {
+        this.$message.error("請開啟編輯後再進行操作");
+        return false;
+      }
       var screenX = evt.originalEvent.clientX,
         screenY = evt.originalEvent.clientY;
       let efContainer = this.$refs.section;
@@ -641,22 +716,35 @@ export default {
     //畫布操作
     async handleOperateMenu(operate) {
       if (this.processId == null) {
-        this.$message.error("尚未選擇自衛消防編組");
+        this.$message.error("請選擇流程圖，再進行操作");
         return false;
       }
       switch (operate) {
+        case "editProcess":
+          if (this.process) {
+            this.$message.error("現在啟動緊急應變中，請勿編輯流程圖");
+            return false;
+          }
+          console.log(this.isEdit);
+          if (this.isEdit == true) {
+            this.$message.error("請勿同時編輯該流程圖");
+            return false;
+          }
+          this.$socket.sendMsg("process", "openEdit", this.processId);
+          this.processStatus = "edit";
+          this.disabled = false;
+          break;
         case "upper-step": //上一步
           this.doUndo();
           break;
         case "next-step": //下一步
           this.doRedo();
           break;
-        // case 'enlarge':
-        //   break;
-        // case 'narrow':
-        //   break;
         case "delete":
           this.deleteElement();
+          break;
+        case "copyFile":
+          await this.handleTableClick("copyFile", "");
           break;
         case "import":
           this.$refs.inputFile.click();
@@ -671,22 +759,29 @@ export default {
           await this.saveFile();
           break;
         case "clear":
-          this.data = {
-            offsetX: -3000,
-            offsetY: -3000,
-            name: "",
-            nodeList: [],
-            lineList: [],
-          };
-          this.state = _.cloneDeep(this.data);
-          this.dragMove = {
-            top: -3000,
-            left: -3000,
-          };
-          this.jsPlumb.deleteEveryEndpoint();
-          this.jsPlumb.deleteEveryConnection();
+          await this.clearProcess();
+          break;
+        case "closeEdit":
+          this.$socket.sendMsg("process", "closeEdit", this.processId);
+          this.disabled = true;
           break;
       }
+    },
+    async clearProcess() {
+      this.data = {
+        offsetX: -3000,
+        offsetY: -3000,
+        name: "",
+        nodeList: [],
+        lineList: [],
+      };
+      this.state = _.cloneDeep(this.data);
+      this.dragMove = {
+        top: -3000,
+        left: -3000,
+      };
+      this.jsPlumb.deleteEveryEndpoint();
+      this.jsPlumb.deleteEveryConnection();
     },
     // 刪除節點or線
     deleteElement() {
@@ -765,9 +860,17 @@ export default {
       });
     },
     copy() {
+      if (this.processId == null) {
+        this.$message.error("請選擇流程圖，再進行操作");
+        return false;
+      }
       this.copyNode = _.cloneDeep(this.selsectNode);
     },
     paste() {
+      if (this.processId == null) {
+        this.$message.error("請選擇流程圖，再進行操作");
+        return false;
+      }
       if (this.activeElement.type == "line") {
         this.$message.error("請勿複製線，請選擇節點並複製");
         return false;
@@ -1013,11 +1116,17 @@ export default {
     },
     async getJsonFile(pid = null) {
       //讀取指定的process ID取得JSON，載入流程圖
+      this.processId = pid;
+      this.isEdit = false;
+      if (this.processStatus == "edit") {
+        this.$socket.sendMsg("process", "closeEdit", this.processId);
+      }
       if (pid !== null) {
+        this.$socket.sendMsg("process", "enterProcess", pid);
         var result = await ContingencyProcess.getJson(pid);
-        this.processId = pid;
         this.processNodeArray = await CNode.get(this.processId);
         this.processLineArray = await COption.getOfProcess(this.processId);
+        console.log(JSON.stringify(this.processNodeArray));
         console.log(JSON.stringify(this.processLineArray));
         if (result.codeContent !== undefined) {
           this.$nextTick(() => {
@@ -1035,6 +1144,8 @@ export default {
           });
         }
       } else {
+        this.processNodeArray = [];
+        this.processLineArray = [];
         this.$nextTick(() => {
           this.dataReload({
             offsetX: -3000,
@@ -1082,6 +1193,13 @@ export default {
             this.$route.query.l
           );
           this.tableData = _.cloneDeep(this.processArray);
+          if (content.getID() == this.processId) {
+            //重置
+            this.processId = null;
+            this.processNodeArray = [];
+            this.processLineArray = [];
+            await this.clearProcess();
+          }
         } else {
           this.$message.error("系統錯誤");
         }
@@ -1094,13 +1212,17 @@ export default {
         ];
         this.innerVisible = true;
         this.dialogStatus = "update";
-      } else if (index == "empty") {
+      } else if (index == "empty" || index == "copyFile") {
         this.dialogSelect =
           await SelfDefenseFireMarshalling.getOfIDMarshallingMgmt(
             this.$route.query.l
           );
         this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "create" },
+          {
+            name: "儲存",
+            type: "primary",
+            status: index == "copyFile" ? "createCopy" : "create",
+          },
           { name: "取消", type: "info", status: "cancel" },
         ];
         this.innerVisible = true;
@@ -1109,12 +1231,12 @@ export default {
     },
     async handleDialog(title, index, content) {
       console.log(title, index, content);
-      if (index == "update" || index == "create") {
-        var isOk =
+      if (index == "update" || index == "create" || index == "createCopy") {
+        var result =
           index == "update"
             ? await ContingencyProcess.update(content)
             : await ContingencyProcess.create(content);
-        if (isOk) {
+        if (result !== null) {
           index == "update"
             ? this.$message("更新成功")
             : this.$message("新增成功");
@@ -1123,6 +1245,30 @@ export default {
           );
           this.tableData = _.cloneDeep(this.processArray);
           this.innerVisible = false;
+          if (index == "createCopy") {
+            this.copyFile = true;
+            const originalData = _.cloneDeep(this.data);
+            await this.getJsonFile(result);
+            originalData.nodeList.forEach((item) => {
+              var newNodeId = getUUID();
+              var lineFromList = originalData.lineList.filter((obj) => {
+                return obj.from == item.nodeId;
+              });
+              lineFromList.forEach((line) => {
+                line.from = newNodeId;
+              });
+              var lineToList = originalData.lineList.filter((obj) => {
+                return obj.to == item.nodeId;
+              });
+              lineToList.forEach((line) => {
+                line.to = newNodeId;
+              });
+              item.nodeId = newNodeId;
+            });
+            this.$nextTick(() => {
+              this.dataReload(originalData);
+            });
+          }
         } else {
           this.$message.error("系統錯誤");
         }

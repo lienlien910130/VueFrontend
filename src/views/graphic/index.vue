@@ -192,56 +192,55 @@ export default {
   watch: {
     graphicMsg: {
       handler: async function () {
-        console.log(this.graphicMsg.data);
-        var data = JSON.parse(this.graphicMsg.data);
-        console.log(data);
-        // var type = this.graphicMsg.data.SendType
-        // var bid = this.graphicMsg.data.Data.Bid
-        // var content = JSON.parse(this.graphicMsg.data.Data.Content)
-
-        // if(bid == this.buildingId){
-        //   switch (type){
-        //     case 'enterGraphic':
-        //       if(this.type == 'edit' && content == this.floor.getID()){
-        //         this.$socket.sendMag('graphic','openEdit',this.floor.getID())
-        //       }
-        //       break;
-        //     case 'openEdit':
-        //       if(content == this.floor.getID()){
-        //         this.isEdit = true
-        //       }
-        //       break;
-        //     case 'closeEdit':
-        //       if(content == this.floor.getID()){
-        //         this.isEdit = false
-        //       }
-        //       break;
-        //     // default:
-        //     //   var cons = JSON.parse(content)
-        //     //   console.log(cons)
-        //     //   var index = this.buildingfloors.findIndex(f=>f.id === cons.LinkDevice.FloorId)
-        //     //   var index2 = this.buildingdevices.findIndex(d=>d.id === cons.LinkDevice.DeviceId)
-        //     //   if(cons.LinkDevice.FloorId !== this.floor.getID()){
-        //     //     this.handleSelect(this.buildingfloors[index],cons)
-        //     //   }else{
-        //     //     this.actionObj = cons
-        //     //   }
-        //     //   var data = {
-        //     //     date:formatTime(new Date(), '{y}-{m}-{d} {h}:{i}:{s}'),
-        //     //     floor:this.buildingfloors[index].label,
-        //     //     action:cons.Action,
-        //     //     name:this.buildingdevices[index2].name,
-        //     //     point:cons.SystemNumber+'-'+cons.CircuitNumber+'-'+cons.Address
-        //     //   }
-        //     //   this.origindata.push(data)
-        //     //   this.listQueryParams.total = this.origindata.length
-        //     //   this.origindata = this.origindata.sort( (a, b) => {
-        //     //       return new Date(b.date) - new Date(a.date)
-        //     //     })
-        //     //   this.clickPagination()
-        //     //   break;
-        //   }
-        // }
+        if (this.graphicMsg !== null) {
+          var data = JSON.parse(this.graphicMsg.data);
+          var type = data.SendType;
+          var sendId = data.Data.Id; // 傳送的人
+          var floor = data.Data.Content; //進入的樓層
+          var senderName = data.SenderName;
+          //sendId !== this.wsuserId
+          if (senderName !== this.name) {
+            console.log(data);
+            switch (type) {
+              case "enterGraphic":
+                if (this.type == "edit" && floor == this.floor.getID()) {
+                  //監聽到有人進來，判斷是否正在編輯，有的話廣播
+                  this.$socket.sendMsg(
+                    "graphic",
+                    "openEdit",
+                    this.floor.getID()
+                  );
+                }
+                break;
+              case "openEdit":
+                if (floor == this.floor.getID()) {
+                  this.isEdit = true;
+                }
+                break;
+              case "closeEdit":
+                if (floor == this.floor.getID()) {
+                  this.isEdit = false;
+                }
+                break;
+            }
+          }
+        }
+      },
+      immediate: true,
+    },
+    process: {
+      handler: async function () {
+        this.disabled = this.process;
+        if (this.process) {
+          this.$nextTick(() => {
+            this.checkList = [];
+            if (this.floor !== null) {
+              this.$socket.sendMsg("graphic", "closeEdit", this.floor.getID());
+            }
+            this.$refs.graphic.searchBlockType(this.checkList);
+            this.type = "view";
+          });
+        }
       },
       immediate: true,
     },
@@ -271,6 +270,10 @@ export default {
       );
     },
     changeType(type) {
+      if (this.process) {
+        this.$message.error("現在啟動緊急應變中，請勿編輯圖控");
+        return false;
+      }
       //編輯/檢視
       if (!this.isEdit) {
         this.type = type;
@@ -283,7 +286,7 @@ export default {
         }
         this.$refs.graphic.searchBlockType(this.checkList);
       } else {
-        alert("請勿同時編輯該樓層圖控系統");
+        this.$message.error("請勿同時編輯該樓層圖控系統");
       }
     },
     changeViewBlock() {
@@ -298,6 +301,7 @@ export default {
       }
       this.type = "view";
       this.floor = content;
+      this.isEdit = false;
       this.pointarray = []; //儲存樓層點位
       this.pointarray = await DrawingControl.getOfFloor(this.floor.getID());
       this.sortChange({ prop: "iconId", order: "ascending" }, this.pointarray);
@@ -311,7 +315,7 @@ export default {
         var data = await idb.loadCacheImage(content.getImageID());
         this.$refs.graphic.loadBackgroundImage(obj.codeContent, data);
       }
-      //this.$socket.sendMsg(this.id,'enterGraphic',this.floor.getID())
+      this.$socket.sendMsg("graphic", "enterGraphic", this.floor.getID());
     },
     loadFinish() {
       this.disabled = false;

@@ -476,7 +476,7 @@ class ContingencyProcess extends Parent {
   static getTableConfig() {
     return [
       {
-        label: "選擇班別",
+        label: "班別",
         prop: "selfDefenseFireMarshallingMgmt",
         format: "marshallingMgmtSelect",
         mandatory: true,
@@ -514,10 +514,10 @@ class ContingencyProcess extends Parent {
     var data = await api.selfDefenseFireMarshalling
       .apiPostContingencyProcess(mgmtId, data)
       .then((response) => {
-        return true;
+        return response.result.id;
       })
       .catch((error) => {
-        return false;
+        return null;
       });
     return data;
   }
@@ -527,10 +527,10 @@ class ContingencyProcess extends Parent {
     var data = await api.selfDefenseFireMarshalling
       .apiPatchContingencyProcess(data)
       .then(async (response) => {
-        return true;
+        return response.result.id;
       })
       .catch((error) => {
-        return false;
+        return null;
       });
     return data;
   }

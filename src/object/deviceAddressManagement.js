@@ -1,6 +1,6 @@
 import api from "@/api";
 import Parent from "./parent";
-import Device from "./device";
+import { UsageOfFloor, Device } from ".";
 
 class DeviceAddressManagement extends Parent {
   constructor(data) {
@@ -20,11 +20,18 @@ class DeviceAddressManagement extends Parent {
       area,
       isFDCC,
       linkDevices,
+      linkUsageOfFloors,
     } = data;
     var devices =
       linkDevices !== undefined
         ? linkDevices.map((item) => {
             return new Device(item);
+          })
+        : [];
+    var usageOfFloors =
+      linkUsageOfFloors !== undefined
+        ? linkUsageOfFloors.map((item) => {
+            return new UsageOfFloor(item);
           })
         : [];
     this.internet = internet;
@@ -41,6 +48,7 @@ class DeviceAddressManagement extends Parent {
     this.area = area;
     this.isFDCC = isFDCC; //是否為防災盤訊號
     this.linkDevices = devices;
+    this.linkUsageOfFloors = usageOfFloors;
   }
   clone(data) {
     return new DeviceAddressManagement(data);
@@ -169,6 +177,13 @@ class DeviceAddressManagement extends Parent {
     }
     return str;
   }
+  getUsageOfFloorsName() {
+    return this.linkUsageOfFloors
+      .map((item) => {
+        return item.getName();
+      })
+      .toString();
+  }
   static empty() {
     return new DeviceAddressManagement({
       id: "",
@@ -187,6 +202,7 @@ class DeviceAddressManagement extends Parent {
       isFDCC: false,
       linkDevices: [],
       linkAssignDevices: [],
+      linkUsageOfFloors: [],
     });
   }
   static getManyEmptyTableConfig() {
@@ -555,6 +571,24 @@ class DeviceAddressManagement extends Parent {
         formType: "select",
         limit: 1,
       },
+      {
+        label: "門牌",
+        prop: "linkUsageOfFloors",
+        format: "floorOfHouseSelect",
+        mandatory: false,
+        message: "請選擇門牌",
+        type: "array",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: true,
+        isEdit: true,
+        isUpload: false,
+        isExport: true,
+        isBlock: true,
+        formType: "select",
+        limit: 0,
+      },
     ];
   }
   static getPLCTableConfig() {
@@ -809,6 +843,24 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "select",
         limit: 1,
+      },
+      {
+        label: "門牌",
+        prop: "linkUsageOfFloors",
+        format: "floorOfHouseSelect",
+        mandatory: false,
+        message: "請選擇門牌",
+        type: "array",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: true,
+        isEdit: true,
+        isUpload: false,
+        isExport: true,
+        isBlock: true,
+        formType: "select",
+        limit: 0,
       },
     ];
   }

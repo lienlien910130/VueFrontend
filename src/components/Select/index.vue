@@ -57,8 +57,11 @@ export default {
         } else if (this.title == "contactunit" || this.title == "equipment") {
           this.defaultvalue = "all";
         } else if (this.title == "GraphicViewer") {
-          if (this.selectData.length && ws.processWs.floorId == null) {
-            this.defaultvalue = this.selectData[0].getID();
+          if (this.selectData.length) {
+            this.defaultvalue =
+              ws.processWs.floorId == null
+                ? this.selectData[0].getID()
+                : ws.processWs.floorId;
             this.currentSel(this.defaultvalue);
           }
         }
