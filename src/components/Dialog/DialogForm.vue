@@ -764,17 +764,13 @@ export default {
           case "lack":
             return item.lackItem;
           case "deviceAddressManagement":
-            return (
-              item.internet +
-              "-" +
-              item.system +
-              "-" +
-              item.address +
-              "-" +
-              item.number
-            );
           case "devicePLCAddressManagement":
-            return item.internet + "-" + item.system + "-" + item.memeryLoc;
+            var label = [item.internet, item.system, item.address, item.number];
+            if (this.title == "devicePLCAddressManagement") {
+              label.push(item.memeryLoc);
+            }
+            label = label.filter(Boolean).join("-");
+            return label;
           case "committee":
             return item.title;
           case "reportInspectio":

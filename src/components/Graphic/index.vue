@@ -437,25 +437,11 @@ export default {
         this.imgAddress = data.map((item) => {
           this.$set(item, "systemUsed", item.systemUsed);
           this.$set(item, "id", item.id);
-          var str = item.internet + "-" + item.system;
-          if (item.type == "fire") {
-            str = str.concat("-" + item.address);
-            if (
-              item.number !== "" &&
-              item.number !== null &&
-              item.number !== undefined
-            ) {
-              str = str.concat("-" + item.number);
-            }
-          } else {
-            if (
-              item.memeryLoc !== "" &&
-              item.memeryLoc !== null &&
-              item.memeryLoc !== undefined
-            ) {
-              str = str.concat("-" + item.memeryLoc);
-            }
+          var str = [item.internet, item.system, item.address, item.number];
+          if (item.type == "plc") {
+            str.push(item.memeryLoc);
           }
+          str = str.filter(Boolean).join("-");
           this.$set(item, "label", str);
           return item;
         });
@@ -1301,25 +1287,11 @@ export default {
     sendAddressImageIcon(item, event) {
       //樓層點位-火警&plc + 圖例新增
       if (item.internet !== undefined) {
-        var address = item.internet + "-" + item.system;
-        if (item.type == "fire") {
-          address = address.concat("-" + item.address);
-          if (
-            item.number !== "" &&
-            item.number !== null &&
-            item.number !== undefined
-          ) {
-            address = address.concat("-" + item.number);
-          }
-        } else {
-          if (
-            item.memeryLoc !== "" &&
-            item.memeryLoc !== null &&
-            item.memeryLoc !== undefined
-          ) {
-            address = address.concat("-" + item.memeryLoc);
-          }
+        var address = [item.internet, item.system, item.address, item.number];
+        if (item.type == "plc") {
+          address.push(item.memeryLoc);
         }
+        address = address.filter(Boolean).join("-");
         var icon = constant.Equipment.filter((icon) => {
           return icon.id == item.iconId;
         })[0];

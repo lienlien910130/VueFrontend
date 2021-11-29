@@ -11,6 +11,7 @@
       </template>
     </div>
     <Select
+      ref="selectFloor"
       style="margin-bottom: 10px"
       v-bind="floorselectAttrs"
       v-on:handleSelect="handleSelect"
@@ -21,6 +22,7 @@
         ref="graphicviewer"
         :canvasHeight="deviceType !== 'null' ? 350 : 0"
         :deviceType="deviceType"
+        :pointarray="pointarray"
       >
       </GraphicViewer>
     </div>
@@ -60,6 +62,7 @@ import { Floors } from "@/object";
 import idb from "@/utils/indexedDB";
 import { getDevice } from "@/utils/auth";
 import ws from "@/utils/socket";
+import DrawingControl from "@/object/drawingControl";
 
 export default {
   name: "EmergencyGraphic",
@@ -94,10 +97,6 @@ export default {
   },
   async mounted() {
     await this.init();
-    // if (this.deviceType == "null") {
-    //   //電腦版
-    //   await this.init();
-    // }
   },
   watch: {
     options: {
@@ -114,6 +113,12 @@ export default {
       },
       immediate: true,
     },
+    process: {
+      handler: async function () {
+        await this.changeProcessFloorId();
+      },
+      immediate: true,
+    },
   },
   data() {
     return {
@@ -121,6 +126,7 @@ export default {
       buttonOptions: [],
       floorId: null,
       selectData: [],
+      pointarray: [],
     };
   },
   methods: {
@@ -159,19 +165,22 @@ export default {
         await this.$store.dispatch("building/setFloors");
         await this.$store.dispatch("record/saveFloorRecord", 1);
       }
-      console.log("init");
       this.selectData = this.buildingfloors.map((v) => {
         this.$set(v, "value", v.getID());
         this.$set(v, "label", v.getName());
         this.$set(v, "id", v.getID());
         return v;
       });
-      // if (this.process) {
-      //   var floor = this.selectData.filter((item) => {
-      //     return item.id == ws.processWs.floorId;
-      //   })[0];
-      //   await this.handleSelect(floor);
-      // }
+      await this.changeProcessFloorId();
+    },
+    async changeProcessFloorId() {
+      if (this.process) {
+        var floor = this.selectData.filter((item) => {
+          return item.id == ws.processWs.floorId;
+        })[0];
+        await this.handleSelect(floor);
+        this.$refs.selectFloor.setDefaultValue(ws.processWs.floorId);
+      }
     },
     sendSelect(option) {
       console.log(option);
@@ -179,7 +188,11 @@ export default {
       this.$socket.sendProcess(temp);
     },
     async handleSelect(content) {
+      if (content == undefined) {
+        return false;
+      }
       var floor = await Floors.getOfId(content.id);
+      this.pointarray = await DrawingControl.getOfFloor(content.id);
       var obj = await floor.getGraphicFiles();
       if (floor.getImageID() == null) {
         this.$message.error("該樓層尚未設定圖控相關資料");

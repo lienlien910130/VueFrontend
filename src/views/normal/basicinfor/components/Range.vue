@@ -100,6 +100,12 @@ export default {
       },
       immediate: true,
     },
+    process: {
+      handler: function () {
+        this.changeProcessFloorId();
+      },
+      immediate: true,
+    },
   },
   methods: {
     setRange() {
@@ -131,6 +137,9 @@ export default {
         this.rangeOptions.unshift(_temp);
       }
       this.onSelectRange(0);
+      this.changeProcessFloorId();
+    },
+    changeProcessFloorId() {
       if (this.process == true && ws.processWs.floorId !== null) {
         this.floorId = ws.processWs.floorId;
         var index = this.rangeOptions.findIndex(

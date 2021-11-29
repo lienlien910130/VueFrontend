@@ -62,7 +62,9 @@ export default {
               ws.processWs.floorId == null
                 ? this.selectData[0].getID()
                 : ws.processWs.floorId;
-            this.currentSel(this.defaultvalue);
+            if (ws.processWs.floorId == null) {
+              this.currentSel(this.defaultvalue);
+            }
           }
         }
       },
@@ -75,6 +77,9 @@ export default {
         (item, index) => item.id == select
       );
       this.$emit("handleSelect", tempData.length > 0 ? tempData[0] : undefined);
+    },
+    setDefaultValue(value) {
+      this.defaultvalue = value;
     },
   },
 };

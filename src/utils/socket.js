@@ -309,38 +309,31 @@ let wsConnection = {
 
 function combineAddress(element, type, realTimeAction = false) {
   var mode = "";
-  var label = "";
+  var label = [
+    element.internet,
+    element.system,
+    element.address,
+    element.number,
+  ];
   switch (type) {
     case "PLC":
       mode = "PLC";
-      label = element.internet + "-" + element.system + "-" + element.memeryLoc;
+      label.push(element.memeryLoc);
       if (element.system == "R400") {
-        label = element.internet + "-" + element.system;
         element.actionName = element.status;
         element.deviceName = "水位計";
       }
       break;
     case "LOC":
       mode = "火警";
-      label =
-        element.internet +
-        "-" +
-        element.system +
-        "-" +
-        element.address +
-        "-" +
-        element.number;
       element.status = element.sAction;
       break;
     case "MAIN":
       mode = "防災盤";
-      label = element.internet + "-" + element.memeryLoc;
-      if (label == "001-0003" && element.status == "1") {
-        //復歸
-        store.dispatch("websocket/saveReturn", true);
-      }
+      label.push(element.memeryLoc);
       break;
   }
+  label = label.filter(Boolean).join("-");
   if (element.system !== "R400") {
     store.dispatch("websocket/sendMsg", {
       mode: mode,

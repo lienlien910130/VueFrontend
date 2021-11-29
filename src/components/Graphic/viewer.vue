@@ -14,12 +14,16 @@
         </div>
       </div>
     </div>
-    <div v-if="deviceType !== 'null' && process == true" class="videobox">
+    <template v-for="(item, index) in viewList">
+      <span :key="index">{{ item.name }}</span>
+      <img :src="item.url" width="100%" height="auto" :key="index" />
+    </template>
+    <!-- <div v-if="deviceType !== 'null' && process == true" class="videobox">
       <template v-for="(item, index) in viewList">
         <span :key="index">{{ item.name }}</span>
         <img :src="item.url" width="100%" height="auto" :key="index" />
       </template>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -28,6 +32,7 @@ import constant from "@/constant/development";
 const fabric = require("fabric");
 import { getUUID } from "@/utils";
 import ws from "@/utils/socket";
+import { DeviceAddressManagement } from "@/object";
 
 export default {
   name: "GraphicViewer",
@@ -38,6 +43,12 @@ export default {
     },
     deviceType: {
       type: String,
+    },
+    pointarray: {
+      type: Array,
+      default: function () {
+        return [];
+      },
     },
   },
   computed: {
@@ -118,7 +129,7 @@ export default {
       var isListenWheel = false;
       if (this.canvasHeight == 0) {
         document.getElementById("canvasdiv").style.minHeight =
-          "calc(100vh - 120px)";
+          "calc(100vh - 170px)";
         isListenWheel = true;
       }
       this.canvas.setWidth(this.$refs.canvasdiv.clientWidth);
@@ -126,7 +137,6 @@ export default {
         this.canvasHeight == 0
           ? this.$refs.canvasdiv.clientHeight
           : this.canvasHeight;
-      console.log(this.canvasheight);
       this.canvas.setHeight(this.canvasheight);
       this.leftsize = this.$refs.canvasdiv.clientWidth / 1650;
       this.topsize = this.canvasheight / 750;
@@ -226,21 +236,16 @@ export default {
           if (actionList.length !== 0) {
             for (let [index, value] of actionList.entries()) {
               var isPLC = value.internet.indexOf("P");
-              var label = "";
+              var label = [
+                value.internet,
+                value.system,
+                value.address,
+                value.number,
+              ];
               if (isPLC !== -1) {
-                //PLC點位
-                label =
-                  value.internet + "-" + value.system + "-" + value.memeryLoc;
-              } else {
-                label =
-                  value.internet +
-                  "-" +
-                  value.system +
-                  "-" +
-                  value.address +
-                  "-" +
-                  value.number;
+                label.push(value.memeryLoc);
               }
+              label = label.filter(Boolean).join("-");
               if (index == 0) {
                 //初始起點定位
                 self.setStartView(label);
@@ -257,18 +262,125 @@ export default {
       console.log(e);
       var items = this.canvas.getActiveObjects();
       if (items.length) {
-        var detailList = this.wsmsg.filter((item) => {
-          return item.label == items[0].addressId;
+        this.openInfo(items[0]);
+      }
+    },
+    openInfo(objItem) {
+      const h = this.$createElement;
+      const bigData = [];
+      var info = this.pointarray.filter((item) => {
+        var str = [item.internet, item.system, item.address, item.number];
+        if (item.type == "plc") {
+          str.push(item.memeryLoc);
+        }
+        str = str.filter(Boolean).join("-");
+        return str == objItem.addressId;
+      });
+      //先篩選出該樓層點位的資料 > 看是fire or plc 的config > 讀取該點位的list
+      if (info.length) {
+        //有該點位的資料
+        var config =
+          info[0].type == "fire"
+            ? DeviceAddressManagement.getTableConfig()
+            : DeviceAddressManagement.getPLCTableConfig();
+        var data = new DeviceAddressManagement(info[0]);
+        config = config.filter((item) => {
+          return item.isViewerInfo == true;
         });
-        console.log(detailList);
-        const h = this.$createElement;
+        var array = [];
+        config.forEach((item) => {
+          var value = "";
+          if (item.format == "addressdeviceSelect") {
+            value = data.getDevicesName();
+          } else if (item.format == "floorOfHouseSelect") {
+            value = data.getUsageOfFloorsName();
+          } else {
+            value = data[item.prop];
+          }
+          array.push({
+            label: item.label,
+            value: value,
+          });
+        });
+        const infoList = [];
+        array.forEach((obj) => {
+          infoList.push(
+            h("p", { style: "width:100%" }, [
+              h(
+                "span",
+                {
+                  style:
+                    "width:40%;display:inline-block;vertical-align:top;word-break:break-all",
+                },
+                obj.label
+              ),
+              h(
+                "span",
+                {
+                  style:
+                    "width:60%;display:inline-block;vertical-align:top;word-break:break-all",
+                },
+                obj.value
+              ),
+            ])
+          );
+        });
+        if (infoList.length) {
+          bigData.push(
+            h(
+              "div",
+              { style: "border:1px solid;padding:10px;margin-bottom:5px" },
+              infoList
+            )
+          );
+        }
+      }
+      var detailList = this.wsmsg.filter((item) => {
+        return item.label == objItem.addressId;
+      });
+      if (detailList.length) {
+        const actionList = [];
+        detailList.forEach((obj) => {
+          actionList.push(
+            h("p", { style: "width:100%" }, [
+              h(
+                "span",
+                {
+                  style:
+                    "width:60%;display:inline-block;vertical-align:top;word-break:break-all",
+                },
+                obj.date
+              ),
+              h(
+                "span",
+                {
+                  style:
+                    "width:40%;display:inline-block;vertical-align:top;word-break:break-all",
+                },
+                obj.actionName
+              ),
+            ])
+          );
+        });
+        if (actionList.length) {
+          bigData.push(
+            h(
+              "div",
+              { style: "border:1px solid;padding:10px;margin-bottom:5px" },
+              actionList
+            )
+          );
+        }
+      }
+      if (bigData.length) {
         this.$msgbox({
-          title: "顯示設備歷程訊息",
-          message: h("p", null, [
-            h("span", null, "内容可以是 "),
-            h("i", { style: "color: teal" }, "VNode"),
-          ]),
-          showCancelButton: true,
+          title: "設備資訊",
+          message: h(
+            "div",
+            { style: "max-height:500px;overflow-x:hidden;overflow-y:auto;" },
+            bigData
+          ),
+          showCancelButton: false,
         })
           .then(() => {})
           .catch(() => {});
@@ -389,7 +501,9 @@ export default {
       window.event.stopPropagation();
       window.event.preventDefault();
       var items = this.canvas.getActiveObjects();
-      console.log(items.length); //打開視窗
+      if (items.length) {
+        this.openInfo(items[0]);
+      }
       this.lastMovePos.x =
         e.e.type !== "touchstart" ? e.e.clientX : e.e.touches[0].clientX;
       this.lastMovePos.y =
@@ -461,6 +575,8 @@ export default {
               left: obj.left,
               hasControls: false,
               visible: true,
+              padding: 5,
+              selectable: true,
             });
             self.canvas.add(svgItems);
             svgItems.set({
