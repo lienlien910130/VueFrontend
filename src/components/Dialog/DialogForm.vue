@@ -846,6 +846,8 @@ export default {
             icon[0].mandatory = true;
             device[0].mandatory = true;
           }
+        } else if (this.title == "devicePLCAddressManagement") {
+          this.disable = false;
         } else if (this.title == "equipment") {
           var type = this.temp.getLinkType().getFullType();
           if (

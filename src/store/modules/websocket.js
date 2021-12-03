@@ -114,8 +114,6 @@ const actions = {
   },
   updateNodeResult({ commit }, content) {
     //更新節點狀態
-    console.log("updateNodeResultupdateNodeResult");
-    console.log(content);
     var index = state.nodeResult.findIndex((item) => {
       return item.nodeId === content.nodeId;
     });
@@ -130,6 +128,7 @@ const actions = {
       state.waitingNode[waitingNodeIndex].state = 1;
       state.waitingNode[waitingNodeIndex].message = content.message;
       state.waitingNode[waitingNodeIndex].cOptions = content.cOptions;
+      state.waitingNode[waitingNodeIndex].replyUser = content.linkAccountList;
     }
   },
   saveReturn({ commit }, isReturn) {

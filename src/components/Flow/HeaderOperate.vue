@@ -36,6 +36,7 @@
   </div>
 </template>
 <script>
+import { getDevice } from "@/utils/auth";
 export default {
   name: "HeaderOperate",
   props: {
@@ -60,6 +61,11 @@ export default {
         return this.operateMenu.editRight;
       } else {
         //沒有編輯
+        if (this.deviceType !== "null") {
+          return this.operateMenu.right.filter((item) => {
+            return item.isMobile == true;
+          });
+        }
         return this.operateMenu.right;
       }
     },
@@ -71,6 +77,9 @@ export default {
         //沒有編輯
         return this.operateMenu.left;
       }
+    },
+    deviceType: function () {
+      return getDevice();
     },
   },
   data() {

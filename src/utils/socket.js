@@ -195,13 +195,32 @@ let wsConnection = {
                     obj.instanceCNode.message !== undefined
                       ? obj.instanceCNode.message
                       : "",
+                  createTime: moment(obj.instanceCNode.createTime).format(
+                    "YYYY/MM/DD HH:mm:ss"
+                  ),
+                  linkRoles:
+                    obj.instanceCNode.linkRoles !== undefined
+                      ? obj.instanceCNode.linkRoles
+                      : [],
+                  linkAccountList:
+                    obj.instanceCNode.linkAccountList !== undefined
+                      ? obj.instanceCNode.linkAccountList
+                      : [],
                 };
-                store.dispatch("websocket/saveNodeResult", temp);
-                //判斷是否有正在等待回應中-有的話儲存起來
+                //判斷是否有需要回應的節點-有的話儲存起來
                 if (obj.waitResponseOptions !== undefined) {
-                  waitingNode(obj.instanceCNode);
-                  //有等待選擇的
+                  var _wait = _.cloneDeep(temp);
+                  if (obj.selectedResponseOptions !== undefined) {
+                    //已選過選項
+                    _wait.message = obj.selectedResponseOptions[0].name;
+                    _wait.cOptions = obj.selectedResponseOptions;
+                    _wait.replyUser =
+                      obj.selectedResponseOptions[0].linkAccountList;
+                    temp.message = obj.selectedResponseOptions[0].name;
+                  }
+                  waitingNode(_wait);
                 }
+                store.dispatch("websocket/saveNodeResult", temp);
               }
             }
           });
@@ -224,6 +243,7 @@ let wsConnection = {
         if (!_this.processWs.login) {
           return false;
         }
+        data.createTime = moment(data.createTime).format("YYYY/MM/DD HH:mm:ss");
         store.dispatch("websocket/saveNodeResult", data);
         //判斷為等待節點的時候儲存起來
         if (data.state == 20) {
@@ -301,7 +321,21 @@ let wsConnection = {
       cPId: _this.processWs.cPId,
       cNodeId: _this.processWs.cNodeId,
       cOptions: new Array(cOption),
+      linkAccountList: [{ id: store.getters.id }],
     };
+    console.log(JSON.stringify(msg));
+    _this.processWs.$ws.send(JSON.stringify(msg));
+    store.dispatch("websocket/sendOptions", []);
+  },
+  //流程圖撤退
+  sendRetreat: function (retreat) {
+    let _this = this;
+    const msg = {
+      cPId: "",
+      accountCToken: store.getters.mToken,
+      state: "6",
+    };
+    console.log(JSON.stringify(msg));
     _this.processWs.$ws.send(JSON.stringify(msg));
     store.dispatch("websocket/sendOptions", []);
   },
@@ -378,17 +412,15 @@ async function emergencyInfo(data) {
 
 function waitingNode(node) {
   console.log("waitingNode", node);
-  var newAccount = node.linkAccountList.map((item) => {
-    return item.id;
-  });
-  var _waitingNode = {
-    cNodeId: node.id !== undefined ? node.id : node.cNodeId,
-    nodeId: node.nodeId,
-    state: node.state,
-    name: node.name,
-    nType: node.nType,
-    accountList: newAccount,
-  };
+  var _waitingNode = _.cloneDeep(node);
+  _waitingNode.cNodeId = node.id !== undefined ? node.id : node.cNodeId;
+  _waitingNode.linkRoles = node.linkRoles !== undefined ? node.linkRoles : [];
+  _waitingNode.linkAccountList =
+    node.linkAccountList !== undefined ? node.linkAccountList : [];
+  _waitingNode.message =
+    node.nType !== 21 && node.message !== undefined ? node.message : "";
+  _waitingNode.cOptions = node.cOptions !== undefined ? node.cOptions : [];
+  _waitingNode.replyUser = node.replyUser !== undefined ? node.replyUser : [];
   store.dispatch("websocket/saveWaitingNode", _waitingNode);
 }
 

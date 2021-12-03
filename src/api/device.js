@@ -271,6 +271,10 @@ const device = {
   apiPatchDevicesPLCAddressOfDrawing(data) {
     return req("patch", "/drawingControl/plc/s", null, data);
   },
+  //圖控取得該樓層的該樓層的cNode-nType:61&62
+  apiGetDrawingCNode(floorId) {
+    return req("get", "/drawingControl/cNode/" + floorId);
+  },
 };
 
 export default device;

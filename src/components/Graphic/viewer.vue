@@ -14,16 +14,40 @@
         </div>
       </div>
     </div>
-    <template v-for="(item, index) in viewList">
-      <span :key="index">{{ item.name }}</span>
-      <img :src="item.url" width="100%" height="auto" :key="index" />
-    </template>
-    <!-- <div v-if="deviceType !== 'null' && process == true" class="videobox">
+    <div v-if="deviceType !== 'null' && process == true" class="videobox">
       <template v-for="(item, index) in viewList">
-        <span :key="index">{{ item.name }}</span>
-        <img :src="item.url" width="100%" height="auto" :key="index" />
+        <template v-if="index == 0">
+          <span :key="index" style="margin-top: 8px">{{ item.name }}</span>
+          <img
+            :src="item.url"
+            style="width: 100%; height: auto"
+            :key="index"
+            @click="setView(item, index)"
+          />
+        </template>
+        <template v-else>
+          <img
+            :src="item.url"
+            style="width: 20%; height: auto"
+            :key="index"
+            @click="setView(item, index)"
+          />
+        </template>
       </template>
-    </div> -->
+    </div>
+
+    <el-dialog
+      top="5vh"
+      :title="dialogTitle"
+      :visible.sync="previewVisible"
+      width="80%"
+    >
+      <el-image :src="previewPath" class="previewImg">
+        <div slot="placeholder" class="image-slot">
+          載入中<span class="dot">...</span>
+        </div>
+      </el-image>
+    </el-dialog>
   </div>
 </template>
 
@@ -52,7 +76,13 @@ export default {
     },
   },
   computed: {
-    ...Vuex.mapGetters(["wsmsg", "realTimeaction", "isReturn", "process"]),
+    ...Vuex.mapGetters([
+      "wsmsg",
+      "realTimeaction",
+      "isReturn",
+      "process",
+      "waitingNode",
+    ]),
   },
   mounted() {
     this.canvas = new fabric.Canvas("canvas");
@@ -93,6 +123,20 @@ export default {
       },
       immediate: true,
     },
+    waitingNode: {
+      handler: async function () {
+        if (this.waitingNode.length) {
+          this.inPositionList = _.cloneDeep(this.waitingNode).filter((item) => {
+            return item.nType == 62 || item.nType == 61;
+          });
+          this.$nextTick(() => {
+            this.setInPosition();
+          });
+        }
+      },
+      immediate: true,
+      deep: true,
+    },
   },
   data() {
     return {
@@ -121,6 +165,12 @@ export default {
       lastzoom: 1, //表示为上一次的缩放倍数，此刻设为1
       previousTouch: null,
       viewList: [],
+      inPositionList: [],
+      //攝影機視窗
+      dialogTitle: "",
+      previewVisible: false,
+      previewPath: "",
+      monitor: 0,
     };
   },
   methods: {
@@ -234,6 +284,13 @@ export default {
             return item.system !== "R400";
           });
           if (actionList.length !== 0) {
+            //打開所有攝影機
+            var o3Object = self.canvas.getObjects().filter((obj) => {
+              return obj.srcId == "o3";
+            });
+            o3Object.forEach((item) => {
+              item.set({ visible: true });
+            });
             for (let [index, value] of actionList.entries()) {
               var isPLC = value.internet.indexOf("P");
               var label = [
@@ -254,6 +311,9 @@ export default {
             }
             self.actionObj("001-01-001-1", 2);
           }
+          if (self.inPositionList.length) {
+            self.setInPosition();
+          }
         });
       }
     },
@@ -262,7 +322,17 @@ export default {
       console.log(e);
       var items = this.canvas.getActiveObjects();
       if (items.length) {
-        this.openInfo(items[0]);
+        if (items[0].srcId == "p6" || items[0].srcId == "p7") {
+          this.openPositionInfo(items[0]);
+        } else {
+          this.openInfo(items[0]);
+        }
+        if (items[0].srcId == "o3") {
+          //點選攝影機
+          this.dialogTitle = items[0].objectName;
+          this.previewPath = items[0].connectId[0];
+          this.previewVisible = true;
+        }
       }
     },
     openInfo(objItem) {
@@ -374,7 +444,132 @@ export default {
       }
       if (bigData.length) {
         this.$msgbox({
-          title: "設備資訊",
+          title: "點位資訊",
+          message: h(
+            "div",
+            { style: "max-height:500px;overflow-x:hidden;overflow-y:auto;" },
+            bigData
+          ),
+          showCancelButton: false,
+        })
+          .then(() => {})
+          .catch(() => {});
+      }
+    },
+    openPositionInfo(objItem) {
+      const h = this.$createElement;
+      const bigData = [];
+      var temp = [];
+      var infoList = [];
+      objItem.connectId.forEach((con) => {
+        var list = con.split(",");
+        infoList.push(
+          h("p", { style: "width:100%" }, [
+            h(
+              "span",
+              {
+                style:
+                  "width:40%;display:inline-block;vertical-align:top;word-break:break-all",
+              },
+              list[0]
+            ),
+            h(
+              "span",
+              {
+                style:
+                  "width:60%;display:inline-block;vertical-align:top;word-break:break-all",
+              },
+              list[1]
+            ),
+          ])
+        );
+        var processList = this.inPositionList.filter((item) => {
+          return (
+            item.linkAccountList.findIndex((ac) => {
+              return ac.id == list[1];
+            }) !== -1 && item.nodeId == list[0]
+          );
+        });
+        if (processList.length) {
+          var account = processList[0].linkAccountList.filter((ac) => {
+            return ac.id == list[1];
+          })[0];
+          var state = "";
+          if (processList[0].state == 20) {
+            state = "等待回應";
+          } else if (processList[0].state == 1) {
+            //需檢查是否有回覆
+            var hasReply = processList[0].replyUser.findIndex((ac) => {
+              return ac.id == account.id;
+            });
+            if (hasReply !== -1) {
+              state = "完成";
+            } else {
+              state = "等待回應";
+            }
+          }
+          temp.push({
+            date: processList[0].createTime,
+            nodeName: processList[0].name,
+            name: account.name,
+            state: state,
+          });
+        }
+      });
+      if (infoList.length) {
+        bigData.push(
+          h(
+            "div",
+            { style: "border:1px solid;padding:10px;margin-bottom:5px" },
+            infoList
+          )
+        );
+      }
+      if (temp.length) {
+        const pList = [];
+        temp.forEach((obj) => {
+          pList.push(
+            h("p", { style: "width:100%" }, [
+              h(
+                "span",
+                {
+                  style:
+                    "width:40%;display:inline-block;vertical-align:top;word-break:break-all",
+                },
+                obj.date
+              ),
+              h(
+                "span",
+                {
+                  style:
+                    "width:40%;display:inline-block;vertical-align:top;word-break:break-all",
+                },
+                obj.nodeName + "-" + obj.name
+              ),
+              h(
+                "span",
+                {
+                  style:
+                    "width:20%;display:inline-block;vertical-align:top;word-break:break-all",
+                },
+                obj.state
+              ),
+            ])
+          );
+        });
+        if (pList.length) {
+          bigData.push(
+            h(
+              "div",
+              { style: "border:1px solid;padding:10px;margin-bottom:5px" },
+              pList
+            )
+          );
+        }
+      }
+      if (bigData.length) {
+        this.$msgbox({
+          title: "定位資訊",
           message: h(
             "div",
             { style: "max-height:500px;overflow-x:hidden;overflow-y:auto;" },
@@ -601,7 +796,7 @@ export default {
           //刪除火災的svg
           var index = this.canvas
             .getObjects()
-            .findIndex((o) => o.addressId == "000-00-000-0");
+            .findIndex((o) => o.addressId == "000-00-000-0" && o.srcId == "fs");
           var fire = this.canvas.getObjects()[index];
           this.canvas.remove(fire);
           obj.set({ visible: true });
@@ -698,10 +893,19 @@ export default {
           if (connectObj.srcId == "o3") {
             //如果關聯的是監視器就存入網址
             if (value !== 0) {
-              this.viewList.push({
-                name: connectObj.objectName,
-                url: connectObj.connectId[0],
-              });
+              if (this.viewList.length == 5) {
+                return false;
+              }
+              var hasExist =
+                this.viewList.findIndex((item) => {
+                  return item.url == connectObj.connectId[0];
+                }) !== -1;
+              if (!hasExist) {
+                this.viewList.push({
+                  name: connectObj.objectName,
+                  url: connectObj.connectId[0],
+                });
+              }
             } else {
               this.viewList = this.viewList.filter((item) => {
                 return item.url !== connectObj.connectId[0];
@@ -716,6 +920,10 @@ export default {
         //   return;
         // }
       });
+    },
+    setView(item, index) {
+      this.viewList.splice(index, 1);
+      this.viewList.unshift(item);
     },
     setAnimate(obj, maximum = 1) {
       //動畫
@@ -734,6 +942,19 @@ export default {
     async handleOperateMenu(operate) {
       switch (operate) {
         case "message":
+          if (!this.process) {
+            return false;
+          }
+
+          break;
+        case "retreat":
+          if (!this.process) {
+            return false;
+          }
+          if (deviceType !== "null") {
+            //手機版
+          } else {
+          }
           break;
         case "resetlocation":
           this.resetCanvas();
@@ -742,6 +963,112 @@ export default {
         case "zoomOut":
           this.zoomCanvas(operate);
           break;
+      }
+    },
+    setInPosition() {
+      //設定定位icon:srcId = p7
+      var _peopleIcon = this.canvas.getObjects().filter((item) => {
+        return item.srcId == "p7";
+      });
+      for (let node of this.inPositionList) {
+        console.log("node", JSON.stringify(node));
+        node.linkAccountList.forEach((ac) => {
+          var na = node.nodeId + "," + ac.id;
+          var svg = _peopleIcon.filter((item) => {
+            return (
+              item.connectId.findIndex((obj) => {
+                return obj == na;
+              }) !== -1
+            );
+          });
+          var index = node.replyUser.findIndex((rU) => {
+            return rU.id == ac.id;
+          });
+          if (index !== -1) {
+            svg.forEach((s) => {
+              this.inPositionSVGClose(s);
+            });
+          } else {
+            svg.forEach((s) => {
+              this.inPositionSVGOpen(s);
+            });
+          }
+        });
+      }
+    },
+    inPositionSVGOpen(obj) {
+      //先判斷是否有開啟過，有的話就返回
+      var hasOpenRed = this.canvas.getObjects().filter((item) => {
+        return (
+          item.objId == obj.objId && item.srcId == "p7" && item.visible == true
+        );
+      });
+      if (hasOpenRed.length) {
+        return false;
+      }
+      var hasOpen = this.canvas.getObjects().filter((item) => {
+        return item.objId == obj.objId && item.srcId == "p6";
+      });
+      if (hasOpen.length) {
+        return false;
+      }
+      var self = this;
+      obj.set({ visible: false });
+      var item = require("@/icons/svg/fire_p6.svg");
+      var text = item.default.content.replace(/http:\/\//g, "https://");
+      text = text.replace("symbol", "svg");
+      text = text.replace("/symbol", "/svg");
+      fabric.loadSVGFromString(text, function (objects, options) {
+        var svgItems = fabric.util.groupSVGElements(objects, options);
+        svgItems.set({
+          scaleX: obj.scaleX,
+          scaleY: obj.scaleY,
+          top: obj.top,
+          left: obj.left,
+          hasControls: false,
+          visible: true,
+          padding: 5,
+          selectable: true,
+        });
+        self.canvas.add(svgItems);
+        svgItems.set({
+          fill: "#00ff00",
+        });
+        self.addCustomize(
+          svgItems,
+          obj.objId,
+          obj.objectName,
+          obj.blockType,
+          "p6",
+          "000-00-000-0",
+          obj.connectId,
+          obj.status,
+          obj.action
+        );
+        self.canvas.renderAll();
+        svgItems.hasAnimationStarted = true;
+      });
+    },
+    inPositionSVGClose(obj) {
+      var objectIcon = this.canvas.getObjects().filter((item) => {
+        return item.objId == obj.objId && obj.visible == true
+          ? item.srcId == "p6"
+          : item.srcId == "p7";
+      });
+      if (objectIcon.length) {
+        if (obj.visible == true) {
+          this.canvas.remove(objectIcon[0]);
+        }
+        if (obj._objects !== undefined) {
+          obj.getObjects().forEach((item) => {
+            if (item.fill !== "#ffffff") {
+              item.set({
+                fill: "#ff0000",
+              });
+            }
+          });
+        }
+        obj.set({ fill: "#ff0000", visible: true });
       }
     },
   },
@@ -758,5 +1085,9 @@ header {
 }
 .section {
   background-color: #fff;
+}
+.previewImg {
+  width: 100%;
+  height: auto;
 }
 </style>

@@ -124,6 +124,7 @@ export default {
         floor: this.floor,
         actionObj: this.actionObj,
         pointarray: this.pointarray,
+        cNodeList: this.cNodeList,
       };
     },
     graphicEvent() {
@@ -174,6 +175,7 @@ export default {
       isEdit: false, //是否可編輯圖控
       actionObj: null, //正在做動的物件
       origindata: [], //即時訊息
+      cNodeList: [],
       // tableData:[],
       // config:[
       //       { label:'時間' , prop:'date'},
@@ -304,6 +306,7 @@ export default {
       this.isEdit = false;
       this.pointarray = []; //儲存樓層點位
       this.pointarray = await DrawingControl.getOfFloor(this.floor.getID());
+      this.cNodeList = await DrawingControl.getCNode(this.floor.getID());
       this.sortChange({ prop: "iconId", order: "ascending" }, this.pointarray);
       var obj = await this.floor.getGraphicFiles();
       this.codeContentId = obj.id;

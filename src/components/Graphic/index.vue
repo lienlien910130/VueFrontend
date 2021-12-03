@@ -243,6 +243,12 @@ export default {
         return [];
       },
     },
+    cNodeList: {
+      type: Array,
+      default: function () {
+        return [];
+      },
+    },
   },
   components: {
     EquipmentType: () => import("@/views/graphic/components/EquipmentType.vue"),
@@ -271,14 +277,11 @@ export default {
     },
     connectArray() {
       if (this.srcId == "p7") {
-        //定位設定
-        if (this.account_record == 0) {
-          this.$store.dispatch("building/setaccounts");
-          this.$store.dispatch("record/saveAccountRecord", 1);
+        //定位設定-節點ID+人物ID
+        if (this.nodeAccountList.length == 0) {
+          this.setNodeAccountList();
         }
-        return this.buildingaccount.map((v) => {
-          return { id: v.id, objectName: v.name, objId: v.id };
-        });
+        return this.nodeAccountList;
       } else {
         var all = this.canvas.getObjects();
         return all.filter((item) => {
@@ -413,6 +416,8 @@ export default {
       // }],
       jsonInfoVisible: false,
       jsondata: [],
+      //節點id+人物id
+      nodeAccountList: [],
     };
   },
   watch: {
@@ -681,6 +686,17 @@ export default {
         });
       }
     },
+    setNodeAccountList() {
+      var temp = [];
+      this.cNodeList.forEach((item) => {
+        item.linkAccountList.forEach((element) => {
+          var v = item.nodeId + "," + element.id;
+          var n = item.name + "-" + element.name;
+          temp.push({ id: item.nodeId, objectName: n, objId: v });
+        });
+      });
+      this.nodeAccountList = temp;
+    },
     searchBlockType(val) {
       //區塊顯示開關 先關閉全部再開啟對應的類型
       this.canvas.discardActiveObject();
@@ -764,6 +780,36 @@ export default {
           this.addressId = items[0].addressId;
           this.connectId = items[0].connectId;
           this.hasAddress = icon.hasAddress;
+          if (this.nodeAccountList.length == 0) {
+            this.setNodeAccountList();
+          }
+          if (this.srcId == "p7") {
+            //已定位-檢查node+人物id是否還存在
+            this.connectId.forEach((con) => {
+              var isExist =
+                this.nodeAccountList.findIndex((obj) => {
+                  return obj.objId == con;
+                }) !== -1;
+              if (!isExist) {
+                this.connectId = this.connectId.filter((c) => {
+                  return c !== con;
+                });
+                this.isEditChange(true);
+              }
+            });
+          } else {
+            //其餘圖片檢查addressId該點位是否還存在
+            if (this.addressId !== "") {
+              var isExist =
+                this.imgAddress.findIndex((item) => {
+                  return item.label == this.addressId;
+                }) !== -1;
+              if (!isExist) {
+                this.addressId = "";
+                this.isEditChange(true);
+              }
+            }
+          }
         }
       }
       items.forEach((item) => {
@@ -815,6 +861,7 @@ export default {
         }
       });
       this.saveCanvasState();
+      this.isEditChange(true);
       this.canvas.renderAll();
     },
     //座標相關調整
@@ -904,18 +951,19 @@ export default {
         //可以點選圖片新增
         this.canvas.skipTargetFind = true;
         this.drop(e);
-      }
-
-      if (this.drawType == "text") {
-        this.addTextBox();
-      } else if (this.drawType == "polygon") {
-        if (this.pointArray.length > 1) {
-          if (e.target && e.target.id == this.pointArray[0].id) {
-            this.generatePolygon(); //最後一個點
+        this.drawType = "";
+      } else {
+        if (this.drawType == "text") {
+          this.addTextBox();
+        } else if (this.drawType == "polygon") {
+          if (this.pointArray.length > 1) {
+            if (e.target && e.target.id == this.pointArray[0].id) {
+              this.generatePolygon(); //最後一個點
+            }
           }
-        }
-        if (this.polygonMode) {
-          this.addPoint(e);
+          if (this.polygonMode) {
+            this.addPoint(e);
+          }
         }
       }
     },
@@ -996,7 +1044,6 @@ export default {
           });
           imageSelect.forEach((item) => {
             item.connectId.push(path[0].objId);
-            //item.set({ connectId: path[0].objId });
             this.isEditChange(true);
           });
           this.drawType = null;
@@ -1093,6 +1140,10 @@ export default {
     },
     drawing() {
       //新增矩形
+      // console.log(this.imgSource.length !== 0, this.imgSource.length);
+      // if (this.imgSource.length !== 0) {
+      //   return false;
+      // }
       if (this.canvas.getActiveObjects().length === 0) {
         if (this.drawingObject !== null) {
           this.canvas.remove(this.drawingObject);
@@ -1134,7 +1185,9 @@ export default {
           strokeDashArray: this.strokedash,
           visible: true,
         });
+
         this.canvas.add(canvasObject);
+        canvasObject.sendBackwards();
         this.drawingObject = canvasObject;
         this.addCustomize(canvasObject);
       }
@@ -1275,6 +1328,7 @@ export default {
         visible: true,
       });
       this.canvas.add(polygon);
+      polygon.sendBackwards();
       this.addCustomize(polygon);
       this.isEditChange(true);
       this.drawingObject = polygon;
@@ -1555,6 +1609,7 @@ export default {
     //},
     saveCanvasState() {
       //儲存畫布狀態：物件有編輯/物件刪除/傳給父元件(貼上/初始化物件/圖例/矩形/文字/多邊)
+      console.log("saveCanvasState");
       if (JSON.stringify(this.canvas.toJSON()) === JSON.stringify(this.state))
         return;
       this.undo.push(this.state);

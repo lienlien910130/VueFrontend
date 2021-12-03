@@ -20,8 +20,14 @@
     <div class="right-menu">
       <span @click="showToken">TOKEN</span>
       <!-- 火災時的平面圖--有緊急應變才顯示 -->
-      <div v-if="deviceType !== 'null' && process" class="avatar-wrapper">
-        <svg-icon icon-class="fire" @click.native="handleFireFloor()" />
+      <div
+        v-if="deviceType !== 'null' && fireButton"
+        class="avatar-container right-menu-item hover-effect"
+        style="margin-right: 0px"
+      >
+        <div class="avatar-wrapper">
+          <svg-icon icon-class="fire_fs" @click="handleFireFloor" />
+        </div>
       </div>
 
       <Screenfull
@@ -31,7 +37,10 @@
       />
 
       <template v-if="buildingarray.length">
-        <el-dropdown class="avatar-container right-menu-item" trigger="click">
+        <el-dropdown
+          class="avatar-container right-menu-item hover-effect"
+          trigger="click"
+        >
           <div class="avatar-wrapper">
             <i class="el-icon-office-building icon" />
             <span v-if="device !== 'mobile'" style="margin-left: 3px">{{
@@ -52,7 +61,10 @@
       </template>
 
       <template v-if="name !== null">
-        <el-dropdown class="avatar-container right-menu-item" trigger="click">
+        <el-dropdown
+          class="avatar-container right-menu-item hover-effect"
+          trigger="click"
+        >
           <div class="avatar-wrapper">
             <svg-icon icon-class="user" />
             <span v-if="device !== 'mobile'" style="margin-left: 3px">{{
@@ -176,6 +188,12 @@ export default {
       },
       immediate: true,
     },
+    process: {
+      handler: async function () {
+        this.fireButton = this.process;
+      },
+      immediate: true,
+    },
   },
   beforeDestroy() {
     if (this.timer) {
@@ -188,7 +206,7 @@ export default {
       date: new Date(),
       buildingName: "請選擇建築物",
       backVisible: false,
-      watchId: undefined,
+      fireButton: false,
     };
   },
   methods: {
@@ -234,7 +252,8 @@ export default {
         }
       }
     },
-    async handleFireFloor() {
+    handleFireFloor() {
+      console.log("handleFireFloor");
       this.$router.push({ path: "/emergencyGraphic/index" });
     },
     showToken() {

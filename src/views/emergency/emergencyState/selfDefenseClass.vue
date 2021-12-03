@@ -17,7 +17,12 @@
     </div>
     <div class="middle">
       <div class="section" ref="section">
-        <main ref="main">
+        <main
+          ref="main"
+          @mousedown="mousedownHandler"
+          @mouseup="mouseupHandler"
+          @mousemove="mousemoveHandler"
+        >
           <div class="view-scale">
             節點數量：{{
               data.nodeList !== undefined ? data.nodeList.length : "0"
@@ -31,6 +36,7 @@
               left: dragMove.left + 'px',
               top: dragMove.top + 'px',
             }"
+            @mousewheel="mousewheelHandler"
           >
             <div class="flow-area" ref="flowarea">
               <template v-for="node in data.nodeList">
@@ -69,30 +75,32 @@
             <div :key="index" style="padding: 5px 8px">
               <span style="display: block">
                 <i
-                  class="el-icon-circle-check el-node-state-success"
-                  v-show="item.state === 1"
-                ></i>
-                <i
-                  class="el-icon-loading el-node-state-running"
-                  v-show="item.state === 2"
-                ></i>
-                <i
-                  class="el-icon-warning-outline el-node-state-warning"
-                  v-show="item.state === 3"
-                ></i>
-                <i
-                  class="el-icon-warning-outline el-node-state-warning"
-                  v-show="item.state === 4"
-                ></i>
-                <i
-                  class="el-icon-circle-close el-node-state-error"
-                  v-show="item.state === 5"
-                ></i>
-                <i
-                  class="el-icon-refresh el-node-state-running"
-                  v-show="item.state === 20"
-                ></i>
-                {{ changeProcessName(item.cpId) }} -{{ item.name }}
+                  :class="[
+                    {
+                      'el-icon-circle-check el-node-state-success':
+                        item.state === 1,
+                    },
+                    {
+                      'el-icon-loading el-node-state-running': item.state === 2,
+                    },
+                    {
+                      'el-icon-warning-outline el-node-state-warning':
+                        item.state === 3 || item.state === 4,
+                    },
+                    {
+                      'el-icon-circle-close el-node-state-error':
+                        item.state === 5,
+                    },
+                    {
+                      'el-icon-refresh el-node-state-running':
+                        item.state === 20,
+                    },
+                  ]"
+                ></i
+                >{{ item.createTime }}
+              </span>
+              <span style="display: block">
+                {{ changeProcessName(item.cpId) }} - {{ item.name }}
               </span>
               <!-- <span style= "display:block">{{ item.name }} - {{ item.state | changeType }}</span> -->
               <span v-if="item.message" style="display: block; color: red">{{
@@ -102,8 +110,46 @@
             </div>
           </template>
         </el-tab-pane>
-        <el-tab-pane label="定位回報" name="second">定位回報</el-tab-pane>
-        <el-tab-pane label="撤退追蹤" name="third">撤退追蹤</el-tab-pane>
+        <el-tab-pane label="定位回報" name="third" class="tabClass">
+          <template v-for="(item, index) in reversedMessage">
+            <div :key="index" style="padding: 5px 8px">
+              <span style="display: block">
+                {{ item.createTime }}
+              </span>
+              <span style="display: block">
+                {{ item.nodeName }} - {{ item.name }}
+              </span>
+              <span style="display: block">
+                {{ item.state }}
+                <i
+                  class="el-icon-user-solid"
+                  :style="{ color: item.state == '已定位' ? 'red' : 'green' }"
+                ></i>
+              </span>
+              <span style="display: block">-----------------------------</span>
+            </div>
+          </template>
+        </el-tab-pane>
+        <el-tab-pane label="撤退追蹤" name="four">
+          <template v-for="(item, index) in reversedMessage">
+            <div :key="index" style="padding: 5px 8px">
+              <span style="display: block">
+                {{ item.createTime }}
+              </span>
+              <span style="display: block">
+                {{ item.nodeName }} - {{ item.name }}
+              </span>
+              <span style="display: block">
+                {{ item.state }}
+                <i
+                  class="el-icon-user-solid"
+                  :style="{ color: item.state == '已定位' ? 'red' : 'green' }"
+                ></i>
+              </span>
+              <span style="display: block">-----------------------------</span>
+            </div>
+          </template>
+        </el-tab-pane>
       </el-tabs>
     </div>
   </div>
@@ -162,7 +208,9 @@ export default {
       };
     },
     reversedMessage: function () {
-      return this.list.reverse();
+      return this.list.sort(function (a, b) {
+        return new Date(b.createTime) - new Date(a.createTime);
+      });
     },
   },
   filters: {
@@ -210,15 +258,15 @@ export default {
       immediate: true,
       deep: true,
     },
-    waitingNode: {
-      handler: async function () {
-        if (this.waitingNode.length) {
-          console.log(JSON.stringify(this.waitingNode));
-        }
-      },
-      immediate: true,
-      deep: true,
-    },
+    // waitingNode: {
+    //   handler: async function () {
+    //     if (this.waitingNode.length) {
+    //       console.log(JSON.stringify(this.waitingNode));
+    //     }
+    //   },
+    //   immediate: true,
+    //   deep: true,
+    // },
   },
   data() {
     return {
@@ -381,6 +429,76 @@ export default {
       this.activeElement.nodeId = node.nodeId;
       this.$refs.nodeForm.nodeInit(this.data, node.nodeId);
     },
+    mousedownHandler(e) {
+      let event = window.event || e;
+      this.dragMove.isDown = true;
+      this.dragMove.originalPosition = { ...this.dragMove };
+      this.dragMove.downPosition = {
+        y: event.y,
+        x: event.x,
+      };
+    },
+    mouseupHandler(e) {
+      if (
+        this.data.offsetX !== this.dragMove.left &&
+        this.data.offsetY !== this.dragMove.top
+      ) {
+        this.data.offsetX = this.dragMove.left;
+        this.data.offsetY = this.dragMove.top;
+      }
+      this.dragMove = { ...this.dragMove, ...{ isDown: false } };
+    },
+    mousemoveHandler(e) {
+      let event = window.event || e;
+      let offsetX = event.layerX ? event.layerX : event.offsetX;
+      let offsetY = event.layerY ? event.layerY : event.offsetY;
+      this.mousePosition = { x: offsetX, y: offsetY };
+      let { downPosition, originalPosition, isDown } = this.dragMove;
+      if (isDown) {
+        let top = originalPosition.top + (event.y - downPosition.y);
+        let left = originalPosition.left + (event.x - downPosition.x);
+        this.dragMove.top = top;
+        this.dragMove.left = left;
+      }
+    },
+    mousewheelHandler(e) {
+      let event = window.event || e;
+      console.log(this.scalePosition.x, this.scalePosition.y);
+      console.log(event.layerX, event.layerY);
+      console.log(event);
+      var x = event.layerX ? event.layerX : event.offsetX;
+      var y = event.layerY ? event.layerY : event.offsetY;
+      this.scalePosition = {
+        x: x,
+        y: y,
+      };
+      if (event.wheelDelta) {
+        //ie、google
+        if (event.wheelDelta > 0) {
+          this.setZoom("enlarge");
+        }
+        if (event.wheelDelta < 0) {
+          this.setZoom("narrow");
+        }
+      } else if (event.detail) {
+        //fox
+        if (event.detail > 0) {
+          this.setZoom("narrow");
+        }
+        if (event.detail < 0) {
+          this.setZoom("enlarge");
+        }
+      }
+    },
+    setZoom(mark) {
+      let viewScale = this.viewScale;
+      if (mark === "enlarge") {
+        viewScale = viewScale > 1.5 ? viewScale : viewScale + 0.05;
+      } else if (mark === "narrow") {
+        viewScale = viewScale < 0.6 ? viewScale : viewScale - 0.05;
+      }
+      this.viewScale = viewScale;
+    },
     handleClick(tab, event) {
       console.log(tab.index, event);
       switch (tab.index) {
@@ -388,8 +506,38 @@ export default {
           this.list = _.cloneDeep(this.nodeResult);
           break;
         case "1":
-          break;
         case "2":
+          var _waitnode = _.cloneDeep(this.waitingNode);
+          var temp = [];
+          _waitnode
+            .filter((node) => {
+              return tab.index == "1" ? node.nType == 62 : node.nType == 61;
+            })
+            .forEach((node) => {
+              node.linkAccountList.forEach((ac) => {
+                var index = node.replyUser.findIndex((rU) => {
+                  return rU.id == ac.id;
+                });
+                temp.push({
+                  cpId: node.cpId,
+                  createTime: node.createTime,
+                  nodeName: node.name,
+                  name: ac.name,
+                  accountId: ac.id,
+                  state:
+                    node.state == 20
+                      ? "等待回應"
+                      : node.state == 1
+                      ? index == -1
+                        ? "等待回應"
+                        : tab.index == "1"
+                        ? "已定位"
+                        : "已撤退"
+                      : "錯誤",
+                });
+              });
+            });
+          this.list = temp;
           break;
       }
     },
@@ -398,6 +546,7 @@ export default {
         var objItem = this.data.nodeList.filter((obj) => {
           return obj.nodeId == value.nodeId;
         });
+        console.log(objItem[0]);
         if (objItem.length) {
           objItem[0].state = value.state;
         }

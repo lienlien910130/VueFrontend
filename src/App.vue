@@ -398,7 +398,7 @@ export default {
 
 @media (max-width: 767px) {
   .el-message-box {
-    width: 90%;
+    width: 90% !important;
   }
 }
 

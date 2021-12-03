@@ -16,28 +16,24 @@
     <div class="ef-node-right-ico">
       <!-- 執行成功=1、執行中=2、警告=3、執行異常=4、執行失敗=5、等待回應=20 -->
       <i
-        class="el-icon-circle-check el-node-state-success"
-        v-show="node.state === 1"
-      ></i>
-      <i
-        class="el-icon-loading el-node-state-running"
-        v-show="node.state === 2"
-      ></i>
-      <i
-        class="el-icon-warning-outline el-node-state-warning"
-        v-show="node.state === 3"
-      ></i>
-      <i
-        class="el-icon-warning-outline el-node-state-warning"
-        v-show="node.state === 4"
-      ></i>
-      <i
-        class="el-icon-circle-close el-node-state-error"
-        v-show="node.state === 5"
-      ></i>
-      <i
-        class="el-icon-refresh el-node-state-running"
-        v-show="node.state === 20"
+        :class="[
+          {
+            'el-icon-circle-check el-node-state-success': node.state === 1,
+          },
+          {
+            'el-icon-loading el-node-state-running': node.state === 2,
+          },
+          {
+            'el-icon-warning-outline el-node-state-warning':
+              node.state === 3 || node.state === 4,
+          },
+          {
+            'el-icon-circle-close el-node-state-error': node.state === 5,
+          },
+          {
+            'el-icon-refresh el-node-state-running': node.state === 20,
+          },
+        ]"
       ></i>
     </div>
   </div>

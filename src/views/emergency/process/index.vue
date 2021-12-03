@@ -20,6 +20,7 @@
           @mousedown="mousedownHandler"
           @mouseup="mouseupHandler"
           @mousemove="mousemoveHandler"
+          @mousewheel="mousewheelHandler"
         >
           <!-- <div class="view-scale">縮放：{{ parseInt(viewScale * 100) }}%</div> -->
           <div class="view-scale">
@@ -39,12 +40,7 @@
               left: dragMove.left + 'px',
               top: dragMove.top + 'px',
             }"
-            @mousewheel="mousewheelHandler"
           >
-            <!-- @mousewheel="mousewheelHandler"
-                 transformOrigin: `${scalePosition.x}px ${scalePosition.y}px`,
-                    left: dragMove.left + 'px',
-                    top: dragMove.top + 'px', -->
             <div class="flow-area" ref="flowarea">
               <template v-for="node in data.nodeList">
                 <FlowNode
@@ -636,7 +632,7 @@ export default {
         this.$message.error("現在啟動緊急應變中，請勿編輯流程圖");
         return false;
       }
-      if (this.processStatus == "view") {
+      if (this.processStatus !== "edit") {
         this.$message.error("請開啟編輯後再進行操作");
         return false;
       }
@@ -725,7 +721,6 @@ export default {
             this.$message.error("現在啟動緊急應變中，請勿編輯流程圖");
             return false;
           }
-          console.log(this.isEdit);
           if (this.isEdit == true) {
             this.$message.error("請勿同時編輯該流程圖");
             return false;
@@ -765,6 +760,10 @@ export default {
           this.$socket.sendMsg("process", "closeEdit", this.processId);
           this.disabled = true;
           break;
+        case "resetlocation":
+          this.scalePosition = { x: 0, y: 0 };
+          this.viewScale = 1;
+          break;
       }
     },
     async clearProcess() {
@@ -785,6 +784,10 @@ export default {
     },
     // 刪除節點or線
     deleteElement() {
+      if (this.processStatus !== "edit") {
+        this.$message.error("請開啟編輯後再進行操作");
+        return false;
+      }
       if (this.activeElement.type === "node") {
         this.$confirm(
           "確定要刪除節點名稱【" + this.activeElement.name + "】?",
@@ -1120,6 +1123,7 @@ export default {
       this.isEdit = false;
       if (this.processStatus == "edit") {
         this.$socket.sendMsg("process", "closeEdit", this.processId);
+        this.processStatus = "view";
       }
       if (pid !== null) {
         this.$socket.sendMsg("process", "enterProcess", pid);

@@ -309,6 +309,9 @@ export default {
           case "50":
             type = "OptionEvents";
             break;
+          case "51":
+            type = "DeviceConfirmation";
+            break;
           case "61":
             type = "Retreat";
             break;
