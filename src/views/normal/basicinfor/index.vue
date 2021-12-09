@@ -937,7 +937,7 @@ export default {
   background: #fff;
   padding: 15px 15px;
   margin-bottom: 20px;
-  height: 720px !important;
+  height: 780px !important;
 }
 
 // .floornotMobile {

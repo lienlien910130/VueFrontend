@@ -848,12 +848,21 @@ export default {
         return false;
       }
       item.forEach((obj) => {
+        this.canvas.getObjects().forEach((ele) => {
+          var index = ele.connectId.findIndex((o) => {
+            return o == obj.objId;
+          });
+          if (index !== -1) {
+            ele.connectId.splice(index, 1);
+          }
+        });
         this.canvas.remove(obj);
         var index = this.imgAddress.findIndex((item) => {
           return item.label == obj.addressId;
         });
         if (index !== -1) {
           this.imgAddress[index].systemUsed = false;
+          this.$mount();
           this.$refs.equipmentType.setDisableDraggle(
             this.imgAddress[index].id,
             true
@@ -1044,6 +1053,7 @@ export default {
           });
           imageSelect.forEach((item) => {
             item.connectId.push(path[0].objId);
+            path[0].connectId.push(item.objId);
             this.isEditChange(true);
           });
           this.drawType = null;
@@ -1084,6 +1094,7 @@ export default {
       //新增圖例
       window.event.stopPropagation();
       window.event.preventDefault();
+      console.log(this.imgSource);
       var self = this;
       var item = require("@/icons/svg/fire_" + this.imgSource[0] + ".svg");
       var text = item.default.content.replace(/http:\/\//g, "https://");
@@ -1126,6 +1137,7 @@ export default {
       this.canvas.renderAll();
       this.isEditChange(true);
       if (this.imgSource[7] !== null) {
+        this.$mount();
         this.$refs.equipmentType.setDisableDraggle(this.imgSource[7], false);
       }
       var index = this.imgAddress.findIndex((item) => {
@@ -1187,7 +1199,7 @@ export default {
         });
 
         this.canvas.add(canvasObject);
-        canvasObject.sendBackwards();
+        canvasObject.sendToBack();
         this.drawingObject = canvasObject;
         this.addCustomize(canvasObject);
       }
@@ -1328,7 +1340,7 @@ export default {
         visible: true,
       });
       this.canvas.add(polygon);
-      polygon.sendBackwards();
+      polygon.sendToBack();
       this.addCustomize(polygon);
       this.isEditChange(true);
       this.drawingObject = polygon;
@@ -1487,6 +1499,7 @@ export default {
           });
           if (originalIndex !== -1) {
             this.imgAddress[originalIndex].systemUsed = false;
+            this.$mount();
             this.$refs.equipmentType.setDisableDraggle(
               this.imgAddress[originalIndex].id,
               true
@@ -1499,6 +1512,7 @@ export default {
         });
         if (newindex !== -1) {
           this.imgAddress[newindex].systemUsed = true;
+          this.$mount();
           this.$refs.equipmentType.setDisableDraggle(
             this.imgAddress[newindex].id,
             false
@@ -1841,6 +1855,7 @@ export default {
                 });
                 if (index !== -1) {
                   this.imgAddress[index].systemUsed = false;
+                  this.$mount();
                   this.$refs.equipmentType.setDisableDraggle(
                     this.imgAddress[index].id,
                     true

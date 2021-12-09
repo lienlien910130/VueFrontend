@@ -1,9 +1,167 @@
 <template>
   <div>
-    <el-row :gutter="gutter">
+    <el-row>
       <div style="margin-bottom: 50px">
         <el-col v-if="isTable == true" :xs="24" :sm="24" :md="24" :lg="24">
-          <el-input
+          <el-select
+            v-if="
+              title == 'deviceAddressManagement' ||
+              title == 'devicePLCAddressManagement'
+            "
+            v-model="deviceIdSelect"
+            filterable
+            placeholder="請選擇設備"
+            style="width: 500px; margin-bottom: 10px"
+            value-key="id"
+            @change="searchDevice"
+          >
+            <el-option
+              v-for="(item, index) in deviceSelectArray"
+              :key="index"
+              :label="item.label"
+              :value="item"
+            >
+            </el-option>
+          </el-select>
+          <template v-if="hasSearch == true">
+            <el-col :xs="24" :sm="24" :md="24" :lg="20">
+              <div style="height: 105px; overflow-x: auto; overflow-y: auto">
+                <el-form
+                  :inline="true"
+                  :model="searchForm"
+                  class="demo-form-inline"
+                  size="mini"
+                >
+                  <el-form-item
+                    v-for="(item, index) in canotSearch"
+                    :key="index"
+                    :label="item.label"
+                  >
+                    <el-select
+                      v-if="
+                        item.formType !== 'date' && item.formType !== 'fullType'
+                      "
+                      v-model="searchForm.preset[index].searchValue"
+                      :placeholder="item.placeholder"
+                      clearable
+                      multiple
+                      collapse-tags
+                      filterable
+                    >
+                      <template v-if="item.formType == 'boolean'">
+                        <el-option
+                          v-for="(val, index) in [true, false]"
+                          :key="index"
+                          :value="val"
+                          :label="val | changeBoolean(item.format)"
+                        ></el-option>
+                      </template>
+                      <template
+                        v-else-if="
+                          item.formType == 'select' ||
+                          item.formType == 'selectString'
+                        "
+                      >
+                        <el-option
+                          v-for="(obj, index) in selectfilter(item.format)"
+                          :key="index"
+                          :label="obj.label"
+                          :value="obj.id"
+                        >
+                        </el-option>
+                      </template>
+                      <template v-else-if="item.formType == 'selectSetting'">
+                        <el-option
+                          v-for="(obj, index) in optionfilter(item.format)"
+                          :key="index"
+                          :label="obj.textName"
+                          :value="obj.id"
+                        >
+                        </el-option>
+                      </template>
+                    </el-select>
+                    <el-date-picker
+                      v-else-if="item.formType == 'date'"
+                      v-model="searchForm.preset[index].searchValue"
+                      type="daterange"
+                      range-separator="至"
+                      start-placeholder="開始日期"
+                      end-placeholder="結束日期"
+                    >
+                    </el-date-picker>
+                    <el-cascader
+                      v-else
+                      v-model="searchForm.preset[index].searchValue"
+                      placeholder="請選擇"
+                      :options="selectfilter('fullType')"
+                      filterable
+                      clearable
+                    >
+                    </el-cascader>
+                  </el-form-item>
+                  <br />
+                  <el-form-item
+                    v-for="(condition, index) in searchForm.conditions"
+                    :label="'條件' + (index + 1)"
+                    :key="index"
+                    :prop="'conditions.' + index + '.value'"
+                  >
+                    <el-select
+                      v-model="condition.prop"
+                      clearable
+                      @change="(val) => setConditionType(val, index)"
+                    >
+                      <el-option
+                        v-for="(item, index) in inputSelectChange"
+                        :key="index"
+                        :label="item.label"
+                        :value="item.prop"
+                      >
+                      </el-option>
+                    </el-select>
+                    <el-input
+                      v-if="condition.type == 'input'"
+                      v-model="condition.searchValue"
+                      style="width: 35%"
+                    ></el-input>
+                    <el-date-picker
+                      v-else
+                      v-model="condition.searchValue"
+                      type="daterange"
+                      range-separator="至"
+                      start-placeholder="開始日期"
+                      end-placeholder="結束日期"
+                    >
+                    </el-date-picker>
+                    <el-button @click.prevent="removeCondition(condition)"
+                      >删除</el-button
+                    >
+                    <!-- <el-button @click="addCondition">新增</el-button> -->
+                    <!-- <i
+                      class="el-icon-delete"
+                      @click.prevent="removeCondition(condition)"
+                      style="cursor: pointer; font-size: 25px"
+                    ></i>
+                    <i
+                      class="el-icon-circle-plus-outline"
+                      @click="addCondition"
+                      style="cursor: pointer; font-size: 25px"
+                    ></i> -->
+                  </el-form-item>
+                </el-form>
+              </div>
+            </el-col>
+            <el-col :xs="24" :sm="24" :md="24" :lg="4">
+              <el-button type="primary" @click="addCondition" size="mini"
+                >新增篩選條件</el-button
+              >
+              <el-button type="primary" @click="onSearch" size="mini"
+                >查詢</el-button
+              >
+            </el-col>
+          </template>
+
+          <!-- <el-input
             v-if="hasSearch == true"
             placeholder="請輸入內容，多條件搜尋請依左側'勾選條件'依序輸入值並以'逗號'區隔"
             v-model="inputSearch"
@@ -25,7 +183,7 @@
               clearable
             >
               <el-option
-                v-for="(item, index) in inputSelectChange()"
+                v-for="(item, index) in inputSelectChange"
                 :key="index"
                 :label="item.label"
                 :value="item.prop"
@@ -37,38 +195,20 @@
               icon="el-icon-search"
               @click="handleSearchWord"
             ></el-button>
-          </el-input>
-          <el-button
+          </el-input> -->
+
+          <!-- <el-button
             v-if="title == 'maintain' || title == 'maintainList'"
             class="filter-item"
             type="primary"
             @click="change"
           >
             <span> 檢視大項 </span>
-          </el-button>
-          <el-select
-            v-if="
-              title == 'deviceAddressManagement' ||
-              title == 'devicePLCAddressManagement'
-            "
-            v-model="deviceIdSelect"
-            filterable
-            placeholder="請選擇設備"
-            style="width: 500px"
-            clearable
-            value-key="id"
-            @change="searchDevice"
-          >
-            <el-option
-              v-for="(item, index) in deviceSelectArray"
-              :key="index"
-              :label="item.label"
-              :value="item"
-            >
-            </el-option>
-          </el-select>
+          </el-button> -->
         </el-col>
       </div>
+    </el-row>
+    <el-row :gutter="gutter">
       <div
         class="infinite-list-wrapper"
         :style="{ height: infiniteheight + 'px' }"
@@ -371,21 +511,25 @@
               :column-key="item.prop"
               sortable="custom"
             >
-              <!-- :filters="getFilterItems(item.prop)"
-                            :filter-method="filterHandler" -->
               <template slot-scope="scope">
                 <span v-if="item.formType == 'date'" style="width: 150px">
-                  {{ dataStr(scope.row[scope.column.property], item.format) }}
+                  {{
+                    dataStr(
+                      scope.row[scope.column.property],
+                      item.format,
+                      item.prop == "birthday" ? true : false
+                    )
+                  }}
                 </span>
 
                 <span v-else-if="item.formType == 'range'">
                   {{ dataStr(scope.row["checkStartDate"], "YYYY-MM-DD") }}
                   <span
                     v-if="
-                      scope.row['checkStartDate'] !== null ||
+                      scope.row['checkStartDate'] !== null &&
                       scope.row['checkStartDate'] !== undefined
                     "
-                    ><br
+                    >~<br
                   /></span>
                   {{ dataStr(scope.row["checkEndDate"], "YYYY-MM-DD") }}
                 </span>
@@ -537,6 +681,7 @@ import {
 } from "@/object/index";
 const moment = require("moment");
 import constant from "@/constant/index";
+import { getUUID } from "@/utils";
 
 export default {
   mixins: [computedmixin],
@@ -611,6 +756,29 @@ export default {
     },
   },
   computed: {
+    canotSearch() {
+      var data = this.config.filter((item) => item.selectFilter == true);
+      this.searchForm.preset = _.cloneDeep(data).map((item) => {
+        var i = {
+          prop: item.prop,
+          searchValue: "",
+          islink: item.prop.indexOf("link") !== -1,
+          type: item.formType,
+        };
+        return i;
+      });
+      var list = _.cloneDeep(data).map((obj) => {
+        if (obj.format == "deviceTypeSelect") {
+          obj.formType = "fullType";
+          obj.format = "fullType";
+        }
+        return obj;
+      });
+      return list;
+    },
+    inputSelectChange() {
+      return this.config.filter((item) => item.isSearch == true);
+    },
     table() {
       var array = [];
       if (this.filterSearch.length) {
@@ -818,6 +986,17 @@ export default {
       sortOrder: "",
       deviceIdSelect: null,
       deviceSelectArray: [],
+      searchForm: {
+        preset: [],
+        conditions: [
+          {
+            prop: "",
+            searchValue: "",
+            islink: false,
+            type: "input",
+          },
+        ],
+      },
     };
   },
   methods: {
@@ -1119,78 +1298,37 @@ export default {
         }
       });
     },
-    //表格排序
-    // sortChange(column){
-    //     console.log(column)
-    //     var self = this
-    //     if (column.order === "descending") {
-    //         this.blockData = this.blockData.sort(function(str1,str2){
-    //             console.log(str1[column.prop],str2[column.prop])
-    //             var s1 = str1[column.prop] == null ? '' : str1[column.prop]
-    //             var s2 = str2[column.prop] == null ? '' : str2[column.prop]
-    //             return self.sortRule(s2,s1)
-    //         })
-    //     } else if (column.order === "ascending") {
-    //         this.blockData = this.blockData.sort(function(str1,str2){
-    //             var s1 = str1[column.prop] == null ? '' : str1[column.prop]
-    //             var s2 = str2[column.prop] == null ? '' : str2[column.prop]
-    //             return self.sortRule(s1,s2)
-    //         })
-    //     }
-    // },
-    // sortRule(str1, str2) {
-    //     let res = 0
-    //     for (let i = 0; ;i++) {
-    // 		if (!str1[i] || !str2[i]) {
-    //             res = str1.length - str2.length
-    //             if(typeof str1 == 'boolean' && typeof str2 == 'boolean'){
-    //                 res = str1 - str2
-    //             }
-    //             break
-    //         }
-    //         const char1 = str1[i]
-    //         const char1Type = this.getChartType(char1)
-    //         const char2 = str2[i]
-    //         const char2Type = this.getChartType(char2)
-
-    //         if (char1Type[0] === char2Type[0]) {
-    //             if (char1 === char2) {
-    //                 continue
-    //             } else {
-    //                 if (char1Type[0] === 'zh') {
-    //                     res = char1.localeCompare(char2)
-    //                 } else if (char1Type[0] === 'en') {
-    //                     res = char1.charCodeAt(0) - char2.charCodeAt(0)
-    //                 } else {
-    //                     res = char1 - char2
-    //                 }
-    //                 break
-    //             }
-    //         } else {
-    //             // 类型不同的，直接用返回的数字相减
-    //             res = char1Type[1] - char2Type[1]
-    //             break
-    //         }
-    // 	}
-    // 	return res
-    // },
-    // getChartType(char) {
-    // 	// 數字(0-9)->大寫字母(A->Z)->小寫字母(a->z)->中文拼音
-    // 	if (/^[\u4e00-\u9fa5]$/.test(char)) {
-    // 		return ['zh', 300]
-    // 	}
-    // 	if (/^[a-zA-Z]$/.test(char)) {
-    // 		return ['en', 200]
-    // 	}
-    // 	if (/^[0-9]$/.test(char)) {
-    // 		return ['number', 100]
-    // 	}
-    // 	return ['others', 999]
-    // },
     // 改變搜尋條件
-    inputSelectChange() {
-      return this.config.filter((item) => item.isSearch == true);
+    // inputSelectChange() {
+    //   return this.config.filter((item) => item.isSearch == true);
+    // },
+
+    //選取列
+    handleSelectionChange(val) {
+      this.selectArray = val;
     },
+    // 改變翻頁組件中每頁數據總數
+    handleSizeChange(val) {
+      this.listQueryParams.pageSize = val;
+      this.listQueryParams.pageIndex = 1; // 改變翻頁數目，將頁面=1
+      this.$emit("update:listQueryParams", this.listQueryParams);
+      this.$emit("clickPagination");
+    },
+    // 跳到當前是第幾頁
+    handleCurrentChange(val) {
+      this.listQueryParams.pageIndex = val;
+      this.$emit("update:listQueryParams", this.listQueryParams);
+      this.$emit("clickPagination");
+    },
+    change() {
+      this.$emit("changeTable", !this.isTable);
+    },
+    searchDevice() {
+      this.listQueryParams.internet = this.deviceIdSelect.getInternetNumber();
+      this.$emit("update:listQueryParams", this.listQueryParams);
+      this.$emit("clickPagination");
+    },
+    //舊版搜尋功能-清空selectArray
     clearInputSearch() {
       this.inputSelect = null;
       this.$emit("resetlistQueryParams");
@@ -1219,48 +1357,118 @@ export default {
         this.$emit("clickPagination");
       }
     },
-    //選取列
-    handleSelectionChange(val) {
-      this.selectArray = val;
-    },
-    // 改變翻頁組件中每頁數據總數
-    handleSizeChange(val) {
-      this.listQueryParams.pageSize = val;
-      this.listQueryParams.pageIndex = 1; // 改變翻頁數目，將頁面=1
-      this.$emit("update:listQueryParams", this.listQueryParams);
-      this.$emit("clickPagination");
-    },
-    // 跳到當前是第幾頁
-    handleCurrentChange(val) {
-      this.listQueryParams.pageIndex = val;
-      this.$emit("update:listQueryParams", this.listQueryParams);
-      this.$emit("clickPagination");
-    },
-    // selectfilter(value){
-    //     var type = value == 'fire' ?
-    //         'nDeviceTypeList.AE.AE_FireDetectorCentralControl' :
-    //         'nDeviceTypeList.OE.OE_ProgrammableLogicController'
-    //     return this.buildingdevices.filter(item =>
-    //         item.getLinkType().getFullType() == type &&
-    //         item.getInternetNumber() !== null).map(v => {
-    //             this.$set(v, 'value', v.getID())
-    //             this.$set(v, 'label', v.getLinkType().getSelectName()+'-'+v.getOnlyName())
-    //             this.$set(v, 'id', v.getID())
-    //              return v
-    //     })
-    // },
-    change() {
-      this.$emit("changeTable", !this.isTable);
-    },
-    searchDevice() {
-      this.listQueryParams.internet = this.deviceIdSelect.getInternetNumber();
-      this.$emit("update:listQueryParams", this.listQueryParams);
-      this.$emit("clickPagination");
-    },
-    //清空selectArray
     clearSelectArray() {
       this.selectArray = [];
       this.$refs.tableData.clearSelection();
+    },
+    //新版搜尋功能-日期不能多個
+    setConditionType(val, index) {
+      if (val !== "") {
+        var _index = this.searchForm.conditions.findIndex((item) => {
+          return item.prop == val && item.type == "date";
+        });
+        if (_index !== -1) {
+          this.$message.error("日期區間不得多重搜尋");
+          this.searchForm.conditions[index].prop = "";
+          return false;
+        }
+        var obj = this.config.filter((item) => item.prop == val)[0];
+        if (obj.formType == "date") {
+          //日期格式
+          this.searchForm.conditions[index].type = "date";
+        } else {
+          this.searchForm.conditions[index].type = "input";
+        }
+      }
+    },
+    removeCondition(item) {
+      var index = this.searchForm.conditions.indexOf(item);
+      if (index !== -1) {
+        this.searchForm.conditions.splice(index, 1);
+      }
+    },
+    addCondition() {
+      this.searchForm.conditions.push({
+        searchValue: "",
+        prop: "",
+        islink: false,
+        type: "input",
+      });
+    },
+    onSearch() {
+      this.listQueryParams = {
+        pageIndex: 1,
+        pageSize: 12,
+        total: 0,
+      };
+      var arr = this.searchForm.preset
+        .filter((obj) => {
+          return obj.searchValue.length !== 0;
+        })
+        .concat(this.searchForm.conditions)
+        .filter((obj) => {
+          return obj.searchValue !== "";
+        });
+      var reg = this.reorganization(arr);
+      console.log(JSON.stringify(reg));
+      reg.forEach((item) => {
+        var cond =
+          item.type == "date"
+            ? "{<~>}"
+            : item.type == "select" || item.type == "boolean"
+            ? ""
+            : "{LIKE}";
+        var data = item.data.join(",");
+        if (item.type == "date") {
+          var startDate = moment(item.data[0]).format("YYYY-MM-DD");
+          var endDate = moment(item.data[1]).format("YYYY-MM-DD");
+          data = startDate + "," + endDate;
+        } else if (item.type == "fullType") {
+          data = item.data.pop();
+        } else if (item.type == "select") {
+          var temp = [];
+          item.data.forEach((con) => {
+            temp.push({ id: con });
+          });
+          data = temp;
+        }
+        this.$set(
+          this.listQueryParams,
+          item.prop,
+          typeof data == "string" ? cond + data : data
+        );
+      });
+      // console.log(JSON.stringify(searchList));
+      console.log(JSON.stringify(this.listQueryParams));
+      // this.$emit("update:listQueryParams", this.listQueryParams);
+      // this.$emit("clickPagination");
+    },
+    reorganization(arr) {
+      var map = {},
+        dest = [];
+      for (var i = 0; i < arr.length; i++) {
+        var ai = arr[i];
+        var sv = ai.searchValue;
+        var type = typeof sv;
+        if (!map[ai.prop]) {
+          dest.push({
+            prop: ai.prop,
+            type: ai.type,
+            islink: ai.islink,
+            data: type == "string" ? new Array(sv) : sv,
+          });
+          map[ai.prop] = ai;
+        } else {
+          for (var j = 0; j < dest.length; j++) {
+            var dj = dest[j];
+            if (dj.prop == ai.prop) {
+              dj.data.push(sv);
+              break;
+            }
+          }
+        }
+      }
+      return dest;
     },
   },
 };
@@ -1354,9 +1562,9 @@ export default {
   max-height: 200px;
   overflow: auto;
 }
-.el-select {
-  width: 100%;
-}
+// .el-select {
+//   width: 100%;
+// }
 .el-date-editor.el-input {
   width: 100%;
 }

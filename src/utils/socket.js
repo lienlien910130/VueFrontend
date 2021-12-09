@@ -85,7 +85,7 @@ let wsConnection = {
             combineAddress(element, "LOC");
           }
         });
-      } else if (data.mode !== "emergency") {
+      } else if (data.mode !== "emergency" && data.mode !== "wsLoginFailed") {
         //平常接收訊息
         data.address.forEach((element) => {
           element.createTime = new Date();
@@ -123,7 +123,7 @@ let wsConnection = {
       console.log(msg);
       wsConnection.resetHeartbeat(_this.dataWs);
       var data = JSON.parse(msg.data);
-      if (data.SenderName == "MercuryfireWS65") {
+      if (data.senderName == "MercuryfireWS65") {
         store.dispatch("websocket/saveUserId", data.Id);
       } else {
         getMessage(msg);

@@ -512,12 +512,13 @@ export default {
     },
   },
 };
+// <style>
+// .el-form--inline .el-form-item__content {
+//   width: 100%;
+// }
+// </style>
 </script>
-<style>
-.el-form--inline .el-form-item__content {
-  width: 100%;
-}
-</style>
+
 <style lang="scss" scoped>
 .upload-drag-wrap {
   min-height: 600px;

@@ -109,7 +109,6 @@ class DeviceAddressManagement extends Parent {
       var data = await api.device
         .apiPostDevicesPLCAddress(deviceId, temp)
         .then((response) => {
-          console.log(response);
           return new DeviceAddressManagement(response.result);
         })
         .catch((error) => {
@@ -299,7 +298,7 @@ class DeviceAddressManagement extends Parent {
         mandatory: true,
         message: "請選擇類型",
         isHidden: false,
-        isSearch: true,
+        isSearch: false,
         placeholder: "請選擇類型",
         isAssociate: false,
         isEdit: true,
@@ -330,6 +329,7 @@ class DeviceAddressManagement extends Parent {
         formType: "select",
         limit: 1,
         isViewerInfo: false,
+        selectFilter: false,
       },
       {
         label: "樓層",
@@ -348,6 +348,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "selectString",
         isViewerInfo: false,
+        selectFilter: true,
       },
       {
         label: "點位類型",
@@ -366,6 +367,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: false,
         formType: "boolean",
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "點位",
@@ -376,7 +378,7 @@ class DeviceAddressManagement extends Parent {
         type: "string",
         typemessage: "",
         isHidden: false,
-        isSearch: false,
+        isSearch: true,
         isAssociate: false,
         isEdit: true,
         isUpload: false,
@@ -384,6 +386,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "addressStr",
         isViewerInfo: false,
+        selectFilter: false,
       },
       {
         label: "總機",
@@ -396,7 +399,7 @@ class DeviceAddressManagement extends Parent {
         pattern: /^[0-9]*$/g,
         errorMsg: "請輸入0-9之間的字元",
         isPattern: true,
-        isSearch: true,
+        isSearch: false,
         placeholder: "請輸入網路編號",
         isAssociate: false,
         isEdit: false,
@@ -404,6 +407,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: false,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "系統",
@@ -423,6 +427,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: false,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "位址",
@@ -442,6 +447,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: false,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "編號",
@@ -461,6 +467,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: false,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "記憶體位址",
@@ -477,6 +484,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: true,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "空間描述",
@@ -493,6 +501,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: true,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "類型",
@@ -510,6 +519,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "selectString",
         isViewerInfo: false,
+        selectFilter: true,
       },
       {
         label: "圖示",
@@ -528,9 +538,10 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "selectString",
         isViewerInfo: false,
+        selectFilter: false,
       },
       {
-        label: "圖控使用狀態",
+        label: "圖控設置",
         prop: "systemUsed",
         format: "systemUsedBoolean",
         mandatory: false,
@@ -545,6 +556,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "boolean",
         isViewerInfo: false,
+        selectFilter: false,
       },
       {
         label: "設備",
@@ -564,6 +576,7 @@ class DeviceAddressManagement extends Parent {
         formType: "select",
         limit: 1,
         isViewerInfo: true,
+        selectFilter: true,
       },
       {
         label: "門牌",
@@ -583,6 +596,7 @@ class DeviceAddressManagement extends Parent {
         formType: "select",
         limit: 0,
         isViewerInfo: true,
+        selectFilter: true,
       },
     ];
   }
@@ -606,6 +620,7 @@ class DeviceAddressManagement extends Parent {
         formType: "select",
         limit: 1,
         isViewerInfo: false,
+        selectFilter: false,
       },
       {
         label: "樓層",
@@ -624,6 +639,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "selectString",
         isViewerInfo: false,
+        selectFilter: true,
       },
       {
         label: "點位",
@@ -634,7 +650,7 @@ class DeviceAddressManagement extends Parent {
         type: "string",
         typemessage: "",
         isHidden: false,
-        isSearch: false,
+        isSearch: true,
         isAssociate: false,
         isEdit: true,
         isUpload: false,
@@ -642,6 +658,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "addressStr",
         isViewerInfo: false,
+        selectFilter: false,
       },
       {
         label: "總機",
@@ -651,7 +668,7 @@ class DeviceAddressManagement extends Parent {
         message: "請輸入網路編號",
         isHidden: true,
         maxlength: "5",
-        isSearch: true,
+        isSearch: false,
         placeholder: "請輸入網路編號",
         isAssociate: false,
         isEdit: false,
@@ -659,6 +676,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: false,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "系統",
@@ -675,6 +693,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: false,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "位址",
@@ -694,6 +713,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: false,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "編號",
@@ -713,6 +733,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: false,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "記憶體位址",
@@ -732,6 +753,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: true,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "記憶體長度",
@@ -748,6 +770,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: true,
         isViewerInfo: false,
+        selectFilter: false,
       },
       {
         label: "空間描述",
@@ -764,6 +787,7 @@ class DeviceAddressManagement extends Parent {
         isExport: true,
         isBlock: true,
         isViewerInfo: true,
+        selectFilter: false,
       },
       {
         label: "類型",
@@ -781,6 +805,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "selectString",
         isViewerInfo: false,
+        selectFilter: true,
       },
       {
         label: "值",
@@ -799,6 +824,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "selectString",
         isViewerInfo: false,
+        selectFilter: false,
       },
       {
         label: "圖示",
@@ -817,6 +843,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "selectString",
         isViewerInfo: false,
+        selectFilter: false,
       },
       {
         label: "圖控使用狀態",
@@ -834,6 +861,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         formType: "boolean",
         isViewerInfo: false,
+        selectFilter: false,
       },
       {
         label: "設備",
@@ -853,6 +881,7 @@ class DeviceAddressManagement extends Parent {
         formType: "select",
         limit: 1,
         isViewerInfo: true,
+        selectFilter: true,
       },
       {
         label: "門牌",
@@ -872,6 +901,7 @@ class DeviceAddressManagement extends Parent {
         formType: "select",
         limit: 0,
         isViewerInfo: true,
+        selectFilter: true,
       },
     ];
   }

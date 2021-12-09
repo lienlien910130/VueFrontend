@@ -300,6 +300,7 @@ export default {
       console.log("handleSelect", content);
       if (this.type == "edit") {
         this.$socket.sendMsg("graphic", "closeEdit", this.floor.getID());
+        this.$refs.graphic.resetCanvas();
       }
       this.type = "view";
       this.floor = content;
