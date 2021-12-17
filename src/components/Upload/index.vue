@@ -26,19 +26,28 @@
             icon="el-icon-folder-opened"
             style="margin: 0px 5px"
           ></el-button>
-          <el-button
-            type="success"
-            :disabled="isDisabled"
-            @click="onUpload"
-            icon="el-icon-upload"
-            style="margin: 0px 5px"
-          >
-          </el-button>
+
           <el-tooltip
             class="item"
-            effect="light"
+            effect="dark"
+            content="上傳檔案"
+            placement="bottom"
+          >
+            <el-button
+              type="success"
+              :disabled="isDisabled"
+              @click="onUpload"
+              icon="el-icon-upload"
+              style="margin: 0px 5px"
+            >
+            </el-button>
+          </el-tooltip>
+
+          <el-tooltip
+            class="item"
+            effect="dark"
             content="限圖片、txt、word、ppt、excel、pdf、rar、zip格式的檔案，且不超過10MB"
-            placement="top"
+            placement="bottom"
           >
             <el-button
               type="warning"
@@ -197,7 +206,7 @@ export default {
       handler: async function () {
         this.fullscreen == true
           ? (this.filesheight = "690px")
-          : (this.filesheight = "530px");
+          : (this.filesheight = "620px");
       },
       immediate: true,
     },
@@ -521,7 +530,7 @@ export default {
 
 <style lang="scss" scoped>
 .upload-drag-wrap {
-  min-height: 600px;
+  min-height: 680px;
 }
 .previewImg {
   width: 100%;
@@ -533,7 +542,7 @@ export default {
 }
 .files {
   width: 100%;
-  height: 530px;
+  height: 620px;
   overflow-x: hidden;
   overflow-y: auto;
 

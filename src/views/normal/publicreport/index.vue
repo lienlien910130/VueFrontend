@@ -176,7 +176,7 @@ export default {
       this.title = "reportPublicSafe";
       this.tableConfig = PublicSafe.getTableConfig();
       await this.getBuildingPublicSafeReport();
-      await this.getCertificateNumber();
+      await this.getProfessName();
       this.buttonsName = [
         { name: "刪除", icon: "el-icon-delete", status: "delete" },
         { name: "編輯", icon: "el-icon-edit", status: "open" },
@@ -192,7 +192,7 @@ export default {
       };
       await this.getBuildingPublicSafeReport();
     },
-    async getCertificateNumber() {
+    async getProfessName() {
       var data = await PublicSafe.getColumn({
         professName: "{IsNotNull}",
       });

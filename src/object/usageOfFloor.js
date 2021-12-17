@@ -1,7 +1,7 @@
 import Parent from "./parent";
 import api from "@/api";
-import User from "./user";
 import Files from "./files";
+import { Account } from ".";
 
 class UsageOfFloor extends Parent {
   constructor(data) {
@@ -17,22 +17,22 @@ class UsageOfFloor extends Parent {
       linkOwners,
       linkLivingUsers,
     } = data;
-    var owners =
+    var users =
       linkUsers !== undefined
         ? linkUsers.map((item) => {
-            return new User(item);
+            return new Account(item);
           })
         : [];
-    var users =
+    var owners =
       linkOwners !== undefined
         ? linkOwners.map((item) => {
-            return new User(item);
+            return new Account(item);
           })
         : [];
     var livinguser =
       linkLivingUsers !== undefined
         ? linkLivingUsers.map((item) => {
-            return new User(item);
+            return new Account(item);
           })
         : [];
     this.houseNumber = houseNumber;
@@ -50,7 +50,9 @@ class UsageOfFloor extends Parent {
   }
   async update(floorId) {
     var temp = JSON.parse(JSON.stringify(this));
-    temp.houseNumber = "{Check}" + temp.houseNumber;
+    if (floorId !== null) {
+      temp.houseNumber = "{Check}" + temp.houseNumber;
+    }
     var data = await api.building
       .apiPatchFloorOfHouse(floorId, temp)
       .then(async (response) => {
@@ -153,6 +155,7 @@ class UsageOfFloor extends Parent {
         isExport: true,
         isBlock: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "場所名稱",
@@ -330,6 +333,22 @@ class UsageOfFloor extends Parent {
   static async getSearchPage(floorId, data) {
     var data = await api.building
       .apiGetFloorOfHouseSearchPages(floorId, data)
+      .then((response) => {
+        response.result = response.result
+          .sort((x, y) => x.houseNumber - y.houseNumber)
+          .map((item) => {
+            return new UsageOfFloor(item);
+          });
+        return response;
+      })
+      .catch((error) => {
+        return [];
+      });
+    return data;
+  }
+  static async getSearch(data) {
+    var data = await api.building
+      .apiGetHouseSearchPages(data)
       .then((response) => {
         response.result = response.result
           .sort((x, y) => x.houseNumber - y.houseNumber)

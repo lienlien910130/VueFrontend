@@ -74,6 +74,17 @@ const building = {
   apiPostContactUnit(data) {
     return req("post", "/basic/contactUnit/check", this.getBid(), data);
   },
+  apiPostGovernmentApproval(data) {
+    data.forEach((element) => {
+      element.parentId = this.getBid();
+    });
+    return req(
+      "post",
+      "/basic/contactUnit/updateGovernmentApproval",
+      null,
+      data
+    );
+  },
   apiPatchContactUnit(data) {
     return req("patch", "/basic/contactUnit/check", this.getBid(), data);
   },
@@ -130,6 +141,9 @@ const building = {
   apiGetFloorOfHouseSearchPages(floorId, data) {
     return req("post", "/basic/usageOfFloors/floors/ss", floorId, data);
   },
+  apiGetHouseSearchPages(data) {
+    return req("post", "/basic/usageOfFloors/ss", null, data);
+  },
   apiPostFloorOfHouses(floorId, data) {
     data.forEach((element) => {
       element.parentId = floorId;
@@ -157,9 +171,9 @@ const building = {
   apiDeleteUser(userId) {
     return req("delete", "/basic/houseHolders/" + userId);
   },
-  apiGetUserSearchPages(data) {
-    return req("post", "/basic/houseHolders/ss", this.getBid(), data, true);
-  },
+  // apiGetUserSearchPages(data) {
+  //   return req("post", "/basic/houseHolders/ss", this.getBid(), data, true);
+  // },
   apiPostUsers(data) {
     data.forEach((element) => {
       element.parentId = this.getBid();

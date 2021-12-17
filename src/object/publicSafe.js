@@ -238,8 +238,9 @@ class PublicSafe extends Parent {
         selectFilter: false,
       },
       {
-        label: "證號",
+        label: "資格",
         prop: "certificateNumber",
+        format: "certificateNumber",
         mandatory: false,
         isHidden: false,
         maxlength: "20",
@@ -250,6 +251,7 @@ class PublicSafe extends Parent {
         isExport: true,
         isBlock: false,
         selectFilter: false,
+        formType: "selectString",
       },
       {
         label: "計劃書改善期限",

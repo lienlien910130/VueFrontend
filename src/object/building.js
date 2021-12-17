@@ -1,7 +1,7 @@
 import Parent from "./parent";
 import api from "@/api";
 import Files from "./files";
-import User from "./user";
+import { Account } from ".";
 
 class Building extends Parent {
   constructor(data) {
@@ -23,13 +23,13 @@ class Building extends Parent {
     var owners =
       linkOwners !== undefined
         ? linkOwners.map((item) => {
-            return new User(item);
+            return new Account(item);
           })
         : [];
     var fireManagers =
       linkFireManagers !== undefined
         ? linkFireManagers.map((item) => {
-            return new User(item);
+            return new Account(item);
           })
         : [];
     this.buildingName = buildingName;

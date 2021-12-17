@@ -1,6 +1,27 @@
 <template>
   <el-row :gutter="32" class="panel-group">
-    <el-col :xs="12" :sm="12" :lg="{span: '4-8'}" class="card-panel-col">
+    <template v-for="(item, index) in panelList">
+      <el-col :xs="12" :sm="12" :lg="lg" class="card-panel-col" :key="index">
+        <div class="card-panel" @click="handleSetLineChartData(item.type)">
+          <div class="card-panel-icon-wrapper">
+            <svg-icon :icon-class="item.svgIcon" class-name="card-panel-icon" />
+          </div>
+          <div class="card-panel-description">
+            <div class="card-panel-text">
+              {{ item.label }}
+            </div>
+            <count-to
+              :start-val="0"
+              :end-val="item.count"
+              :duration="2600"
+              class="card-panel-num"
+            />
+          </div>
+        </div>
+      </el-col>
+    </template>
+
+    <!-- <el-col :xs="12" :sm="12" :lg="{span: '4-8'}" class="card-panel-col">
       <div class="card-panel" @click="handleSetLineChartData('newVisitis')">
         <div class="card-panel-icon-wrapper icon-maintain">
           <svg-icon icon-class="maintain" class-name="card-panel-icon" />
@@ -64,84 +85,71 @@
           <count-to :start-val="0" :end-val="13600" :duration="3600" class="card-panel-num" />
         </div>
       </div>
-    </el-col>
+    </el-col> -->
   </el-row>
 </template>
 
 <script>
-import CountTo from 'vue-count-to'
+import CountTo from "vue-count-to";
 
 export default {
+  name: "PanelGroup",
   components: {
-    CountTo
+    CountTo,
+  },
+  computed: {
+    lg() {
+      return Math.floor(24 / this.panelList.length);
+    },
+  },
+  props: {
+    panelList: {
+      type: Array,
+      default: function () {
+        return [];
+      },
+    },
   },
   methods: {
     handleSetLineChartData(type) {
-      this.$emit('handleSetLineChartData', type)
-    }
-  }
-}
+      this.$emit("handleSetLineChartData", type);
+    },
+  },
+};
 </script>
 <style>
 .el-col-lg-4-8 {
-		width: 20%;
-	}
+  width: 20%;
+}
 </style>
 <style lang="scss" scoped>
 .panel-group {
-  margin-top: 18px;
-
+  height: 100%;
   .card-panel-col {
-    margin-bottom: 32px;
+    display: table;
+    height: 100%;
+    vertical-align: middle;
   }
 
   .card-panel {
-    height: 108px;
+    height: 100%;
+    display: table-cell;
     cursor: pointer;
     font-size: 12px;
     position: relative;
     overflow: hidden;
     color: #666;
     background: #fff;
-    box-shadow: 4px 4px 40px rgba(0, 0, 0, .05);
-    border-color: rgba(0, 0, 0, .05);
+    box-shadow: 4px 4px 40px rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.05);
+    vertical-align: middle;
+    border-radius: 20px;
 
     &:hover {
       .card-panel-icon-wrapper {
         color: #fff;
-      }
-
-      .icon-maintain {
-        background: #40c9c6;
-      }
-
-      .icon-inspection {
-        background: #36a3f7;
-      }
-
-      .icon-money {
         background: #f4516c;
       }
-
-      .icon-shopping {
-        background: #34bfa3
-      }
-    }
-
-    .icon-maintain {
-      background: gray;
-    }
-
-    .icon-inspection {
-      background: gray;
-    }
-
-    .icon-money {
-      background: gray;
-    }
-
-    .icon-shopping {
-      background: gray;
     }
 
     .card-panel-icon-wrapper {
@@ -150,6 +158,7 @@ export default {
       padding: 16px;
       transition: all 0.38s ease-out;
       border-radius: 6px;
+      background: gray;
     }
 
     .card-panel-icon {
@@ -177,7 +186,7 @@ export default {
   }
 }
 
-@media (max-width:550px) {
+@media (max-width: 550px) {
   .card-panel-description {
     display: none;
   }

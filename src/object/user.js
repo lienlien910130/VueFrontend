@@ -77,20 +77,20 @@ class User extends Parent {
   getUsageOfFloor() {
     return this.usageOfFloor;
   }
-  static empty() {
-    return new User({
-      id: "",
-      name: "",
-      identityCard: "",
-      birthday: null,
-      callNumber: "",
-      cellPhoneNumber: "",
-      emergencyNumber: "",
-      email: "",
-      note: "",
-      usageOfFloor: "",
-    });
-  }
+  // static empty() {
+  //   return new User({
+  //     id: "",
+  //     name: "",
+  //     identityCard: "",
+  //     birthday: null,
+  //     callNumber: "",
+  //     cellPhoneNumber: "",
+  //     emergencyNumber: "",
+  //     email: "",
+  //     note: "",
+  //     usageOfFloor: "",
+  //   });
+  // }
   static getTableConfig() {
     return [
       {
@@ -276,20 +276,20 @@ class User extends Parent {
       });
     return data;
   }
-  static async getSearchPage(data) {
-    var data = await api.building
-      .apiGetUserSearchPages(data)
-      .then((response) => {
-        response.result = response.result.map((item) => {
-          return new User(item);
-        });
-        return response;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
+  // static async getSearchPage(data) {
+  //   var data = await api.building
+  //     .apiGetUserSearchPages(data)
+  //     .then((response) => {
+  //       response.result = response.result.map((item) => {
+  //         return new User(item);
+  //       });
+  //       return response;
+  //     })
+  //     .catch((error) => {
+  //       return [];
+  //     });
+  //   return data;
+  // }
   static async postMany(data) {
     var data = await api.building
       .apiPostUsers(data)

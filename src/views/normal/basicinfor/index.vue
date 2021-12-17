@@ -30,6 +30,16 @@
               >
               </Block>
             </el-tab-pane>
+            <el-tab-pane label="消防安全設備檢修專業機構" name="Professional">
+              <Block
+                v-if="activeName == 'Professional'"
+                ref="block"
+                :list-query-params.sync="listQueryParams"
+                v-bind="blockAttrs"
+                v-on="ContactunitListblockEvent"
+              >
+              </Block>
+            </el-tab-pane>
             <el-tab-pane label="大樓相關資料" name="BOT">
               <Upload
                 v-if="activeName == 'BOT'"
@@ -74,10 +84,6 @@
                 v-bind="floorImageAttrs"
               ></FloorImage>
             </el-tab-pane>
-            <el-tab-pane label="自衛消防編組" name="SD" :disabled="!isChoose">
-            </el-tab-pane>
-            <el-tab-pane label="流程圖" name="FL" :disabled="!isChoose">
-            </el-tab-pane>
             <el-tab-pane label="樓層相關資料" name="OT" :disabled="!isChoose">
               <Upload
                 ref="floorsupload"
@@ -114,6 +120,7 @@
         v-if="excelVisible === true"
         v-bind="excelAttrs"
         v-on:handleDialog="handleDialog"
+        :isP="activeName == 'Professional'"
       ></DialogExcel>
     </el-row>
   </div>
@@ -130,6 +137,7 @@ import {
   Contactunit,
   Building,
   Floors,
+  Account,
 } from "@/object/index";
 export default {
   name: "Tab",
@@ -182,6 +190,7 @@ export default {
         title: this.downTitle,
         isTable: this.isTable,
         buttonsName: this.downButtonsName,
+        headerButtonsName: this.downheaderButtonsName,
       };
     },
     ManagementListblockEvent() {
@@ -203,6 +212,7 @@ export default {
         handleBlock: this.handleBlock,
         clickPagination: this.getFloorOfHouseList,
         resetlistQueryParams: this.resetdownlistQueryParams,
+        searchEvent: this.getFloorOfHouseListSearch,
       };
     },
     UserblockEvent() {
@@ -238,6 +248,7 @@ export default {
         { name: "刪除", icon: "el-icon-delete", status: "delete" },
         { name: "編輯", icon: "el-icon-edit", status: "open" },
       ],
+      downheaderButtonsName: [],
       downlistQueryParams: {
         pageIndex: 1,
         pageSize: 12,
@@ -259,12 +270,30 @@ export default {
         { name: "刪除", icon: "el-icon-delete", status: "delete" },
         { name: "編輯", icon: "el-icon-edit", status: "open" },
       ];
+      this.downheaderButtonsName = [
+        { name: "多筆刪除", icon: "el-icon-delete", status: "deleteMany" },
+        { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
+        {
+          name: "新增資料",
+          icon: "el-icon-circle-plus-outline",
+          status: "empty",
+        },
+        { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
+        { name: "匯入檔案", icon: "el-icon-upload2", status: "uploadExcel" },
+      ];
       if (this.$refs.downblock !== undefined)
         this.$refs.downblock.clearSelectArray();
       if (val == "US") {
         this.downTitle = "user";
-        this.downConfig = User.getTableConfig();
+        this.downConfig = Account.getUserTableConfig();
         await this.resetdownlistQueryParams();
+        this.downButtonsName = [
+          { name: "編輯", icon: "el-icon-edit", status: "open" },
+        ];
+        this.downheaderButtonsName = [
+          { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
+          { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
+        ];
       }
       if (this.selectFloor !== null) {
         if (val == "IN") {
@@ -286,8 +315,6 @@ export default {
         } else if (val == "OT") {
           this.downTitle = "floorFiles";
           this.floorFiles = await this.selectFloor.files();
-        } else if (val == "SD") {
-        } else if (val == "FL") {
         }
       }
     },
@@ -302,6 +329,9 @@ export default {
       } else if (val == "Vender") {
         this.title = "contactUnit";
         this.tableConfig = Contactunit.getTableConfig();
+      } else if (val == "Professional") {
+        this.title = "contactUnit";
+        this.tableConfig = Contactunit.getProfessionalTableConfig();
       } else {
         //BOT
         this.title = "buildingFiles";
@@ -315,7 +345,14 @@ export default {
       this.title = "committee";
       this.downTitle = "user";
       this.tableConfig = Committee.getTableConfig();
-      this.downConfig = User.getTableConfig();
+      this.downConfig = Account.getUserTableConfig();
+      this.downButtonsName = [
+        { name: "編輯", icon: "el-icon-edit", status: "open" },
+      ];
+      this.downheaderButtonsName = [
+        { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
+        { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
+      ];
       await this.getManagementList();
       await this.getUserList();
     },
@@ -327,7 +364,10 @@ export default {
       };
       if (this.activeName == "MC") {
         await this.getManagementList();
-      } else if (this.activeName == "Vender") {
+      } else if (
+        this.activeName == "Vender" ||
+        this.activeName == "Professional"
+      ) {
         await this.getContactunitList();
       }
     },
@@ -353,16 +393,6 @@ export default {
         this.loading = false;
       }
     },
-    async getFloorOfHouse() {
-      //取得大樓所有門牌
-      // var data = await UsageOfFloor.getAll()
-      // this.usageOfFloorSelectList = data.map(v => {
-      //     this.$set(v, 'id', v.id)
-      //     this.$set(v, 'label', v.houseNumber)
-      //     this.$set(v, 'value', v.id)
-      //     return v
-      // })
-    },
     async getManagementList() {
       //取得管委會
       var data = await Committee.getSearchPage(this.listQueryParams);
@@ -371,6 +401,9 @@ export default {
     },
     async getContactunitList() {
       //取得廠商資料
+      if (this.activeName == "Professional") {
+        this.listQueryParams.governmentApproval = true;
+      }
       var data = await Contactunit.getSearchPage(this.listQueryParams);
       this.blockData = data.result;
       this.listQueryParams.total = data.totalPageCount;
@@ -384,9 +417,17 @@ export default {
       this.downData = data.result;
       this.downlistQueryParams.total = data.totalPageCount;
     },
+    async getFloorOfHouseListSearch() {
+      //取得樓層門牌資料
+      var data = await UsageOfFloor.getSearch(this.downlistQueryParams);
+      this.downData = data.result;
+      this.downlistQueryParams.total = data.totalPageCount;
+    },
     async getUserList() {
       //取得大樓住戶資料
-      var data = await User.getSearchPage(this.downlistQueryParams);
+      this.downlistQueryParams.linkBuildings = [{ id: this.buildingid }];
+      this.downlistQueryParams.usageOfFloor = "{IsNotNull}";
+      var data = await Account.getUserSearchPage(this.downlistQueryParams);
       this.downData = data.result;
       this.downlistQueryParams.total = data.totalPageCount;
     },
@@ -394,7 +435,7 @@ export default {
       //轉接口
       console.log("handleBuildingInfo", index, content);
       if (index == "openUser") {
-        await this.handleBlock("user", "open", content);
+        await this.handleBlock("user", "updateMany", content);
       } else if (index == "open") {
         this.dialogData = [];
         this.dialogTitle = "buildingInfo";
@@ -505,8 +546,8 @@ export default {
           constructor = UsageOfFloor;
           break;
         case "user":
-          this.dialogConfig = User.getTableConfig();
-          empty = User.empty();
+          this.dialogConfig = Account.getUserTableConfig();
+          // empty = User.empty();
           exportdata = this.downData;
           constructor = User;
           break;
@@ -559,7 +600,10 @@ export default {
               }
               if (this.activeName == "MC") {
                 await this.getManagementList();
-              } else if (this.activeName == "Vender") {
+              } else if (
+                this.activeName == "Vender" ||
+                this.activeName == "Professional"
+              ) {
                 await this.getContactunitList();
               }
               this.$refs.block.clearSelectArray();
@@ -570,17 +614,17 @@ export default {
                 "delete",
                 index === "delete" ? content.getID() : deleteArray.toString()
               );
-            case "user": //刪除user時重整建築物資料(可能會更改到所有權人&防火管理人的資料)&管委會資料(有關聯住戶)
-              var data = await Building.getInfo();
-              this.$store.dispatch("building/setBuildingInfo", data);
-              this.$socket.sendMsg("building", "info", data);
-              this.$store.dispatch("building/setHouseHolders");
-              this.$socket.sendMsg(
-                "houseHolder",
-                "delete",
-                index === "delete" ? content.getID() : deleteArray.toString()
-              );
-            case "user":
+            // case "user": //刪除user時重整建築物資料(可能會更改到所有權人&防火管理人的資料)&管委會資料(有關聯住戶)
+            //   var data = await Building.getInfo();
+            //   this.$store.dispatch("building/setBuildingInfo", data);
+            //   this.$socket.sendMsg("building", "info", data);
+            //   this.$store.dispatch("building/setHouseHolders");
+            //   this.$socket.sendMsg(
+            //     "houseHolder",
+            //     "delete",
+            //     index === "delete" ? content.getID() : deleteArray.toString()
+            //   );
+            // case "user":
             case "floorOfHouse":
               var length = content.length !== undefined ? content.length : 1;
               var page = Math.ceil(
@@ -625,15 +669,10 @@ export default {
         //管委會關聯門牌
         await this.handleBuildingInfo("openfloorofhouse", content);
       } else if (index === "exportExcel") {
-        // this.exportExcelData = exportdata
-        // this.innerVisible = true
-        // this.dialogStatus = 'exportExcel'
         this.exportExcelData = exportdata;
         this.excelVisible = true;
         this.excelType = "exportExcel";
       } else if (index === "uploadExcel") {
-        // this.innerVisible = true
-        // this.dialogStatus = 'uploadExcel'
         this.excelVisible = true;
         this.excelType = "uploadExcel";
       } else if (index === "updateMany") {
@@ -693,18 +732,27 @@ export default {
           ? this.$message("更新成功")
           : this.$message("新增成功");
         await this.getManagementList();
-        if (index !== "updateManySave") this.innerVisible = false;
+        if (index !== "updateManySave") {
+          this.innerVisible = false;
+        } else {
+          this.dialogData.forEach((item, index) => {
+            if (item.id == content.id) {
+              this.dialogData.splice(index, 1, content);
+            }
+          });
+        }
       } else {
         this.$message.error("系統錯誤");
       }
     },
     async onContactUnitActions(index, content) {
+      console.log(index, content);
       var result =
         index === "update" || index === "updateManySave"
           ? await content.update()
           : index === "create"
           ? await content.create()
-          : await Contactunit.postMany(content);
+          : await Contactunit.postMany(content, this.activeName);
       var condition =
         index !== "uploadExcelSave"
           ? Object.keys(result).length !== 0
@@ -720,7 +768,15 @@ export default {
           index !== "uploadExcelSave" ? result : result.result
         );
         await this.getContactunitList();
-        if (index !== "updateManySave") this.innerVisible = false;
+        if (index !== "updateManySave") {
+          this.innerVisible = false;
+        } else {
+          this.dialogData.forEach((item, index) => {
+            if (item.id == content.id) {
+              this.dialogData.splice(index, 1, content);
+            }
+          });
+        }
       } else {
         if (index !== "uploadExcelSave") {
           this.$message.error("該公司名稱已存在，請重新輸入");
@@ -745,7 +801,9 @@ export default {
       ) {
         var result =
           index === "update" || index === "updateManySave"
-            ? await content.update(this.selectFloor.getID())
+            ? await content.update(
+                this.selectFloor !== null ? this.selectFloor.getID() : null
+              )
             : index === "create"
             ? await content.create(this.selectFloor.getID())
             : await UsageOfFloor.postMany(this.selectFloor.getID(), content);
@@ -766,7 +824,15 @@ export default {
             index,
             index !== "uploadExcelSave" ? result : result.result
           );
-          if (index !== "updateManySave") this.innerVisible = false;
+          if (index !== "updateManySave") {
+            this.innerVisible = false;
+          } else {
+            this.dialogData.forEach((item, index) => {
+              if (item.id == content.id) {
+                this.dialogData.splice(index, 1, content);
+              }
+            });
+          }
           if (this.selectFloor !== null && this.activeFloor == "IN") {
             await this.getFloorOfHouseList();
           }
@@ -795,8 +861,9 @@ export default {
       }
     },
     async onUserActions(index, content) {
+      //只剩下更新&多筆更新&匯出檔案的功能
       if (index == "create" || index == "update" || index == "updateManySave") {
-        var data = await User.getSearchPage({
+        var data = await Account.getSearchPage({
           identityCard: "{LIKE}" + content.identityCard,
           pageIndex: 1,
           pageSize: 12,
@@ -811,12 +878,12 @@ export default {
         if (canSave) {
           var result =
             index === "update" || index == "updateManySave"
-              ? await content.update()
+              ? await content.updateP()
               : await content.create();
           if (Object.keys(result).length !== 0) {
-            this.$store.dispatch("building/setHouseHolders");
-            this.$socket.sendMsg("houseHolder", index, result);
-            await this.getUserList();
+            this.$store.dispatch("building/setaccounts");
+            this.$socket.sendMsg("account", index, result);
+
             if (index === "update" || index == "updateManySave") {
               this.$message("更新成功");
               var data = await Building.getInfo();
@@ -826,35 +893,49 @@ export default {
                 //重整管委會
                 await this.getManagementList();
               }
+              if (this.activeFloor == "US") {
+                await this.getUserList();
+              } else if (this.activeFloor == "IN") {
+                await this.getFloorOfHouseList();
+              }
             } else {
               this.$message("新增成功");
             }
-            if (index !== "updateManySave") this.innerVisible = false;
+            if (index !== "updateManySave") {
+              this.innerVisible = false;
+            } else {
+              this.dialogData.forEach((item, index) => {
+                if (item.id == content.id) {
+                  this.dialogData.splice(index, 1, content);
+                }
+              });
+            }
           } else {
             this.$message.error("該姓名已存在，請重新輸入");
           }
         } else {
           this.$message.error("該身份證已存在，請重新輸入");
         }
-      } else if (index === "uploadExcelSave") {
-        var result = await User.postMany(content);
-        if (result.result.length !== 0) {
-          this.$message("新增成功");
-          this.$store.dispatch("building/setHouseHolders");
-          this.$socket.sendMsg("houseHolder", index, result.result);
-          await this.getUserList();
-          this.excelVisible = false;
-        }
-        if (result.repeatDataList !== undefined) {
-          var list = [];
-          result.repeatDataList.forEach((item) => {
-            list.push(item.name);
-          });
-          this.$message.error(
-            "【" + list.toString() + "】姓名已存在，請重新上傳"
-          );
-        }
       }
+      // else if (index === "uploadExcelSave") {
+      //   var result = await User.postMany(content);
+      //   if (result.result.length !== 0) {
+      //     this.$message("新增成功");
+      //     this.$store.dispatch("building/setHouseHolders");
+      //     this.$socket.sendMsg("houseHolder", index, result.result);
+      //     await this.getUserList();
+      //     this.excelVisible = false;
+      //   }
+      //   if (result.repeatDataList !== undefined) {
+      //     var list = [];
+      //     result.repeatDataList.forEach((item) => {
+      //       list.push(item.name);
+      //     });
+      //     this.$message.error(
+      //       "【" + list.toString() + "】姓名已存在，請重新上傳"
+      //     );
+      //   }
+      // }
     },
     async onBuildingActions(index, content) {
       if (index == "update") {

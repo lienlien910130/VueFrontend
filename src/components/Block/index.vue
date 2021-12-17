@@ -1,167 +1,188 @@
 <template>
   <div>
     <el-row>
-      <div style="margin-bottom: 50px">
-        <el-col v-if="isTable == true" :xs="24" :sm="24" :md="24" :lg="24">
-          <el-select
-            v-if="
-              title == 'deviceAddressManagement' ||
-              title == 'devicePLCAddressManagement'
-            "
-            v-model="deviceIdSelect"
-            filterable
-            placeholder="請選擇設備"
-            style="width: 500px; margin-bottom: 10px"
-            value-key="id"
-            @change="searchDevice"
+      <el-col :xs="24" :sm="24" :md="24" :lg="24">
+        <el-select
+          v-if="
+            title == 'deviceAddressManagement' ||
+            title == 'devicePLCAddressManagement'
+          "
+          v-model="deviceIdSelect"
+          filterable
+          placeholder="請選擇設備"
+          style="width: 500px; margin-bottom: 10px"
+          value-key="id"
+          @change="searchDevice"
+        >
+          <el-option
+            v-for="(item, index) in deviceSelectArray"
+            :key="index"
+            :label="item.label"
+            :value="item"
           >
-            <el-option
-              v-for="(item, index) in deviceSelectArray"
-              :key="index"
-              :label="item.label"
-              :value="item"
-            >
-            </el-option>
-          </el-select>
-          <template v-if="hasSearch == true">
-            <el-col :xs="24" :sm="24" :md="24" :lg="20">
-              <div style="height: 105px; overflow-x: auto; overflow-y: auto">
-                <el-form
-                  :inline="true"
-                  :model="searchForm"
-                  class="demo-form-inline"
-                  size="mini"
+          </el-option>
+        </el-select>
+        <el-button
+          v-if="title == 'maintainList'"
+          type="primary"
+          @click="change"
+        >
+          檢視及搜尋細項
+        </el-button>
+        <el-button
+          v-if="title == 'maintainList'"
+          type="primary"
+          @click="handleClickOption('empty', '')"
+        >
+          新增
+        </el-button>
+      </el-col>
+    </el-row>
+    <el-row v-if="hasSearch == true">
+      <div style="margin-bottom: 50px">
+        <template>
+          <el-col :xs="24" :sm="24" :md="24" :lg="18">
+            <div style="height: 105px; overflow-x: auto; overflow-y: auto">
+              <el-form
+                :inline="true"
+                :model="searchForm"
+                class="demo-form-inline"
+                size="mini"
+              >
+                <el-form-item
+                  v-for="(item, index) in canotSearch"
+                  :key="index"
+                  :label="item.label"
                 >
-                  <el-form-item
-                    v-for="(item, index) in canotSearch"
-                    :key="index"
-                    :label="item.label"
+                  <el-select
+                    v-if="
+                      item.formType !== 'date' && item.formType !== 'fullType'
+                    "
+                    v-model="searchForm.preset[index].searchValue"
+                    :placeholder="item.placeholder"
+                    clearable
+                    multiple
+                    :multiple-limit="item.formType == 'boolean' ? 1 : 0"
+                    collapse-tags
+                    filterable
                   >
-                    <el-select
-                      v-if="
-                        item.formType !== 'date' && item.formType !== 'fullType'
+                    <template v-if="item.formType == 'boolean'">
+                      <el-option
+                        v-for="(val, index) in [true, false]"
+                        :key="index"
+                        :value="val"
+                        :label="val | changeBoolean(item.format)"
+                      ></el-option>
+                    </template>
+                    <template
+                      v-else-if="
+                        item.formType == 'select' ||
+                        item.formType == 'singleChoice' ||
+                        item.formType == 'selectString'
                       "
-                      v-model="searchForm.preset[index].searchValue"
-                      :placeholder="item.placeholder"
-                      clearable
-                      multiple
-                      collapse-tags
-                      filterable
-                    >
-                      <template v-if="item.formType == 'boolean'">
-                        <el-option
-                          v-for="(val, index) in [true, false]"
-                          :key="index"
-                          :value="val"
-                          :label="val | changeBoolean(item.format)"
-                        ></el-option>
-                      </template>
-                      <template
-                        v-else-if="
-                          item.formType == 'select' ||
-                          item.formType == 'selectString'
-                        "
-                      >
-                        <el-option
-                          v-for="(obj, index) in selectfilter(item.format)"
-                          :key="index"
-                          :label="obj.label"
-                          :value="obj.id"
-                        >
-                        </el-option>
-                      </template>
-                      <template v-else-if="item.formType == 'selectSetting'">
-                        <el-option
-                          v-for="(obj, index) in optionfilter(item.format)"
-                          :key="index"
-                          :label="obj.textName"
-                          :value="obj.id"
-                        >
-                        </el-option>
-                      </template>
-                    </el-select>
-                    <el-date-picker
-                      v-else-if="item.formType == 'date'"
-                      v-model="searchForm.preset[index].searchValue"
-                      type="daterange"
-                      range-separator="至"
-                      start-placeholder="開始日期"
-                      end-placeholder="結束日期"
-                    >
-                    </el-date-picker>
-                    <el-cascader
-                      v-else
-                      v-model="searchForm.preset[index].searchValue"
-                      placeholder="請選擇"
-                      :options="selectfilter('fullType')"
-                      filterable
-                      clearable
-                    >
-                    </el-cascader>
-                  </el-form-item>
-                  <br />
-                  <el-form-item
-                    v-for="(condition, index) in searchForm.conditions"
-                    :label="'條件' + (index + 1)"
-                    :key="index"
-                    :prop="'conditions.' + index + '.value'"
-                  >
-                    <el-select
-                      v-model="condition.prop"
-                      clearable
-                      @change="(val) => setConditionType(val, index)"
                     >
                       <el-option
-                        v-for="(item, index) in inputSelectChange"
+                        v-for="(obj, index) in selectfilter(
+                          item.format == 'commitUserInfo'
+                            ? 'userInfo'
+                            : item.format
+                        )"
                         :key="index"
-                        :label="item.label"
-                        :value="item.prop"
+                        :label="obj.label"
+                        :value="obj.id"
                       >
                       </el-option>
-                    </el-select>
-                    <el-input
-                      v-if="condition.type == 'input'"
-                      v-model="condition.searchValue"
-                      style="width: 35%"
-                    ></el-input>
-                    <el-date-picker
-                      v-else
-                      v-model="condition.searchValue"
-                      type="daterange"
-                      range-separator="至"
-                      start-placeholder="開始日期"
-                      end-placeholder="結束日期"
+                    </template>
+                    <template v-else-if="item.formType == 'selectSetting'">
+                      <el-option
+                        v-for="(obj, index) in optionfilter(item.format)"
+                        :key="index"
+                        :label="obj.textName"
+                        :value="obj.id"
+                      >
+                      </el-option>
+                    </template>
+                  </el-select>
+                  <el-date-picker
+                    v-else-if="item.formType == 'date'"
+                    v-model="searchForm.preset[index].searchValue"
+                    type="daterange"
+                    range-separator="至"
+                    start-placeholder="開始日期"
+                    end-placeholder="結束日期"
+                  >
+                  </el-date-picker>
+                  <el-cascader
+                    v-else
+                    v-model="searchForm.preset[index].searchValue"
+                    placeholder="請選擇"
+                    :options="selectfilter('fullType')"
+                    filterable
+                    clearable
+                  >
+                  </el-cascader>
+                </el-form-item>
+                <br />
+                <el-form-item
+                  v-for="(condition, index) in searchForm.conditions"
+                  :label="'條件' + (index + 1)"
+                  :key="index"
+                  :prop="'conditions.' + index + '.value'"
+                >
+                  <el-select
+                    v-model="condition.prop"
+                    clearable
+                    @change="(val) => setConditionType(val, index)"
+                  >
+                    <el-option
+                      v-for="(item, index) in inputSelectChange"
+                      :key="index"
+                      :label="item.label"
+                      :value="item.prop"
                     >
-                    </el-date-picker>
-                    <el-button @click.prevent="removeCondition(condition)"
-                      >删除</el-button
-                    >
-                    <!-- <el-button @click="addCondition">新增</el-button> -->
-                    <!-- <i
-                      class="el-icon-delete"
-                      @click.prevent="removeCondition(condition)"
-                      style="cursor: pointer; font-size: 25px"
-                    ></i>
-                    <i
-                      class="el-icon-circle-plus-outline"
-                      @click="addCondition"
-                      style="cursor: pointer; font-size: 25px"
-                    ></i> -->
-                  </el-form-item>
-                </el-form>
-              </div>
-            </el-col>
-            <el-col :xs="24" :sm="24" :md="24" :lg="4">
-              <el-button type="primary" @click="addCondition" size="mini"
-                >新增篩選條件</el-button
-              >
-              <el-button type="primary" @click="onSearch" size="mini"
-                >查詢</el-button
-              >
-            </el-col>
-          </template>
-
-          <!-- <el-input
+                    </el-option>
+                  </el-select>
+                  <el-input
+                    v-if="condition.type == 'input'"
+                    v-model="condition.searchValue"
+                    style="width: 35%"
+                  ></el-input>
+                  <el-date-picker
+                    v-else
+                    v-model="condition.searchValue"
+                    type="daterange"
+                    range-separator="至"
+                    start-placeholder="開始日期"
+                    end-placeholder="結束日期"
+                  >
+                  </el-date-picker>
+                  <el-button @click.prevent="removeCondition(condition)"
+                    >删除</el-button
+                  >
+                </el-form-item>
+              </el-form>
+            </div>
+          </el-col>
+          <el-col :xs="24" :sm="24" :md="24" :lg="6">
+            <el-button type="primary" @click="addCondition" size="mini"
+              >新增條件</el-button
+            >
+            <el-button type="primary" @click="onSearch" size="mini"
+              >查詢</el-button
+            >
+            <el-button @click="resetCondition(true)" size="mini"
+              >清空</el-button
+            >
+            <el-button
+              v-if="title == 'maintain'"
+              type="primary"
+              @click="change"
+              size="mini"
+              >檢視大項</el-button
+            >
+          </el-col>
+        </template>
+        <!-- <el-input
             v-if="hasSearch == true"
             placeholder="請輸入內容，多條件搜尋請依左側'勾選條件'依序輸入值並以'逗號'區隔"
             v-model="inputSearch"
@@ -197,7 +218,7 @@
             ></el-button>
           </el-input> -->
 
-          <!-- <el-button
+        <!-- <el-button
             v-if="title == 'maintain' || title == 'maintainList'"
             class="filter-item"
             type="primary"
@@ -205,7 +226,6 @@
           >
             <span> 檢視大項 </span>
           </el-button> -->
-        </el-col>
       </div>
     </el-row>
     <el-row :gutter="gutter">
@@ -513,13 +533,7 @@
             >
               <template slot-scope="scope">
                 <span v-if="item.formType == 'date'" style="width: 150px">
-                  {{
-                    dataStr(
-                      scope.row[scope.column.property],
-                      item.format,
-                      item.prop == "birthday" ? true : false
-                    )
-                  }}
+                  {{ dataStr(scope.row, item.format, item.prop) }}
                 </span>
 
                 <span v-else-if="item.formType == 'range'">
@@ -538,7 +552,11 @@
                   {{ changeOptionName(scope.row[item.prop]) }}
                 </span>
 
-                <span v-else-if="item.formType == 'boolean'">
+                <span
+                  v-else-if="
+                    item.formType == 'boolean' || item.formType == 'checkbox'
+                  "
+                >
                   {{ scope.row[item.prop] | changeBoolean(item.format) }}
                 </span>
 
@@ -547,7 +565,9 @@
                 </span>
 
                 <span
-                  v-else-if="item.formType == 'select'"
+                  v-else-if="
+                    item.formType == 'select' || item.formType == 'singleChoice'
+                  "
                   @click="
                     clickMessageBox(
                       item.label,
@@ -633,25 +653,34 @@
         </div>
       </div>
     </el-row>
-    <el-row
-      v-if="
-        isTable == true && title !== 'mainMenu' && title !== 'accessAuthority'
-      "
-    >
+    <el-row>
       <div class="pagination-container">
-        <el-pagination
-          background
-          layout="total, sizes, prev, pager, next, jumper"
-          :current-page="page"
-          :page-sizes="pageSizeList"
-          :page-size="limit"
-          :total="total"
-          @current-change="handleCurrentChange"
-          @size-change="handleSizeChange"
-        ></el-pagination>
+        <template v-if="isMobile == 'null'">
+          <el-pagination
+            background
+            layout="total, sizes, prev, pager, next, jumper"
+            :current-page="page"
+            :page-sizes="pageSizeList"
+            :page-size="limit"
+            :total="total"
+            @current-change="handleCurrentChange"
+            @size-change="handleSizeChange"
+          ></el-pagination>
+        </template>
+        <template v-else>
+          <el-pagination
+            small
+            @current-change="handleCurrentChange"
+            :current-page.sync="page"
+            :page-size="limit"
+            layout="total, prev, pager, next"
+            :total="total"
+          >
+          </el-pagination>
+        </template>
       </div>
     </el-row>
-    <el-row v-else-if="isTable == false" style="margin-left: -10px">
+    <!-- <el-row v-else-if="isTable == false" style="margin-left: -10px">
       <div class="pagination-container">
         <el-pagination
           small
@@ -663,25 +692,16 @@
         >
         </el-pagination>
       </div>
-    </el-row>
+    </el-row> -->
   </div>
 </template>
 
 <script>
 import { computedmixin } from "@/mixin/index";
-import {
-  Device,
-  DeviceType,
-  Contactunit,
-  User,
-  UsageOfFloor,
-  Role,
-  Building,
-  InspectionLacks,
-} from "@/object/index";
 const moment = require("moment");
 import constant from "@/constant/index";
 import { getUUID } from "@/utils";
+import { getDevice } from "@/utils/auth";
 
 export default {
   mixins: [computedmixin],
@@ -757,6 +777,10 @@ export default {
   },
   computed: {
     canotSearch() {
+      // var con =
+      //   this.title == "maintainList" || this.title == "maintain"
+      //     ? MaintainManagement.getTableConfig()
+      //     : this.config;
       var data = this.config.filter((item) => item.selectFilter == true);
       this.searchForm.preset = _.cloneDeep(data).map((item) => {
         var i = {
@@ -899,6 +923,9 @@ export default {
     total: function () {
       return this.listQueryParams.total || 0;
     },
+    isMobile: function () {
+      return getDevice();
+    },
   },
   watch: {
     isTable: {
@@ -918,6 +945,7 @@ export default {
     },
     title: {
       handler: async function () {
+        this.resetCondition();
         //點位的地方需要設定設備清單
         if (
           this.title == "deviceAddressManagement" ||
@@ -973,7 +1001,7 @@ export default {
       rowlabel: [],
       itemkey: Math.random(),
       gutter: 0,
-      updateArray: [],
+      //updateArray: [],
       orderArray: [],
       inputSelect: null,
       inputSearch: "",
@@ -1000,236 +1028,22 @@ export default {
     };
   },
   methods: {
-    changeText(val) {
-      var config = null;
-      switch (val.constructor) {
-        case User:
-          config = User.getTableConfig();
-          break;
-        case DeviceType:
-          config = DeviceType.getTableConfig();
-          break;
-        case Device:
-          config = Device.getTableConfig();
-          break;
-        case Contactunit:
-          config = Contactunit.getTableConfig();
-          break;
-        case UsageOfFloor:
-          config = UsageOfFloor.getTableConfig();
-          break;
-        case Role:
-          config = Role.getTableConfig();
-          break;
-        case Building:
-          config = Building.getTableConfig();
-          break;
-        case InspectionLacks:
-          config = InspectionLacks.getTableConfig();
-          break;
-      }
-      if (val !== undefined) {
-        var array = [];
-        var data = val.getInfo();
-        var config = config;
-        var keys = Object.keys(data);
-        keys.forEach((item) => {
-          var i = config.filter((obj) => {
-            return obj.prop == item;
-          });
-          if (i.length !== 0) {
-            var value = "";
-            if (item == "fullType") {
-              value = val.getType();
-            } else if (item == "collaborate") {
-              value = data[item] == true ? "合作中" : "未配合";
-            } else if (
-              item == "linkOwners" ||
-              item == "linkUsers" ||
-              item == "linkFireManagers" ||
-              item == "linkLivingUsers"
-            ) {
-              value = this.changeUserName(data[item]);
-            } else if (
-              item == "linkKeeperUnits" ||
-              item == "linkMaintainVendors"
-            ) {
-              value = this.changeContainUnit(data[item]);
-            } else if (item == "linkDeviceTypes") {
-              value = val.getLinkType().getSelectName();
-            } else if (item == "status") {
-              if (val.constructor == Role) {
-                value = data[item] == true ? "啟用中" : "未啟用";
-              } else {
-                value = this.changeOptionName(data[item]);
-              }
-            } else if (item == "removable") {
-              value = data[item] == true ? "允許" : "禁止";
-            } else if (item == "systemUsed") {
-              value = data[item] == true ? "已使用" : "未使用";
-            } else if (
-              item == "birthday" ||
-              item == "dateOfPurchase" ||
-              item == "dateOfWarranty"
-            ) {
-              value = moment(data[item]).format("YYYY-MM-DD");
-            } else {
-              value = data[item];
-            }
-            array.push({
-              label: i[0].label,
-              value: value,
-            });
-          }
-        });
-        return array;
-      }
-    },
-    clickMessageBox(title, format, data) {
-      if (data.length == 0) {
-        this.$message({
-          message: "無資料",
-          type: "warning",
-        });
-      } else {
-        const h = this.$createElement;
-        const bigData = [];
-        data.forEach((item) => {
-          const newDatas = [];
-          var changetext = this.changeText(item);
-          changetext.forEach((obj) => {
-            newDatas.push(
-              h("p", { style: "width:100%" }, [
-                h(
-                  "span",
-                  {
-                    style:
-                      "width:40%;display:inline-block;vertical-align:top;word-break:break-all",
-                  },
-                  obj.label
-                ),
-                h(
-                  "span",
-                  {
-                    style:
-                      "width:60%;display:inline-block;vertical-align:top;word-break:break-all",
-                  },
-                  obj.value
-                ),
-              ])
-            );
-          });
-          bigData.push(
-            h(
-              "div",
-              { style: "border:1px solid;padding:10px;margin-bottom:5px" },
-              newDatas
-            )
-          );
-        });
-        this.$msgbox({
-          title: title,
-          message: h(
-            "div",
-            { style: "max-height:500px;overflow-x:hidden;overflow-y:auto;" },
-            bigData
-          ),
-          showCancelButton: true,
-          distinguishCancelAndClose: true,
-          confirmButtonText: "編輯",
-          cancelButtonText: "取消",
-          beforeClose: (action, instance, done) => {
-            if (action === "confirm") {
-              done();
-              switch (format) {
-                case "userInfo": //住戶資料>平時管理-基本資料
-                  console.log(this.buildinginfo);
-                  if (this.buildinginfo == undefined) {
-                    this.$message({
-                      message: "請先選擇該棟建築物，才可對住戶進行編輯",
-                      type: "warning",
-                    });
-                  } else if (
-                    this.title == "floorOfHouse" ||
-                    this.title == "committee"
-                  ) {
-                    //門牌資料>打開住戶資料
-                    this.handleClickOption("openuser", data);
-                  } else {
-                    this.$router.push({
-                      name: "basic",
-                      params: { target: data, type: "user" },
-                    });
-                  }
-                  break;
-                case "deviceTypeSelect": //設備種類>設備管理-設備種類
-                  this.$router.push({
-                    name: "deviceTypesManagement",
-                    params: { target: data, type: "open" },
-                  });
-                  break;
-                //assignFireDeviceSelect
-                case "deviceSelect":
-                case "addressdeviceSelect": //設備>設備管理-設備清單 & 點位>設備管理-設備清單
-                  this.$router.push({
-                    name: "devicesManagement",
-                    params: { target: data, type: "open" },
-                  });
-                  break;
-                case "contactunitSelect": //廠商資料>平時管理-基本資料
-                  this.$router.push({
-                    name: "basic",
-                    params: { target: data, type: "contactunit" },
-                  });
-                  break;
-                case "floorOfHouseSelect": //門牌資料>打開當前視窗
-                  this.handleClickOption("openfloorofhouse", data);
-                  break;
-                // case 'floorOfHouseUsersName': //管委會>打開住戶資料
-                //     this.handleClickOption('openuser',data)
-                //     break;
-                case "roleSelect": //角色資料>權限設定-角色管理
-                  this.$router.push({
-                    name: "roleSetting",
-                    params: { target: data, type: "open" },
-                  });
-                  break;
-                case "inspectionSelect": //缺失內容>檢修申報
-                  this.$router.push({
-                    name: "ReportInspection",
-                    params: { target: data, type: "open" },
-                  });
-                  break;
-                case "buildingSelect":
-                  break;
-              }
-            } else {
-              done();
-            }
-          },
-        })
-          .then((action) => {
-            done();
-          })
-          .catch(() => {});
-      }
-    },
-    checkUpdate(row) {
-      var index = this.updateArray.findIndex((d) => d.id === row.id);
-      if (index !== -1) {
-        this.updateArray[index].systemNumber = row.systemNumber;
-        this.updateArray[index].circuitNumber = row.circuitNumber;
-        this.updateArray[index].address = row.address;
-      } else {
-        var data = {
-          id: row.id,
-          systemNumber: row.systemNumber,
-          circuitNumber: row.circuitNumber,
-          address: row.address,
-        };
-        this.updateArray.push(data);
-      }
-    },
+    // checkUpdate(row) {
+    //   var index = this.updateArray.findIndex((d) => d.id === row.id);
+    //   if (index !== -1) {
+    //     this.updateArray[index].systemNumber = row.systemNumber;
+    //     this.updateArray[index].circuitNumber = row.circuitNumber;
+    //     this.updateArray[index].address = row.address;
+    //   } else {
+    //     var data = {
+    //       id: row.id,
+    //       systemNumber: row.systemNumber,
+    //       circuitNumber: row.circuitNumber,
+    //       address: row.address,
+    //     };
+    //     this.updateArray.push(data);
+    //   }
+    // },
     //區塊&表格&對外連結
     handleClickOption(status, row) {
       console.log("status=>", status, "row=>", row);
@@ -1278,7 +1092,6 @@ export default {
         if (this.selectArray.length == 0) {
           this.$message.error("請勾選要設定的點位");
         } else {
-          console.log();
           this.$emit("handleBlock", this.title, status, this.selectArray);
         }
       } else {
@@ -1367,7 +1180,7 @@ export default {
         var _index = this.searchForm.conditions.findIndex((item) => {
           return item.prop == val && item.type == "date";
         });
-        if (_index !== -1) {
+        if (_index !== -1 && _index !== index) {
           this.$message.error("日期區間不得多重搜尋");
           this.searchForm.conditions[index].prop = "";
           return false;
@@ -1395,6 +1208,22 @@ export default {
         type: "input",
       });
     },
+    resetCondition(isSearch = false) {
+      this.searchForm = {
+        preset: [],
+        conditions: [
+          {
+            prop: "",
+            searchValue: "",
+            islink: false,
+            type: "input",
+          },
+        ],
+      };
+      if (isSearch) {
+        this.onSearch();
+      }
+    },
     onSearch() {
       this.listQueryParams = {
         pageIndex: 1,
@@ -1415,7 +1244,10 @@ export default {
         var cond =
           item.type == "date"
             ? "{<~>}"
-            : item.type == "select" || item.type == "boolean"
+            : item.type == "select" ||
+              item.type == "boolean" ||
+              item.type == "singleChoice" ||
+              item.type == "selectSetting"
             ? ""
             : "{LIKE}";
         var data = item.data.join(",");
@@ -1425,12 +1257,14 @@ export default {
           data = startDate + "," + endDate;
         } else if (item.type == "fullType") {
           data = item.data.pop();
-        } else if (item.type == "select") {
+        } else if (item.type == "select" || item.type == "singleChoice") {
           var temp = [];
           item.data.forEach((con) => {
             temp.push({ id: con });
           });
           data = temp;
+        } else if (item.type == "boolean") {
+          data = item.data[0];
         }
         this.$set(
           this.listQueryParams,
@@ -1438,10 +1272,13 @@ export default {
           typeof data == "string" ? cond + data : data
         );
       });
-      // console.log(JSON.stringify(searchList));
       console.log(JSON.stringify(this.listQueryParams));
-      // this.$emit("update:listQueryParams", this.listQueryParams);
-      // this.$emit("clickPagination");
+      this.$emit("update:listQueryParams", this.listQueryParams);
+      if (this.title == "floorOfHouse") {
+        this.$emit("searchEvent");
+      } else {
+        this.$emit("clickPagination");
+      }
     },
     reorganization(arr) {
       var map = {},

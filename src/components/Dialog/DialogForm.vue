@@ -57,7 +57,17 @@
               placeholder="請選擇"
               style="width: 100%"
               :type="item.format == 'YYYY' ? 'year' : 'date'"
+              @change="
+                item.hasEvent ? handleDatePicker($event, item.prop) : null
+              "
             />
+            <template v-else-if="item.formType == 'radio'">
+              <el-radio-group v-model="radioType" @change="handleChangeRadio">
+                <el-radio label="上半年">上半年</el-radio>
+                <el-radio label="下半年">下半年</el-radio>
+                <el-radio label="全年度">全年度</el-radio>
+              </el-radio-group>
+            </template>
             <!-- 範圍 -->
             <span v-else-if="item.formType == 'range'">
               <el-date-picker
@@ -138,7 +148,28 @@
                 </el-input>
               </el-row>
             </span>
-            <!-- 下拉選單-array -->
+            <!-- 下拉選單-單-array -->
+            <el-select
+              v-else-if="item.formType == 'singleChoice'"
+              v-model="temp[item.prop]"
+              placeholder="請選擇"
+              filterable
+              value-key="id"
+              style="width: 100%"
+              @change="
+                item.hasEvent ? singleChoiceChange($event, item.format) : null
+              "
+              :disabled="item.format == 'commitUserInfo' ? disable : false"
+            >
+              <el-option
+                v-for="(obj, index) in selectfilter(item.format)"
+                :key="index"
+                :label="obj.label"
+                :value="obj"
+              >
+              </el-option>
+            </el-select>
+            <!-- item.format == 'commitUserInfo' ? obj.getName() : obj.label -->
             <el-select
               v-else-if="item.formType == 'select'"
               v-model="temp[item.prop]"
@@ -235,87 +266,6 @@
                 </template>
               </el-option>
             </el-select>
-            <!-- 流程選擇班別-->
-            <!-- <el-select
-                    v-else-if="item.format == 'marshallingMgmtSelect' "
-                    v-model="temp[item.prop]"
-                    filterable
-                    placeholder="請選擇"
-                    style="width:100%"
-                    >
-                        <el-option
-                        v-for="(obj,index) in selectfilter(item.format)"
-                        :key="index"
-                        :label="obj.name"
-                        :value="obj.id"
-                        >
-                        </el-option>
-                </el-select> -->
-            <!-- 設備種類 :disabled="dialogStatus == 'create' ? false : true"-->
-            <!-- <el-select
-                    v-else-if="item.format =='deviceTypeSelect'"
-                    v-model="temp[item.prop]"
-                    filterable
-                    multiple
-                    :multiple-limit="1"
-                    value-key="id"
-                    placeholder="請選擇"
-                    style="width:100%"
-                    
-                    @change="checkMode($event, item.format)"
-                    >
-                        <el-option
-                        v-for="(obj,index) in selectfilter(item.format)"
-                        :key="index"
-                        :label="obj.label"
-                        :value="obj"
-                        >
-                        </el-option>
-                </el-select> -->
-            <!-- 管委會的住戶選擇/消防編組細項選擇角色的帳號 -->
-            <!-- <el-select
-                    v-else-if="item.format =='commitUserInfo' || item.format == 'accountSelect'"
-                    v-model="temp[item.prop]"
-                    filterable
-                    multiple
-                    :multiple-limit="item.format =='commitUserInfo' ? 1 : 0 "
-                    value-key="id"
-                    placeholder="請選擇"
-                    style="width:100%"
-                    :disabled="disable"
-                    >
-                        <el-option
-                        v-for="(obj,index) in item.format =='commitUserInfo' ? commitUserInfoArray : accountArray"
-                        :key="index"
-                        :label="obj.getName()"
-                        :value="obj"
-                        >
-                        </el-option>
-                </el-select> -->
-            <!-- 檢修申報下拉選單(多)-->
-            <!-- <el-select
-                    v-else-if="item.format == 'inspectionSelect' "
-                    v-model="temp[item.prop]"
-                    filterable
-                    multiple
-                    :multiple-limit="1"
-                    value-key="id"
-                    placeholder="請選擇"
-                    style="width:100%"
-                    >
-                        <el-option-group
-                        v-for="group in selectfilter('inspectionSelect')"
-                        :key="group.label"
-                        :label="group.label">
-                            <el-option
-                                v-for="item in group.children"
-                                :key="item.id"
-                                :label="item.label"
-                                :value="item"
-                                :disabled="item.status !== ''">
-                            </el-option>
-                        </el-option-group>
-                </el-select> -->
             <!-- 設備種類(後端)下拉選單(單) -->
             <el-cascader
               v-else-if="item.formType == 'fullType'"
@@ -395,6 +345,15 @@
                 :label="val | changeBoolean(item.format)"
               ></el-option>
             </el-select>
+
+            <el-checkbox
+              v-else-if="item.formType == 'checkbox'"
+              v-model="temp[item.prop]"
+              @change="handleChangeCheckBox"
+            >
+              {{ item.label }}
+            </el-checkbox>
+
             <!-- inputnumber -->
             <el-input
               v-else-if="item.formType == 'inputNumber'"
@@ -463,7 +422,7 @@ import computedmixin from "@/mixin/computedmixin";
 import Setting from "@/object/setting";
 import { changeDefaultFullType } from "@/utils/index";
 import constant from "@/constant/index";
-import { SelfDefenseFireMarshalling } from "@/object";
+import { Contactunit, Inspection, SelfDefenseFireMarshalling } from "@/object";
 const moment = require("moment");
 export default {
   name: "DialogForm",
@@ -502,10 +461,13 @@ export default {
   },
   watch: {
     dialogData: {
-      handler: function () {
-        this.init();
+      handler: function (newValue, oldValue) {
+        if (oldValue == undefined && newValue !== undefined) {
+          this.init();
+        }
       },
       immediate: true,
+      deep: true,
     },
   },
   computed: {
@@ -536,6 +498,9 @@ export default {
             return label;
           case "committee":
             return item.title;
+          case "maintain":
+            var label = this.changeOptionName(item.processContent);
+            return label;
           case "reportInspectio":
           case "reportPublicSafe":
             return moment(item.declareYear).format("YYYY");
@@ -550,7 +515,10 @@ export default {
       textMap: {
         update: "編輯",
         create: "新增",
-        updateMany: "多筆更新【*每更動一筆資料請按儲存*】",
+        updateMany:
+          this.dialogData.length > 1
+            ? "多筆更新【*每更動一筆資料請按儲存*】"
+            : "編輯",
       },
       activeName: "",
       temp: {},
@@ -566,101 +534,20 @@ export default {
       originalInternet: null,
       commitUserInfoArray: [],
       accountArray: [],
+      radioType: null,
     };
   },
   methods: {
     async init() {
       // window.addEventListener("message", this.receiveMessage, false)
+      console.log("form", this.title, this.dialogStatus);
       if (this.dialogData.length) {
         this.activeName = this.dialogData[0].getID();
         this.temp =
-          this.dialogData.length == 1
+          this.dialogStatus !== "create"
             ? this.dialogData[0].clone(this.dialogData[0])
             : this.dialogData[0];
-        if (
-          this.title == "reportInspectio" ||
-          this.title == "reportPublicSafe"
-        ) {
-          if (this.dialogData[0]["checkStartDate"] !== null) {
-            this.rangevalue = [
-              this.dialogData[0]["checkStartDate"],
-              this.dialogData[0]["checkEndDate"],
-            ];
-          }
-        } else if (this.title == "devicetype") {
-          var fullType = this.dialogData[0]["fullType"];
-          var obj = _.cloneDeep(changeDefaultFullType(fullType));
-          obj.typevalue.push(fullType);
-          this.fulltypevalue = obj.typevalue;
-        } else if (this.title == "deviceAddressManagement") {
-          var icon = this.config.filter((item) => {
-            return item.prop == "iconId";
-          });
-          var device = this.config.filter((item) => {
-            return item.prop == "linkDevices";
-          });
-          if (this.temp["isFDCC"] == true) {
-            //防災盤訊號
-            this.disable = true;
-            icon[0].mandatory = false;
-            device[0].mandatory = false;
-          } else {
-            this.disable = false;
-            icon[0].mandatory = true;
-            device[0].mandatory = true;
-          }
-        } else if (this.title == "devicePLCAddressManagement") {
-          this.disable = false;
-        } else if (this.title == "equipment") {
-          var type = this.temp.getLinkType().getFullType();
-          if (
-            type == "nDeviceTypeList.AE.AE_FireDetectorCentralControl" ||
-            type == "nDeviceTypeList.OE.OE_ProgrammableLogicController"
-          ) {
-            this.originalInternet =
-              this.temp["internetNumber"] !== undefined
-                ? JSON.parse(JSON.stringify(this.temp["internetNumber"]))
-                : null;
-            this.disable = false;
-          }
-        } else if (this.title == "committee") {
-          var usage = this.temp.getLinkUsageOfFloors();
-          var data = [];
-          if (usage.length) {
-            this.disable = false;
-            var user = this.temp.getLinkUsers();
-            if (user.length) {
-              data.push(user[0]);
-            }
-            usage[0].getLinkUsers().forEach((element) => {
-              data.push(element);
-            });
-            usage[0].getLivingUsers().forEach((element) => {
-              data.push(element);
-            });
-            const set = new Set();
-            this.commitUserInfoArray = data.filter((item) =>
-              !set.has(item.id) ? set.add(item.id) : false
-            );
-          }
-        } else if (this.title == "selfDefenseFireMarshallingMgmt") {
-          var roles = this.temp.getLinkRole();
-          var data = [];
-          if (roles.length) {
-            for (let item of roles) {
-              var account = await SelfDefenseFireMarshalling.getAccountByRole(
-                item.id
-              );
-              account.forEach((acc) => {
-                data.push(acc);
-              });
-            }
-            const set = new Set();
-            this.accountArray = data.filter((item) =>
-              !set.has(item.id) ? set.add(item.id) : false
-            );
-          }
-        }
+        await this.setDataForm(this.temp);
       }
       this.$nextTick(() => {
         if (this.$refs.dataForm !== undefined) {
@@ -668,12 +555,137 @@ export default {
         }
       });
     },
-
+    async setDataForm(temp) {
+      if (this.title == "reportInspectio" || this.title == "reportPublicSafe") {
+        if (temp["checkStartDate"] !== null) {
+          this.rangevalue = [temp["checkStartDate"], temp["checkEndDate"]];
+        }
+        if (temp["declareYear"] !== null && temp["declareYear"] !== "") {
+          this.radioType = temp["declareYear"].substr(-3);
+          temp["declareYearType"] = temp["declareYear"].substr(-3);
+          temp["declareYear"] = temp["declareYear"].substr(0, 4);
+        }
+        this.handleChangeCheckBox(this.temp["declareResult"]);
+      } else if (this.title == "committee") {
+        //array=>object
+        var usage = temp.getLinkUsageOfFloors();
+        if (usage.length) {
+          var obj = this.buildingfloorOfHouse.filter((item) => {
+            return item.id == usage[0].id;
+          });
+          var data = [];
+          if (obj.length) {
+            this.disable = false;
+            var user = temp.getLinkUsers();
+            if (user.length) {
+              user[0].label = user[0].name;
+              data.push(user[0]);
+            }
+            obj[0].getLinkUsers().forEach((element) => {
+              element.label = element.name;
+              data.push(element);
+            });
+            obj[0].getLivingUsers().forEach((element) => {
+              element.label = element.name;
+              data.push(element);
+            });
+            const set = new Set();
+            this.commitUserInfoArray = data.filter((item) =>
+              !set.has(item.id) ? set.add(item.id) : false
+            );
+          }
+        }
+      } else if (this.title == "contactUnit") {
+        this.handleChangeCheckBox(this.temp["governmentApproval"]);
+      } else if (this.title == "devicetype") {
+        var fullType = temp["fullType"];
+        var obj = _.cloneDeep(changeDefaultFullType(fullType));
+        obj.typevalue.push(fullType);
+        this.fulltypevalue = obj.typevalue;
+      } else if (this.title == "deviceAddressManagement") {
+        var icon = this.config.filter((item) => {
+          return item.prop == "iconId";
+        });
+        var device = this.config.filter((item) => {
+          return item.prop == "linkDevices";
+        });
+        if (temp["isFDCC"] == true) {
+          //防災盤訊號
+          this.disable = true;
+          icon[0].mandatory = false;
+          device[0].mandatory = false;
+        } else {
+          this.disable = false;
+          icon[0].mandatory = true;
+          device[0].mandatory = true;
+        }
+      } else if (this.title == "devicePLCAddressManagement") {
+        this.disable = false;
+      } else if (this.title == "equipment") {
+        var type = temp.getLinkType().getFullType();
+        if (
+          type == "nDeviceTypeList.AE.AE_FireDetectorCentralControl" ||
+          type == "nDeviceTypeList.OE.OE_ProgrammableLogicController"
+        ) {
+          this.originalInternet =
+            temp["internetNumber"] !== undefined
+              ? JSON.parse(JSON.stringify(temp["internetNumber"]))
+              : null;
+          this.disable = false;
+        }
+      } else if (this.title == "selfDefenseFireMarshallingMgmt") {
+        var roles = temp.getLinkRole();
+        var data = [];
+        if (roles.length) {
+          for (let item of roles) {
+            var account = await SelfDefenseFireMarshalling.getAccountByRole(
+              item.id
+            );
+            account.forEach((acc) => {
+              data.push(acc);
+            });
+          }
+          const set = new Set();
+          this.accountArray = data.filter((item) =>
+            !set.has(item.id) ? set.add(item.id) : false
+          );
+        }
+      }
+      this.config.forEach((item) => {
+        var isLink =
+          item.prop.indexOf("link") > -1 && item.formType == "singleChoice";
+        if (isLink) {
+          temp[item.prop] = temp[item.prop].length ? temp[item.prop][0] : {};
+        }
+      });
+    },
+    async singleChoiceChange(value, format) {
+      var keys = Object.keys(value);
+      console.log(keys);
+      if (keys.length) {
+        if (this.title == "committee" && format == "floorOfHouseSelect") {
+          var data = [];
+          value.getLinkUsers().forEach((element) => {
+            element.label = element.name;
+            data.push(element);
+          });
+          value.getLivingUsers().forEach((element) => {
+            element.label = element.name;
+            data.push(element);
+          });
+          const set = new Set();
+          this.commitUserInfoArray = data.filter((item) =>
+            !set.has(item.id) ? set.add(item.id) : false
+          );
+          this.disable = false;
+        }
+      }
+    },
     // 設備清單-設備種類選項
-    // 管委會-選擇住戶
     // 點位-指定設備
     // 消防編組細項-選擇角色時要撈出account清單
     async checkMode(value, format) {
+      console.log(value);
       if (value.length) {
         if (this.title == "equipment" && format == "deviceTypeSelect") {
           if (
@@ -692,22 +704,6 @@ export default {
           format == "assignPLCDeviceSelect"
         ) {
           this.temp["internet"] = value[0].getInternetNumber();
-        } else if (
-          this.title == "committee" &&
-          format == "floorOfHouseSelect"
-        ) {
-          var data = [];
-          value[0].getLinkUsers().forEach((element) => {
-            data.push(element);
-          });
-          value[0].getLivingUsers().forEach((element) => {
-            data.push(element);
-          });
-          const set = new Set();
-          this.commitUserInfoArray = data.filter((item) =>
-            !set.has(item.id) ? set.add(item.id) : false
-          );
-          this.disable = false;
         } else if (
           this.title == "selfDefenseFireMarshallingMgmt" &&
           format == "roleSelect"
@@ -737,12 +733,6 @@ export default {
           format == "assignPLCDeviceSelect"
         ) {
           this.temp["internet"] = null;
-        } else if (
-          this.title == "committee" &&
-          format == "floorOfHouseSelect"
-        ) {
-          this.disable = true;
-          this.temp["linkUsers"] = [];
         } else if (
           this.title == "selfDefenseFireMarshallingMgmt" &&
           format == "roleSelect"
@@ -780,7 +770,7 @@ export default {
             );
           } else {
             routeData = this.$router.resolve({
-              path: "/normal/basic",
+              path: "/authority/users",
               query: { type: "user" },
             });
           }
@@ -826,7 +816,16 @@ export default {
         case "MaintainProcessOptions":
         case "MaintainContentOptions":
         case "LackStatusOptions":
-          routeData = this.$router.resolve({ name: "sys-Setting" });
+          var option =
+            format == "ContactUnitOptions"
+              ? ""
+              : format == "LackStatusOptions"
+              ? "la"
+              : "mp";
+          routeData = this.$router.resolve({
+            path: "/membersetting/index",
+            query: { type: option },
+          });
           break;
         default:
           break;
@@ -861,9 +860,42 @@ export default {
       var data = _.cloneDeep(this.fulltypevalue);
       this.temp["fullType"] = data.pop();
     },
+    handleChangeCheckBox(value) {
+      console.log(value);
+      if (this.title == "contactUnit") {
+        if (value) {
+          this.config.forEach((item) => {
+            if (!item.isEdit) {
+              item.isEdit = true;
+            }
+          });
+        } else {
+          var c = _.cloneDeep(Contactunit.getTableConfig());
+          this.config = c;
+        }
+      } else if (this.title == "reportInspectio") {
+        if (!value) {
+          this.config.forEach((item) => {
+            if (!item.isEdit && !item.isHidden) {
+              item.isEdit = true;
+            }
+          });
+        } else {
+          var c = _.cloneDeep(Inspection.getTableConfig());
+          this.config = c;
+          this.temp["declarationImproveDate"] = "";
+          this.temp["isImproved"] = false;
+          this.temp["nextInspectionDate"] = "";
+        }
+      }
+    },
     //地址欄位
     handleChange(value) {
       this.temp.address = value[0] + value[1];
+    },
+    //radio改變
+    handleChangeRadio(value) {
+      this.temp["declareYearType"] = value;
     },
     //火警點位的類型
     handleMainSelect(value, format) {
@@ -887,6 +919,55 @@ export default {
           this.disable = false;
           icon[0].mandatory = true;
           device[0].mandatory = true;
+        }
+      }
+    },
+    //維保細項日期變動事件
+    handleDatePicker(val, prop) {
+      //故障日期、叫修日期、完成日期=>連動處理進度
+      if (this.title == "contactUnit") {
+        if (val == "") {
+          this.temp["expirationDate"] = "";
+        } else {
+          this.temp["expirationDate"] = moment(val)
+            .add(3, "years")
+            .subtract(1, "days")
+            .format("YYYY-MM-DD");
+        }
+      } else {
+        if (val == "") {
+          return false;
+        }
+        var list = this.optionfilter("MaintainProcessOptions");
+        var txtName = "";
+        switch (prop) {
+          case "dateOfFailure":
+            if (
+              this.temp["dateOfCallRepair"] == null &&
+              this.temp["completedTime"] == null
+            ) {
+              txtName = "故障中";
+            }
+            break;
+          case "dateOfCallRepair":
+            if (this.temp["completedTime"] == null) {
+              txtName = "叫修中";
+            }
+            break;
+          case "completedTime":
+            txtName = "已保養";
+            break;
+          default:
+            break;
+        }
+        var setting = list.filter((item) => {
+          return (
+            item.textName == txtName &&
+            item.classType == "MaintainProcessOptions"
+          );
+        });
+        if (setting.length) {
+          this.temp["processStatus"] = setting[0].id;
         }
       }
     },
@@ -950,7 +1031,16 @@ export default {
                 this.$emit("handleDialog", false, status, this.temp);
               }
             } else {
-              this.$emit("handleDialog", this.title, status, this.temp);
+              var data = this.changeObjectToArray();
+              if (this.dialogData.length == 1 && status == "updateManySave") {
+                status = "update";
+              }
+              if (this.title == "reportInspectio") {
+                data["declareYear"] =
+                  moment(data["declareYear"]).format("YYYY") +
+                  data["declareYearType"];
+              }
+              this.$emit("handleDialog", this.title, status, data);
             }
           } else {
             this.$message.error("請輸入完整資訊");
@@ -968,17 +1058,28 @@ export default {
       ) {
         var data = status == "authoritycreate" ? this.accessArray : "";
         this.$emit("handleDialog", this.title, status, data);
-      } else if (status == "openempty") {
-        this.$emit("handleDialog", "maintain", status, "");
-      } else if (status == "tablemaintain") {
-        this.$emit("handleDialog", this.title, "empty", this.maintainListID);
       }
     },
     //頁籤
     async handleTabClick(tab, event) {
-      this.temp = this.dialogData.filter(
+      var data = this.dialogData.filter(
         (element, index) => element.id == tab.name
       )[0];
+      this.temp = data.clone(data);
+      await this.setDataForm(this.temp);
+    },
+    changeObjectToArray() {
+      var data = _.cloneDeep(this.temp);
+      this.config.forEach((item) => {
+        var isLink =
+          item.prop.indexOf("link") > -1 && item.formType == "singleChoice";
+        if (isLink) {
+          data[item.prop] = Object.keys(data[item.prop]).length
+            ? new Array(data[item.prop])
+            : [];
+        }
+      });
+      return data;
     },
   },
 };

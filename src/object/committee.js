@@ -1,19 +1,25 @@
 import Parent from "./parent";
 import api from "@/api";
 import UsageOfFloor from "./usageOfFloor";
-import User from "./user";
 import { removeDuplicates } from "@/utils/index";
+import { Account } from ".";
 
 class Committee extends Parent {
   constructor(data) {
     super(data);
     const { title, note, linkUsageOfFloors, linkUsers } = data;
-    var usageOfFloor = linkUsageOfFloors.map((item) => {
-      return new UsageOfFloor(item);
-    });
-    var user = linkUsers.map((item) => {
-      return new User(item);
-    });
+    var usageOfFloor =
+      linkUsageOfFloors !== undefined
+        ? linkUsageOfFloors.map((item) => {
+            return new UsageOfFloor(item);
+          })
+        : [];
+    var user =
+      linkUsers !== undefined
+        ? linkUsers.map((item) => {
+            return new Account(item);
+          })
+        : [];
     this.title = title;
     this.note = note;
     this.linkUsageOfFloors = usageOfFloor;
@@ -89,7 +95,7 @@ class Committee extends Parent {
         format: "floorOfHouseSelect",
         mandatory: true,
         message: "請選擇單位",
-        type: "array",
+        type: "object",
         typemessage: "",
         isHidden: false,
         isSearch: false,
@@ -98,9 +104,10 @@ class Committee extends Parent {
         isUpload: false,
         isExport: true,
         isBlock: true,
-        formType: "select",
+        formType: "singleChoice",
         limit: 1,
         selectFilter: true,
+        hasEvent: true,
       },
       {
         label: "職稱",
@@ -122,7 +129,7 @@ class Committee extends Parent {
         label: "住戶",
         prop: "linkUsers",
         format: "commitUserInfo",
-        type: "array",
+        type: "object",
         typemessage: "",
         mandatory: true,
         message: "請選擇住戶",
@@ -133,7 +140,7 @@ class Committee extends Parent {
         isUpload: false,
         isExport: true,
         isBlock: true,
-        formType: "select",
+        formType: "singleChoice",
         limit: 1,
         selectFilter: true,
       },

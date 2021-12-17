@@ -1,6 +1,18 @@
 // const Vuex = require('vuex')
 const moment = require("moment");
 import constant from "@/constant/index";
+import {
+  Device,
+  DeviceType,
+  Contactunit,
+  UsageOfFloor,
+  Role,
+  Building,
+  InspectionLacks,
+  Account,
+  User,
+} from "@/object/index";
+
 export default {
   computed: {
     ...Vuex.mapGetters([
@@ -33,11 +45,16 @@ export default {
     ]),
     dataStr() {
       //日期
-      return function (a, b, isAge = false) {
-        if (a !== null && a !== undefined) {
-          if (isAge) {
+      return function (a, b, prop) {
+        console.log(a, b, prop);
+        if (a == null) {
+          return "";
+        }
+        var showlabel = a[prop];
+        if (showlabel !== null && showlabel !== undefined) {
+          if (prop == "birthday") {
             //轉算歲數顯示
-            var birth = moment(a).format(b);
+            var birth = moment(showlabel).format(b);
             birth = Date.parse(birth.replace("/-/g", "/"));
             if (birth) {
               var year = 1000 * 60 * 60 * 24 * 365;
@@ -47,11 +64,24 @@ export default {
               return age;
             }
             return "";
+          } else if (prop == "declareYear") {
+            return showlabel;
+          } else if (prop == "nextInspectionDate") {
+            if (a["declareResult"]) {
+              //合格申報
+              return "-";
+            } else {
+              return moment(showlabel).format(b);
+            }
           } else {
-            return moment(a).format(b);
+            return moment(showlabel).format(b);
           }
         } else {
-          return "";
+          if (prop == "nextInspectionDate") {
+            return "尚未複查";
+          } else {
+            return "";
+          }
         }
       };
     },
@@ -380,17 +410,23 @@ export default {
                 this.$set(v, "value", v.id);
                 return v;
               });
-            case "classLeaderSelect": //
-              if (this.account_record == 0) {
-                this.$store.dispatch("building/setaccounts");
-                this.$store.dispatch("record/saveAccountRecord", 1);
+            case "userInfo":
+            case "classLeaderSelect":
+            case "usageOfFloorUserInfo":
+              if (this.title == "building") {
+                return this.selectData;
+              } else {
+                if (this.account_record == 0) {
+                  this.$store.dispatch("building/setaccounts");
+                  this.$store.dispatch("record/saveAccountRecord", 1);
+                }
+                return this.buildingaccount.map((v) => {
+                  this.$set(v, "id", v.id);
+                  this.$set(v, "label", v.name);
+                  this.$set(v, "value", v.id);
+                  return v;
+                });
               }
-              return this.buildingaccount.map((v) => {
-                this.$set(v, "id", v.id);
-                this.$set(v, "label", v.name);
-                this.$set(v, "value", v.id);
-                return v;
-              });
             case "deviceTypeSelect":
               if (this.deviceType_record == 0) {
                 this.$store.dispatch("building/setDeviceType");
@@ -400,35 +436,6 @@ export default {
                 this.$set(v, "value", v.getID());
                 this.$set(v, "label", v.getSelectName());
                 this.$set(v, "id", v.getID());
-                return v;
-              });
-            // return this.selectData
-            case "userInfo":
-            case "commitUserInfo":
-              if (this.title == "building") {
-                return this.selectData;
-              } else {
-                if (this.householder_record == 0) {
-                  this.$store.dispatch("building/setHouseHolders");
-                  this.$store.dispatch("record/saveHouseHolderRecord", 1);
-                }
-                return this.buildingusers.map((v) => {
-                  this.$set(v, "value", v.getID());
-                  this.$set(v, "label", v.getName());
-                  this.$set(v, "id", v.getID());
-                  return v;
-                });
-              }
-            case "usageOfFloorUserInfo":
-              if (this.householder_record == 0) {
-                this.$store.dispatch("building/setHouseHolders");
-                this.$store.dispatch("record/saveHouseHolderRecord", 1);
-              }
-              return this.buildingusers.map((v) => {
-                this.$set(v, "value", v.getID());
-                this.$set(v, "label", v.getName());
-                this.$set(v, "id", v.getID());
-                this.$set(v, "disabled", !(v.getUsageOfFloor() == null));
                 return v;
               });
             case "roleSelect":
@@ -459,6 +466,12 @@ export default {
               return this.commitUserInfoArray;
             case "accountSelect":
               return this.accountArray;
+            case "certificateNumber":
+              return [
+                { label: "消防設備師", id: "消防設備師" },
+                { label: "消防設備士", id: "消防設備士" },
+                { label: "暫行裝置檢修", id: "暫行裝置檢修" },
+              ];
           }
         } else {
           return "";
@@ -507,6 +520,10 @@ export default {
             return "已設置";
           case "mainSelect":
             return "防災盤";
+          case "revocationBoolean":
+            return "已撤銷";
+          case "declareResultBoolean":
+            return "合格申報";
         }
       } else {
         switch (format) {
@@ -522,6 +539,10 @@ export default {
             return "未設置";
           case "mainSelect":
             return "火警點位";
+          case "revocationBoolean":
+            return "未撤銷";
+          case "declareResultBoolean":
+            return "缺失申報";
         }
       }
     },
@@ -587,6 +608,274 @@ export default {
     };
   },
   methods: {
+    changeText(config, val) {
+      if (val !== undefined) {
+        var array = [];
+        var data = val.getInfo();
+        var keys = Object.keys(data);
+        keys.forEach((item) => {
+          var i = config.filter((obj) => {
+            return obj.prop == item;
+          });
+          if (i.length !== 0) {
+            var value = "";
+            if (item == "fullType") {
+              value = val.getType();
+            } else if (item == "collaborate") {
+              value = data[item] == true ? "合作中" : "未配合";
+            } else if (
+              item == "linkOwners" ||
+              item == "linkUsers" ||
+              item == "linkFireManagers" ||
+              item == "linkLivingUsers"
+            ) {
+              value = this.changeUserName(data[item]);
+            } else if (
+              item == "linkKeeperUnits" ||
+              item == "linkMaintainVendors"
+            ) {
+              value = this.changeContainUnit(data[item]);
+            } else if (item == "linkDeviceTypes") {
+              value = val.getLinkType().getSelectName();
+            } else if (item == "linkBuildings") {
+              value = val.getBuildingsName();
+            } else if (item == "status") {
+              if (val.constructor == Role) {
+                value = data[item] == true ? "啟用中" : "未啟用";
+              } else {
+                value = this.changeOptionName(data[item]);
+              }
+            } else if (item == "removable") {
+              value = data[item] == true ? "允許" : "禁止";
+            } else if (item == "systemUsed") {
+              value = data[item] == true ? "已使用" : "未使用";
+            } else if (item == "revocation") {
+              value = data[item] == true ? "已撤銷" : "未撤銷";
+            } else if (
+              item == "birthday" ||
+              item == "dateOfPurchase" ||
+              item == "dateOfWarranty"
+            ) {
+              value = moment(data[item]).format("YYYY-MM-DD");
+            } else {
+              value = data[item];
+            }
+            array.push({
+              label: i[0].label,
+              value: value,
+            });
+          }
+        });
+        return array;
+      }
+    },
+    async clickMessageBox(title, format, data) {
+      console.log(title, format, data);
+      if (data.length == 0) {
+        this.$message({
+          message: "無資料",
+          type: "warning",
+        });
+      } else {
+        const h = this.$createElement;
+        const bigData = [];
+        const { config, list } = await this.changeRealData(data[0]);
+        data.forEach(async (item, index) => {
+          const newDatas = [];
+          var obj = list.filter((ele) => {
+            return ele.id == item.id;
+          });
+          var changetext = this.changeText(config, obj.length ? obj[0] : item);
+          changetext.forEach((obj) => {
+            newDatas.push(
+              h("p", { style: "width:100%" }, [
+                h(
+                  "span",
+                  {
+                    style:
+                      "width:40%;display:inline-block;vertical-align:top;word-break:break-all",
+                  },
+                  obj.label
+                ),
+                h(
+                  "span",
+                  {
+                    style:
+                      "width:60%;display:inline-block;vertical-align:top;word-break:break-all",
+                  },
+                  obj.value
+                ),
+              ])
+            );
+          });
+          bigData.push(
+            h(
+              "div",
+              { style: "border:1px solid;padding:10px;margin-bottom:5px" },
+              newDatas
+            )
+          );
+          if (obj.length) {
+            data.splice(index, 1, obj[0]);
+          }
+        });
+        this.$msgbox({
+          title: title,
+          message: h(
+            "div",
+            { style: "max-height:500px;overflow-x:hidden;overflow-y:auto;" },
+            bigData
+          ),
+          showCancelButton: true,
+          distinguishCancelAndClose: true,
+          confirmButtonText: "編輯",
+          cancelButtonText: "取消",
+          beforeClose: (action, instance, done) => {
+            if (action === "confirm") {
+              done();
+              switch (format) {
+                case "usageOfFloorUserInfo":
+                case "commitUserInfo":
+                case "userInfo": //住戶資料>平時管理-基本資料
+                  if (this.buildinginfo == undefined) {
+                    this.$message({
+                      message: "請先選擇該棟建築物，才可對住戶進行編輯",
+                      type: "warning",
+                    });
+                  } else if (
+                    this.title == "floorOfHouse" ||
+                    this.title == "committee"
+                  ) {
+                    //門牌資料>打開住戶資料
+                    this.handleClickOption("openuser", data);
+                  } else {
+                    this.$router.push({
+                      name: "basic",
+                      params: { target: data, type: "user" },
+                    });
+                  }
+                  break;
+                case "deviceTypeSelect": //設備種類>設備管理-設備種類
+                  this.$router.push({
+                    name: "deviceTypesManagement",
+                    params: { target: data, type: "open" },
+                  });
+                  break;
+                //assignFireDeviceSelect
+                case "deviceSelect":
+                case "addressdeviceSelect": //設備>設備管理-設備清單 & 點位>設備管理-設備清單
+                  this.$router.push({
+                    name: "devicesManagement",
+                    params: { target: data, type: "open" },
+                  });
+                  break;
+                case "contactunitSelect": //廠商資料>平時管理-基本資料
+                  this.$router.push({
+                    name: "basic",
+                    params: { target: data, type: "contactunit" },
+                  });
+                  break;
+                case "floorOfHouseSelect": //門牌資料>打開當前視窗
+                  this.handleClickOption("openfloorofhouse", data);
+                  break;
+                case "roleSelect": //角色資料>權限設定-角色管理
+                  this.$router.push({
+                    name: "roleSetting",
+                    params: { target: data, type: "open" },
+                  });
+                  break;
+                case "inspectionSelect": //缺失內容>檢修申報
+                  this.$router.push({
+                    name: "ReportInspection",
+                    params: { target: data, type: "open" },
+                  });
+                  break;
+                case "buildingSelect":
+                  break;
+              }
+            } else {
+              done();
+            }
+          },
+        })
+          .then((action) => {
+            done();
+          })
+          .catch(() => {});
+      }
+    },
+    async changeRealData(val) {
+      var config = null;
+      var list = [];
+      switch (val.constructor) {
+        case Account:
+          config = Account.getTableConfig();
+          if (this.account_record == 0) {
+            this.$store.dispatch("building/setaccounts");
+            this.$store.dispatch("record/saveAccountRecord", 1);
+          }
+          list = this.buildingaccount.map((v) => {
+            this.$set(v, "id", v.id);
+            this.$set(v, "label", v.name);
+            this.$set(v, "value", v.id);
+            return v;
+          });
+          if (this.title == "committee" || this.title == "floorOfHouse") {
+            config = User.getTableConfig();
+          }
+          break;
+        case DeviceType:
+          config = DeviceType.getTableConfig();
+          // if (this.deviceType_record == 0) {
+          //   this.$store.dispatch("building/setDeviceType");
+          //   this.$store.dispatch("record/saveDeviceTypeRecord", 1);
+          // }
+          // list = this.buildingdeviceType.map((v) => {
+          //   this.$set(v, "value", v.getID());
+          //   this.$set(v, "label", v.getSelectName());
+          //   this.$set(v, "id", v.getID());
+          //   return v;
+          // });
+          break;
+        case Device:
+          config = Device.getTableConfig();
+          if (this.device_record == 0) {
+            await this.$store.dispatch("building/setDevice");
+            this.$store.dispatch("record/saveDeviceRecord", 1);
+          }
+          list = this.buildingdevices;
+          break;
+        case Contactunit:
+          config = Contactunit.getTableConfig();
+          break;
+        case UsageOfFloor:
+          config = UsageOfFloor.getTableConfig();
+          if (this.floorOfHouse_record == 0) {
+            this.$store.dispatch("building/setFloorOfHouse");
+            this.$store.dispatch("record/saveFloorOfHouseRecord", 1);
+          }
+          list = this.buildingfloorOfHouse.map((v) => {
+            this.$set(v, "id", v.id);
+            this.$set(v, "label", v.houseNumber);
+            this.$set(v, "value", v.id);
+            return v;
+          });
+          break;
+        case Role:
+          config = Role.getTableConfig();
+          break;
+        case Building:
+          config = Building.getTableConfig();
+          break;
+        case InspectionLacks:
+          config = InspectionLacks.getTableConfig();
+          break;
+      }
+      return {
+        config: config,
+        list: list,
+      };
+    },
     optionfilter(format) {
       if (this.setting_record == 0) {
         this.$store.dispatch("building/setoptions");

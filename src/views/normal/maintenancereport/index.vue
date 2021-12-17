@@ -3,7 +3,7 @@
     <el-row :gutter="20">
       <el-col :xs="24" :sm="24" :md="24" :lg="12">
         <div class="chart-wrapper">
-          <div class="verticalhalfdiv">
+          <!-- <div class="verticalhalfdiv">
             <div class="label">
               <i class="el-icon-edit">
                 <a @click="openWindows('basic')" style="color: #66b1ff">
@@ -14,7 +14,7 @@
             <div class="content">
               <span> {{ this.buildinginfo.getName() }}</span>
             </div>
-          </div>
+          </div> -->
           <div class="verticalhalfdiv">
             <div class="label">
               <i class="el-icon-edit">
@@ -31,7 +31,7 @@
           </div>
         </div>
       </el-col>
-      <el-col :xs="24" :sm="24" :md="24" :lg="12">
+      <!-- <el-col :xs="24" :sm="24" :md="24" :lg="12">
         <div class="chart-wrapper">
           <el-col :xs="24" :sm="24" :md="24" :lg="12">
             <div class="horizontalhalfdiv">
@@ -76,7 +76,7 @@
             </div>
           </el-col>
         </div>
-      </el-col>
+      </el-col> -->
     </el-row>
     <el-row :gutter="32">
       <el-col :xs="24" :sm="24" :md="24" :lg="24">
@@ -180,7 +180,7 @@ export default {
       this.title = "reportInspectio";
       this.tableConfig = Inspection.getTableConfig();
       await this.getBuildingMaintenanceReport();
-      await this.getCertificateNumber();
+      await this.getProfessName();
       this.buttonsName = [
         { name: "刪除", icon: "el-icon-delete", status: "delete" },
         { name: "編輯", icon: "el-icon-edit", status: "open" },
@@ -204,7 +204,7 @@ export default {
       };
       await this.getInspectionLack();
     },
-    async getCertificateNumber() {
+    async getProfessName() {
       var data = await Inspection.getColumn({
         professName: "{IsNotNull}",
       });
