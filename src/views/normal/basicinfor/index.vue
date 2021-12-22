@@ -494,7 +494,7 @@ export default {
         if (Object.keys(result).length !== 0) {
           isOk = true;
           this.floorImageId = content;
-          this.$store.dispatch("building/setFloors");
+          // this.$store.dispatch("building/setFloors");
           this.$socket.sendMsg("floor", "update", result);
         } else {
           this.$message.error("系統錯誤");
@@ -581,15 +581,13 @@ export default {
         if (isDelete) {
           this.$message("刪除成功");
           switch (title) {
+            case "committee":
             case "contactUnit":
-              this.$store.dispatch("building/setContactunit");
               this.$socket.sendMsg(
-                "contactUnit",
+                title,
                 "delete",
                 index === "delete" ? content.getID() : deleteArray.toString()
               );
-            case "committee":
-            case "contactUnit":
               var length = content.length !== undefined ? content.length : 1;
               var page = Math.ceil(
                 (this.listQueryParams.total - length) /
@@ -608,12 +606,12 @@ export default {
               }
               this.$refs.block.clearSelectArray();
               break;
-            case "floorOfHouse":
-              this.$socket.sendMsg(
-                "floorOfHouse",
-                "delete",
-                index === "delete" ? content.getID() : deleteArray.toString()
-              );
+            // case "floorOfHouse":
+            //   this.$socket.sendMsg(
+            //     "floorOfHouse",
+            //     "delete",
+            //     index === "delete" ? content.getID() : deleteArray.toString()
+            //   );
             // case "user": //刪除user時重整建築物資料(可能會更改到所有權人&防火管理人的資料)&管委會資料(有關聯住戶)
             //   var data = await Building.getInfo();
             //   this.$store.dispatch("building/setBuildingInfo", data);
@@ -626,6 +624,11 @@ export default {
             //   );
             // case "user":
             case "floorOfHouse":
+              this.$socket.sendMsg(
+                "floorOfHouse",
+                "delete",
+                index === "delete" ? content.getID() : deleteArray.toString()
+              );
               var length = content.length !== undefined ? content.length : 1;
               var page = Math.ceil(
                 (this.downlistQueryParams.total - length) /
@@ -721,16 +724,26 @@ export default {
       }
     },
     async onCommitteeActions(index, content) {
-      var isOk =
+      var result =
         index === "update" || index === "updateManySave"
           ? await content.update()
           : index === "create"
           ? await content.create()
           : await Committee.postMany(content);
-      if (isOk) {
+      var condition =
+        index !== "uploadExcelSave"
+          ? Object.keys(result).length !== 0
+          : result.result.length !== 0;
+      if (condition) {
         index === "update" || index === "updateManySave"
           ? this.$message("更新成功")
           : this.$message("新增成功");
+        this.$store.dispatch("building/setCommittee");
+        this.$socket.sendMsg(
+          "committee",
+          index,
+          index !== "uploadExcelSave" ? result : result.result
+        );
         await this.getManagementList();
         if (index !== "updateManySave") {
           this.innerVisible = false;
@@ -761,7 +774,7 @@ export default {
         index === "update" || index === "updateManySave"
           ? this.$message("更新成功")
           : this.$message("新增成功");
-        this.$store.dispatch("building/setContactunit");
+        // this.$store.dispatch("building/setContactunit");
         this.$socket.sendMsg(
           "contactUnit",
           index,
@@ -881,13 +894,12 @@ export default {
               ? await content.updateP()
               : await content.create();
           if (Object.keys(result).length !== 0) {
-            this.$store.dispatch("building/setaccounts");
             this.$socket.sendMsg("account", index, result);
-
             if (index === "update" || index == "updateManySave") {
               this.$message("更新成功");
+              this.$store.dispatch("building/setCommittee");
               var data = await Building.getInfo();
-              this.$store.dispatch("building/setBuildingInfo", data);
+              //this.$store.dispatch("building/setBuildingInfo", data);
               this.$socket.sendMsg("building", "info", data);
               if (this.activeName == "MC") {
                 //重整管委會
@@ -943,12 +955,12 @@ export default {
         if (Object.keys(result).length !== 0) {
           this.$message("更新成功");
           this.$socket.sendMsg("building", "info", result);
-          if (this.buildingid == content.getID()) {
-            this.$store.dispatch(
-              "building/setBuildingInfo",
-              await Building.getInfo()
-            );
-          }
+          // if (this.buildingid == content.getID()) {
+          //   this.$store.dispatch(
+          //     "building/setBuildingInfo",
+          //     await Building.getInfo()
+          //   );
+          // }
           this.innerVisible = false;
         } else {
           this.$message.error("系統錯誤");
@@ -984,7 +996,18 @@ export default {
           this.$nextTick(async () => {
             await this.handleBlock(
               "contactUnit",
-              "open",
+              "updateMany",
+              this.$route.params.target
+            );
+          });
+        } else if (
+          typeof this.$route.params.target == "object" &&
+          this.$route.params.type == "committee"
+        ) {
+          this.$nextTick(async () => {
+            await this.handleBlock(
+              "committee",
+              "updateMany",
               this.$route.params.target
             );
           });
@@ -1003,6 +1026,10 @@ export default {
           await this.resetlistQueryParams();
           this.$nextTick(async () => {
             await this.handleBlock("contactUnit", "empty", "");
+          });
+        } else if (this.$route.query.type == "committee") {
+          this.$nextTick(async () => {
+            await this.handleBlock("committee", "empty", "");
           });
         } else {
           this.$message.error("請先選擇樓層再進行門牌新增");

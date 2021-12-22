@@ -13,6 +13,7 @@ class UsageOfFloor extends Parent {
       note,
       spatialCharacteristics,
       businessHours,
+      placeCategory,
       linkUsers,
       linkOwners,
       linkLivingUsers,
@@ -40,6 +41,7 @@ class UsageOfFloor extends Parent {
     this.capacity = capacity;
     this.spatialCharacteristics = spatialCharacteristics;
     this.businessHours = businessHours;
+    this.placeCategory = placeCategory;
     this.note = note;
     this.linkUsers = users;
     this.linkOwners = owners;
@@ -133,6 +135,7 @@ class UsageOfFloor extends Parent {
       note: "",
       spatialCharacteristics: "",
       businessHours: "",
+      placeCategory: 2,
       linkUsers: [],
       linkOwners: [],
       linkLivingUsers: [],
@@ -171,6 +174,24 @@ class UsageOfFloor extends Parent {
         isUpload: true,
         isExport: true,
         isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "場所特性",
+        prop: "placeCategory",
+        format: "placeCategory",
+        type: "number",
+        typemessage: "",
+        mandatory: false,
+        isHidden: true,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: false,
+        selectFilter: false,
+        formType: "selectString",
         selectFilter: false,
       },
       {

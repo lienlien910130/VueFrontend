@@ -223,7 +223,15 @@ export default {
           this.$message("更新成功");
           this.$socket.sendMsg("deviceAddress", index, result);
           await this.getBuildingDeviceAddressManagement();
-          if (index !== "updateManySave") this.innerVisible = false;
+          if (index !== "updateManySave") {
+            this.innerVisible = false;
+          } else {
+            this.dialogData.forEach((item, index) => {
+              if (item.id == content.id) {
+                this.dialogData.splice(index, 1, content);
+              }
+            });
+          }
         } else {
           this.$message.error("點位已存在，請重新輸入");
         }

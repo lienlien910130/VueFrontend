@@ -4,6 +4,7 @@ import router from "@/router";
 import {
   Account,
   Building,
+  Committee,
   Contactunit,
   Device,
   DeviceAddressManagement,
@@ -452,6 +453,9 @@ function getMessage(msg) {
         case "floor":
           handleFloor(data.SendType, data.Data.Content);
           break;
+        case "committee":
+          handleCommittee(data.SendType, data.Data.Content);
+          break;
         case "contactUnit":
           handleContactUnit(data.SendType, data.Data.Content);
           break;
@@ -567,6 +571,23 @@ function handleFloor(index, content) {
   // else if (index == "saveWatchFloor") {
   //   store.dispatch("websocket/saveWatchFloor", content);
   // }
+}
+function handleCommittee(index, content) {
+  console.log("handleCommittee", index, content);
+  if (index == "update" || index == "updateManySave") {
+    store.dispatch("building/updateCommittee", new Committee(content));
+  } else if (index == "delete") {
+    store.dispatch("building/deleteCommittee", content);
+  } else if (index == "create") {
+    store.dispatch("building/addCommittee", new Array(new Committee(content)));
+  } else if (index == "uploadExcelSave") {
+    store.dispatch(
+      "building/addCommittee",
+      content.map((item) => {
+        return new Committee(item);
+      })
+    );
+  }
 }
 function handleContactUnit(index, content) {
   console.log("handleContactUnit", index, content);

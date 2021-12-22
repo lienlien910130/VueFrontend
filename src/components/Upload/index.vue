@@ -439,11 +439,10 @@ export default {
           type: "warning",
         });
       } else {
-        if (this.title === "reportInspectio" && this.specialId !== "0") {
-          //不是第一次設定缺失
+        if (this.title === "reportInspectio") {
           this.$confirm(
-            "缺失內容檔案已上傳過，重新上傳會將舊有資料全部刪除，請問是否確認上傳?",
-            "提示",
+            "請確認PDF檔案內頁消防安全設備改善計畫書項目格式是否為1.或是(1)，若為錯誤格式將無法自動建立缺失項目，請問是否繼續上傳?",
+            "檢修申報書格式提醒",
             {
               confirmButtonText: "確定",
               cancelButtonText: "取消",
@@ -451,50 +450,65 @@ export default {
             }
           )
             .then(() => {
-              var name = this.files.filter(
-                (item, index) => item.id == this.deleteItem[0]
-              )[0].extName;
-              if (name == "pdf") {
-                this.$emit(
-                  "handleFilesUpload",
-                  "changeAgain",
-                  this.title,
-                  this.deleteItem[0]
-                );
-                this.importFiles = [];
-                this.fileList = [];
-                this.deleteItem = [];
+              if (this.specialId !== "0") {
+                this.$confirm(
+                  "缺失內容檔案已上傳過，重新上傳會將舊有資料全部刪除，請問是否確認上傳?",
+                  "提示",
+                  {
+                    confirmButtonText: "確定",
+                    cancelButtonText: "取消",
+                    type: "warning",
+                  }
+                )
+                  .then(() => {
+                    var name = this.files.filter(
+                      (item, index) => item.id == this.deleteItem[0]
+                    )[0].extName;
+                    if (name == "pdf") {
+                      this.$emit(
+                        "handleFilesUpload",
+                        "changeAgain",
+                        this.title,
+                        this.deleteItem[0]
+                      );
+                      this.importFiles = [];
+                      this.fileList = [];
+                      this.deleteItem = [];
+                    } else {
+                      this.$message({
+                        message: "缺失內容只能為pdf格式",
+                        type: "warning",
+                      });
+                      this.deleteItem = [];
+                    }
+                  })
+                  .catch(() => {
+                    this.choose = this.specialId;
+                  });
               } else {
-                this.$message({
-                  message: "缺失內容只能為pdf格式",
-                  type: "warning",
-                });
-                this.deleteItem = [];
+                var name = this.files.filter(
+                  (item, index) => item.id == this.deleteItem[0]
+                )[0].extName;
+                if (name == "pdf" || name == "jpg") {
+                  this.$emit(
+                    "handleFilesUpload",
+                    "changeFirst",
+                    this.title,
+                    this.deleteItem[0]
+                  );
+                  this.deleteItem = [];
+                } else {
+                  this.$message({
+                    message: "缺失內容檔案只能為pdf格式",
+                    type: "warning",
+                  });
+                  this.deleteItem = [];
+                }
               }
             })
             .catch(() => {
-              this.choose = this.specialId;
+              return false;
             });
-        } else if (this.title === "reportInspectio" && this.specialId === "0") {
-          //第一次設定缺失內容檔案
-          var name = this.files.filter(
-            (item, index) => item.id == this.deleteItem[0]
-          )[0].extName;
-          if (name == "pdf" || name == "jpg") {
-            this.$emit(
-              "handleFilesUpload",
-              "changeFirst",
-              this.title,
-              this.deleteItem[0]
-            );
-            this.deleteItem = [];
-          } else {
-            this.$message({
-              message: "缺失內容檔案只能為pdf格式",
-              type: "warning",
-            });
-            this.deleteItem = [];
-          }
         } else {
           //設定平面圖
           var name = this.files.filter(
@@ -517,6 +531,85 @@ export default {
             this.deleteItem = [];
           }
         }
+        // if (this.title === "reportInspectio" && this.specialId !== "0") {
+
+        //   //不是第一次設定缺失
+        //   this.$confirm(
+        //     "缺失內容檔案已上傳過，重新上傳會將舊有資料全部刪除，請問是否確認上傳?",
+        //     "提示",
+        //     {
+        //       confirmButtonText: "確定",
+        //       cancelButtonText: "取消",
+        //       type: "warning",
+        //     }
+        //   )
+        //     .then(() => {
+        //       var name = this.files.filter(
+        //         (item, index) => item.id == this.deleteItem[0]
+        //       )[0].extName;
+        //       if (name == "pdf") {
+        //         this.$emit(
+        //           "handleFilesUpload",
+        //           "changeAgain",
+        //           this.title,
+        //           this.deleteItem[0]
+        //         );
+        //         this.importFiles = [];
+        //         this.fileList = [];
+        //         this.deleteItem = [];
+        //       } else {
+        //         this.$message({
+        //           message: "缺失內容只能為pdf格式",
+        //           type: "warning",
+        //         });
+        //         this.deleteItem = [];
+        //       }
+        //     })
+        //     .catch(() => {
+        //       this.choose = this.specialId;
+        //     });
+        // } else if (this.title === "reportInspectio" && this.specialId === "0") {
+        //   //第一次設定缺失內容檔案
+        //   var name = this.files.filter(
+        //     (item, index) => item.id == this.deleteItem[0]
+        //   )[0].extName;
+        //   if (name == "pdf" || name == "jpg") {
+        //     this.$emit(
+        //       "handleFilesUpload",
+        //       "changeFirst",
+        //       this.title,
+        //       this.deleteItem[0]
+        //     );
+        //     this.deleteItem = [];
+        //   } else {
+        //     this.$message({
+        //       message: "缺失內容檔案只能為pdf格式",
+        //       type: "warning",
+        //     });
+        //     this.deleteItem = [];
+        //   }
+        // } else {
+        //   //設定平面圖
+        //   var name = this.files.filter(
+        //     (item, index) => item.id == this.deleteItem[0]
+        //   )[0].extName;
+        //   if (name == "png" || name == "jpg") {
+        //     this.$emit(
+        //       "handleFilesUpload",
+        //       "change",
+        //       this.title,
+        //       this.deleteItem[0]
+        //     );
+        //     this.deleteItem = [];
+        //     this.choose = this.deleteItem[0];
+        //   } else {
+        //     this.$message({
+        //       message: "平面圖只能為png或jpg格式",
+        //       type: "warning",
+        //     });
+        //     this.deleteItem = [];
+        //   }
+        // }
       }
     },
   },

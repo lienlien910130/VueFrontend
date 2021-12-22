@@ -159,7 +159,15 @@
               @change="
                 item.hasEvent ? singleChoiceChange($event, item.format) : null
               "
-              :disabled="item.format == 'commitUserInfo' ? disable : false"
+              :disabled="
+                item.format == 'commitUserInfo'
+                  ? disable
+                  : item.format == 'deviceTypeSelect'
+                  ? dialogStatus == 'create'
+                    ? false
+                    : true
+                  : false
+              "
             >
               <el-option
                 v-for="(obj, index) in selectfilter(item.format)"
@@ -175,21 +183,11 @@
               v-model="temp[item.prop]"
               filterable
               multiple
-              :multiple-limit="item.limit"
               value-key="id"
               placeholder="請選擇"
               style="width: 100%"
               @change="checkMode($event, item.format)"
-              :disabled="
-                item.format == 'commitUserInfo' ||
-                item.format == 'accountSelect'
-                  ? disable
-                  : item.format !== 'deviceTypeSelect'
-                  ? false
-                  : dialogStatus == 'create'
-                  ? false
-                  : true
-              "
+              :disabled="item.format == 'accountSelect' ? disable : false"
             >
               <template v-if="item.format == 'inspectionSelect'">
                 <el-option-group
@@ -213,7 +211,6 @@
                   :key="index"
                   :label="
                     item.format == 'maintainListSelect' ||
-                    item.format == 'commitUserInfo' ||
                     item.format == 'accountSelect'
                       ? obj.getName()
                       : obj.label
@@ -388,15 +385,13 @@
               show-word-limit
             >
             </el-input>
-            <span v-else-if="item.format == 'inspectionLackStatus'">
-              請至維護保養修改進度
-            </span>
             <el-input
               v-else
               v-model="temp[item.prop]"
               :maxlength="item.maxlength"
               show-word-limit
               :placeholder="item.placeholder"
+              :disabled="item.format == 'internetNumber' ? disable : false"
             >
             </el-input>
           </el-form-item>
@@ -486,7 +481,8 @@ export default {
             return item.houseNumber;
           case "building":
             return item.buildingName;
-          case "lack":
+          case "inspectionlack":
+          case "publicsafelack":
             return item.lackItem;
           case "deviceAddressManagement":
           case "devicePLCAddressManagement":
@@ -503,7 +499,7 @@ export default {
             return label;
           case "reportInspectio":
           case "reportPublicSafe":
-            return moment(item.declareYear).format("YYYY");
+            return item.declareYear;
           default:
             return item.name;
         }
@@ -602,6 +598,19 @@ export default {
         var obj = _.cloneDeep(changeDefaultFullType(fullType));
         obj.typevalue.push(fullType);
         this.fulltypevalue = obj.typevalue;
+      } else if (this.title == "equipment") {
+        var type = temp.getLinkType().getFullType();
+        this.disable = this.dialogStatus == "update";
+        if (
+          type == "nDeviceTypeList.AE.AE_FireDetectorCentralControl" ||
+          type == "nDeviceTypeList.OE.OE_ProgrammableLogicController"
+        ) {
+          this.originalInternet =
+            temp["internetNumber"] !== undefined
+              ? JSON.parse(JSON.stringify(temp["internetNumber"]))
+              : null;
+          this.disable = false;
+        }
       } else if (this.title == "deviceAddressManagement") {
         var icon = this.config.filter((item) => {
           return item.prop == "iconId";
@@ -621,18 +630,6 @@ export default {
         }
       } else if (this.title == "devicePLCAddressManagement") {
         this.disable = false;
-      } else if (this.title == "equipment") {
-        var type = temp.getLinkType().getFullType();
-        if (
-          type == "nDeviceTypeList.AE.AE_FireDetectorCentralControl" ||
-          type == "nDeviceTypeList.OE.OE_ProgrammableLogicController"
-        ) {
-          this.originalInternet =
-            temp["internetNumber"] !== undefined
-              ? JSON.parse(JSON.stringify(temp["internetNumber"]))
-              : null;
-          this.disable = false;
-        }
       } else if (this.title == "selfDefenseFireMarshallingMgmt") {
         var roles = temp.getLinkRole();
         var data = [];
@@ -678,28 +675,29 @@ export default {
             !set.has(item.id) ? set.add(item.id) : false
           );
           this.disable = false;
-        }
-      }
-    },
-    // 設備清單-設備種類選項
-    // 點位-指定設備
-    // 消防編組細項-選擇角色時要撈出account清單
-    async checkMode(value, format) {
-      console.log(value);
-      if (value.length) {
-        if (this.title == "equipment" && format == "deviceTypeSelect") {
+        } else if (this.title == "equipment" && format == "deviceTypeSelect") {
           if (
-            value[0].getFullType() ==
+            value.getFullType() ==
               "nDeviceTypeList.AE.AE_FireDetectorCentralControl" ||
-            value[0].getFullType() ==
+            value.getFullType() ==
               "nDeviceTypeList.OE.OE_ProgrammableLogicController"
           ) {
             this.disable = false;
             this.$emit("handleChangeConfig", true);
           } else {
+            this.disable = true;
+            this.temp["internetNumber"] = null;
             this.$emit("handleChangeConfig", false);
           }
-        } else if (
+        }
+      }
+    },
+    // 點位-指定設備
+    // 消防編組細項-選擇角色時要撈出account清單
+    async checkMode(value, format) {
+      console.log(value);
+      if (value.length) {
+        if (
           format == "assignFireDeviceSelect" ||
           format == "assignPLCDeviceSelect"
         ) {
@@ -724,11 +722,12 @@ export default {
           this.disable = false;
         }
       } else {
-        if (this.title == "equipment" && format == "deviceTypeSelect") {
-          this.disable = true;
-          this.temp["internetNumber"] = null;
-          this.$emit("handleChangeConfig", false);
-        } else if (
+        // if (this.title == "equipment" && format == "deviceTypeSelect") {
+        //   this.disable = true;
+        //   this.temp["internetNumber"] = null;
+        //   this.$emit("handleChangeConfig", false);
+        // } else
+        if (
           format == "assignFireDeviceSelect" ||
           format == "assignPLCDeviceSelect"
         ) {
@@ -742,7 +741,6 @@ export default {
         }
       }
     },
-
     querySearch(queryString, cb) {
       var restaurants = this.selectData;
       var results = queryString
@@ -777,7 +775,7 @@ export default {
           break;
         case "deviceTypeSelect":
           routeData = this.$router.resolve({
-            path: "/equipment/type",
+            path: "/equipment/deviceTypes",
             query: { type: "devicetype" },
           });
           break;
@@ -785,6 +783,12 @@ export default {
           routeData = this.$router.resolve({
             path: "/normal/basic",
             query: { type: "contactunit" },
+          });
+          break;
+        case "committeeSelect":
+          routeData = this.$router.resolve({
+            path: "/normal/basic",
+            query: { type: "committee" },
           });
           break;
         case "floorOfHouseSelect":
@@ -854,6 +858,7 @@ export default {
       //取得大樓的所有分類
       this.options = await Setting.getAllOption();
       this.$store.dispatch("building/setoptions", this.options);
+      this.$store.dispatch("record/saveSettingRecord", 1);
     },
     //fulltype選單變動
     changeFullType() {
@@ -873,7 +878,10 @@ export default {
           var c = _.cloneDeep(Contactunit.getTableConfig());
           this.config = c;
         }
-      } else if (this.title == "reportInspectio") {
+      } else if (
+        this.title == "reportInspectio" ||
+        this.title == "reportPublicSafe"
+      ) {
         if (!value) {
           this.config.forEach((item) => {
             if (!item.isEdit && !item.isHidden) {
@@ -884,7 +892,7 @@ export default {
           var c = _.cloneDeep(Inspection.getTableConfig());
           this.config = c;
           this.temp["declarationImproveDate"] = "";
-          this.temp["isImproved"] = false;
+          this.temp["isImproved"] = true;
           this.temp["nextInspectionDate"] = "";
         }
       }
@@ -999,15 +1007,18 @@ export default {
               this.prop = [];
               await this.getOptions();
             }
-            //設備更新時判斷有沒有更新控制模式
+
+            var data = this.changeObjectToArray();
+            if (this.dialogData.length == 1 && status == "updateManySave") {
+              status = "update";
+            }
             if (
               (this.title == "equipment" && status == "update") ||
               (this.title == "equipment" && status == "updateManySave")
             ) {
-              //var protocolMode = this.originalProtocolMode !== this.temp['protocolMode']
               var inter =
-                this.temp["internetNumber"] !== undefined
-                  ? this.temp["internetNumber"]
+                data["internetNumber"] !== undefined
+                  ? data["internetNumber"]
                   : null;
               var internet = this.originalInternet !== inter;
               if (internet == true) {
@@ -1021,24 +1032,47 @@ export default {
                   }
                 )
                   .then(() => {
-                    this.$emit("handleDialog", true, status, this.temp);
+                    this.$emit("handleDialog", true, status, data);
                   })
                   .catch(() => {
-                    this.temp["internetNumber"] = this.originalInternet;
-                    this.$emit("handleDialog", false, status, this.temp);
+                    data["internetNumber"] = this.originalInternet;
+                    this.$emit("handleDialog", false, status, data);
                   });
               } else {
-                this.$emit("handleDialog", false, status, this.temp);
+                this.$emit("handleDialog", false, status, data);
               }
             } else {
-              var data = this.changeObjectToArray();
-              if (this.dialogData.length == 1 && status == "updateManySave") {
-                status = "update";
-              }
-              if (this.title == "reportInspectio") {
+              if (
+                this.title == "reportInspectio" ||
+                this.title == "reportPublicSafe"
+              ) {
+                if (
+                  data["declareYearType"] !== "上半年" &&
+                  data["declareYearType"] !== "下半年" &&
+                  data["declareYearType"] !== "全年度"
+                ) {
+                  this.$message.error("請選擇上半年、下半年、全年度");
+                  return false;
+                }
                 data["declareYear"] =
                   moment(data["declareYear"]).format("YYYY") +
                   data["declareYearType"];
+              }
+              if (this.title == "equipment" && status == "create") {
+                //設備新增預設未保養
+                if (this.setting_record == 0) {
+                  await this.getOptions();
+                }
+                var obj = this.buildingoptions.filter((item) => {
+                  return (
+                    item.classType == "MaintainProcessOptions" &&
+                    item.textName == "未保養" &&
+                    item.systemUse
+                  );
+                });
+                if (obj.length) {
+                  data["status"] = obj[0].id;
+                }
               }
               this.$emit("handleDialog", this.title, status, data);
             }

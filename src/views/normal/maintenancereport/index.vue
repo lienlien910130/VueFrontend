@@ -1,20 +1,8 @@
 <template>
   <div class="editor-container">
     <el-row :gutter="20">
-      <el-col :xs="24" :sm="24" :md="24" :lg="12">
+      <el-col :xs="24" :sm="24" :md="24" :lg="16">
         <div class="chart-wrapper">
-          <!-- <div class="verticalhalfdiv">
-            <div class="label">
-              <i class="el-icon-edit">
-                <a @click="openWindows('basic')" style="color: #66b1ff">
-                  場所名稱：</a
-                >
-              </i>
-            </div>
-            <div class="content">
-              <span> {{ this.buildinginfo.getName() }}</span>
-            </div>
-          </div> -->
           <div class="verticalhalfdiv">
             <div class="label">
               <i class="el-icon-edit">
@@ -31,53 +19,16 @@
           </div>
         </div>
       </el-col>
-      <!-- <el-col :xs="24" :sm="24" :md="24" :lg="12">
-        <div class="chart-wrapper">
-          <el-col :xs="24" :sm="24" :md="24" :lg="12">
-            <div class="horizontalhalfdiv">
-              <div class="label">
-                <i class="el-icon-edit">
-                  <a @click="openWindows('user')" style="color: #66b1ff">
-                    管理權人：</a
-                  >
-                </i>
-              </div>
-              <div class="content">
-                <div
-                  v-for="(item, index) in this.buildinginfo.linkOwners"
-                  :key="index"
-                  class="user"
-                >
-                  <div style="padding-bottom: 2px">姓名 ： {{ item.name }}</div>
-                  <div>電話 ： {{ item.cellPhoneNumber }}</div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="24" :sm="24" :md="24" :lg="12">
-            <div class="horizontalhalfdiv">
-              <div class="label">
-                <i class="el-icon-edit">
-                  <a @click="openWindows('user')" style="color: #66b1ff">
-                    防火管理人：</a
-                  >
-                </i>
-              </div>
-              <div class="content">
-                <div
-                  v-for="(item, index) in this.buildinginfo.linkFireManagers"
-                  :key="index"
-                  class="user"
-                >
-                  <div style="padding-bottom: 2px">姓名 ： {{ item.name }}</div>
-                  <div>電話 ： {{ item.cellPhoneNumber }}</div>
-                </div>
-              </div>
-            </div>
-          </el-col>
+      <el-col :xs="24" :sm="24" :md="24" :lg="8">
+        <div class="right-wrapper">
+          <PanelGroup
+            :panelList="panelList"
+            v-on:handleSetLineChartData="handleSetLineChartData"
+          ></PanelGroup>
         </div>
-      </el-col> -->
+      </el-col>
     </el-row>
+
     <el-row :gutter="32">
       <el-col :xs="24" :sm="24" :md="24" :lg="24">
         <div class="block-wrapper">
@@ -90,16 +41,6 @@
         </div>
       </el-col>
     </el-row>
-    <!-- <Dialog
-            ref="dialog"
-            v-if="innerVisible === true"
-            v-bind="dialogAttrs"
-            :specialId="lackFileId"
-            :files="files"
-            :formtableData="formtableData"
-            :formtableconfig="formtableconfig"
-            :listQueryParams="lacklistQueryParams"
-            v-on:handleDialog="handleDialog"></Dialog> -->
 
     <DialogForm
       ref="dialogform"
@@ -150,6 +91,14 @@ export default {
       lackFileId: "", //缺失檔案id
       files: [],
       uploadVisible: false,
+      panelList: [],
+      lacksQueryParams: {
+        pageIndex: 1,
+        pageSize: 10,
+        total: 0,
+      },
+      lacksShow: false,
+      excludeId: null,
     };
   },
   computed: {
@@ -179,6 +128,7 @@ export default {
     async init() {
       this.title = "reportInspectio";
       this.tableConfig = Inspection.getTableConfig();
+      await this.getInspection();
       await this.getBuildingMaintenanceReport();
       await this.getProfessName();
       this.buttonsName = [
@@ -228,6 +178,52 @@ export default {
       this.dialogtableConfig = InspectionLacks.getTableConfig();
       this.tableData = data.result;
       this.tablelistQueryParams.total = data.totalPageCount;
+    },
+    async getInspection() {
+      //取得檢修申報 合格申報false & 改善狀況:未改善
+      var data = await Inspection.getSearchPage({
+        isImproved: false,
+        declareResult: false,
+        pageIndex: 1,
+        pageSize: 10,
+      });
+      if (this.setting_record == 0) {
+        await this.$store.dispatch("building/setoptions");
+        this.$store.dispatch("record/saveSettingRecord", 1);
+      }
+      let _array = this.buildingoptions.filter((item) => {
+        return (
+          item.classType == "MaintainProcessOptions" &&
+          item.textName == "已保養" &&
+          item.systemUse == true
+        );
+      });
+      var lacks = null;
+      if (_array.length) {
+        this.excludeId = _array[0].id;
+        this.lacksQueryParams.status = "{!=}" + _array[0].id;
+        lacks = await InspectionLacks.getAllSearchPage(this.lacksQueryParams);
+      }
+      this.panelList = [
+        {
+          label: "缺失申報未改善",
+          count: data.totalPageCount,
+          svgIcon: "inspection",
+          type: "inspection",
+        },
+        {
+          label: "缺失項目未改善",
+          count: lacks !== null ? lacks.totalPageCount : 0,
+          svgIcon: "inspection",
+          type: "lacks",
+        },
+      ];
+    },
+    async getlacksSearchPage() {
+      this.lacksQueryParams.status = "{!=}" + this.excludeId;
+      var lack = await InspectionLacks.getAllSearchPage(this.lacksQueryParams);
+      this.tableData = lack.result;
+      this.tablelistQueryParams.total = lack.totalPageCount;
     },
     async handleBlock(title, index, content) {
       //檢修申報的操作
@@ -333,7 +329,15 @@ export default {
           } else {
             this.$message.error("系統錯誤");
           }
-          if (index !== "updateManySave") this.innerVisible = false;
+          if (index !== "updateManySave") {
+            this.innerVisible = false;
+          } else {
+            this.dialogData.forEach((item, index) => {
+              if (item.id == content.id) {
+                this.dialogData.splice(index, 1, content);
+              }
+            });
+          }
           this.excelVisible = false;
         } else if (index === "createfile") {
           const formData = new FormData();
@@ -378,7 +382,6 @@ export default {
           if (isOk) {
             this.$message("更新成功");
             this.lackFileId = content;
-            this.$refs.dialogform.insertSuccess("inspectionSelect");
           } else {
             this.$message.error("檔案格式有誤，請重新設定");
           }
@@ -393,7 +396,20 @@ export default {
           this.$refs.block.clearSelectArray();
         }
       } else {
-        await this.handleLackDialog(title, index, content);
+        if (index === "updateLackManySave") {
+          var isOk = await content.update();
+          if (isOk) {
+            this.$message("更新成功");
+            await this.getInspectionLack();
+            this.dialogData.forEach((item, index) => {
+              if (item.id == content.id) {
+                this.dialogData.splice(index, 1, content);
+              }
+            });
+          }
+        } else {
+          await this.handleLackDialog(title, index, content);
+        }
       }
     },
     async handleLackDialog(title, index, content) {
@@ -406,9 +422,9 @@ export default {
             ? await content.create(this.inspection.getID())
             : await content.update();
         if (isOk) {
-          index === "updatelack"
-            ? this.$message("更新成功")
-            : this.$message("新增成功");
+          index === "createlack"
+            ? this.$message("新增成功")
+            : this.$message("更新成功");
           if (index === "createlack") this.isUpdate = true;
           await this.getInspectionLack();
           this.innerVisible = false;
@@ -448,8 +464,17 @@ export default {
         ];
         this.innerVisible = true;
         this.dialogStatus = "create";
-      } else if (index === "delete") {
-        var isDelete = await content.delete();
+      } else if (index === "delete" || index === "deleteMany") {
+        var isDelete = false;
+        if (index === "delete") {
+          isDelete = await content.delete();
+        } else {
+          var deleteArray = [];
+          content.forEach((item) => {
+            deleteArray.push(item.id);
+          });
+          isDelete = await InspectionLacks.deleteMany(deleteArray.toString());
+        }
         if (isDelete) {
           this.$message("刪除成功");
           if (
@@ -460,7 +485,7 @@ export default {
               this.tablelistQueryParams.pageIndex - 1;
           }
           await this.getInspectionLack();
-          //await this.resettablelistQueryParams()
+          this.$refs.dialogtable.clearSelectArray();
           this.isUpdate = true;
         } else {
           this.$message.error("系統錯誤");
@@ -488,14 +513,32 @@ export default {
         this.excelVisible = true;
         this.excelType = "uploadExcel";
       } else if (index === "clickPagination") {
-        this.tablelistQueryParams = content;
-        await this.getInspectionLack();
+        if (this.lacksShow) {
+          this.lacksQueryParams = content;
+          await this.getlacksSearchPage();
+        } else {
+          this.tablelistQueryParams = content;
+          await this.getInspectionLack();
+        }
+      } else if (index === "updateMany") {
+        this.dialogStatus = "updateMany";
+        content.forEach((item) => {
+          var obj = _.cloneDeep(item);
+          this.dialogData.push(obj);
+        });
+        this.dialogButtonsName = [
+          { name: "儲存", type: "primary", status: "updateLackManySave" },
+          { name: "取消", type: "info", status: "cancel" },
+        ];
+        this.innerVisible = true;
       } else {
         if (this.isUpdate) {
           await this.getBuildingMaintenanceReport();
           this.isUpdate = false;
         }
         this.tableVisible = false;
+        this.lacksShow = false;
+        this.lacksQueryParams = { pageIndex: 1, pageSize: 10, total: 0 };
       }
     },
     async changeTable(value) {
@@ -518,6 +561,24 @@ export default {
         this.$message("請先建立新的檢修申報後進行缺失項目的檔案設定");
       }
     },
+    async handleSetLineChartData(type) {
+      console.log("handleSetLineChartData", type);
+      if (type == "inspection") {
+        this.listQueryParams.isImproved = false;
+        this.listQueryParams.declareResult = false;
+        await this.getBuildingMaintenanceReport();
+      } else {
+        this.tableTitle = "inspectionlack";
+        this.dialogtableConfig = InspectionLacks.getTableConfig();
+        this.tableheaderButtonsName = [
+          { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
+        ];
+        this.tablebuttonsName = [];
+        await this.getlacksSearchPage();
+        this.lacksShow = true;
+        this.tableVisible = true;
+      }
+    },
   },
 };
 </script>
@@ -530,54 +591,53 @@ export default {
   width: 100%;
   overflow-x: hidden;
   overflow-y: auto;
+
   .verticalhalfdiv {
     width: 100%;
     min-height: 50%;
     .label {
-      min-width: 30%;
+      min-width: 20%;
       display: inline-block;
       text-align: center;
       font-size: 20px;
-    }
-    .content {
-      min-width: 60%;
-      display: inline-block;
-      font-size: 30px;
-    }
-  }
-  .horizontalhalfdiv {
-    height: 100%;
-    min-width: 50%;
-    .label {
-      min-width: 30%;
-      display: inline-block;
-      text-align: center;
-      font-size: 20px;
-      vertical-align: top;
     }
     .content {
       min-width: 70%;
       display: inline-block;
-      font-size: 24px;
-      .user {
-        padding: 0px 8px 8px 8px;
-      }
+      font-size: 30px;
     }
   }
+
   .report {
     font-size: 50px;
     color: red;
   }
 }
-.chart-mwrapper {
-  background: #fff;
-  padding: 10px 16px 0;
-  margin-bottom: 32px;
-  height: 310px;
+
+.right-wrapper {
+  padding: 10px 10px;
+  margin-bottom: 30px;
+  height: 150px;
   width: 100%;
-  .report {
-    font-size: 24px;
-    color: red;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+@media (max-width: 1024px) {
+  .chart-wrapper {
+    padding: 8px;
+  }
+  .right-wrapper {
+    padding: 8px;
+  }
+  .left {
+    float: none;
+    width: 100%;
+  }
+  .right {
+    float: none;
+    width: 100%;
+    padding-left: 0px;
   }
 }
 </style>

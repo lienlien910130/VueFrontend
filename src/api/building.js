@@ -32,7 +32,7 @@ const building = {
   apiGetCommittee() {
     return req(
       "get",
-      "/basic/communityManagementCommittee/" + this.getBid() + "/a"
+      "/index/" + this.getBid() + "/communityManagementCommittee/a"
     );
   },
   apiPostCommittee(data) {

@@ -1,6 +1,7 @@
 import Parent from "./parent";
 import api from "@/api";
 import Files from "./files";
+import { Contactunit } from ".";
 const moment = require("moment");
 
 class Inspection extends Parent {
@@ -22,7 +23,14 @@ class Inspection extends Parent {
       note,
       completedCount,
       allCount,
+      linkContactUnits,
     } = data;
+    var contactUnits =
+      linkContactUnits !== undefined
+        ? linkContactUnits.map((item) => {
+            return new Contactunit(item);
+          })
+        : [];
     this.declareYear = declareYear;
     this.declareDeadline = declareDeadline;
     this.declareDate = declareDate;
@@ -38,6 +46,7 @@ class Inspection extends Parent {
     this.note = note;
     this.completedCount = completedCount;
     this.allCount = allCount;
+    this.linkContactUnits = contactUnits;
   }
   clone(data) {
     return new Inspection(data);
@@ -120,6 +129,7 @@ class Inspection extends Parent {
     var data = await api.report
       .apiPostInspectionLackFiles(autoCreateMaintain, this.id, fileId, cover)
       .then((response) => {
+        console.log(response);
         var result = response.result !== undefined ? true : false;
         return result;
       })
@@ -146,6 +156,7 @@ class Inspection extends Parent {
       note: "",
       completedCount: 0,
       allCount: 0,
+      linkContactUnits: [],
     });
   }
   static getTableConfig() {
@@ -238,7 +249,7 @@ class Inspection extends Parent {
         mandatory: false,
         isAssociate: false,
         isEdit: false,
-        isUpload: false,
+        isUpload: true,
         isExport: false,
         isBlock: false,
         formType: "date",
@@ -253,10 +264,28 @@ class Inspection extends Parent {
         mandatory: false,
         isAssociate: false,
         isEdit: false,
-        isUpload: false,
+        isUpload: true,
         isExport: false,
         isBlock: false,
         formType: "date",
+        selectFilter: true,
+      },
+      {
+        label: "申報廠商",
+        prop: "linkContactUnits",
+        format: "contactunitSelect",
+        mandatory: false,
+        type: "object",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: true,
+        isEdit: true,
+        isUpload: false,
+        isExport: true,
+        isBlock: true,
+        formType: "singleChoice",
+        limit: 1,
         selectFilter: true,
       },
       {
@@ -264,7 +293,7 @@ class Inspection extends Parent {
         prop: "professName",
         mandatory: false,
         format: "searchColumn",
-        isHidden: false,
+        isHidden: true,
         maxlength: "10",
         isSearch: true,
         isAssociate: false,
@@ -280,7 +309,7 @@ class Inspection extends Parent {
         prop: "certificateNumber",
         format: "certificateNumber",
         mandatory: false,
-        isHidden: false,
+        isHidden: true,
         maxlength: "20",
         isSearch: true,
         isAssociate: false,
@@ -290,21 +319,6 @@ class Inspection extends Parent {
         isBlock: false,
         selectFilter: false,
         formType: "selectString",
-      },
-      {
-        label: "備註",
-        prop: "note",
-        format: "textarea",
-        maxlength: "200",
-        mandatory: false,
-        isHidden: false,
-        isSearch: true,
-        isAssociate: false,
-        isEdit: true,
-        isUpload: true,
-        isExport: true,
-        isBlock: false,
-        selectFilter: false,
       },
       {
         label: "合格申報",
@@ -341,6 +355,22 @@ class Inspection extends Parent {
         selectFilter: false,
       },
       {
+        label: "限期改善日期",
+        prop: "nextInspectionDate",
+        format: "YYYY-MM-DD",
+        mandatory: false,
+        message: "請選擇日期",
+        isHidden: false,
+        isSearch: true,
+        isAssociate: false,
+        isEdit: false,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "date",
+        selectFilter: false,
+      },
+      {
         label: "改善狀況",
         prop: "isImproved",
         format: "improvedBoolean",
@@ -359,19 +389,18 @@ class Inspection extends Parent {
         selectFilter: true,
       },
       {
-        label: "限期改善日期",
-        prop: "nextInspectionDate",
-        format: "YYYY-MM-DD",
+        label: "備註",
+        prop: "note",
+        format: "textarea",
+        maxlength: "200",
         mandatory: false,
-        message: "請選擇日期",
         isHidden: false,
         isSearch: true,
         isAssociate: false,
-        isEdit: false,
+        isEdit: true,
         isUpload: true,
         isExport: true,
-        isBlock: true,
-        formType: "date",
+        isBlock: false,
         selectFilter: false,
       },
       {

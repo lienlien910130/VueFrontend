@@ -32,10 +32,10 @@ class Committee extends Parent {
     var data = await api.building
       .apiPatchCommittee(this)
       .then(async (response) => {
-        return true;
+        return new Committee(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -43,10 +43,10 @@ class Committee extends Parent {
     var data = await api.building
       .apiPostCommittee(this)
       .then((response) => {
-        return true;
+        return new Committee(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -62,7 +62,10 @@ class Committee extends Parent {
     return data;
   }
   getName() {
-    return this.name;
+    return this.title;
+  }
+  getUsageOfName() {
+    return this.title + "-" + this.linkUsers[0].name;
   }
   getLinkUsers() {
     return this.linkUsers;
@@ -195,10 +198,13 @@ class Committee extends Parent {
     var data = await api.building
       .apiPostCommittees(data)
       .then((response) => {
-        return true;
+        response.result = response.result.map((item) => {
+          return new Committee(item);
+        });
+        return response;
       })
       .catch((error) => {
-        return false;
+        return [];
       });
     return data;
   }

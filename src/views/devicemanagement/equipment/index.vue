@@ -33,6 +33,7 @@
       ref="dialogtable"
       v-if="tableVisible === true"
       v-bind="tableAttrs"
+      :searchType="searchType"
       v-on="tableEvent"
     ></DialogTable>
 
@@ -116,7 +117,7 @@ export default {
       if (isMaintain) {
         await this.getDevicesManageMaintain();
       } else {
-        await this.getDevicesAddress();
+        await this.getDevicesAddress(this.tableVisible);
       }
     },
     async getBuildingDevicesManage() {
@@ -139,11 +140,26 @@ export default {
         { name: "檢視", icon: "el-icon-view", status: "openmaintain" },
       ];
     },
-    async getDevicesAddress() {
-      var data = await this.selectdevice.getDeviceAddresss(
+    async getDevicesAddress(tableVisible = true) {
+      var data = {};
+      var tabledata = [];
+      data = await this.selectdevice.getDeviceAddresss(
         this.tablelistQueryParams,
         this.searchType
       );
+      tabledata = data.result;
+      if (!tableVisible && data.totalPageCount == undefined) {
+        var plcaddress = await this.selectdevice.getDeviceAddresss(
+          this.tablelistQueryParams,
+          "plc"
+        );
+        if (plcaddress.totalPageCount !== undefined) {
+          this.searchType = "plc";
+          data = plcaddress;
+          tabledata = plcaddress.result;
+        }
+      }
+
       this.tableTitle = "deviceaddress";
       this.isHasHeaderButtons = false;
       this.dialogtableConfig =
@@ -151,7 +167,7 @@ export default {
           ? DeviceAddressManagement.getTableConfig()
           : DeviceAddressManagement.getPLCTableConfig();
       this.dialogtableConfig.shift();
-      this.tableData = data.result;
+      this.tableData = tabledata;
       this.tablelistQueryParams.total = data.totalPageCount;
       this.tablebuttonsName = [
         { name: "檢視", icon: "el-icon-view", status: "openaddress" },
@@ -280,7 +296,15 @@ export default {
             index !== "uploadExcelSave" ? result : result.result
           );
           await this.getBuildingDevicesManage();
-          if (index !== "updateManySave") this.innerVisible = false;
+          if (index !== "updateManySave") {
+            this.innerVisible = false;
+          } else {
+            this.dialogData.forEach((item, index) => {
+              if (item.id == content.id) {
+                this.dialogData.splice(index, 1, content);
+              }
+            });
+          }
           this.excelVisible = false;
         } else {
           this.$message.error("網路編號已存在，請重新輸入");
@@ -343,7 +367,7 @@ export default {
         if (typeof this.$route.params.target == "object") {
           await this.handleBlock(
             "equipment",
-            "open",
+            "updateMany",
             this.$route.params.target
           );
         }

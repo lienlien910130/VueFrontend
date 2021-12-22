@@ -39,7 +39,7 @@
             <el-table-column fixed type="index"> </el-table-column>
 
             <el-table-column
-              v-for="(item, index) in config"
+              v-for="(item, index) in tableconfigs"
               align="left"
               :label="item.label"
               :key="index"
@@ -86,7 +86,12 @@
                   {{ changeShowFormat(item.format, scope.row, item.prop) }}
                 </span>
 
-                <span v-else-if="item.formType == 'selectString'">
+                <span
+                  v-else-if="
+                    item.formType == 'selectString' ||
+                    item.formType == 'addressStr'
+                  "
+                >
                   {{
                     changeShowFormatString(item.format, scope.row, item.prop)
                   }}
@@ -175,6 +180,9 @@ export default {
     title: {
       type: String,
     },
+    searchType: {
+      type: String,
+    },
     visible: {
       type: Boolean,
       default: false,
@@ -244,6 +252,25 @@ export default {
       return this.tablelistQueryParams.total || 0;
     },
   },
+  watch: {
+    searchType: {
+      handler: function (newValue, oldValue) {
+        if (this.activeName !== this.searchType) {
+          this.activeName = this.searchType;
+        }
+      },
+      immediate: true,
+    },
+    config: {
+      handler: async function () {
+        this.tableconfigs = this.config.filter(
+          (item, index) => item.isHidden == false
+        );
+      },
+      immediate: true,
+    },
+  },
+
   data() {
     return {
       textMap: {
@@ -260,6 +287,7 @@ export default {
       activeName: "fire",
       //更新多筆&刪除多筆使用
       selectArray: [],
+      tableconfigs: [],
     };
   },
   methods: {

@@ -11,6 +11,7 @@ import {
   InspectionLacks,
   Account,
   User,
+  Committee,
 } from "@/object/index";
 
 export default {
@@ -42,11 +43,12 @@ export default {
       "floor_record",
       "account_record",
       "buildingaccount",
+      "buildingcommittee",
+      "committee_record",
     ]),
     dataStr() {
       //日期
       return function (a, b, prop) {
-        console.log(a, b, prop);
         if (a == null) {
           return "";
         }
@@ -66,7 +68,10 @@ export default {
             return "";
           } else if (prop == "declareYear") {
             return showlabel;
-          } else if (prop == "nextInspectionDate") {
+          } else if (
+            prop == "nextInspectionDate" ||
+            prop == "declarationImproveDate"
+          ) {
             if (a["declareResult"]) {
               //合格申報
               return "-";
@@ -78,7 +83,11 @@ export default {
           }
         } else {
           if (prop == "nextInspectionDate") {
-            return "尚未複查";
+            return a["declareResult"] ? "-" : "尚未複查";
+          } else if (prop == "declarationImproveDate") {
+            if (a["declareResult"]) {
+              return "-";
+            }
           } else {
             return "";
           }
@@ -149,6 +158,8 @@ export default {
             return this.changeFloorName(row[prop]);
           case "processList":
             return row.getProcessName();
+          case "committeeSelect":
+            return row.getKeeperUnitsName();
         }
       };
     },
@@ -389,9 +400,36 @@ export default {
                 this.$store.dispatch("building/setContactunit");
                 this.$store.dispatch("record/saveContactunitRecord", 1);
               }
-              return this.buildingcontactunit.map((v) => {
+              if (
+                this.title == "reportInspectio" &&
+                this.buildinginfo.floorsOfAboveGround > 15
+              ) {
+                return this.buildingcontactunit
+                  .filter((item) => {
+                    return item.governmentApproval == true;
+                  })
+                  .map((v) => {
+                    this.$set(v, "value", v.getID());
+                    this.$set(v, "label", v.getName());
+                    this.$set(v, "id", v.getID());
+                    return v;
+                  });
+              } else {
+                return this.buildingcontactunit.map((v) => {
+                  this.$set(v, "value", v.getID());
+                  this.$set(v, "label", v.getName());
+                  this.$set(v, "id", v.getID());
+                  return v;
+                });
+              }
+            case "committeeSelect":
+              if (this.committee_record == 0) {
+                this.$store.dispatch("building/setCommittee");
+                this.$store.dispatch("record/saveCommitteeRecord", 1);
+              }
+              return this.buildingcommittee.map((v) => {
                 this.$set(v, "value", v.getID());
-                this.$set(v, "label", v.getName());
+                this.$set(v, "label", v.getUsageOfName());
                 this.$set(v, "id", v.getID());
                 return v;
               });
@@ -472,6 +510,17 @@ export default {
                 { label: "消防設備士", id: "消防設備士" },
                 { label: "暫行裝置檢修", id: "暫行裝置檢修" },
               ];
+            case "placeCategory":
+              return [
+                { label: "甲類", id: 1 },
+                { label: "乙類", id: 2 },
+                { label: "丙類", id: 3 },
+                { label: "丁類", id: 4 },
+                { label: "戊類", id: 5 },
+                { label: "己類", id: 6 },
+                { label: "庚類", id: 7 },
+                { label: "其他", id: 8 },
+              ];
           }
         } else {
           return "";
@@ -524,6 +573,8 @@ export default {
             return "已撤銷";
           case "declareResultBoolean":
             return "合格申報";
+          case "governmentApprovalBoolean":
+            return "是";
         }
       } else {
         switch (format) {
@@ -543,6 +594,8 @@ export default {
             return "未撤銷";
           case "declareResultBoolean":
             return "缺失申報";
+          case "governmentApprovalBoolean":
+            return "否";
         }
       }
     },
@@ -630,11 +683,12 @@ export default {
               item == "linkLivingUsers"
             ) {
               value = this.changeUserName(data[item]);
-            } else if (
-              item == "linkKeeperUnits" ||
-              item == "linkMaintainVendors"
-            ) {
+            } else if (item == "linkMaintainVendors") {
               value = this.changeContainUnit(data[item]);
+            } else if (item == "linkKeeperUnits") {
+              value = val.getKeeperUnitsName();
+            } else if (item == "linkUsageOfFloors") {
+              value = val.getUsageOfFloorsName();
             } else if (item == "linkDeviceTypes") {
               value = val.getLinkType().getSelectName();
             } else if (item == "linkBuildings") {
@@ -651,6 +705,8 @@ export default {
               value = data[item] == true ? "已使用" : "未使用";
             } else if (item == "revocation") {
               value = data[item] == true ? "已撤銷" : "未撤銷";
+            } else if (item == "governmentApproval") {
+              value = data[item] == true ? "是" : "否";
             } else if (
               item == "birthday" ||
               item == "dateOfPurchase" ||
@@ -775,6 +831,12 @@ export default {
                     params: { target: data, type: "contactunit" },
                   });
                   break;
+                case "committeeSelect":
+                  this.$router.push({
+                    name: "basic",
+                    params: { target: data, type: "committee" },
+                  });
+                  break;
                 case "floorOfHouseSelect": //門牌資料>打開當前視窗
                   this.handleClickOption("openfloorofhouse", data);
                   break;
@@ -851,7 +913,7 @@ export default {
         case UsageOfFloor:
           config = UsageOfFloor.getTableConfig();
           if (this.floorOfHouse_record == 0) {
-            this.$store.dispatch("building/setFloorOfHouse");
+            await this.$store.dispatch("building/setFloorOfHouse");
             this.$store.dispatch("record/saveFloorOfHouseRecord", 1);
           }
           list = this.buildingfloorOfHouse.map((v) => {
@@ -869,6 +931,14 @@ export default {
           break;
         case InspectionLacks:
           config = InspectionLacks.getTableConfig();
+          break;
+        case Committee:
+          config = Committee.getTableConfig();
+          if (this.committee_record == 0) {
+            await this.$store.dispatch("building/setCommittee");
+            this.$store.dispatch("record/saveCommitteeRecord", 1);
+          }
+          list = this.buildingcommittee;
           break;
       }
       return {

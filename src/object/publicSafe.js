@@ -2,6 +2,7 @@ import Parent from "./parent";
 import api from "@/api";
 const moment = require("moment");
 import Files from "./files";
+import { Contactunit } from ".";
 
 class PublicSafe extends Parent {
   constructor(data) {
@@ -22,8 +23,14 @@ class PublicSafe extends Parent {
       note,
       completedCount,
       allCount,
+      linkContactUnits,
     } = data;
-
+    var contactUnits =
+      linkContactUnits !== undefined
+        ? linkContactUnits.map((item) => {
+            return new Contactunit(item);
+          })
+        : [];
     this.declareYear = declareYear;
     this.declareDeadline = declareDeadline;
     this.declareDate = declareDate;
@@ -39,6 +46,7 @@ class PublicSafe extends Parent {
     this.note = note;
     this.completedCount = completedCount;
     this.allCount = allCount;
+    this.linkContactUnits = contactUnits;
   }
   clone(data) {
     return new PublicSafe(data);
@@ -112,7 +120,7 @@ class PublicSafe extends Parent {
       declareYear: moment().format("YYYY-MM-DD"),
       declareDeadline: null,
       declareDate: moment().format("YYYY-MM-DD"),
-      declareResult: "",
+      declareResult: true, //true:合格申報/false:缺失申報
       declarationImproveDate: null,
       checkStartDate: null,
       checkEndDate: null,
@@ -124,6 +132,7 @@ class PublicSafe extends Parent {
       note: "",
       completedCount: 0,
       allCount: 0,
+      linkContactUnits: [],
     });
   }
   static getTableConfig() {
@@ -142,6 +151,22 @@ class PublicSafe extends Parent {
         isExport: true,
         isBlock: true,
         formType: "date",
+        selectFilter: false,
+      },
+      {
+        label: "",
+        prop: "declareYearType",
+        format: "radio",
+        mandatory: true,
+        message: "請選擇",
+        isHidden: true,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: false,
+        isExport: false,
+        isBlock: false,
+        formType: "radio",
         selectFilter: false,
       },
       {
@@ -200,7 +225,7 @@ class PublicSafe extends Parent {
         mandatory: false,
         isAssociate: false,
         isEdit: false,
-        isUpload: false,
+        isUpload: true,
         isExport: false,
         isBlock: false,
         formType: "date",
@@ -215,10 +240,28 @@ class PublicSafe extends Parent {
         mandatory: false,
         isAssociate: false,
         isEdit: false,
-        isUpload: false,
+        isUpload: true,
         isExport: false,
         isBlock: false,
         formType: "date",
+        selectFilter: true,
+      },
+      {
+        label: "申報廠商",
+        prop: "linkContactUnits",
+        format: "contactunitSelect",
+        mandatory: false,
+        type: "object",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: true,
+        isEdit: true,
+        isUpload: false,
+        isExport: true,
+        isBlock: true,
+        formType: "singleChoice",
+        limit: 1,
         selectFilter: true,
       },
       {
@@ -226,7 +269,7 @@ class PublicSafe extends Parent {
         prop: "professName",
         mandatory: false,
         format: "searchColumn",
-        isHidden: false,
+        isHidden: true,
         maxlength: "10",
         isSearch: true,
         isAssociate: false,
@@ -242,7 +285,7 @@ class PublicSafe extends Parent {
         prop: "certificateNumber",
         format: "certificateNumber",
         mandatory: false,
-        isHidden: false,
+        isHidden: true,
         maxlength: "20",
         isSearch: true,
         isAssociate: false,
@@ -254,15 +297,49 @@ class PublicSafe extends Parent {
         formType: "selectString",
       },
       {
+        label: "合格申報",
+        prop: "declareResult",
+        format: "declareResultBoolean",
+        type: "boolean",
+        typemessage: "",
+        mandatory: false,
+        trigger: "change",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "checkbox",
+        selectFilter: true,
+      },
+      {
         label: "計劃書改善期限",
         prop: "declarationImproveDate",
         format: "YYYY-MM-DD",
-        mandatory: true,
+        mandatory: false,
         message: "請選擇日期",
         isHidden: false,
         isSearch: true,
         isAssociate: false,
-        isEdit: true,
+        isEdit: false,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "date",
+        selectFilter: false,
+      },
+      {
+        label: "限期改善日期",
+        prop: "nextInspectionDate",
+        format: "YYYY-MM-DD",
+        mandatory: false,
+        message: "請選擇日期",
+        isHidden: false,
+        isSearch: true,
+        isAssociate: false,
+        isEdit: false,
         isUpload: true,
         isExport: true,
         isBlock: true,
@@ -280,28 +357,12 @@ class PublicSafe extends Parent {
         isHidden: false,
         isSearch: false,
         isAssociate: false,
-        isEdit: true,
+        isEdit: false,
         isUpload: true,
         isExport: true,
         isBlock: true,
         formType: "boolean",
         selectFilter: true,
-      },
-      {
-        label: "限期改善日期",
-        prop: "nextInspectionDate",
-        format: "YYYY-MM-DD",
-        mandatory: true,
-        message: "請選擇日期",
-        isHidden: false,
-        isSearch: true,
-        isAssociate: false,
-        isEdit: true,
-        isUpload: true,
-        isExport: true,
-        isBlock: true,
-        formType: "date",
-        selectFilter: false,
       },
       {
         label: "備註",
@@ -348,14 +409,6 @@ class PublicSafe extends Parent {
         isBlock: true,
         selectFilter: false,
       },
-      // {
-      //     label: '已改善/未改善',
-      //     prop: 'linkReportPublicSafeLacks',
-      //     format:'openreportlack',
-      //     mandatory:false, type:'array',typemessage:'',
-      //     isHidden:true,isSearch:false,
-      //     isAssociate:false,isEdit:false,isUpload:false,isExport:false,isBlock:true
-      // }
     ];
   }
   static async get() {

@@ -135,7 +135,7 @@ module.exports = {
           "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.css",
         ],
         js: [
-          "https://cdn.jsdelivr.net/npm/vue@2.6.14",
+          "https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.14/vue.min.js",
           "https://cdnjs.cloudflare.com/ajax/libs/vue-router/3.0.6/vue-router.min.js",
           "https://cdnjs.cloudflare.com/ajax/libs/vuex/3.1.0/vuex.min.js",
           "https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.5/mobile-detect.min.js",
@@ -146,7 +146,7 @@ module.exports = {
           "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js",
           "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js",
           "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.js",
-          "https://cdn.jsdelivr.net/npm/vue-codemirror@4.0.6/dist/vue-codemirror.min.js",
+          // "https://cdn.jsdelivr.net/npm/vue-codemirror@4.0.6/dist/vue-codemirror.min.js",
         ],
       },
     }),
@@ -174,6 +174,5 @@ module.exports = {
       amd: "lodash",
       root: "_",
     },
-    "vue-codemirror": "VueCodemirror",
   },
 };

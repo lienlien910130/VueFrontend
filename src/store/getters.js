@@ -42,6 +42,7 @@ const getters = {
   buildingarray: (state) => state.building.buildingarray,
   buildingoptions: (state) => state.building.buildingoptions,
   buildingcontactunit: (state) => state.building.buildingcontactunit,
+  buildingcommittee: (state) => state.building.buildingcommittee,
   buildingusers: (state) => state.building.buildingusers,
   buildingfloors: (state) => state.building.buildingfloors,
   buildingdevices: (state) => state.building.buildingdevices,
@@ -65,5 +66,6 @@ const getters = {
   deviceType_record: (state) => state.record.deviceType_record,
   addressManagement_record: (state) => state.record.addressManagement_record,
   account_record: (state) => state.record.account_record,
+  committee_record: (state) => state.record.committee_record,
 };
 export default getters;

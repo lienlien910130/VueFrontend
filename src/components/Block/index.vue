@@ -66,7 +66,12 @@
                     collapse-tags
                     filterable
                   >
-                    <template v-if="item.formType == 'boolean'">
+                    <template
+                      v-if="
+                        item.formType == 'boolean' ||
+                        item.formType == 'checkbox'
+                      "
+                    >
                       <el-option
                         v-for="(val, index) in [true, false]"
                         :key="index"
@@ -537,7 +542,7 @@
                 </span>
 
                 <span v-else-if="item.formType == 'range'">
-                  {{ dataStr(scope.row["checkStartDate"], "YYYY-MM-DD") }}
+                  {{ dataStr(scope.row, "YYYY-MM-DD", "checkStartDate") }}
                   <span
                     v-if="
                       scope.row['checkStartDate'] !== null &&
@@ -545,7 +550,7 @@
                     "
                     >~<br
                   /></span>
-                  {{ dataStr(scope.row["checkEndDate"], "YYYY-MM-DD") }}
+                  {{ dataStr(scope.row, "YYYY-MM-DD", "checkEndDate") }}
                 </span>
 
                 <span v-else-if="item.formType == 'selectSetting'">
@@ -557,7 +562,17 @@
                     item.formType == 'boolean' || item.formType == 'checkbox'
                   "
                 >
-                  {{ scope.row[item.prop] | changeBoolean(item.format) }}
+                  <template
+                    v-if="
+                      item.format == 'improvedBoolean' &&
+                      scope.row['declareResult']
+                    "
+                  >
+                    -
+                  </template>
+                  <template v-else>
+                    {{ scope.row[item.prop] | changeBoolean(item.format) }}
+                  </template>
                 </span>
 
                 <span v-else-if="item.formType == 'nTypeChange'">
@@ -777,10 +792,6 @@ export default {
   },
   computed: {
     canotSearch() {
-      // var con =
-      //   this.title == "maintainList" || this.title == "maintain"
-      //     ? MaintainManagement.getTableConfig()
-      //     : this.config;
       var data = this.config.filter((item) => item.selectFilter == true);
       this.searchForm.preset = _.cloneDeep(data).map((item) => {
         var i = {
@@ -1246,6 +1257,7 @@ export default {
             ? "{<~>}"
             : item.type == "select" ||
               item.type == "boolean" ||
+              item.type == "checkbox" ||
               item.type == "singleChoice" ||
               item.type == "selectSetting"
             ? ""
@@ -1263,7 +1275,10 @@ export default {
             temp.push({ id: con });
           });
           data = temp;
-        } else if (item.type == "boolean") {
+          if (item.prop == "linkDeviceTypes") {
+            data = [{ fullType: item.data.pop() }];
+          }
+        } else if (item.type == "boolean" || item.type == "checkbox") {
           data = item.data[0];
         }
         this.$set(

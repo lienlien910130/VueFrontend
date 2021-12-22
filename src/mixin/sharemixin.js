@@ -28,6 +28,7 @@ export default {
       "floor_record",
       "process",
       "processMsg",
+      "setting_record",
     ]),
     TimeOptions() {
       //設定名稱

@@ -5,6 +5,7 @@ import Contactunit from "./contactunit";
 const moment = require("moment");
 import { MaintainManagement } from "@/object/maintainManagement";
 import DeviceAddressManagement from "@/object/deviceAddressManagement";
+import { Committee } from ".";
 
 class Device extends Parent {
   constructor(data) {
@@ -36,7 +37,7 @@ class Device extends Parent {
     var keeperUnits =
       linkKeeperUnits !== undefined
         ? linkKeeperUnits.map((item) => {
-            return new Contactunit(item);
+            return new Committee(item);
           })
         : [];
     var maintainVendors =
@@ -67,7 +68,11 @@ class Device extends Parent {
   }
   async update(resetLink) {
     var temp = JSON.parse(JSON.stringify(this));
-    if (temp.internetNumber !== null && temp.internetNumber !== undefined)
+    if (
+      temp.internetNumber !== null &&
+      temp.internetNumber !== undefined &&
+      temp.internetNumber !== ""
+    )
       temp.internetNumber = "{Check}" + temp.internetNumber;
     var data = await api.device
       .apiPatchDevicesManagement(temp, resetLink)
@@ -196,9 +201,6 @@ class Device extends Parent {
       })
       .toString();
   }
-  // getSystemUnUseMode(){
-  //     return this.systemUnUseMode
-  // }
   getLinkType() {
     return this.linkDeviceTypes.length !== 0
       ? this.linkDeviceTypes[0]
@@ -259,7 +261,7 @@ class Device extends Parent {
         mandatory: true,
         message: "請選擇種類",
         isHidden: false,
-        type: "array",
+        type: "object",
         typemessage: "",
         isSearch: false,
         isAssociate: true,
@@ -267,9 +269,10 @@ class Device extends Parent {
         isUpload: false,
         isExport: true,
         isBlock: true,
-        formType: "select",
+        formType: "singleChoice",
         limit: 1,
         selectFilter: true,
+        hasEvent: true,
       },
       {
         label: "網路編號",
@@ -317,7 +320,7 @@ class Device extends Parent {
         mandatory: false,
         message: "請輸入Port",
         isHidden: true,
-        isSearch: true,
+        isSearch: false,
         isAssociate: false,
         isEdit: true,
         isUpload: true,
@@ -340,12 +343,13 @@ class Device extends Parent {
         mandatory: false,
         message: "請輸入標準值",
         isHidden: true,
-        isSearch: true,
+        isSearch: false,
         isAssociate: false,
         isEdit: true,
         isUpload: true,
         isExport: true,
         isBlock: true,
+        formType: "inputNumber",
         selectFilter: false,
       },
       {
@@ -362,12 +366,13 @@ class Device extends Parent {
         mandatory: false,
         message: "請輸入誤差值",
         isHidden: true,
-        isSearch: true,
+        isSearch: false,
         isAssociate: false,
         isEdit: true,
         isUpload: true,
         isExport: true,
         isBlock: true,
+        formType: "inputNumber",
         selectFilter: false,
       },
       {
@@ -434,11 +439,11 @@ class Device extends Parent {
       {
         label: "保管單位",
         prop: "linkKeeperUnits",
-        format: "contactunitSelect",
+        format: "committeeSelect",
         mandatory: true,
         trigger: "change",
         message: "請選擇保管單位",
-        type: "array",
+        type: "object",
         typemessage: "",
         isHidden: false,
         isSearch: false,
@@ -447,7 +452,7 @@ class Device extends Parent {
         isUpload: false,
         isExport: true,
         isBlock: true,
-        formType: "select",
+        formType: "singleChoice",
         limit: 1,
         selectFilter: true,
       },
@@ -475,12 +480,12 @@ class Device extends Parent {
         label: "設備狀況",
         prop: "status",
         format: "MaintainProcessOptions",
-        mandatory: true,
+        mandatory: false,
         message: "請選擇設備狀況",
         isHidden: false,
         isSearch: false,
         isAssociate: true,
-        isEdit: true,
+        isEdit: false,
         isUpload: false,
         isExport: true,
         isBlock: true,
@@ -511,8 +516,8 @@ class Device extends Parent {
         isHidden: false,
         isSearch: true,
         isAssociate: false,
-        isEdit: true,
-        isUpload: true,
+        isEdit: false,
+        isUpload: false,
         isExport: true,
         isBlock: true,
         formType: "date",
