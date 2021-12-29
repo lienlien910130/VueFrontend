@@ -122,6 +122,17 @@ class InspectionLacks extends Parent {
       });
     return data;
   }
+  static async getOfID(id) {
+    var data = await api.report
+      .apiGetInspectionLackOfID(id)
+      .then((response) => {
+        return new InspectionLacks(response.result[0]);
+      })
+      .catch((error) => {
+        return {};
+      });
+    return data;
+  }
   static async getSearchPage(inspectionId, data) {
     var data = await api.report
       .apiGetInspectionLackSearchPages(inspectionId, data)

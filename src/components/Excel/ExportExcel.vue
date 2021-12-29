@@ -44,9 +44,11 @@
 const moment = require("moment");
 // const Vuex = require('vuex')
 import { changeDefaultFullType } from "@/utils/index";
+import { computedmixin } from "@/mixin/index";
 
 export default {
   name: "ExportExcel",
+  mixins: [computedmixin],
   computed: {
     ...Vuex.mapGetters(["buildingoptions", "deviceType"]),
   },
@@ -95,6 +97,7 @@ export default {
           return {
             prop: element.prop,
             format: element.format,
+            formType: element.formType,
           };
         });
         const list = this.exportExcelData;
@@ -112,31 +115,52 @@ export default {
     formatJson(filterVal, jsonData) {
       return jsonData.map((v) =>
         filterVal.map((j) => {
-          if (j.format == "YYYY-MM-DD" || j.format == "YYYY") {
-            if (v[j.prop] !== null && v[j.prop] !== undefined) {
-              return moment(v[j.prop]).format(j.format);
-            }
-          } else if (j.format == "fullType") {
-            var obj = changeDefaultFullType(v[j.prop]);
-            return obj.typelabel;
+          if (j.formType == "date") {
+            return this.dataStr(v, j.format, j.prop);
+          } else if (j.formType == "selectSetting") {
+            return this.changeOptionName(v[j.prop]);
+          } else if (j.formType == "boolean" || j.formType == "checkbox") {
+            return this.$options.filters.changeBoolean(v[j.prop], j.format);
+          } else if (j.formType == "nTypeChange") {
+            return this.$options.filters.changeNType(v[j.prop]);
           } else if (typeof v[j.prop] == "object") {
             if (v[j.prop] !== null) {
               return v[j.prop].map((item) => item.getName());
             }
           } else if (
-            j.format == "LackStatusOptions" ||
-            j.format == "MaintainProcessOptions" ||
-            j.format == "MaintainContentOptions" ||
-            j.format == "DeviceStatusOptions" ||
-            j.format == "ContactUnitOptions"
+            j.formType == "selectString" ||
+            j.formType == "addressStr" ||
+            j.formType == "fullType"
           ) {
-            let _array = this.buildingoptions.filter(
-              (item, index) => item.id == v[j.prop]
-            );
-            return _array.length !== 0 ? _array[0].textName : "";
+            return this.changeShowFormatString(j.format, v, j.prop);
           } else {
             return v[j.prop];
           }
+          // if (j.format == "YYYY-MM-DD" || j.format == "YYYY") {
+          //   if (v[j.prop] !== null && v[j.prop] !== undefined) {
+          //     return moment(v[j.prop]).format(j.format);
+          //   }
+          // } else if (j.format == "fullType") {
+          //   var obj = changeDefaultFullType(v[j.prop]);
+          //   return obj.typelabel;
+          // } else if (typeof v[j.prop] == "object") {
+          //   if (v[j.prop] !== null) {
+          //     return v[j.prop].map((item) => item.getName());
+          //   }
+          // } else if (
+          //   j.format == "LackStatusOptions" ||
+          //   j.format == "MaintainProcessOptions" ||
+          //   j.format == "MaintainContentOptions" ||
+          //   j.format == "DeviceStatusOptions" ||
+          //   j.format == "ContactUnitOptions"
+          // ) {
+          //   let _array = this.buildingoptions.filter(
+          //     (item, index) => item.id == v[j.prop]
+          //   );
+          //   return _array.length !== 0 ? _array[0].textName : "";
+          // } else {
+          //   return v[j.prop];
+          // }
         })
       );
     },

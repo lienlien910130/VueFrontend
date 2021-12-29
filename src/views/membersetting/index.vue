@@ -3,8 +3,9 @@
     <el-tabs tab-position="left" v-model="activeName">
       <el-tab-pane label="建築物" name="building">
         <el-row :gutter="20">
-          <el-col :xs="24" :sm="24" :md="24" :lg="8">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
             <SettingBlock
+              ref="settingBlock"
               v-bind="settingAttrs('ContactUnitOptions')"
               v-on:handleButton="handleButton"
             ></SettingBlock>
@@ -13,43 +14,67 @@
       </el-tab-pane>
       <el-tab-pane label="維護保養" name="maintain">
         <el-row :gutter="20">
-          <el-col :xs="24" :sm="24" :md="24" :lg="8">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
             <SettingBlock
+              ref="settingBlock"
               v-bind="settingAttrs('MaintainContentOptions')"
               v-on:handleButton="handleButton"
             ></SettingBlock>
           </el-col>
-          <el-col :xs="24" :sm="24" :md="24" :lg="8">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
             <SettingBlock
+              ref="settingBlock"
               v-bind="settingAttrs('MaintainProcessOptions')"
               v-on:handleButton="handleButton"
             ></SettingBlock>
           </el-col>
-          <el-col :xs="24" :sm="24" :md="24" :lg="8">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
             <SettingBlock
+              ref="settingBlock"
               v-bind="settingMaintainTimeOptions('MaintainTimeOptions')"
               v-on:handleButton="handleButton"
             ></SettingBlock>
           </el-col>
         </el-row>
       </el-tab-pane>
-      <el-tab-pane label="檢修及公安申報" name="report">
+      <el-tab-pane label="檢修申報" name="report">
         <el-row :gutter="20">
-          <el-col :xs="24" :sm="24" :md="24" :lg="8">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
             <SettingBlock
+              ref="settingBlock"
+              v-bind="settingAttrs('InspectionTypeOfTime')"
+              v-on:handleButton="handleButton"
+            ></SettingBlock>
+          </el-col>
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
+            <SettingBlock
+              ref="settingBlock"
+              v-bind="settingAttrs('InspectionTimeOptions')"
+              v-on:handleButton="handleButton"
+            ></SettingBlock>
+          </el-col>
+        </el-row>
+      </el-tab-pane>
+      <el-tab-pane label="公安申報" name="reportPublic">
+        <el-row :gutter="20">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
+            <SettingBlock
+              ref="settingBlock"
               v-bind="settingAttrs('LackStatusOptions')"
               v-on:handleButton="handleButton"
             ></SettingBlock>
           </el-col>
-          <el-col :xs="24" :sm="24" :md="24" :lg="8">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
             <SettingBlock
-              v-bind="settingAttrs('PublicSafeTimeOptions')"
+              ref="settingBlock"
+              v-bind="settingAttrs('PublicSafeTypeOfTime')"
               v-on:handleButton="handleButton"
             ></SettingBlock>
           </el-col>
-          <el-col :xs="24" :sm="24" :md="24" :lg="8">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
             <SettingBlock
-              v-bind="settingAttrs('InspectionTimeOptions')"
+              ref="settingBlock"
+              v-bind="settingAttrs('PublicSafeTimeOptions')"
               v-on:handleButton="handleButton"
             ></SettingBlock>
           </el-col>
@@ -67,22 +92,15 @@ export default {
   components: {
     SettingBlock: () => import("./components/SettingBlock.vue"),
   },
-  computed: {
-    ...Vuex.mapGetters(["buildingcontactunit", "buildingdevices"]),
-  },
   data() {
     return {
       options: [],
-      input: "",
-      type: "view",
-      current: "",
       temp: [],
       activeName: "building",
     };
   },
   async mounted() {
     await this.getOptions();
-    console.log(this.$route.query.type);
     if (this.$route.query.type == "mp") {
       this.activeName = "maintain";
     } else if (this.$route.query.type == "la") {
@@ -94,8 +112,8 @@ export default {
       return {
         title: data,
         option: this.optionsFilter(data),
-        type: this.type,
-        current: this.current,
+        // type: this.type,
+        // current: this.current,
       };
     },
     settingMaintainTimeOptions(data) {
@@ -106,8 +124,8 @@ export default {
       return {
         title: data,
         option: this.optionsFilter(data),
-        type: this.type,
-        current: this.current,
+        // type: this.type,
+        // current: this.current,
         radio: array[0] !== undefined ? array[0].id : "",
       };
     },
@@ -145,18 +163,6 @@ export default {
         case "delete":
           await this.DeleteData(content);
           break;
-        case "maintainTimeOptions":
-          break;
-        case "cancelEdit":
-          this.type = "view";
-          this.current = "";
-          this.options = JSON.parse(this.temp);
-          break;
-        case "changeEdit":
-          this.type = "edit";
-          this.current = content.id;
-          this.temp = JSON.stringify(this.options);
-          break;
         default:
           break;
       }
@@ -164,26 +170,39 @@ export default {
     async PostData(index, content) {
       var temp = {
         classType: index,
-        textName: content,
+        textName: content.textName,
+        value:
+          index == "InspectionTypeOfTime" || index == "PublicSafeTypeOfTime"
+            ? content.value.toString()
+            : index == "InspectionTimeOptions" ||
+              index == "PublicSafeTimeOptions"
+            ? content.value
+            : null,
         sort: 99,
+        Checked: false,
+        systemUse: false,
       };
       var result = await Setting.postOption(temp);
       if (Object.keys(result).length !== 0) {
-        this.$message("新增成功");
-        await this.getOptions();
         this.$socket.sendMsg("setting", "create", result);
+        this.$message("新增成功");
+        this.options = await Setting.getAllOption();
       } else {
         this.$message.error("該名稱已存在，請重新輸入");
       }
     },
     async UpdateData(content) {
-      var result = await Setting.updateOption(content);
+      content.value =
+        content.classType == "InspectionTypeOfTime" ||
+        content.classType == "PublicSafeTypeOfTime"
+          ? content.value.toString()
+          : content.value;
+      var temp = Array.isArray(content) ? content : new Array(content);
+      var result = await Setting.updateOption(temp);
       if (Object.keys(result).length !== 0) {
         this.$message("更新成功");
-        this.type = "view";
-        this.current = "";
-        await this.getOptions();
         this.$socket.sendMsg("setting", "update", result);
+        this.options = await Setting.getAllOption();
       } else {
         this.$message.error("該名稱已存在，請重新輸入");
       }
@@ -192,8 +211,8 @@ export default {
       var isOk = await Setting.deleteOption(content);
       if (isOk) {
         this.$message("刪除成功");
-        await this.getOptions();
         this.$socket.sendMsg("setting", "delete", content);
+        this.options = await Setting.getAllOption();
       }
     },
   },

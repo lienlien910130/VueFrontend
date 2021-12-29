@@ -50,8 +50,10 @@
           </el-tabs>
         </div>
       </el-col>
+    </el-row>
+    <el-row :gutter="32" id="parent" style="margin-top: 20px">
       <el-col :xs="24" :sm="24" :md="24" :lg="6">
-        <div :class="floorwrapper">
+        <div :class="floorwrapper" id="rangeDiv">
           <h3>大樓樓層</h3>
           <Range
             v-on:handleBuildingFloorSelect="handleBuildingFloorSelect"
@@ -95,34 +97,29 @@
           </el-tabs>
         </div>
       </el-col>
-      <!-- <Dialog
-                ref="dialog"
-                v-bind="dialogAttrs"
-                :files="floorFiles"
-                v-on:handleDialog="handleDialog"></Dialog> -->
-
-      <DialogForm
-        ref="dialogform"
-        v-if="innerVisible === true"
-        v-bind="dialogAttrs"
-        v-on:handleDialog="handleDialog"
-      ></DialogForm>
-
-      <DialogUpload
-        ref="dialogupload"
-        v-if="uploadVisible === true"
-        v-bind="uploadAttrs"
-        v-on:handleDialog="handleDialog"
-      ></DialogUpload>
-
-      <DialogExcel
-        ref="dialogexcel"
-        v-if="excelVisible === true"
-        v-bind="excelAttrs"
-        v-on:handleDialog="handleDialog"
-        :isP="activeName == 'Professional'"
-      ></DialogExcel>
     </el-row>
+
+    <DialogForm
+      ref="dialogform"
+      v-if="innerVisible === true"
+      v-bind="dialogAttrs"
+      v-on:handleDialog="handleDialog"
+    ></DialogForm>
+
+    <DialogUpload
+      ref="dialogupload"
+      v-if="uploadVisible === true"
+      v-bind="uploadAttrs"
+      v-on:handleDialog="handleDialog"
+    ></DialogUpload>
+
+    <DialogExcel
+      ref="dialogexcel"
+      v-if="excelVisible === true"
+      v-bind="excelAttrs"
+      v-on:handleDialog="handleDialog"
+      :isP="activeName == 'Professional'"
+    ></DialogExcel>
   </div>
 </template>
 
@@ -355,6 +352,10 @@ export default {
       ];
       await this.getManagementList();
       await this.getUserList();
+      this.$nextTick(() => {
+        document.getElementById("rangeDiv").style.height =
+          document.getElementById("parent").clientHeight + "px";
+      });
     },
     async resetlistQueryParams() {
       this.listQueryParams = {
@@ -738,7 +739,6 @@ export default {
         index === "update" || index === "updateManySave"
           ? this.$message("更新成功")
           : this.$message("新增成功");
-        this.$store.dispatch("building/setCommittee");
         this.$socket.sendMsg(
           "committee",
           index,
@@ -774,7 +774,6 @@ export default {
         index === "update" || index === "updateManySave"
           ? this.$message("更新成功")
           : this.$message("新增成功");
-        // this.$store.dispatch("building/setContactunit");
         this.$socket.sendMsg(
           "contactUnit",
           index,
@@ -828,15 +827,24 @@ export default {
           index === "update" || index === "updateManySave"
             ? this.$message("更新成功")
             : this.$message("新增成功");
-          this.$store.dispatch(
-            "building/setBuildingInfo",
-            await Building.getInfo()
-          );
+          // this.$store.dispatch(
+          //   "building/setBuildingInfo",
+          //   await Building.getInfo()
+          // );
           this.$socket.sendMsg(
             "floorOfHouse",
             index,
             index !== "uploadExcelSave" ? result : result.result
           );
+          if (this.selectFloor !== null && this.activeFloor == "IN") {
+            await this.getFloorOfHouseList();
+          }
+          if (index === "update" || index == "updateManySave") {
+            if (this.activeName == "MC" && index === "update") {
+              //重整管委會
+              await this.getManagementList();
+            }
+          }
           if (index !== "updateManySave") {
             this.innerVisible = false;
           } else {
@@ -845,13 +853,6 @@ export default {
                 this.dialogData.splice(index, 1, content);
               }
             });
-          }
-          if (this.selectFloor !== null && this.activeFloor == "IN") {
-            await this.getFloorOfHouseList();
-          }
-          if (this.activeName == "MC" && index === "update") {
-            //重整管委會
-            await this.getManagementList();
           }
         } else {
           if (index !== "uploadExcelSave") {
@@ -899,7 +900,6 @@ export default {
               this.$message("更新成功");
               this.$store.dispatch("building/setCommittee");
               var data = await Building.getInfo();
-              //this.$store.dispatch("building/setBuildingInfo", data);
               this.$socket.sendMsg("building", "info", data);
               if (this.activeName == "MC") {
                 //重整管委會
@@ -1044,7 +1044,7 @@ export default {
 .block-wrapper {
   background: #fff;
   padding: 15px 15px;
-  margin-bottom: 20px;
+
   height: 780px !important;
 }
 

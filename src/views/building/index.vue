@@ -192,15 +192,15 @@ export default {
       this.dialogConfig = Building.getTableConfig();
       if (index === "open") {
         this.building = content;
-        var userlist = await User.getOfBuildingID(this.building.getID());
+        //var userlist = await User.getOfBuildingID(this.building.getID());
         this.dialogConfig[4].isEdit = false;
         this.dialogConfig[5].isEdit = false;
-        this.dialogSelect = userlist.map((v) => {
-          this.$set(v, "value", v.getID());
-          this.$set(v, "label", v.getName());
-          this.$set(v, "id", v.getID());
-          return v;
-        });
+        // this.dialogSelect = userlist.map((v) => {
+        //   this.$set(v, "value", v.getID());
+        //   this.$set(v, "label", v.getName());
+        //   this.$set(v, "id", v.getID());
+        //   return v;
+        // });
         this.dialogData.push(content);
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "update" },
@@ -289,6 +289,7 @@ export default {
           { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
         ];
         this.tableheaderButtonsName = [
+          { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
           { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
         ];
       } else if (index === "openfiles") {
@@ -303,13 +304,13 @@ export default {
           var obj = _.cloneDeep(item);
           this.dialogData.push(obj);
         });
-        var userlist = await User.getOfBuildingID(this.dialogData[0].getID());
-        this.dialogSelect = userlist.map((v) => {
-          this.$set(v, "value", v.getID());
-          this.$set(v, "label", v.getName());
-          this.$set(v, "id", v.getID());
-          return v;
-        });
+        // var userlist = await User.getOfBuildingID(this.dialogData[0].getID());
+        // this.dialogSelect = userlist.map((v) => {
+        //   this.$set(v, "value", v.getID());
+        //   this.$set(v, "label", v.getName());
+        //   this.$set(v, "id", v.getID());
+        //   return v;
+        // });
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "updateManySave" },
           { name: "取消", type: "info", status: "cancel" },
@@ -323,29 +324,7 @@ export default {
       this.dialogTitle = "floor";
       this.dialogConfig = Floors.getTableConfig();
       this.dialogButtonsName = [];
-      if (index === "empty") {
-        // this.dialogData.push( Floors.empty() )
-        // this.dialogButtonsName = [
-        //   { name:'儲存',type:'primary',status:'createfloor'},
-        //   { name:'返回',type:'info',status:'cancelfloor'}]
-        // this.innerVisible = true
-        // this.dialogStatus = 'create'
-      } else if (index === "delete") {
-        // var isDelete = await content.delete()
-        // if(isDelete){
-        //     this.$message('刪除成功')
-        //     if(this.buildingid == this.building.getID()){
-        //       this.$store.dispatch('building/setbuildingfloors',await Floors.get())
-        //     }
-        //     if(this.tablelistQueryParams.pageIndex !== 1 && this.tableData.length == 1){
-        //       this.tablelistQueryParams.pageIndex = this.tablelistQueryParams.pageIndex-1
-        //     }
-        //     await this.getFloorList()
-        //     // await this.resettablelistQueryParams()
-        // }else{
-        //     this.$message.error('系統錯誤')
-        // }
-      } else if (index === "open") {
+      if (index === "open") {
         this.dialogData.push(content);
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "updatefloor" },
@@ -353,13 +332,21 @@ export default {
         ];
         this.innerVisible = true;
         this.dialogStatus = "update";
+      } else if (index === "updateMany") {
+        this.dialogStatus = "updateMany";
+        content.forEach((item) => {
+          var obj = _.cloneDeep(item);
+          this.dialogData.push(obj);
+        });
+        this.dialogButtonsName = [
+          { name: "儲存", type: "primary", status: "updateManySave" },
+          { name: "取消", type: "info", status: "cancel" },
+        ];
+        this.innerVisible = true;
       } else if (index === "exportExcel") {
         this.exportExcelData = this.tableData;
         this.excelVisible = true;
         this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        // this.excelVisible = true
-        // this.excelType = 'uploadExcel'
       } else if (index === "openfiles") {
         this.filesTitle = "floorFiles";
         this.floor = content;
@@ -399,10 +386,10 @@ export default {
             isOk == true
               ? this.$message("新增成功")
               : this.$message.error("新增樓層有誤");
-            this.$store.dispatch(
-              "building/setBuildingList",
-              await Building.get()
-            );
+            // this.$store.dispatch(
+            //   "building/setBuildingList",
+            //   await Building.get()
+            // );
             this.$socket.sendMsg("building", "create", result);
             await this.getAllBuilding();
             this.innerVisible = false;
@@ -413,20 +400,28 @@ export default {
           var result = await content.update();
           if (Object.keys(result).length !== 0) {
             this.$message("更新成功");
-            this.$store.dispatch(
-              "building/setBuildingList",
-              await Building.get()
-            );
+            // this.$store.dispatch(
+            //   "building/setBuildingList",
+            //   await Building.get()
+            // );
             this.$socket.sendMsg("building", "update", result, result.getID());
             this.$socket.sendMsg("building", "info", result, result.getID());
-            if (this.buildingid == content.getID()) {
-              this.$store.dispatch(
-                "building/setBuildingInfo",
-                await Building.getInfo()
-              );
-            }
+            // if (this.buildingid == content.getID()) {
+            //   this.$store.dispatch(
+            //     "building/setBuildingInfo",
+            //     await Building.getInfo()
+            //   );
+            // }
             await this.getAllBuilding();
-            if (index !== "updateManySave") this.innerVisible = false;
+            if (index !== "updateManySave") {
+              this.innerVisible = false;
+            } else {
+              this.dialogData.forEach((item, index) => {
+                if (item.id == content.id) {
+                  this.dialogData.splice(index, 1, content);
+                }
+              });
+            }
           } else {
             this.$message.error("該建築物名稱已存在，請重新輸入");
           }
@@ -476,7 +471,24 @@ export default {
           this.$refs.block.clearSelectArray();
         }
       } else {
-        await this.handleFloor(index, content);
+        if (index === "updateManySave") {
+          var result = await content.update(this.building.getID());
+          if (Object.keys(result).length !== 0) {
+            this.$message("更新成功");
+          }
+          if (this.buildingid == this.building.getID()) {
+            this.$store.dispatch("building/setFloors");
+          }
+          this.$socket.sendMsg("floor", index, result, this.building.getID());
+          await this.getFloorList();
+          this.dialogData.forEach((item, index) => {
+            if (item.id == content.id) {
+              this.dialogData.splice(index, 1, content);
+            }
+          });
+        } else {
+          await this.handleFloor(index, content);
+        }
       }
     },
     async handleFloor(index, content) {
@@ -484,7 +496,6 @@ export default {
       this.dialogTitle = "floor";
       this.dialogConfig = Floors.getTableConfig();
       this.dialogButtonsName = [];
-      //index === 'createfloor'
       if (index === "updatefloor") {
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "updatefloor" },
@@ -493,9 +504,6 @@ export default {
         var floorsArray = [];
         floorsArray.push(content);
         var result = await content.update(this.building.getID());
-        // var result = index === 'createfloor' ?
-        //   await Floors.create(this.building.getID(),floorsArray) :
-        //   await content.update(this.building.getID())
         if (Object.keys(result).length !== 0) {
           index === "updatefloor"
             ? this.$message("更新成功")

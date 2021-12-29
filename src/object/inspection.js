@@ -54,6 +54,9 @@ class Inspection extends Parent {
   getNextInspectionDate() {
     return moment(this.nextInspectionDate).format("YYYY-MM-DD");
   }
+  getCertificateNumber() {
+    return this.certificateNumber;
+  }
   async update() {
     var data = await api.report
       .apiPatchInspection(this)

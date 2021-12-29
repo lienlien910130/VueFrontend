@@ -96,6 +96,7 @@ class SampleNodeList extends Parent {
         isExport: true,
         isBlock: true,
         formType: "nTypeChange",
+        isCheck: true,
       },
       {
         label: "icon",

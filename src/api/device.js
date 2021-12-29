@@ -11,9 +11,11 @@ const device = {
 
   //設備管理
   apiGetBuildingDevicesManagement() {
-    return req("get", "/index/devices");
+    return req("get", "/index/devices/a");
   },
-  // apiGetDevicesManagement(deviceId){ return req('get','/devicesManagement/'+deviceId) },
+  apiGetDevicesOfID(id) {
+    return req("get", "/index/devices/" + id);
+  },
   apiPostDevicesManagement(data) {
     return req("post", "/devicesManagement/check", this.getBid(), data);
   },
@@ -70,6 +72,9 @@ const device = {
   apiGetDefaultFullType() {
     return req("get", "/index/deviceTypes/fta");
   },
+  apiGetDevicesTypeOfID(id) {
+    return req("get", "/index/deviceTypes/" + id);
+  },
   // apiGetDevicesType(){ return req('get','/deviceTypesManagement/a') },
   apiPostDevicesType(data) {
     return req("post", "/deviceTypesManagement", null, data);
@@ -95,16 +100,16 @@ const device = {
   apiPostDevicesAddress(deviceId, data) {
     return req("post", "/deviceAddressManagement/check", deviceId, data);
   }, //單點新增
-  apiPutDevicesAddress(resetLink, data) {
+  apiPutDevicesAddress(deviceId, resetLink, data) {
     return req(
       "put",
       "/deviceAddressManagement/check/" + resetLink,
-      this.getBid(),
+      deviceId,
       data
     );
   },
-  apiPatchDevicesAddress(data) {
-    return req("patch", "/deviceAddressManagement/s", this.getBid(), data);
+  apiPatchDevicesAddress(deviceId, data) {
+    return req("patch", "/deviceAddressManagement/s", deviceId, data);
   },
   apiDeleteDevicesAddress(deviceAddressId) {
     return req(
@@ -115,9 +120,9 @@ const device = {
   apiGetDevicesAddressSearchPages(data) {
     return req("post", "/deviceAddressManagement/ss", null, data);
   },
-  apiPostDevicesAddresses(data) {
+  apiPostDevicesAddresses(deviceId, data) {
     data.forEach((element) => {
-      element.parentId = this.getBid();
+      element.parentId = deviceId;
     });
     return req("post", "/deviceAddressManagement/check/s", null, data);
   },
@@ -133,16 +138,16 @@ const device = {
   apiPostDevicesPLCAddress(deviceId, data) {
     return req("post", "/devicePlcAddressManagement/check", deviceId, data);
   }, //單點新增
-  apiPutDevicesPLCAddress(resetLink, data) {
+  apiPutDevicesPLCAddress(deviceId, resetLink, data) {
     return req(
       "put",
       "/devicePlcAddressManagement/check/" + resetLink,
-      this.getBid(),
+      deviceId,
       data
     );
   },
-  apiPatchDevicesPLCAddress(data) {
-    return req("patch", "/devicePlcAddressManagement/s", this.getBid(), data);
+  apiPatchDevicesPLCAddress(deviceId, data) {
+    return req("patch", "/devicePlcAddressManagement/s", deviceId, data);
   },
   apiDeleteDevicesPLCAddress(deviceAddressId) {
     return req(
@@ -153,9 +158,9 @@ const device = {
   apiGetDevicesPLCAddressSearchPages(data) {
     return req("post", "/devicePlcAddressManagement/ss", null, data);
   },
-  apiPostDevicesPLCAddresses(data) {
+  apiPostDevicesPLCAddresses(deviceId, data) {
     data.forEach((element) => {
-      element.parentId = this.getBid();
+      element.parentId = deviceId;
     });
     return req("post", "/devicePlcAddressManagement/check/s", null, data);
   },

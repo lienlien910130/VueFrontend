@@ -212,7 +212,15 @@ export default {
             : this.$message("新增成功");
           this.$socket.sendMsg("menus", "reset", "");
           this.$store.dispatch("permission/setmenu", await Menu.get());
-          if (index !== "updateManySave") this.innerVisible = false;
+          if (index !== "updateManySave") {
+            this.innerVisible = false;
+          } else {
+            this.dialogData.forEach((item, index) => {
+              if (item.id == content.id) {
+                this.dialogData.splice(index, 1, content);
+              }
+            });
+          }
           this.excelVisible = false;
         } else {
           this.$message.error("該權限已存在，請重新輸入");

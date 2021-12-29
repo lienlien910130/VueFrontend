@@ -38,6 +38,9 @@ const report = {
   },
 
   //檢修申報缺失
+  apiGetInspectionLackOfID(id) {
+    return req("get", "index/reportInspection/InspectionLack/" + id);
+  },
   apiGetInspectionLack(inspectionId) {
     return req(
       "get",

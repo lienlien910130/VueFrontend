@@ -14,6 +14,7 @@ class UsageOfFloor extends Parent {
       spatialCharacteristics,
       businessHours,
       placeCategory,
+      selfDeclared,
       linkUsers,
       linkOwners,
       linkLivingUsers,
@@ -42,6 +43,7 @@ class UsageOfFloor extends Parent {
     this.spatialCharacteristics = spatialCharacteristics;
     this.businessHours = businessHours;
     this.placeCategory = placeCategory;
+    this.selfDeclared = selfDeclared;
     this.note = note;
     this.linkUsers = users;
     this.linkOwners = owners;
@@ -126,6 +128,26 @@ class UsageOfFloor extends Parent {
   getLivingUsers() {
     return this.linkLivingUsers;
   }
+  getPlaceCategory() {
+    switch (this.placeCategory) {
+      case 1:
+        return "甲類";
+      case 2:
+        return "乙類";
+      case 3:
+        return "丙類";
+      case 4:
+        return "丁類";
+      case 5:
+        return "戊類";
+      case 6:
+        return "己類";
+      case 7:
+        return "庚類";
+      case 8:
+        return "其他";
+    }
+  }
   static empty() {
     return new UsageOfFloor({
       id: "",
@@ -136,6 +158,7 @@ class UsageOfFloor extends Parent {
       spatialCharacteristics: "",
       businessHours: "",
       placeCategory: 2,
+      selfDeclared: false,
       linkUsers: [],
       linkOwners: [],
       linkLivingUsers: [],
@@ -183,7 +206,7 @@ class UsageOfFloor extends Parent {
         type: "number",
         typemessage: "",
         mandatory: false,
-        isHidden: true,
+        isHidden: false,
         isSearch: false,
         isAssociate: false,
         isEdit: true,
@@ -193,6 +216,24 @@ class UsageOfFloor extends Parent {
         selectFilter: false,
         formType: "selectString",
         selectFilter: false,
+      },
+      {
+        label: "自行申報",
+        prop: "selfDeclared",
+        format: "selfDeclaredBoolean",
+        type: "boolean",
+        typemessage: "",
+        mandatory: false,
+        trigger: "change",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "checkbox",
+        selectFilter: true,
       },
       {
         label: "收容人數",
@@ -236,7 +277,7 @@ class UsageOfFloor extends Parent {
         prop: "businessHours",
         mandatory: false,
         message: "請輸入營業時間",
-        isHidden: false,
+        isHidden: true,
         maxlength: "50",
         isSearch: true,
         placeholder: "請輸入營業時間",
@@ -348,6 +389,17 @@ class UsageOfFloor extends Parent {
       })
       .catch((error) => {
         return [];
+      });
+    return data;
+  }
+  static async getOfID(id) {
+    var data = await api.building
+      .apiGetBuildingOfHouseOfID(id)
+      .then((response) => {
+        return new UsageOfFloor(response.result[0]);
+      })
+      .catch((error) => {
+        return {};
       });
     return data;
   }

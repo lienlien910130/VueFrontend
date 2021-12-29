@@ -541,6 +541,17 @@ class Device extends Parent {
       });
     return data;
   }
+  static async getOfID(id) {
+    var data = await api.device
+      .apiGetDevicesOfID(id)
+      .then((response) => {
+        return new Device(response.result[0]);
+      })
+      .catch((error) => {
+        return {};
+      });
+    return data;
+  }
   static async getSearchPage(data) {
     var data = await api.device
       .apiGetDevicesManagementSearchPages(data)

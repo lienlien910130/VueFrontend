@@ -134,6 +134,7 @@ class Role extends Parent {
         isExport: true,
         isBlock: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "描述",
@@ -189,7 +190,7 @@ class Role extends Parent {
         isExport: true,
         isBlock: true,
         formType: "boolean",
-        selectFilter: true,
+        selectFilter: false,
       },
       {
         label: "刪除",
@@ -223,6 +224,17 @@ class Role extends Parent {
       })
       .catch((error) => {
         return [];
+      });
+    return data;
+  }
+  static async getOfID(id) {
+    var data = await api.authority
+      .apiGetRoleOfID(id)
+      .then((response) => {
+        return new Role(response.result[0]);
+      })
+      .catch((error) => {
+        return {};
       });
     return data;
   }

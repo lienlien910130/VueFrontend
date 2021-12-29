@@ -131,6 +131,7 @@ class Building extends Parent {
         isUpload: true,
         isExport: true,
         isBlock: true,
+        isCheck: true,
       },
       {
         label: "地址",

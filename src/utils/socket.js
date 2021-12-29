@@ -531,7 +531,9 @@ function handleMenus(index, content) {
 function handleSetting(index, content) {
   console.log("handleSetting", index, content);
   if (index == "update") {
-    store.dispatch("building/updateOption", content);
+    content.forEach((item) => {
+      store.dispatch("building/updateOption", item);
+    });
   } else if (index == "delete") {
     store.dispatch("building/deleteOption", content);
   } else if (index == "create") {
@@ -696,6 +698,13 @@ function handleDeviceAddress(index, content) {
     store.dispatch(
       "building/addAddressManagement",
       new Array(new DeviceAddressManagement(content))
+    );
+  } else if (index == "uploadExcelSave") {
+    store.dispatch(
+      "building/addAddressManagement",
+      content.map((item) => {
+        return new DeviceAddressManagement(item);
+      })
     );
   }
 }

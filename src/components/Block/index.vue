@@ -669,7 +669,10 @@
       </div>
     </el-row>
     <el-row>
-      <div class="pagination-container">
+      <div
+        v-show="title !== 'mainMenu' && title !== 'accessAuthority'"
+        class="pagination-container"
+      >
         <template v-if="isMobile == 'null'">
           <el-pagination
             background
@@ -1149,6 +1152,7 @@ export default {
     },
     searchDevice() {
       this.listQueryParams.internet = this.deviceIdSelect.getInternetNumber();
+      this.$emit("setDeviceIdSelect", this.deviceIdSelect.getID());
       this.$emit("update:listQueryParams", this.listQueryParams);
       this.$emit("clickPagination");
     },

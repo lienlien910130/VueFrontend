@@ -82,7 +82,6 @@ class Account extends Parent {
     var data = await api.authority
       .apiPatchAccountAuthority(temp)
       .then(async (response) => {
-        console.log(response);
         return new Account(response.result);
       })
       .catch((error) => {
@@ -157,18 +156,19 @@ class Account extends Parent {
         mandatory: true,
         message: "請輸入帳號",
         maxlength: "10",
-        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/,
-        errorMsg: "請輸入至少6個字元，含大小寫字母、至少1個數字",
-        isPattern: true,
+        // pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/,
+        // errorMsg: "請輸入至少6個字元，含大小寫字母、至少1個數字",
+        isPattern: false,
         isHidden: false,
         isSearch: true,
-        placeholder: "請輸入至少6個字元，含大小寫字母、至少1個數字",
+        placeholder: "請輸入帳號",
         isAssociate: false,
         isEdit: true,
         isUpload: true,
         isExport: true,
         isBlock: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "密碼",
@@ -176,12 +176,12 @@ class Account extends Parent {
         mandatory: true,
         message: "請輸入密碼",
         maxlength: "15",
-        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
-        errorMsg: "請輸入至少8個字元，含大小寫字母、至少1個數字",
-        isPattern: true,
+        // pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+        // errorMsg: "請輸入至少8個字元，含大小寫字母、至少1個數字",
+        isPattern: false,
         isHidden: true,
         isSearch: false,
-        placeholder: "請輸入至少8個字元，含大小寫字母、至少1個數字",
+        placeholder: "請輸入密碼",
         isAssociate: false,
         isEdit: true,
         isUpload: true,
@@ -207,7 +207,7 @@ class Account extends Parent {
       {
         label: "身份證",
         prop: "identityCard",
-        mandatory: true,
+        mandatory: false,
         message: "請輸入身份證",
         pattern: /^[A-Z]{1}[1-2]{1}[0-9]{8}$/,
         errorMsg: "格式錯誤,請重新輸入",
@@ -254,7 +254,7 @@ class Account extends Parent {
         selectFilter: false,
       },
       {
-        label: "手機號碼",
+        label: "手機",
         prop: "cellPhoneNumber",
         mandatory: true,
         message: "請輸入手機號碼",
@@ -288,7 +288,7 @@ class Account extends Parent {
         selectFilter: false,
       },
       {
-        label: "電子信箱",
+        label: "email",
         prop: "email",
         mandatory: false,
         pattern:
@@ -328,7 +328,7 @@ class Account extends Parent {
         format: "textarea",
         mandatory: false,
         maxlength: "200",
-        isHidden: false,
+        isHidden: true,
         isSearch: true,
         isAssociate: false,
         isEdit: true,
@@ -371,7 +371,7 @@ class Account extends Parent {
         isExport: true,
         isBlock: true,
         formType: "boolean",
-        selectFilter: true,
+        selectFilter: false,
       },
       {
         label: "刪除",
@@ -496,7 +496,7 @@ class Account extends Parent {
         selectFilter: false,
       },
       {
-        label: "手機號碼",
+        label: "手機",
         prop: "cellPhoneNumber",
         mandatory: true,
         message: "請輸入手機號碼",
@@ -530,7 +530,7 @@ class Account extends Parent {
         selectFilter: false,
       },
       {
-        label: "電子信箱",
+        label: "email",
         prop: "email",
         mandatory: false,
         pattern:
@@ -593,6 +593,17 @@ class Account extends Parent {
       })
       .catch((error) => {
         return [];
+      });
+    return data;
+  }
+  static async getOfID(id) {
+    var data = await api.authority
+      .apiGetAccountOfID(id)
+      .then((response) => {
+        return new Account(response.result[0]);
+      })
+      .catch((error) => {
+        return {};
       });
     return data;
   }

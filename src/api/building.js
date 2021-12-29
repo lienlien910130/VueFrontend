@@ -30,10 +30,10 @@ const building = {
 
   //管委會
   apiGetCommittee() {
-    return req(
-      "get",
-      "/index/" + this.getBid() + "/communityManagementCommittee/a"
-    );
+    return req("get", "/index/communityManagementCommittee/a");
+  },
+  apiGetCommitteeOfID(id) {
+    return req("get", "/index/communityManagementCommittee/" + id);
   },
   apiPostCommittee(data) {
     return req(
@@ -68,9 +68,11 @@ const building = {
 
   //廠商
   apiGetContactUnit() {
-    return req("get", "/index/contactUnit");
+    return req("get", "/index/contactUnit/a");
   },
-  // apiGetContactUnit(contactUnitId){ return req('get','/basic/contact-unit/'+contactUnitId) },
+  apiGetContactUnitOfID(id) {
+    return req("get", "/index/contactUnit/" + id);
+  },
   apiPostContactUnit(data) {
     return req("post", "/basic/contactUnit/check", this.getBid(), data);
   },
@@ -103,13 +105,13 @@ const building = {
 
   //樓層
   apiGetFloors() {
-    return req("get", "/index/a/floors");
+    return req("get", "/index/floors/a");
   },
   apiGetFloor(floorId) {
     return req("get", "/index/floors/" + floorId);
   },
   apiPostFloors(buildingId, data) {
-    return req("post", "/index/floors/check", buildingId, data);
+    return req("post", "/index/floors/check/s", buildingId, data);
   },
   apiPatchFloors(buildingId, data) {
     return req("patch", "/index/floors/check", buildingId, data);
@@ -118,12 +120,15 @@ const building = {
     return req("delete", "/index/floors/" + floorId);
   },
   apiGetFloorSearchPages(buildingId, data) {
-    return req("post", "/index/a/floors/ss", buildingId, data);
+    return req("post", "/index/floors/ss", buildingId, data);
   },
 
   //門牌資料
   apiGetBuildingOfHouse() {
     return req("get", "/index/usageOfFloors/a");
+  },
+  apiGetBuildingOfHouseOfID(id) {
+    return req("get", "/index/usageOfFloors/" + id);
   },
   apiGetFloorOfHouse(floorId) {
     return req("get", "/basic/usageOfFloors/" + floorId + "/a");
@@ -159,7 +164,7 @@ const building = {
     return req("get", "/index/" + buildingId + "/a/houseHolders");
   },
   apiGetUser() {
-    return req("get", "/index/a/houseHolders");
+    return req("get", "/index/houseHolders/a");
   },
   // apiGetUser(userId){ return req('get','/basic/house-holders/'+userId) },
   apiPostUser(data) {

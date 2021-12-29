@@ -180,6 +180,17 @@ class Committee extends Parent {
       });
     return data;
   }
+  static async getOfID(id) {
+    var data = await api.building
+      .apiGetCommitteeOfID(id)
+      .then((response) => {
+        return new Committee(response.result[0]);
+      })
+      .catch((error) => {
+        return {};
+      });
+    return data;
+  }
   static async getSearchPage(data) {
     var data = await api.building
       .apiGetCommitteeSearchPages(data)

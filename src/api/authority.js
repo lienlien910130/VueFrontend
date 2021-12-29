@@ -7,7 +7,7 @@ const authority = {
   },
   //選單管理
   apiGetBuildingMainMenuAuthority() {
-    return req("get", "/index/mainMenus");
+    return req("get", "/index/mainMenus/a");
   },
   apiGetMainMenuAuthority(mainMenuId) {
     return req("get", "/mainMenuSetting/" + mainMenuId);
@@ -36,7 +36,7 @@ const authority = {
         element.parentId = this.getBid();
       });
     }
-    return req("post", "/mainMenuSetting/s", null, data);
+    return req("post", "/mainMenuSetting/sub/" + mainMenuId + "/s", null, data);
   },
   // apiGetAccessAuthoritySearchPages(mainMenuId,data){ return req('post','/mainMenuSetting/accessAuthorities/'+mainMenuId,data)  },
 
@@ -64,7 +64,10 @@ const authority = {
 
   //角色管理
   apiGetAllRole() {
-    return req("get", "/index/default/roles");
+    return req("get", "/index/roles/a");
+  },
+  apiGetRoleOfID(id) {
+    return req("get", "/index/roles" + id);
   },
   // apiGetAllRoleAuthority(){ return req('get','/roleSetting/a') },
   apiGetRoleAuthority(roleId) {
@@ -104,7 +107,10 @@ const authority = {
     return req("get", "/accountSetting/a");
   },
   apiGetAllAccount() {
-    return req("get", "/index/accounts");
+    return req("get", "/index/accounts/a");
+  },
+  apiGetAccountOfID(id) {
+    return req("get", "/index/accounts/" + id);
   },
   apiGetAccountAuthority(accountId) {
     return req("get", "/accountSetting/" + accountId);

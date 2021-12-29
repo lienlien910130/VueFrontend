@@ -46,15 +46,20 @@ export default {
         handleBlock: this.handleBlock,
         clickPagination: this.getBuildingDeviceAddressManagement,
         resetlistQueryParams: this.resetlistQueryParams,
+        setDeviceIdSelect: this.setDeviceIdSelect,
       };
     },
+  },
+  data() {
+    return {
+      deviceId: null,
+    };
   },
   methods: {
     async init() {
       this.title = "deviceAddressManagement";
       this.headerButtonsName = [
         { name: "多筆刪除", icon: "el-icon-delete", status: "deleteMany" },
-        { name: "設定樓層", icon: "el-icon-position", status: "setfloors" },
         { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
         {
           name: "多筆新增地址點位",
@@ -66,8 +71,9 @@ export default {
           icon: "el-icon-circle-plus-outline",
           status: "empty",
         },
+        { name: "設定樓層", icon: "el-icon-position", status: "setfloors" },
         { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
-        // { name:'匯入檔案',icon:'el-icon-upload2',status:'uploadExcel'}
+        { name: "匯入檔案", icon: "el-icon-upload2", status: "uploadExcel" },
       ];
       this.tableConfig = DeviceAddressManagement.getTableConfig();
       //await this.getBuildingDeviceAddressManagement()
@@ -218,7 +224,7 @@ export default {
         }
       } else if (index == "update" || index == "updateManySave") {
         delete content.linkAssignDevices;
-        var result = await content.update(false);
+        var result = await content.update(this.deviceId, false);
         if (Object.keys(result).length !== 0) {
           this.$message("更新成功");
           this.$socket.sendMsg("deviceAddress", index, result);
@@ -243,7 +249,10 @@ export default {
             floorsId: content.floorsId,
           });
         });
-        var result = await DeviceAddressManagement.updateMany(updateData);
+        var result = await DeviceAddressManagement.updateMany(
+          this.deviceId,
+          updateData
+        );
         if (Object.keys(result).length !== 0) {
           this.$message("更新成功");
           this.$socket.sendMsg("deviceAddress", index, result);
@@ -253,11 +262,42 @@ export default {
         } else {
           this.$message.error("樓層更新錯誤");
         }
+      } else if (index === "uploadExcelSave") {
+        var result = await DeviceAddressManagement.postMany(
+          this.deviceId,
+          content
+        );
+        if (result.result.length !== 0) {
+          this.$message("新增成功");
+          this.$socket.sendMsg("deviceAddress", index, result.result);
+          await this.getBuildingDeviceAddressManagement();
+          this.excelVisible = false;
+        }
+        if (result.repeatDataList !== undefined) {
+          var list = [];
+          result.repeatDataList.forEach((item) => {
+            var str = [
+              item.internet,
+              item.system,
+              item.address,
+              item.number,
+              item.memeryLoc,
+            ];
+            str = str.filter(Boolean).join("-");
+            list.push(str);
+          });
+          this.$message.error(
+            "【" + list.toString() + "】點位已存在，請重新上傳"
+          );
+        }
       } else {
         this.innerVisible = false;
         this.excelVisible = false;
         this.$refs.block.clearSelectArray();
       }
+    },
+    setDeviceIdSelect(deviceId) {
+      this.deviceId = deviceId;
     },
     async changeTable(value) {
       this.isTable = value;

@@ -53,16 +53,19 @@ class DeviceAddressManagement extends Parent {
   clone(data) {
     return new DeviceAddressManagement(data);
   }
-  async update(resetLink, isPLC = null) {
+  async update(deviceId, resetLink, isPLC = null) {
     var temp = JSON.parse(JSON.stringify(this));
     if (isPLC == null) {
       temp.internet = "{Check}" + temp.internet;
       temp.system = "{Check}" + temp.system;
       temp.address = "{Check}" + temp.address;
       temp.number = "{Check}" + temp.number;
-      temp.memeryLoc = "{Check}" + temp.memeryLoc;
+      temp.isFDCC = "{Check}" + temp.isFDCC;
+      if (temp.isFDCC) {
+        temp.memeryLoc = "{Check}" + temp.memeryLoc;
+      }
       var data = await api.device
-        .apiPutDevicesAddress(resetLink, temp)
+        .apiPutDevicesAddress(deviceId, resetLink, temp)
         .then(async (response) => {
           return new DeviceAddressManagement(response.result);
         })
@@ -74,8 +77,9 @@ class DeviceAddressManagement extends Parent {
       temp.internet = "{Check}" + temp.internet;
       temp.system = "{Check}" + temp.system;
       temp.memeryLoc = "{Check}" + temp.memeryLoc;
+      temp.isFDCC = "{Check}" + temp.isFDCC;
       var data = await api.device
-        .apiPutDevicesPLCAddress(resetLink, temp)
+        .apiPutDevicesPLCAddress(deviceId, resetLink, temp)
         .then(async (response) => {
           return new DeviceAddressManagement(response.result);
         })
@@ -92,7 +96,10 @@ class DeviceAddressManagement extends Parent {
       temp.system = "{Check}" + temp.system;
       temp.address = "{Check}" + temp.address;
       temp.number = "{Check}" + temp.number;
-      temp.memeryLoc = "{Check}" + temp.memeryLoc;
+      temp.isFDCC = "{Check}" + temp.isFDCC;
+      if (temp.isFDCC) {
+        temp.memeryLoc = "{Check}" + temp.memeryLoc;
+      }
       var data = await api.device
         .apiPostDevicesAddress(deviceId, temp)
         .then((response) => {
@@ -106,6 +113,7 @@ class DeviceAddressManagement extends Parent {
       temp.internet = "{Check}" + temp.internet;
       temp.system = "{Check}" + temp.system;
       temp.memeryLoc = "{Check}" + temp.memeryLoc;
+      temp.isFDCC = "{Check}" + temp.isFDCC;
       var data = await api.device
         .apiPostDevicesPLCAddress(deviceId, temp)
         .then((response) => {
@@ -152,7 +160,7 @@ class DeviceAddressManagement extends Parent {
       : "監視電源";
   }
   getAddressStr() {
-    var str = [this.internet, this.system, this.address, this.number];
+    var str = [this.system, this.address, this.number];
     str = str.filter(Boolean).join("-");
     return str;
   }
@@ -192,7 +200,7 @@ class DeviceAddressManagement extends Parent {
         format: "assignFireDeviceSelect",
         mandatory: true,
         message: "請選擇火警總機",
-        type: "array",
+        type: "object",
         typemessage: "",
         isHidden: true,
         isSearch: false,
@@ -201,8 +209,9 @@ class DeviceAddressManagement extends Parent {
         isUpload: false,
         isExport: false,
         isBlock: false,
-        formType: "select",
+        formType: "singleChoice",
         limit: 1,
+        hasEvent: true,
       },
       {
         label: "樓層",
@@ -317,7 +326,7 @@ class DeviceAddressManagement extends Parent {
         format: "assignFireDeviceSelect",
         mandatory: true,
         message: "請選擇火警總機",
-        type: "array",
+        type: "object",
         typemessage: "",
         isHidden: true,
         isSearch: false,
@@ -326,10 +335,11 @@ class DeviceAddressManagement extends Parent {
         isUpload: false,
         isExport: false,
         isBlock: false,
-        formType: "select",
+        formType: "singleChoice",
         limit: 1,
         isViewerInfo: false,
         selectFilter: false,
+        hasEvent: true,
       },
       {
         label: "樓層",
@@ -408,6 +418,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: false,
         isViewerInfo: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "系統",
@@ -428,6 +439,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: false,
         isViewerInfo: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "位址",
@@ -448,6 +460,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: false,
         isViewerInfo: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "編號",
@@ -468,6 +481,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: false,
         isViewerInfo: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "記憶體位址",
@@ -485,6 +499,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         isViewerInfo: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "空間描述",
@@ -608,7 +623,7 @@ class DeviceAddressManagement extends Parent {
         format: "assignPLCDeviceSelect",
         mandatory: false,
         message: "請選擇PLC",
-        type: "array",
+        type: "object",
         typemessage: "",
         isHidden: true,
         isSearch: false,
@@ -617,10 +632,11 @@ class DeviceAddressManagement extends Parent {
         isUpload: false,
         isExport: false,
         isBlock: false,
-        formType: "select",
+        formType: "singleChoice",
         limit: 1,
         isViewerInfo: false,
         selectFilter: false,
+        hasEvent: true,
       },
       {
         label: "樓層",
@@ -650,11 +666,11 @@ class DeviceAddressManagement extends Parent {
         type: "string",
         typemessage: "",
         isHidden: false,
-        isSearch: true,
+        isSearch: false,
         isAssociate: false,
         isEdit: true,
         isUpload: false,
-        isExport: true,
+        isExport: false,
         isBlock: true,
         formType: "addressStr",
         isViewerInfo: false,
@@ -677,6 +693,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: false,
         isViewerInfo: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "系統",
@@ -694,6 +711,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: false,
         isViewerInfo: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "位址",
@@ -714,6 +732,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: false,
         isViewerInfo: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "編號",
@@ -734,6 +753,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: false,
         isViewerInfo: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "記憶體位址",
@@ -754,6 +774,7 @@ class DeviceAddressManagement extends Parent {
         isBlock: true,
         isViewerInfo: true,
         selectFilter: false,
+        isCheck: true,
       },
       {
         label: "記憶體長度",
@@ -869,7 +890,7 @@ class DeviceAddressManagement extends Parent {
         format: "addressdeviceSelect",
         mandatory: true,
         message: "請選擇設備",
-        type: "array",
+        type: "object",
         typemessage: "",
         isHidden: false,
         isSearch: false,
@@ -878,7 +899,7 @@ class DeviceAddressManagement extends Parent {
         isUpload: false,
         isExport: true,
         isBlock: true,
-        formType: "select",
+        formType: "singleChoice",
         limit: 1,
         isViewerInfo: true,
         selectFilter: true,
@@ -990,23 +1011,39 @@ class DeviceAddressManagement extends Parent {
       return data;
     }
   }
-  // static async postMany(data, isPLC = null){
-  //     if(isPLC == null){
-  //         var data = await api.device.apiPostDevicesAddresses(data).then(response => {
-  //             return true
-  //         }).catch(error=>{
-  //             return false
-  //         })
-  //         return data
-  //     }else{
-  //         var data = await api.device.apiPostDevicesPLCAddresses(data).then(response => {
-  //             return true
-  //         }).catch(error=>{
-  //             return false
-  //         })
-  //         return data
-  //     }
-  // }
+  static async postMany(deviceId, data, isPLC = null) {
+    if (isPLC == null) {
+      var data = await api.device
+        .apiPostDevicesAddresses(deviceId, data)
+        .then((response) => {
+          response.result = response.result
+            .sort((x, y) => x.id - y.id)
+            .map((item) => {
+              return new DeviceAddressManagement(item);
+            });
+          return response;
+        })
+        .catch((error) => {
+          return [];
+        });
+      return data;
+    } else {
+      var data = await api.device
+        .apiPostDevicesPLCAddresses(deviceId, data)
+        .then((response) => {
+          response.result = response.result
+            .sort((x, y) => x.id - y.id)
+            .map((item) => {
+              return new DeviceAddressManagement(item);
+            });
+          return response;
+        })
+        .catch((error) => {
+          return [];
+        });
+      return data;
+    }
+  }
   static async batchInsert(deviceId, data, isPLC = null) {
     if (isPLC == null) {
       var data = await api.device
@@ -1030,10 +1067,10 @@ class DeviceAddressManagement extends Parent {
       return data;
     }
   }
-  static async updateMany(data, isPLC = null) {
+  static async updateMany(deviceId, data, isPLC = null) {
     if (isPLC == null) {
       var data = await api.device
-        .apiPatchDevicesAddress(data)
+        .apiPatchDevicesAddress(deviceId, data)
         .then(async (response) => {
           response.result = response.result.map((item) => {
             return new DeviceAddressManagement(item);
@@ -1046,7 +1083,7 @@ class DeviceAddressManagement extends Parent {
       return data;
     } else {
       var data = await api.device
-        .apiPatchDevicesPLCAddress(data)
+        .apiPatchDevicesPLCAddress(deviceId, data)
         .then(async (response) => {
           response.result = response.result.map((item) => {
             return new DeviceAddressManagement(item);

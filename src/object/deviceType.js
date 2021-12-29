@@ -170,6 +170,17 @@ class DeviceType extends Parent {
       });
     return data;
   }
+  static async getOfID(id) {
+    var data = await api.device
+      .apiGetDevicesTypeOfID(id)
+      .then((response) => {
+        return new DeviceType(response.result[0]);
+      })
+      .catch((error) => {
+        return {};
+      });
+    return data;
+  }
   static async getDefault() {
     var data = await api.device
       .apiGetDefaultFullType()

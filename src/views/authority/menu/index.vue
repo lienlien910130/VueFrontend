@@ -236,7 +236,15 @@ export default {
             : this.$message("新增成功");
           this.$store.dispatch("permission/setRoutes");
           this.$socket.sendMsg("menus", "routes", "");
-          if (index !== "updateManySave") this.innerVisible = false;
+          if (index !== "updateManySave") {
+            this.innerVisible = false;
+          } else {
+            this.dialogData.forEach((item, index) => {
+              if (item.id == content.id) {
+                this.dialogData.splice(index, 1, content);
+              }
+            });
+          }
           this.excelVisible = false;
         } else {
           this.$message.error("系統錯誤");

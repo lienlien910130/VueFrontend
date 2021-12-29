@@ -314,7 +314,7 @@
               />
             </span>
             <!-- 權限設定 -->
-            <el-select
+            <!-- <el-select
               v-else-if="item.formType == 'actionSelect'"
               v-model="temp[item.prop]"
               placeholder="請選擇"
@@ -326,7 +326,7 @@
               <el-option label="修改" key="4" value="update"></el-option>
               <el-option label="匯入檔案" key="5" value="export"></el-option>
               <el-option label="匯出檔案" key="6" value="upload"></el-option>
-            </el-select>
+            </el-select> -->
             <!-- Boolean:啟用禁用 允許/禁止刪除 配合 改善 -->
             <el-select
               v-else-if="item.formType == 'boolean'"
@@ -500,6 +500,8 @@ export default {
           case "reportInspectio":
           case "reportPublicSafe":
             return item.declareYear;
+          case "floor":
+            return item.floor;
           default:
             return item.name;
         }
@@ -615,15 +617,16 @@ export default {
         var icon = this.config.filter((item) => {
           return item.prop == "iconId";
         });
+
         var device = this.config.filter((item) => {
           return item.prop == "linkDevices";
         });
-        if (temp["isFDCC"] == true) {
+        if (temp["isFDCC"] && icon.length && device.length) {
           //防災盤訊號
           this.disable = true;
           icon[0].mandatory = false;
           device[0].mandatory = false;
-        } else {
+        } else if (!temp["isFDCC"] && icon.length && device.length) {
           this.disable = false;
           icon[0].mandatory = true;
           device[0].mandatory = true;
@@ -652,7 +655,10 @@ export default {
         var isLink =
           item.prop.indexOf("link") > -1 && item.formType == "singleChoice";
         if (isLink) {
-          temp[item.prop] = temp[item.prop].length ? temp[item.prop][0] : {};
+          temp[item.prop] =
+            temp[item.prop] !== undefined && temp[item.prop].length
+              ? temp[item.prop][0]
+              : {};
         }
       });
     },
@@ -689,6 +695,11 @@ export default {
             this.temp["internetNumber"] = null;
             this.$emit("handleChangeConfig", false);
           }
+        } else if (
+          format == "assignFireDeviceSelect" ||
+          format == "assignPLCDeviceSelect"
+        ) {
+          this.temp["internet"] = value.getInternetNumber();
         }
       }
     },
@@ -698,11 +709,6 @@ export default {
       console.log(value);
       if (value.length) {
         if (
-          format == "assignFireDeviceSelect" ||
-          format == "assignPLCDeviceSelect"
-        ) {
-          this.temp["internet"] = value[0].getInternetNumber();
-        } else if (
           this.title == "selfDefenseFireMarshallingMgmt" &&
           format == "roleSelect"
         ) {
@@ -727,12 +733,13 @@ export default {
         //   this.temp["internetNumber"] = null;
         //   this.$emit("handleChangeConfig", false);
         // } else
+        // if (
+        //   format == "assignFireDeviceSelect" ||
+        //   format == "assignPLCDeviceSelect"
+        // ) {
+        //   this.temp["internet"] = null;
+        // } else
         if (
-          format == "assignFireDeviceSelect" ||
-          format == "assignPLCDeviceSelect"
-        ) {
-          this.temp["internet"] = null;
-        } else if (
           this.title == "selfDefenseFireMarshallingMgmt" &&
           format == "roleSelect"
         ) {

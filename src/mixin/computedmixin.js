@@ -12,6 +12,7 @@ import {
   Account,
   User,
   Committee,
+  Floors,
 } from "@/object/index";
 
 export default {
@@ -176,6 +177,12 @@ export default {
             return row.getAddressStr();
           case "classLeaderSelect":
             return this.changeAccountName(row[prop]);
+          case "certificateNumber":
+            return row.getCertificateNumber();
+          case "placeCategory":
+            return row.getPlaceCategory();
+          case "actionSelect":
+            return row.getActionSelect();
         }
       };
     },
@@ -451,20 +458,20 @@ export default {
             case "userInfo":
             case "classLeaderSelect":
             case "usageOfFloorUserInfo":
-              if (this.title == "building") {
-                return this.selectData;
-              } else {
-                if (this.account_record == 0) {
-                  this.$store.dispatch("building/setaccounts");
-                  this.$store.dispatch("record/saveAccountRecord", 1);
-                }
-                return this.buildingaccount.map((v) => {
-                  this.$set(v, "id", v.id);
-                  this.$set(v, "label", v.name);
-                  this.$set(v, "value", v.id);
-                  return v;
-                });
+              // if (this.title == "building") {
+              //   return this.selectData;
+              // } else {
+              if (this.account_record == 0) {
+                this.$store.dispatch("building/setaccounts");
+                this.$store.dispatch("record/saveAccountRecord", 1);
               }
+              return this.buildingaccount.map((v) => {
+                this.$set(v, "id", v.id);
+                this.$set(v, "label", v.name);
+                this.$set(v, "value", v.id);
+                return v;
+              });
+            //}
             case "deviceTypeSelect":
               if (this.deviceType_record == 0) {
                 this.$store.dispatch("building/setDeviceType");
@@ -521,6 +528,15 @@ export default {
                 { label: "庚類", id: 7 },
                 { label: "其他", id: 8 },
               ];
+            case "actionSelect":
+              return [
+                { label: "查詢", id: "query" },
+                { label: "新增", id: "add" },
+                { label: "刪除", id: "delete" },
+                { label: "修改", id: "update" },
+                { label: "匯入檔案", id: "export" },
+                { label: "匯出檔案", id: "upload" },
+              ];
           }
         } else {
           return "";
@@ -545,7 +561,7 @@ export default {
           this.title == "user"
             ? (this.infiniteheight = 510)
             : this.title == "mainMenu" || this.title == "accessAuthority"
-            ? (this.infiniteheight = 780)
+            ? (this.infiniteheight = 830)
             : (this.infiniteheight = 670);
         }
         this.height = (this.infiniteheight - 10).toString() + "px";
@@ -574,6 +590,7 @@ export default {
           case "declareResultBoolean":
             return "合格申報";
           case "governmentApprovalBoolean":
+          case "selfDeclaredBoolean":
             return "是";
         }
       } else {
@@ -595,6 +612,7 @@ export default {
           case "declareResultBoolean":
             return "缺失申報";
           case "governmentApprovalBoolean":
+          case "selfDeclaredBoolean":
             return "否";
         }
       }
@@ -661,7 +679,7 @@ export default {
     };
   },
   methods: {
-    changeText(config, val) {
+    async changeText(config, val) {
       if (val !== undefined) {
         var array = [];
         var data = val.getInfo();
@@ -685,6 +703,8 @@ export default {
               value = this.changeUserName(data[item]);
             } else if (item == "linkMaintainVendors") {
               value = this.changeContainUnit(data[item]);
+            } else if (item == "linkRoles") {
+              value = val.getRolesName();
             } else if (item == "linkKeeperUnits") {
               value = val.getKeeperUnitsName();
             } else if (item == "linkUsageOfFloors") {
@@ -714,7 +734,7 @@ export default {
             ) {
               value = moment(data[item]).format("YYYY-MM-DD");
             } else {
-              value = data[item];
+              value = data[item] !== undefined ? data[item] : "";
             }
             array.push({
               label: i[0].label,
@@ -735,14 +755,13 @@ export default {
       } else {
         const h = this.$createElement;
         const bigData = [];
-        const { config, list } = await this.changeRealData(data[0]);
-        data.forEach(async (item, index) => {
+        const { constr, config } = await this.changeRealData(data[0]);
+        for await (let item of data) {
           const newDatas = [];
-          var obj = list.filter((ele) => {
-            return ele.id == item.id;
-          });
-          var changetext = this.changeText(config, obj.length ? obj[0] : item);
+          var objData = await constr.getOfID(item.id);
+          var changetext = await this.changeText(config, objData);
           changetext.forEach((obj) => {
+            console.log(obj);
             newDatas.push(
               h("p", { style: "width:100%" }, [
                 h(
@@ -771,10 +790,49 @@ export default {
               newDatas
             )
           );
-          if (obj.length) {
-            data.splice(index, 1, obj[0]);
-          }
-        });
+        }
+        // data.forEach(async (item, index) => {
+        //   const newDatas = [];
+        //   // var obj = list.filter((ele) => {
+        //   //   return ele.id == item.id;
+        //   // });
+        //   // console.log(obj);
+        //   var objData = await constr.getOfID(item.id);
+        //   var changetext = await this.changeText(config, objData);
+        //   changetext.forEach((obj) => {
+        //     console.log(obj);
+        //     newDatas.push(
+        //       h("p", { style: "width:100%" }, [
+        //         h(
+        //           "span",
+        //           {
+        //             style:
+        //               "width:40%;display:inline-block;vertical-align:top;word-break:break-all",
+        //           },
+        //           obj.label
+        //         ),
+        //         h(
+        //           "span",
+        //           {
+        //             style:
+        //               "width:60%;display:inline-block;vertical-align:top;word-break:break-all",
+        //           },
+        //           obj.value
+        //         ),
+        //       ])
+        //     );
+        //   });
+        //   bigData.push(
+        //     h(
+        //       "div",
+        //       { style: "border:1px solid;padding:10px;margin-bottom:5px" },
+        //       newDatas
+        //     )
+        //   );
+        //   // if (obj.length) {
+        //   //   data.splice(index, 1, obj[0]);
+        //   // }
+        // });
         this.$msgbox({
           title: title,
           message: h(
@@ -867,83 +925,77 @@ export default {
       }
     },
     async changeRealData(val) {
-      var config = null;
+      var constr = val.constructor;
+      var config = val.constructor.getTableConfig();
       var list = [];
-      switch (val.constructor) {
-        case Account:
-          config = Account.getTableConfig();
-          if (this.account_record == 0) {
-            this.$store.dispatch("building/setaccounts");
-            this.$store.dispatch("record/saveAccountRecord", 1);
-          }
-          list = this.buildingaccount.map((v) => {
-            this.$set(v, "id", v.id);
-            this.$set(v, "label", v.name);
-            this.$set(v, "value", v.id);
-            return v;
-          });
-          if (this.title == "committee" || this.title == "floorOfHouse") {
-            config = User.getTableConfig();
-          }
-          break;
-        case DeviceType:
-          config = DeviceType.getTableConfig();
-          // if (this.deviceType_record == 0) {
-          //   this.$store.dispatch("building/setDeviceType");
-          //   this.$store.dispatch("record/saveDeviceTypeRecord", 1);
-          // }
-          // list = this.buildingdeviceType.map((v) => {
-          //   this.$set(v, "value", v.getID());
-          //   this.$set(v, "label", v.getSelectName());
-          //   this.$set(v, "id", v.getID());
-          //   return v;
-          // });
-          break;
-        case Device:
-          config = Device.getTableConfig();
-          if (this.device_record == 0) {
-            await this.$store.dispatch("building/setDevice");
-            this.$store.dispatch("record/saveDeviceRecord", 1);
-          }
-          list = this.buildingdevices;
-          break;
-        case Contactunit:
-          config = Contactunit.getTableConfig();
-          break;
-        case UsageOfFloor:
-          config = UsageOfFloor.getTableConfig();
-          if (this.floorOfHouse_record == 0) {
-            await this.$store.dispatch("building/setFloorOfHouse");
-            this.$store.dispatch("record/saveFloorOfHouseRecord", 1);
-          }
-          list = this.buildingfloorOfHouse.map((v) => {
-            this.$set(v, "id", v.id);
-            this.$set(v, "label", v.houseNumber);
-            this.$set(v, "value", v.id);
-            return v;
-          });
-          break;
-        case Role:
-          config = Role.getTableConfig();
-          break;
-        case Building:
-          config = Building.getTableConfig();
-          break;
-        case InspectionLacks:
-          config = InspectionLacks.getTableConfig();
-          break;
-        case Committee:
-          config = Committee.getTableConfig();
-          if (this.committee_record == 0) {
-            await this.$store.dispatch("building/setCommittee");
-            this.$store.dispatch("record/saveCommitteeRecord", 1);
-          }
-          list = this.buildingcommittee;
-          break;
-      }
+      // switch (val.constructor) {
+      //   case Account:
+      //     config = Account.getTableConfig();
+      //     // if (this.account_record == 0) {
+      //     //   await this.$store.dispatch("building/setaccounts");
+      //     //   this.$store.dispatch("record/saveAccountRecord", 1);
+      //     // }
+      //     // list = this.buildingaccount.map((v) => {
+      //     //   this.$set(v, "id", v.id);
+      //     //   this.$set(v, "label", v.name);
+      //     //   this.$set(v, "value", v.id);
+      //     //   return v;
+      //     // });
+      //     if (this.title == "committee" || this.title == "floorOfHouse") {
+      //       config = User.getTableConfig();
+      //     }
+      //     break;
+      //   case DeviceType:
+      //     config = DeviceType.getTableConfig();
+      //     break;
+      //   case Device:
+      //     config = Device.getTableConfig();
+      //     // if (this.device_record == 0) {
+      //     //   await this.$store.dispatch("building/setDevice");
+      //     //   this.$store.dispatch("record/saveDeviceRecord", 1);
+      //     // }
+      //     // list = this.buildingdevices;
+      //     break;
+      //   case Contactunit:
+      //     config = Contactunit.getTableConfig();
+      //     break;
+      //   case UsageOfFloor:
+      //     config = UsageOfFloor.getTableConfig();
+      //     if (this.floorOfHouse_record == 0) {
+      //       await this.$store.dispatch("building/setFloorOfHouse");
+      //       this.$store.dispatch("record/saveFloorOfHouseRecord", 1);
+      //     }
+      //     list = this.buildingfloorOfHouse.map((v) => {
+      //       this.$set(v, "id", v.id);
+      //       this.$set(v, "label", v.houseNumber);
+      //       this.$set(v, "value", v.id);
+      //       return v;
+      //     });
+      //     break;
+      //   case Role:
+      //     config = Role.getTableConfig();
+      //     break;
+      //   case Floors:
+      //     config = Floors.getTableConfig();
+      //     break;
+      //   case Building:
+      //     config = Building.getTableConfig();
+      //     break;
+      //   case InspectionLacks:
+      //     config = InspectionLacks.getTableConfig();
+      //     break;
+      //   case Committee:
+      //     config = Committee.getTableConfig();
+      //     if (this.committee_record == 0) {
+      //       await this.$store.dispatch("building/setCommittee");
+      //       this.$store.dispatch("record/saveCommitteeRecord", 1);
+      //     }
+      //     list = this.buildingcommittee;
+      //     break;
+      // }
       return {
+        constr: constr,
         config: config,
-        list: list,
       };
     },
     optionfilter(format) {
