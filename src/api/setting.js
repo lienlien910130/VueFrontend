@@ -24,7 +24,10 @@ const setting = {
     return req("post", "/settings/check", this.getBid(), data);
   },
   apiPatchOption(data) {
-    return req("patch", "/settings/check/s", this.getBid(), data);
+    data.forEach((element) => {
+      element.parentId = this.getBid();
+    });
+    return req("patch", "/settings/check/s", null, data);
   },
   apiDeleteOption(optionId) {
     return req("delete", "/settings/" + optionId);

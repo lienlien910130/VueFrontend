@@ -290,7 +290,7 @@
               <el-option
                 v-for="(item, index) in optionfilter(item.format)"
                 :key="index"
-                :label="item.textName"
+                :label="item.label"
                 :value="item.id"
               >
               </el-option>
@@ -823,22 +823,22 @@ export default {
             query: { type: "role" },
           });
           break;
-        case "ContactUnitOptions":
-        case "MaintainProcessOptions":
-        case "MaintainContentOptions":
-        case "LackStatusOptions":
+        default:
           var option =
             format == "ContactUnitOptions"
-              ? ""
-              : format == "LackStatusOptions"
-              ? "la"
-              : "mp";
+              ? "bu"
+              : format == "MaintainContentOptions" ||
+                format == "MaintainProcessOptions" ||
+                format == "MaintainTimeOptions"
+              ? "ma"
+              : format == "InspectionTypeOfTime" ||
+                format == "InspectionTimeOptions"
+              ? "in"
+              : "pu";
           routeData = this.$router.resolve({
             path: "/membersetting/index",
             query: { type: option },
           });
-          break;
-        default:
           break;
       }
       if (window.child && window.child.open && !window.child.closed) {

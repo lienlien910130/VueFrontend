@@ -1,7 +1,7 @@
 import Parent from "./parent";
 import api from "@/api";
 import Files from "./files";
-import { Contactunit } from ".";
+import { UsageOfFloor, Contactunit } from ".";
 const moment = require("moment");
 
 class Inspection extends Parent {
@@ -24,11 +24,18 @@ class Inspection extends Parent {
       completedCount,
       allCount,
       linkContactUnits,
+      linkUsageOfFloor,
     } = data;
     var contactUnits =
       linkContactUnits !== undefined
         ? linkContactUnits.map((item) => {
             return new Contactunit(item);
+          })
+        : [];
+    var usageOfFloors =
+      linkUsageOfFloor !== undefined
+        ? linkUsageOfFloor.map((item) => {
+            return new UsageOfFloor(item);
           })
         : [];
     this.declareYear = declareYear;
@@ -47,6 +54,7 @@ class Inspection extends Parent {
     this.completedCount = completedCount;
     this.allCount = allCount;
     this.linkContactUnits = contactUnits;
+    this.linkUsageOfFloor = usageOfFloors;
   }
   clone(data) {
     return new Inspection(data);
@@ -56,6 +64,13 @@ class Inspection extends Parent {
   }
   getCertificateNumber() {
     return this.certificateNumber;
+  }
+  getUsageOfFloorsName() {
+    return this.linkUsageOfFloor
+      .map((item) => {
+        return item.getName();
+      })
+      .toString();
   }
   async update() {
     var data = await api.report
@@ -292,6 +307,26 @@ class Inspection extends Parent {
         selectFilter: true,
       },
       {
+        label: "門牌",
+        prop: "linkUsageOfFloor",
+        format: "floorOfHouseSelect",
+        mandatory: false,
+        message: "請選擇門牌",
+        type: "object",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: true,
+        isEdit: true,
+        isUpload: false,
+        isExport: true,
+        isBlock: true,
+        formType: "singleChoice",
+        limit: 0,
+        isViewerInfo: true,
+        selectFilter: true,
+      },
+      {
         label: "專技人員",
         prop: "professName",
         mandatory: false,
@@ -498,6 +533,17 @@ class Inspection extends Parent {
       })
       .catch((error) => {
         return false;
+      });
+    return data;
+  }
+  static async getRemind() {
+    var data = await api.report
+      .apiGetInspectionRemind()
+      .then((response) => {
+        return response.result;
+      })
+      .catch((error) => {
+        return {};
       });
     return data;
   }

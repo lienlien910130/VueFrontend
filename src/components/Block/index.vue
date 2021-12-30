@@ -22,20 +22,12 @@
           >
           </el-option>
         </el-select>
-        <el-button
-          v-if="title == 'maintainList'"
-          type="primary"
-          @click="change"
-        >
-          檢視及搜尋細項
-        </el-button>
-        <el-button
-          v-if="title == 'maintainList'"
-          type="primary"
-          @click="handleClickOption('empty', '')"
-        >
-          新增
-        </el-button>
+        <template v-if="title == 'maintainList'">
+          <el-button type="primary" @click="change"> 檢視及搜尋細項 </el-button>
+          <el-button type="primary" @click="handleClickOption('empty', '')">
+            新增
+          </el-button>
+        </template>
       </el-col>
     </el-row>
     <el-row v-if="hasSearch == true">
@@ -79,6 +71,16 @@
                         :label="val | changeBoolean(item.format)"
                       ></el-option>
                     </template>
+                    <!-- <template v-else>
+                      <el-option
+                        v-for="(obj, index) in dataList"
+                        :key="index"
+                        :label="obj.label"
+                        :value="obj.id"
+                      >
+                      </el-option>
+                    </template> -->
+
                     <template
                       v-else-if="
                         item.formType == 'select' ||
@@ -1039,23 +1041,19 @@ export default {
           },
         ],
       },
+      dataList: [],
     };
   },
   methods: {
-    // checkUpdate(row) {
-    //   var index = this.updateArray.findIndex((d) => d.id === row.id);
-    //   if (index !== -1) {
-    //     this.updateArray[index].systemNumber = row.systemNumber;
-    //     this.updateArray[index].circuitNumber = row.circuitNumber;
-    //     this.updateArray[index].address = row.address;
+    // async requestData(formType, format) {
+    //   console.log("focus");
+    //   this.dataList = [];
+    //   if (formType == "selectSetting") {
+    //     this.dataList = await this.optionfilter(format);
     //   } else {
-    //     var data = {
-    //       id: row.id,
-    //       systemNumber: row.systemNumber,
-    //       circuitNumber: row.circuitNumber,
-    //       address: row.address,
-    //     };
-    //     this.updateArray.push(data);
+    //     this.dataList = await this.selectfilter(
+    //       format == "commitUserInfo" ? "userInfo" : format
+    //     );
     //   }
     // },
     //區塊&表格&對外連結
@@ -1125,11 +1123,6 @@ export default {
         }
       });
     },
-    // 改變搜尋條件
-    // inputSelectChange() {
-    //   return this.config.filter((item) => item.isSearch == true);
-    // },
-
     //選取列
     handleSelectionChange(val) {
       this.selectArray = val;

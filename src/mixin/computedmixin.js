@@ -14,6 +14,7 @@ import {
   Committee,
   Floors,
 } from "@/object/index";
+import { _ } from "core-js";
 
 export default {
   computed: {
@@ -179,8 +180,6 @@ export default {
             return this.changeAccountName(row[prop]);
           case "certificateNumber":
             return row.getCertificateNumber();
-          case "placeCategory":
-            return row.getPlaceCategory();
           case "actionSelect":
             return row.getActionSelect();
         }
@@ -759,9 +758,9 @@ export default {
         for await (let item of data) {
           const newDatas = [];
           var objData = await constr.getOfID(item.id);
+          console.log(objData);
           var changetext = await this.changeText(config, objData);
           changetext.forEach((obj) => {
-            console.log(obj);
             newDatas.push(
               h("p", { style: "width:100%" }, [
                 h(
@@ -1007,7 +1006,31 @@ export default {
         let _array = this.buildingoptions.filter(
           (item, index) => item.classType == format
         );
-        return _array;
+        var options = _array.map((v) => {
+          var str = v.textName;
+          if (v.classType == "InspectionTypeOfTime") {
+            var list = v.value.split("-");
+            var array = list.map((item) => {
+              return item + "月";
+            });
+            var _str = array.join("及");
+            str = v.textName + "/每年" + _str + "前";
+          } else if (v.classType == "PublicSafeTypeOfTime") {
+            var list = v.value.split("-");
+            str =
+              v.textName +
+              "/每" +
+              list[0] +
+              "年一次，" +
+              list[1] +
+              "月到" +
+              list[2] +
+              "月";
+          }
+          this.$set(v, "label", str);
+          return v;
+        });
+        return options;
       } else {
         return "";
       }

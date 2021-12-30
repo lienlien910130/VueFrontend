@@ -117,7 +117,10 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.buildingarray[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.buildingarray[index][item] = content[item];
+      });
+      // state.buildingarray[index] = content;
     }
   },
   deleteBuildingList({ commit }, id) {
@@ -150,7 +153,10 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.roles[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.roles[index][item] = content[item];
+      });
+      //state.roles[index] = content;
     }
   },
   deleteRole({ commit }, id) {
@@ -175,7 +181,10 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.account[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.account[index][item] = content[item];
+      });
+      //state.account[index] = content;
     }
   },
   deleteAccount({ commit }, id) {
@@ -198,7 +207,9 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.buildingoptions[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.buildingoptions[index][item] = content[item];
+      });
     }
   },
   deleteOption({ commit }, id) {
@@ -217,7 +228,10 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.buildingfloors[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.buildingfloors[index][item] = content[item];
+      });
+      //state.buildingfloors[index] = content;
     }
   },
   //管委會資料
@@ -235,7 +249,10 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.buildingcommittee[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.buildingcommittee[index][item] = content[item];
+      });
+      //state.buildingcommittee[index] = content;
     }
   },
   deleteCommittee({ commit }, id) {
@@ -260,7 +277,10 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.buildingcontactunit[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.buildingcontactunit[index][item] = content[item];
+      });
+      //state.buildingcontactunit[index] = content;
     }
   },
   deleteContactunit({ commit }, id) {
@@ -285,7 +305,10 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.buildingusers[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.buildingusers[index][item] = content[item];
+      });
+      //state.buildingusers[index] = content;
     }
   },
   deleteHouseHolder({ commit }, id) {
@@ -310,7 +333,10 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.buildingfloorOfHouse[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.buildingfloorOfHouse[index][item] = content[item];
+      });
+      //state.buildingfloorOfHouse[index] = content;
     }
   },
   deleteFloorOfHouse({ commit }, id) {
@@ -335,7 +361,10 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.buildingdevices[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.buildingdevices[index][item] = content[item];
+      });
+      //state.buildingdevices[index] = content;
     }
   },
   deleteDevice({ commit }, id) {
@@ -360,7 +389,10 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.buildingdeviceType[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.buildingdeviceType[index][item] = content[item];
+      });
+      //state.buildingdeviceType[index] = content;
     }
   },
   deleteDeviceType({ commit }, id) {
@@ -391,7 +423,10 @@ const actions = {
       return item.id === content.id;
     });
     if (index !== -1) {
-      state.buildingaddress[index] = content;
+      Object.keys(content).forEach((item) => {
+        state.buildingaddress[index][item] = content[item];
+      });
+      //state.buildingaddress[index] = content;
     }
   },
   deleteAddressManagement({ commit }, id) {

@@ -36,6 +36,9 @@ const report = {
   apiGetInspectionColumn(data) {
     return req("post", "/reportInspection/list/listValue", this.getBid(), data);
   },
+  apiGetInspectionRemind(usageOfFloorId = -1) {
+    return req("get", "/index/" + usageOfFloorId + "/inspectionReminder");
+  },
 
   //檢修申報缺失
   apiGetInspectionLackOfID(id) {
@@ -123,6 +126,9 @@ const report = {
   },
   apiGetPublicSafeColumn(data) {
     return req("post", "/reportPublicSafe/list/listValue", this.getBid(), data);
+  },
+  apiGetPublicSafeRemind() {
+    return req("get", "/index/publicSafeReminder");
   },
 
   //公安申報缺失

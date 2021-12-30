@@ -128,26 +128,6 @@ class UsageOfFloor extends Parent {
   getLivingUsers() {
     return this.linkLivingUsers;
   }
-  getPlaceCategory() {
-    switch (this.placeCategory) {
-      case 1:
-        return "甲類";
-      case 2:
-        return "乙類";
-      case 3:
-        return "丙類";
-      case 4:
-        return "丁類";
-      case 5:
-        return "戊類";
-      case 6:
-        return "己類";
-      case 7:
-        return "庚類";
-      case 8:
-        return "其他";
-    }
-  }
   static empty() {
     return new UsageOfFloor({
       id: "",
@@ -157,7 +137,7 @@ class UsageOfFloor extends Parent {
       note: "",
       spatialCharacteristics: "",
       businessHours: "",
-      placeCategory: 2,
+      placeCategory: "",
       selfDeclared: false,
       linkUsers: [],
       linkOwners: [],
@@ -200,22 +180,20 @@ class UsageOfFloor extends Parent {
         selectFilter: false,
       },
       {
-        label: "場所特性",
+        label: "場所類別",
         prop: "placeCategory",
-        format: "placeCategory",
-        type: "number",
-        typemessage: "",
-        mandatory: false,
+        format: "InspectionTypeOfTime",
+        mandatory: true,
+        message: "請選擇場所類別",
         isHidden: false,
         isSearch: false,
-        isAssociate: false,
+        isAssociate: true,
         isEdit: true,
-        isUpload: true,
+        isUpload: false,
         isExport: true,
-        isBlock: false,
-        selectFilter: false,
-        formType: "selectString",
-        selectFilter: false,
+        isBlock: true,
+        formType: "selectSetting",
+        selectFilter: true,
       },
       {
         label: "自行申報",
@@ -242,7 +220,7 @@ class UsageOfFloor extends Parent {
         type: "number",
         typemessage: "",
         mandatory: false,
-        pattern: /^[0-9]{1,10}$/,
+        pattern: /^\+?[1-9][0-9]*$/,
         errorMsg: "格式錯誤，請重新輸入",
         isPattern: true,
         isHidden: false,

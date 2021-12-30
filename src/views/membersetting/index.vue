@@ -101,10 +101,14 @@ export default {
   },
   async mounted() {
     await this.getOptions();
-    if (this.$route.query.type == "mp") {
+    if (this.$route.query.type == "bu") {
+      this.activeName = "building";
+    } else if (this.$route.query.type == "ma") {
       this.activeName = "maintain";
-    } else if (this.$route.query.type == "la") {
+    } else if (this.$route.query.type == "in") {
       this.activeName = "report";
+    } else if (this.$route.query.type == "pu") {
+      this.activeName = "reportPublic";
     }
   },
   methods: {
@@ -158,11 +162,13 @@ export default {
           await this.PostData(index, content);
           break;
         case "update":
-          await this.UpdateData(content);
+          await this.UpdateData(content, true);
           break;
         case "delete":
           await this.DeleteData(content);
           break;
+        case "checked":
+          await this.UpdateData(content, false);
         default:
           break;
       }
@@ -173,7 +179,7 @@ export default {
         textName: content.textName,
         value:
           index == "InspectionTypeOfTime" || index == "PublicSafeTypeOfTime"
-            ? content.value.toString()
+            ? content.value.join("-")
             : index == "InspectionTimeOptions" ||
               index == "PublicSafeTimeOptions"
             ? content.value
@@ -183,7 +189,7 @@ export default {
         systemUse: false,
       };
       var result = await Setting.postOption(temp);
-      if (Object.keys(result).length !== 0) {
+      if (result !== undefined) {
         this.$socket.sendMsg("setting", "create", result);
         this.$message("新增成功");
         this.options = await Setting.getAllOption();
@@ -191,17 +197,17 @@ export default {
         this.$message.error("該名稱已存在，請重新輸入");
       }
     },
-    async UpdateData(content) {
+    async UpdateData(content, hasCheck) {
       content.value =
         content.classType == "InspectionTypeOfTime" ||
         content.classType == "PublicSafeTypeOfTime"
-          ? content.value.toString()
+          ? content.value.join("-")
           : content.value;
       var temp = Array.isArray(content) ? content : new Array(content);
-      var result = await Setting.updateOption(temp);
-      if (Object.keys(result).length !== 0) {
+      var result = await Setting.updateOption(temp, hasCheck);
+      if (result.result.length !== 0) {
         this.$message("更新成功");
-        this.$socket.sendMsg("setting", "update", result);
+        this.$socket.sendMsg("setting", "update", result.result);
         this.options = await Setting.getAllOption();
       } else {
         this.$message.error("該名稱已存在，請重新輸入");

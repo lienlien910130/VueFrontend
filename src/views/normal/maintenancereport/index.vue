@@ -4,16 +4,24 @@
       <el-col :xs="24" :sm="24" :md="24" :lg="16">
         <div class="chart-wrapper">
           <div class="verticalhalfdiv">
+            <div class="label">場所類別：</div>
+            <div class="content">
+              <span class="report">
+                {{ remind.category }}
+              </span>
+            </div>
+          </div>
+          <div class="verticalhalfdiv">
             <div class="label">
               <i class="el-icon-edit">
-                <a @click="openWindows('sys-Setting')" style="color: #66b1ff">
-                  下次申報日期：</a
+                <a @click="openWindows" style="color: #66b1ff">
+                  下次申報期限：</a
                 >
               </i>
             </div>
             <div class="content">
               <span class="report">
-                {{ TimeOptions("InspectionTimeOptions") }}
+                {{ remind.checkDate + "前" }}
               </span>
             </div>
           </div>
@@ -80,6 +88,7 @@ import {
   excelmixin,
 } from "@/mixin/index";
 import { Files, Inspection, InspectionLacks } from "@/object/index";
+import moment from "moment";
 
 export default {
   mixins: [sharemixin, blockmixin, dialogmixin, tablemixin, excelmixin],
@@ -99,6 +108,7 @@ export default {
       },
       lacksShow: false,
       excludeId: null,
+      remind: {},
     };
   },
   computed: {
@@ -137,6 +147,10 @@ export default {
         { name: "缺失內容", icon: "el-icon-document", status: "openlacks" },
         { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
       ];
+      this.remind = await Inspection.getRemind();
+      this.remind.checkDate = moment(this.remind.checkDate).format(
+        "YYYY-MM-DD"
+      );
     },
     async resetlistQueryParams() {
       this.listQueryParams = {
@@ -578,6 +592,16 @@ export default {
         this.lacksShow = true;
         this.tableVisible = true;
       }
+    },
+    openWindows() {
+      var routeData = this.$router.resolve({
+        path: "/membersetting/index",
+        query: { type: "in" },
+      });
+      if (window.child && window.child.open && !window.child.closed) {
+        window.child.close();
+      }
+      window.child = window.open(routeData.href, "_blank");
     },
   },
 };

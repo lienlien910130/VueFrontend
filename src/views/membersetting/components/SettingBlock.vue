@@ -3,11 +3,7 @@
     <el-card class="box-card">
       <div slot="header" class="clearfix">
         <span>{{ titleToch }}</span>
-        <template
-          v-if="
-            title === 'InspectionTypeOfTime' || title === 'PublicSafeTypeOfTime'
-          "
-        >
+        <template v-if="title === 'InspectionTypeOfTime'">
           <el-tooltip
             class="item"
             effect="dark"
@@ -35,7 +31,6 @@
                   id="inputText"
                   v-model="formInline.textName"
                   placeholder="請輸入名稱"
-                  @keyup.enter.native="onSubmit"
                 ></el-input>
               </el-form-item>
               <el-form-item v-if="title === 'PublicSafeTypeOfTime'">
@@ -105,7 +100,6 @@
                 <el-input
                   v-model="formInline.value"
                   placeholder="請輸入天數"
-                  @keyup.enter.native="onSubmit"
                 ></el-input>
               </el-form-item>
               <el-button
@@ -154,13 +148,11 @@
                 <span v-else>
                   {{ index + 1 }}.
                   {{ item.textName }}
-                  <template
-                    v-if="
-                      title === 'InspectionTypeOfTime' ||
-                      title === 'PublicSafeTypeOfTime'
-                    "
-                  >
-                    {{ item.value | changeMonth }}
+                  <template v-if="title === 'InspectionTypeOfTime'">
+                    {{ item.value | changeInspectionMonth }}
+                  </template>
+                  <template v-else-if="title === 'PublicSafeTypeOfTime'">
+                    {{ item.value | changePublicSafeMonth }}
                   </template>
                 </span>
               </div>
@@ -228,23 +220,21 @@ export default {
       },
       originalRadio: null,
       select: "1",
-      value1: [],
     };
   },
   filters: {
-    changeMonth: function (val) {
-      var list = val.split(",");
-      if (title === "InspectionTypeOfTime") {
-        var array = list.map((item) => {
-          return item + "月";
-        });
-        var str = array.join("及");
-        return "每年" + str + "前";
-      } else {
-        var str =
-          "每" + list[0] + "年一次，" + list[1] + "月到" + list[2] + "月";
-        return str;
-      }
+    changeInspectionMonth: function (val) {
+      var list = val.split("-");
+      var array = list.map((item) => {
+        return item + "月";
+      });
+      var str = array.join("及");
+      return "每年" + str + "前";
+    },
+    changePublicSafeMonth: function (val) {
+      var list = val.split("-");
+      var str = "每" + list[0] + "年一次，" + list[1] + "月到" + list[2] + "月";
+      return str;
     },
   },
   mounted() {
@@ -325,7 +315,7 @@ export default {
           var temp = _.cloneDeep(this.formInline);
           if (this.title == "PublicSafeTypeOfTime") {
             temp.value = temp.value.sort(function (a, b) {
-              return ("" + a).localeCompare(b);
+              return parseInt(a) - parseInt(b);
             });
             temp.value = [this.select, temp.value[0], temp.value.pop()];
           }
@@ -353,7 +343,7 @@ export default {
           if (this.originalRadio !== this.radio) {
             temp.push({ id: this.radio, checked: true });
           }
-          this.$emit("handleButton", this.title, "update", temp);
+          this.$emit("handleButton", this.title, "checked", temp);
         })
         .catch(() => {
           this.radio = this.originalRadio;
@@ -361,7 +351,6 @@ export default {
     },
     onCancel() {
       this.status = "create";
-      this.$refs.settingForm.resetFields();
       this.formInline = {
         id: null,
         textName: "",
@@ -371,6 +360,7 @@ export default {
             ? []
             : "",
       };
+      this.$refs.settingForm.resetFields();
       this.select = "1";
       document.getElementById("inputText").blur();
     },
@@ -378,14 +368,14 @@ export default {
       this.status = "update";
       this.formInline = _.cloneDeep(item);
       if (item.classType === "InspectionTypeOfTime") {
-        this.formInline.value = item.value.split(",");
+        this.formInline.value = item.value.split("-");
       } else if (item.classType === "PublicSafeTypeOfTime") {
-        var valueList = item.value.split(",");
+        var valueList = item.value.split("-");
         this.select = valueList[0];
         var startMonth = valueList[1];
         var end = valueList[2];
         var array = [];
-        for (var i = startMonth; i <= end; i++) {
+        for (var i = parseInt(startMonth); i <= parseInt(end); i++) {
           array.push(i.toString());
         }
         this.formInline.value = array;

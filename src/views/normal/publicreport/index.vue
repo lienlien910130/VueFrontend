@@ -4,16 +4,24 @@
       <el-col :xs="24" :sm="24" :md="24" :lg="16">
         <div class="chart-wrapper">
           <div class="verticalhalfdiv">
+            <div class="label">場所類別：</div>
+            <div class="content">
+              <span class="report">
+                {{ remind.category }}
+              </span>
+            </div>
+          </div>
+          <div class="verticalhalfdiv">
             <div class="label">
               <i class="el-icon-edit">
-                <a @click="openWindows('sys-Setting')" style="color: #66b1ff">
+                <a @click="openWindows" style="color: #66b1ff">
                   下次申報日期：</a
                 >
               </i>
             </div>
             <div class="content">
               <span class="report">
-                {{ TimeOptions("InspectionTimeOptions") }}
+                {{ remind.checkDate }}
               </span>
             </div>
           </div>
@@ -98,6 +106,7 @@ export default {
       },
       lacksShow: false,
       excludeId: null,
+      remind: {},
     };
   },
   computed: {
@@ -135,6 +144,11 @@ export default {
         { name: "缺失內容", icon: "el-icon-document", status: "openlacks" },
         { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
       ];
+      this.remind = await PublicSafe.getRemind();
+      console.log(this.remind);
+      this.remind.checkDate = moment(this.remind.checkDate).format(
+        "YYYY-MM-DD"
+      );
     },
     async resetlistQueryParams() {
       this.listQueryParams = {
@@ -517,6 +531,16 @@ export default {
       //     await this.handleBlock('','open',this.$route.params.target)
       //   }
       // }
+    },
+    openWindows() {
+      var routeData = this.$router.resolve({
+        path: "/membersetting/index",
+        query: { type: "pu" },
+      });
+      if (window.child && window.child.open && !window.child.closed) {
+        window.child.close();
+      }
+      window.child = window.open(routeData.href, "_blank");
     },
   },
 };
