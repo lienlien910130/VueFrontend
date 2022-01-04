@@ -125,7 +125,11 @@ export default {
             return this.$options.filters.changeNType(v[j.prop]);
           } else if (typeof v[j.prop] == "object") {
             if (v[j.prop] !== null) {
-              return v[j.prop].map((item) => item.getName());
+              if (j.prop == "linkDevices") {
+                return v[j.prop].map((item) => item.getOnlyName());
+              } else {
+                return v[j.prop].map((item) => item.getName());
+              }
             }
           } else if (
             j.formType == "selectString" ||

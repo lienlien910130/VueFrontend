@@ -10,11 +10,18 @@ import InspectionLacks from "./inspectionLacks";
 class MaintainManagementList extends Parent {
   constructor(data) {
     super(data);
-    const { name, createdDate, completedCount, allCount } = data;
+    const { name, createdDate, completedCount, allCount, linkMaintains } = data;
+    var maintain =
+      linkMaintains !== undefined
+        ? linkMaintains.map((item) => {
+            return new MaintainManagement(item);
+          })
+        : [];
     this.name = name;
     this.createdDate = createdDate;
     this.completedCount = completedCount;
     this.allCount = allCount;
+    this.linkMaintains = maintain;
   }
   clone(data) {
     return new MaintainManagementList(data);
@@ -88,6 +95,7 @@ class MaintainManagementList extends Parent {
       createdDate: moment().format("YYYY-MM-DD"),
       completedCount: 0,
       allCount: 0,
+      linkMaintains: [],
     });
   }
   static getTableConfig() {
@@ -151,14 +159,6 @@ class MaintainManagementList extends Parent {
         isExport: true,
         isBlock: true,
       },
-      //   {
-      //     label: '已保養/未保養',
-      //     prop: 'linkMaintains',
-      //     format:'openmaintain',
-      //     mandatory:false, type:'array',typemessage:'',
-      //     isHidden:false,isSearch:false,
-      //     isAssociate:false,isEdit:true,isUpload:false,isExport:false,isBlock:true
-      //   }
     ];
   }
   static getCreateConfig() {
@@ -263,7 +263,6 @@ class MaintainManagementList extends Parent {
     var data = await api.device
       .apiGetInspectionListByMaintain()
       .then((response) => {
-        console.log(JSON.stringify(response));
         return response.result.sort((x, y) => y.id - x.id);
       })
       .catch((error) => {
@@ -310,8 +309,8 @@ class MaintainManagement extends Parent {
     this.dateOfCallRepair =
       dateOfCallRepair !== undefined ? dateOfCallRepair : null;
     this.completedTime = completedTime !== undefined ? completedTime : null;
-    this.processStatus = processStatus;
-    this.processContent = processContent;
+    this.processStatus = processStatus !== undefined ? processStatus : null;
+    this.processContent = processContent !== undefined ? processContent : null;
     this.note = note;
     this.linkDevices = devices;
     this.linkInspectionLacks = inspectionLacks;

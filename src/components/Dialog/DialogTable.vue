@@ -55,7 +55,8 @@
                 ></div>
 
                 <span v-else-if="item.formType == 'date'" style="width: 150px">
-                  {{ dataStr(scope.row[item.prop], "YYYY-MM-DD") }}
+                  <!-- {{ dataStr(scope.row[item.prop], "YYYY-MM-DD") }} -->
+                  {{ dataStr(scope.row, item.format, item.prop) }}
                 </span>
 
                 <span v-else-if="item.formType == 'selectSetting'">

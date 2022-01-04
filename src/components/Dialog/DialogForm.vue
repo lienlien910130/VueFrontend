@@ -169,26 +169,6 @@
                   : false
               "
             >
-              <el-option
-                v-for="(obj, index) in selectfilter(item.format)"
-                :key="index"
-                :label="obj.label"
-                :value="obj"
-              >
-              </el-option>
-            </el-select>
-            <!-- item.format == 'commitUserInfo' ? obj.getName() : obj.label -->
-            <el-select
-              v-else-if="item.formType == 'select'"
-              v-model="temp[item.prop]"
-              filterable
-              multiple
-              value-key="id"
-              placeholder="請選擇"
-              style="width: 100%"
-              @change="checkMode($event, item.format)"
-              :disabled="item.format == 'accountSelect' ? disable : false"
-            >
               <template v-if="item.format == 'inspectionSelect'">
                 <el-option-group
                   v-for="group in selectfilter('inspectionSelect')"
@@ -210,21 +190,42 @@
                   v-for="(obj, index) in selectfilter(item.format)"
                   :key="index"
                   :label="
-                    item.format == 'maintainListSelect' ||
-                    item.format == 'accountSelect'
+                    item.format == 'maintainListSelect'
                       ? obj.getName()
                       : obj.label
                   "
                   :value="obj"
-                  :disabled="
-                    item.format == 'addressdeviceSelect' ||
-                    item.format == 'usageOfFloorUserInfo'
-                      ? obj.disabled
-                      : false
-                  "
                 >
                 </el-option>
               </template>
+            </el-select>
+            <!-- item.format == 'commitUserInfo' ? obj.getName() : obj.label -->
+            <el-select
+              v-else-if="item.formType == 'select'"
+              v-model="temp[item.prop]"
+              filterable
+              multiple
+              value-key="id"
+              placeholder="請選擇"
+              style="width: 100%"
+              @change="checkMode($event, item.format)"
+              :disabled="item.format == 'accountSelect' ? disable : false"
+            >
+              <el-option
+                v-for="(obj, index) in selectfilter(item.format)"
+                :key="index"
+                :label="
+                  item.format == 'accountSelect' ? obj.getName() : obj.label
+                "
+                :value="obj"
+                :disabled="
+                  item.format == 'addressdeviceSelect' ||
+                  item.format == 'usageOfFloorUserInfo'
+                    ? obj.disabled
+                    : false
+                "
+              >
+              </el-option>
             </el-select>
             <!-- 下拉選單-string -->
             <el-select
@@ -496,7 +497,7 @@ export default {
             return item.title;
           case "maintain":
             var label = this.changeOptionName(item.processContent);
-            return label;
+            return label !== "" ? label : "維護保養";
           case "reportInspectio":
           case "reportPublicSafe":
             return item.declareYear;
@@ -546,6 +547,7 @@ export default {
             ? this.dialogData[0].clone(this.dialogData[0])
             : this.dialogData[0];
         await this.setDataForm(this.temp);
+        console.log(JSON.stringify(this.dialogData));
       }
       this.$nextTick(() => {
         if (this.$refs.dataForm !== undefined) {
@@ -966,7 +968,7 @@ export default {
             break;
           case "dateOfCallRepair":
             if (this.temp["completedTime"] == null) {
-              txtName = "叫修中";
+              txtName = "維修中";
             }
             break;
           case "completedTime":
@@ -1103,9 +1105,11 @@ export default {
     },
     //頁籤
     async handleTabClick(tab, event) {
+      console.log(tab);
       var data = this.dialogData.filter(
         (element, index) => element.id == tab.name
       )[0];
+      console.log(data);
       this.temp = data.clone(data);
       await this.setDataForm(this.temp);
     },

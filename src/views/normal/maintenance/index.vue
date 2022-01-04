@@ -405,13 +405,13 @@ export default {
         ];
         if (this.isTable == true) {
           this.dialogConfig.unshift({
-            label: "維護保養大項",
+            label: "維護保養單",
             prop: "maintainList",
             format: "maintainListSelect",
             mandatory: true,
-            message: "請選擇維護保養大項",
+            message: "請選擇維護保養單",
             isHidden: false,
-            type: "array",
+            type: "object",
             typemessage: "",
             isSearch: false,
             isAssociate: false,
@@ -419,7 +419,7 @@ export default {
             isUpload: false,
             isExport: true,
             isBlock: true,
-            formType: "select",
+            formType: "singleChoice",
             limit: 1,
           });
           var maintainlist = await MaintainManagementList.get();
@@ -485,13 +485,21 @@ export default {
         index === "update" ||
         index === "updateManySave"
       ) {
+        var mId =
+          index !== "update" && this.isTable
+            ? content.maintainList.id
+            : index !== "update" && !this.isTable
+            ? this.maintainList.getID()
+            : null;
+        this.$delete(content, "maintainList");
         var isOk =
           index === "update"
             ? await content.update()
             : this.isTable == true
-            ? await content.create(content.maintainList[0].id)
-            : await content.create(this.maintainList.getID());
+            ? await content.create(mId)
+            : await content.create(mId);
         if (isOk) {
+          this.innerVisible = false;
           index === "update"
             ? this.$message("更新成功")
             : this.$message("新增成功");
@@ -501,7 +509,6 @@ export default {
             this.isUpdate = true;
             await this.getMaintain();
           }
-          this.innerVisible = false;
         } else {
           this.$message.error("系統錯誤");
         }
@@ -576,6 +583,9 @@ export default {
         await this.getMaintain();
       } else if (index === "updateMany") {
         this.dialogStatus = "updateMany";
+        this.dialogSelect = new Array(
+          await MaintainManagementList.getAllLack()
+        );
         content.forEach((item) => {
           var obj = _.cloneDeep(item);
           this.dialogData.push(obj);

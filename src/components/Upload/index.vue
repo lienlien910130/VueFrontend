@@ -356,8 +356,6 @@ export default {
           fileType = "text/plain";
           break;
         case "jpg":
-          fileType = "image/jpeg";
-          break;
         case "jpeg":
           fileType = "image/jpeg";
           break;

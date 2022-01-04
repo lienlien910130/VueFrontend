@@ -192,7 +192,7 @@ export default {
           this.$store.dispatch("building/setoptions");
           this.$store.dispatch("record/saveSettingRecord", 1);
         }
-        if (value !== null) {
+        if (value !== null && value !== undefined) {
           let _array = this.buildingoptions.filter(
             (item, index) => item.id == value
           );

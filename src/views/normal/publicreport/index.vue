@@ -15,7 +15,7 @@
             <div class="label">
               <i class="el-icon-edit">
                 <a @click="openWindows" style="color: #66b1ff">
-                  下次申報日期：</a
+                  下次申報區間：</a
                 >
               </i>
             </div>
@@ -146,9 +146,10 @@ export default {
       ];
       this.remind = await PublicSafe.getRemind();
       console.log(this.remind);
-      this.remind.checkDate = moment(this.remind.checkDate).format(
-        "YYYY-MM-DD"
-      );
+      this.remind.checkDate =
+        moment(this.remind.startDate).format("YYYY-MM-DD") +
+        "~" +
+        moment(this.remind.endDate).format("YYYY-MM-DD");
     },
     async resetlistQueryParams() {
       this.listQueryParams = {

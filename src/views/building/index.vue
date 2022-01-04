@@ -48,7 +48,12 @@
       width="80%"
       :modal="isneed"
     >
-      <img :src="previewPath" class="previewImg" />
+      <qrcode-vue
+        v-if="previewType == 'qrcode'"
+        :value="previewPath"
+        level="H"
+      />
+      <img v-else :src="previewPath" class="previewImg" />
     </el-dialog>
   </div>
 </template>
@@ -61,6 +66,7 @@ import {
   excelmixin,
 } from "@/mixin/index";
 import { Files, Building, Floors, User } from "@/object/index";
+import QrcodeVue from "qrcode.vue";
 
 export default {
   mixins: [sharemixin, blockmixin, dialogmixin, tablemixin, excelmixin],
@@ -90,6 +96,9 @@ export default {
   async created() {
     await this.initBuilding();
   },
+  components: {
+    QrcodeVue,
+  },
   data() {
     return {
       uploadVisible: false,
@@ -104,7 +113,7 @@ export default {
       previewVisible: false,
       previewPath: "",
       previewTitle: "",
-
+      previewType: "",
       //dialog額外的參數
       // formtableData:[],
       // formtableconfig: Floors.getTableConfig(),
@@ -127,6 +136,11 @@ export default {
         { name: "編輯", icon: "el-icon-edit", status: "open" },
         { name: "樓層", icon: "el-icon-position", status: "openfloors" },
         { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
+        {
+          name: "產生QRcode",
+          icon: "el-icon-picture-outline-round",
+          status: "qrcode",
+        },
       ];
     },
     async resetlistQueryParams() {
@@ -304,18 +318,16 @@ export default {
           var obj = _.cloneDeep(item);
           this.dialogData.push(obj);
         });
-        // var userlist = await User.getOfBuildingID(this.dialogData[0].getID());
-        // this.dialogSelect = userlist.map((v) => {
-        //   this.$set(v, "value", v.getID());
-        //   this.$set(v, "label", v.getName());
-        //   this.$set(v, "id", v.getID());
-        //   return v;
-        // });
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "updateManySave" },
           { name: "取消", type: "info", status: "cancel" },
         ];
         this.innerVisible = true;
+      } else if (index === "qrcode") {
+        this.previewTitle = content.buildingName + "QRcode註冊";
+        this.previewPath = "https://demo.mercuryfire.com.tw/";
+        this.previewType = "qrcode";
+        this.previewVisible = true;
       }
     },
     async handleTableClick(index, content) {
@@ -360,6 +372,7 @@ export default {
         var _temp = await content.getImage();
         this.previewPath = _temp;
         this.previewTitle = content.getName() + "平面圖";
+        this.previewType = "floorImage";
         this.previewVisible = true;
       } else {
         this.tableVisible = false;

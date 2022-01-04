@@ -295,6 +295,11 @@ export default {
             index,
             index !== "uploadExcelSave" ? result : result.result
           );
+          if (index === "create" || index === "updateManySave") {
+            this.$alert("需要接訊號請洽水星服務人員", "提醒", {
+              confirmButtonText: "確定",
+            });
+          }
           await this.getBuildingDevicesManage();
           if (index !== "updateManySave") {
             this.innerVisible = false;

@@ -1,117 +1,133 @@
 // import Vue from 'vue'
 // import Router from 'vue-router'
-const Vue = require('vue')
+const Vue = require("vue");
 // const Router = require('vue-router')
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
-import Layout from '../layout'
+import Layout from "../layout";
 
 export const constantRoutes = [
   {
-    path: '/login',
-    name: 'Login',
-    meta: { title: '登入'},
-    component: () => import('@/views/login/index.vue'),
-    hidden: true
+    path: "/login",
+    name: "Login",
+    meta: { title: "登入" },
+    component: () => import("@/views/login/index.vue"),
+    hidden: true,
   },
   {
-    path: '/Graphic_equipmentType',
-    name: 'Graphic_equipmentType',
-    meta: { title: '圖例', needLogin: true},
-    component: () => import('@/views/graphic/components/EquipmentType.vue'),
-    hidden: true
+    path: "/Graphic_equipmentType",
+    name: "Graphic_equipmentType",
+    meta: { title: "圖例", needLogin: true },
+    component: () => import("@/views/graphic/components/EquipmentType.vue"),
+    hidden: true,
   },
   {
-    path: '/process',
+    path: "/process",
     component: Layout,
-    redirect: '/process',
-    children: [{
-      path: 'index',
-      name: 'process',
-      component: () => import('@/views/emergency/process/index.vue'),
-      meta: { title: '應變流程', icon: 'icon', needLogin: true }
-    }],
-    hidden: true
+    redirect: "/process",
+    children: [
+      {
+        path: "index",
+        name: "process",
+        component: () => import("@/views/emergency/process/index.vue"),
+        meta: { title: "應變流程", icon: "icon", needLogin: true },
+      },
+    ],
+    hidden: true,
   },
   {
-    path: '/cctv',
+    path: "/cctv",
     component: Layout,
-    redirect: '/cctv',
-    children: [{
-      path: 'index',
-      name: 'cctv',
-      component: () => import('@/views/emergency/emergencyState/cctv.vue'),
-      meta: { title: '監視器', icon: 'icon', needLogin: true }
-    }],
-    hidden: true
+    redirect: "/cctv",
+    children: [
+      {
+        path: "index",
+        name: "cctv",
+        component: () => import("@/views/emergency/emergencyState/cctv.vue"),
+        meta: { title: "監視器", icon: "icon", needLogin: true },
+      },
+    ],
+    hidden: true,
   },
   {
-    path: '/emergencyGraphic',
+    path: "/emergencyGraphic",
     component: Layout,
-    redirect: '/emergencyGraphic',
-    children: [{
-      path: 'index',
-      name: 'emergencygraphic',
-      component: () => import('@/views/emergency/emergencyState/graphic.vue'),
-      meta: { title: '緊急應變圖控', icon: 'icon', needLogin: true }
-    }],
-    hidden: true
+    redirect: "/emergencyGraphic",
+    children: [
+      {
+        path: "index",
+        name: "emergencygraphic",
+        component: () => import("@/views/emergency/emergencyState/graphic.vue"),
+        meta: { title: "緊急應變圖控", icon: "icon", needLogin: true },
+      },
+    ],
+    hidden: true,
   },
   {
-    path: '/selfDefenseClass',
+    path: "/selfDefenseClass",
     component: Layout,
-    redirect: '/selfDefenseClass',
-    children: [{
-      path: 'index',
-      name: 'selfDefenseClass',
-      component: () => import('@/views/emergency/emergencyState/selfDefenseClass.vue'),
-      meta: { title: '緊急應變班別', icon: 'icon', needLogin: true }
-    }],
-    hidden: true
+    redirect: "/selfDefenseClass",
+    children: [
+      {
+        path: "index",
+        name: "selfDefenseClass",
+        component: () =>
+          import("@/views/emergency/emergencyState/selfDefenseClass.vue"),
+        meta: { title: "緊急應變班別", icon: "icon", needLogin: true },
+      },
+    ],
+    hidden: true,
   },
   {
-    path: '/actions',
+    path: "/actions",
     component: Layout,
-    redirect: '/actions',
-    children: [{
-      path: 'index',
-      name: 'actions',
-      component: () => import('@/views/emergency/emergencyState/historyActions.vue'),
-      meta: { title: '緊急應變動作歷程', icon: 'icon', needLogin: true }
-    }],
-    hidden: true
+    redirect: "/actions",
+    children: [
+      {
+        path: "index",
+        name: "actions",
+        component: () =>
+          import("@/views/emergency/emergencyState/historyActions.vue"),
+        meta: { title: "緊急應變動作歷程", icon: "icon", needLogin: true },
+      },
+    ],
+    hidden: true,
   },
   {
-    path: '/floors',
+    path: "/floors",
     component: Layout,
-    redirect: '/floors',
-    children: [{
-      path: 'index',
-      name: 'floors',
-      component: () => import('@/views/emergency/emergencyState/floors.vue'),
-      meta: { title: '立剖圖', icon: 'icon', needLogin: true }
-    }],
-    hidden: true
+    redirect: "/floors",
+    children: [
+      {
+        path: "index",
+        name: "floors",
+        component: () => import("@/views/emergency/emergencyState/floors.vue"),
+        meta: { title: "立剖圖", icon: "icon", needLogin: true },
+      },
+    ],
+    hidden: true,
   },
   {
-    path: '/',
+    path: "/",
     component: Layout,
-    redirect: '/dashboard',
-    children: [{
-      path: 'dashboard',
-      name: 'sys-Index',
-      component: () => import('@/views/dashboard/index.vue'),
-      meta: { title: '首頁', icon: 'dashboard', needLogin: true }
-    }],
-    hidden: true
+    redirect: "/dashboard",
+    children: [
+      {
+        path: "dashboard",
+        name: "sys-Index",
+        component: () => import("@/views/dashboard/index.vue"),
+        meta: { title: "首頁", icon: "dashboard", needLogin: true },
+      },
+    ],
+    hidden: true,
   },
   {
-    path: '/404',
-    name: '404',
-    meta: { title: '找不到頁面'},
-    component: () => import('@/views/404.vue'),
-    hidden: true
-  }
+    path: "/404",
+    name: "404",
+    meta: { title: "找不到頁面" },
+    component: () => import("@/views/404.vue"),
+    hidden: true,
+  },
 
   // {
   //   path: '/analysis',
@@ -158,27 +174,24 @@ export const constantRoutes = [
   //     }
   //   ]
   // },
-]
+];
 export const mercuryfireRoutes = [
   {
-    path: '/building',
+    path: "/building",
     component: Layout,
-    redirect: '/building/index',
+    redirect: "/building/index",
     children: [
       {
-        path: 'index',
-        name: 'sys-Building',
-        component: () => import('@/views/building/index.vue'),
-        meta: { title: '建築物總覽', icon: 'icon', needLogin: true }
-      }
+        path: "index",
+        name: "sys-Building",
+        component: () => import("@/views/building/index.vue"),
+        meta: { title: "建築物總覽", icon: "icon", needLogin: true },
+      },
     ],
-    hidden: true
+    hidden: true,
   },
-
-]
-export const notfound = [
-  { path: '*', redirect: '/404', hidden: true }
-]
+];
+export const notfound = [{ path: "*", redirect: "/404", hidden: true }];
 
 // export const DrawingControl = [
 //   {
@@ -341,19 +354,19 @@ export const notfound = [
 //   }
 // ]
 
+const createRouter = () =>
+  new VueRouter({
+    mode: "history", // require service support
+    scrollBehavior: () => ({ y: 0 }),
+    routes: constantRoutes,
+  });
 
-const createRouter = () => new VueRouter({
-  mode: 'history', // require service support
-  scrollBehavior: () => ({ y: 0 }),
-  routes: constantRoutes
-})
-
-export const router = createRouter()
+export const router = createRouter();
 
 // Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
 export function resetRouter() {
-  const newRouter = createRouter()
-  router.matcher = newRouter.matcher // reset router
+  const newRouter = createRouter();
+  router.matcher = newRouter.matcher; // reset router
 }
 
-export default router
+export default router;

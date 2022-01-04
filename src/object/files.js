@@ -70,15 +70,17 @@ class Files extends Parent {
       });
     return data;
   }
-  // static async get(fileId){
-  //     console.log('TODO=>修改api')
-  //     var data = await api.files.apiGetImage(fileId).then(response => {
-  //         return response
-  //     }).catch(error=>{
-  //         return []
-  //     })
-  //     return data
-  // }
+  static async getOfID(fileId) {
+    var data = await api.files
+      .apiGetFileOfId(fileId)
+      .then((response) => {
+        return new Files(response.result[0]);
+      })
+      .catch((error) => {
+        return [];
+      });
+    return data;
+  }
   static async getImage(fileId) {
     var data = await api.files
       .apiGetImage(fileId)

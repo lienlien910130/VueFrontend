@@ -20,6 +20,9 @@ class Account extends Parent {
       description,
       status,
       removable,
+      headShotFileId,
+      verifyCellPhone,
+      verifyEmail,
       linkRoles,
       linkBuildings,
       linkPhysicalInfos,
@@ -56,6 +59,9 @@ class Account extends Parent {
     this.description = description;
     this.status = status;
     this.removable = removable;
+    this.headShotFileId = headShotFileId;
+    this.verifyCellPhone = verifyCellPhone;
+    this.verifyEmail = verifyEmail;
     this.linkRoles = roles;
     this.linkBuildings = buildings;
     this.linkPhysicalInfos = physicalInfos;
@@ -144,12 +150,30 @@ class Account extends Parent {
       description: "",
       status: true,
       removable: false,
+      headShotFileId: null,
+      verifyCellPhone: false,
+      verifyEmail: false,
       linkRoles: [],
       linkBuildings: [],
     });
   }
   static getTableConfig() {
     return [
+      {
+        label: "大頭照",
+        prop: "headShotFileId",
+        mandatory: false,
+        maxlength: "15",
+        isHidden: true,
+        isSearch: false,
+        placeholder: "請上傳大頭照",
+        isAssociate: false,
+        isEdit: false,
+        isUpload: false,
+        isExport: false,
+        isBlock: false,
+        selectFilter: false,
+      },
       {
         label: "帳號",
         prop: "account",
@@ -657,6 +681,17 @@ class Account extends Parent {
       })
       .catch((error) => {
         return false;
+      });
+    return data;
+  }
+  static async postPhoto(tgUserId, data) {
+    var data = await api.authority
+      .apiPostUserPhoto(tgUserId, data)
+      .then((response) => {
+        return response.result.headShotFileId;
+      })
+      .catch((error) => {
+        return null;
       });
     return data;
   }

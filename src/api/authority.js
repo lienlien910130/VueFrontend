@@ -2,6 +2,9 @@ import req from "./https";
 import store from "../store";
 
 const authority = {
+  getUid() {
+    return store.getters.id;
+  },
   getBid() {
     return store.getters.buildingid;
   },
@@ -143,6 +146,15 @@ const authority = {
   },
   apiGetUserSearchPages(data) {
     return req("post", "/basic/houseHolders/ss", this.getBid(), data, true);
+  },
+  //上傳大頭照
+  apiPostUserPhoto(tgUserId, data) {
+    return req(
+      "upload",
+      "/settings/account/" + this.getUid() + "/upload/headShot/" + tgUserId,
+      this.getBid(),
+      data
+    );
   },
 };
 

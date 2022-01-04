@@ -76,11 +76,14 @@
             <router-link to="/">
               <el-dropdown-item> 首頁 </el-dropdown-item>
             </router-link>
+            <!-- <router-link v-if="id !== undefined" to="/personal">
+              <el-dropdown-item> 個人資料 </el-dropdown-item>
+            </router-link> -->
             <router-link v-if="buildingid !== undefined" to="/membersetting">
               <el-dropdown-item> 設定 </el-dropdown-item>
             </router-link>
             <router-link v-if="buildingid !== undefined" to="/building/files">
-              <el-dropdown-item> 檔案 </el-dropdown-item>
+              <el-dropdown-item> 大樓總檔 </el-dropdown-item>
             </router-link>
             <router-link v-if="id == '1'" to="/building/index">
               <el-dropdown-item> 編輯大樓 </el-dropdown-item>

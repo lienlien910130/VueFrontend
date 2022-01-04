@@ -21,7 +21,7 @@
             </div>
             <div class="content">
               <span class="report">
-                {{ remind.checkDate + "前" }}
+                {{ remind.checkDate }}
               </span>
             </div>
           </div>
@@ -108,7 +108,10 @@ export default {
       },
       lacksShow: false,
       excludeId: null,
-      remind: {},
+      remind: {
+        category: "",
+        checkDate: "",
+      },
     };
   },
   computed: {
@@ -148,9 +151,8 @@ export default {
         { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
       ];
       this.remind = await Inspection.getRemind();
-      this.remind.checkDate = moment(this.remind.checkDate).format(
-        "YYYY-MM-DD"
-      );
+      this.remind.checkDate =
+        moment(this.remind.checkDate).format("YYYY-MM-DD") + "前";
     },
     async resetlistQueryParams() {
       this.listQueryParams = {
