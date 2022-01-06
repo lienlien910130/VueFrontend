@@ -70,7 +70,7 @@ const authority = {
     return req("get", "/index/roles/a");
   },
   apiGetRoleOfID(id) {
-    return req("get", "/index/roles" + id);
+    return req("get", "/index/roles/" + id);
   },
   // apiGetAllRoleAuthority(){ return req('get','/roleSetting/a') },
   apiGetRoleAuthority(roleId) {
@@ -123,7 +123,7 @@ const authority = {
   },
   // apiPatchAccountAuthority(data){ return req('patch','/accountSetting/check',data) },
   apiPatchAccountAuthority(data) {
-    return req("patch", "/index/accounts/check", null, data);
+    return req("patch", "/settings/account/check", null, data);
   },
   apiPutAccountAuthority(data) {
     return req("put", "/accountSetting/check", null, data);
@@ -145,7 +145,7 @@ const authority = {
     return req("get", "/accountSetting/accessAuthorities/" + roleId);
   },
   apiGetUserSearchPages(data) {
-    return req("post", "/basic/houseHolders/ss", this.getBid(), data, true);
+    return req("post", "/index/accounts/ss", this.getBid(), data, true);
   },
   //上傳大頭照
   apiPostUserPhoto(tgUserId, data) {
@@ -155,6 +155,38 @@ const authority = {
       this.getBid(),
       data
     );
+  },
+
+  //帳號的狀態 - type: basic/accountSetting/settings
+  apiGetAccountCharacterStatus(type, accountId) {
+    return req("get", "/" + type + "/characterStatus/" + accountId + "/a");
+  },
+  apiGetAccountCharacterStatusSearchPages(type, accountId, data) {
+    return req(
+      "post",
+      "/" + type + "/characterStatus/ss",
+      accountId,
+      data,
+      true
+    );
+  },
+  apiGetCharacterStatusOfID(type, characterStatusId) {
+    return req("get", "/" + type + "/characterStatus/" + characterStatusId);
+  },
+  apiPostCharacterStatus(type, accountId, data) {
+    return req("post", "/" + type + "/characterStatus", accountId, data);
+  },
+  apiPatchCharacterStatus(type, data) {
+    return req("patch", "/" + type + "/characterStatus", null, data);
+  },
+  apiDeleteCharacterStatus(type, characterStatusId) {
+    return req("delete", "/" + type + "/characterStatus/" + characterStatusId);
+  },
+  apiPostCharacterStatuses(type, accountId, data) {
+    data.forEach((element) => {
+      element.parentId = accountId;
+    });
+    return req("post", "/" + type + "/characterStatus/s", null, data);
   },
 };
 

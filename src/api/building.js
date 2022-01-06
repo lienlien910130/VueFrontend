@@ -12,6 +12,9 @@ const building = {
   apiGetBuildingInfo() {
     return req("get", "/index/buildings/" + this.getBid());
   }, //取得該建築物的基本資料
+  apiGetBuildingOfID(id) {
+    return req("get", "/index/buildings/" + id);
+  },
   apiPostBuilding(data) {
     return req("post", "/index/check", null, data);
   },

@@ -270,6 +270,18 @@ class MaintainManagementList extends Parent {
       });
     return data;
   }
+  static async getReminder() {
+    var data = await api.device
+      .apiGetMaintainsListRemind()
+      .then((response) => {
+        console.log(JSON.stringify(response));
+        return response.result.sort((x, y) => y.id - x.id);
+      })
+      .catch((error) => {
+        return [];
+      });
+    return data;
+  }
 }
 
 //細項

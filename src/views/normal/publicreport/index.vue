@@ -335,7 +335,15 @@ export default {
           } else {
             this.$message.error("系統錯誤");
           }
-          if (index !== "updateManySave") this.innerVisible = false;
+          if (index !== "updateManySave") {
+            this.innerVisible = false;
+          } else {
+            this.dialogData.forEach((item, index) => {
+              if (item.id == content.id) {
+                this.dialogData.splice(index, 1, content);
+              }
+            });
+          }
           this.excelVisible = false;
         } else if (index === "createfile") {
           const formData = new FormData();

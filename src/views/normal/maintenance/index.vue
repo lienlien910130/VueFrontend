@@ -175,6 +175,7 @@ export default {
         },
         { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
       ];
+      var reminder = await MaintainManagementList.getReminder();
     },
     async resetlistQueryParams() {
       this.listQueryParams = {
@@ -193,31 +194,9 @@ export default {
       await this.getMaintain();
     },
     async searchAndPage() {
-      console.log("searchAndPage");
       if (this.isTable) {
-        this.title = "maintain";
-        this.tableConfig = MaintainManagement.getTableConfig();
-        this.buttonsName = [
-          { name: "刪除", icon: "el-icon-delete", status: "delete" },
-          { name: "編輯", icon: "el-icon-edit", status: "open" },
-          { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
-        ];
         await this.getMaintainAll();
-        this.hasSearch = true;
       } else {
-        this.title = "maintainList";
-        this.hasSearch = false;
-        this.tableConfig = MaintainManagementList.getTableConfig();
-        this.buttonsName = [
-          { name: "刪除", icon: "el-icon-delete", status: "delete" },
-          { name: "編輯", icon: "el-icon-edit", status: "open" },
-          { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
-          {
-            name: "細項",
-            icon: "el-icon-folder-opened",
-            status: "openmaintain",
-          },
-        ];
         await this.getBuildingMaintainList();
       }
     },
@@ -610,10 +589,56 @@ export default {
     },
     async buttonChangeTable(value) {
       this.isTable = value;
+      this.hasSearch = value;
+      this.blockData = [];
+      if (this.isTable) {
+        this.title = "maintain";
+        this.tableConfig = MaintainManagement.getTableConfig();
+        this.buttonsName = [
+          { name: "刪除", icon: "el-icon-delete", status: "delete" },
+          { name: "編輯", icon: "el-icon-edit", status: "open" },
+          { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
+        ];
+      } else {
+        this.title = "maintainList";
+        this.tableConfig = MaintainManagementList.getTableConfig();
+        this.buttonsName = [
+          { name: "刪除", icon: "el-icon-delete", status: "delete" },
+          { name: "編輯", icon: "el-icon-edit", status: "open" },
+          { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
+          {
+            name: "細項",
+            icon: "el-icon-folder-opened",
+            status: "openmaintain",
+          },
+        ];
+      }
       await this.resetlistQueryParams();
     },
     async changeTable(value) {
       this.isTable = value;
+      if (this.isTable) {
+        this.title = "maintain";
+        this.tableConfig = MaintainManagement.getTableConfig();
+        this.buttonsName = [
+          { name: "刪除", icon: "el-icon-delete", status: "delete" },
+          { name: "編輯", icon: "el-icon-edit", status: "open" },
+          { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
+        ];
+      } else {
+        this.title = "maintainList";
+        this.tableConfig = MaintainManagementList.getTableConfig();
+        this.buttonsName = [
+          { name: "刪除", icon: "el-icon-delete", status: "delete" },
+          { name: "編輯", icon: "el-icon-edit", status: "open" },
+          { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
+          {
+            name: "細項",
+            icon: "el-icon-folder-opened",
+            status: "openmaintain",
+          },
+        ];
+      }
       await this.resetlistQueryParams();
       if (
         this.$route.query.type !== undefined &&

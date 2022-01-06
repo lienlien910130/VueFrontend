@@ -635,6 +635,17 @@ class Building extends Parent {
       });
     return data;
   }
+  static async getOfID(id) {
+    var data = await api.building
+      .apiGetBuildingOfID(id)
+      .then((response) => {
+        return new Building(response.result[0]);
+      })
+      .catch((error) => {
+        return {};
+      });
+    return data;
+  }
   static async getInfo() {
     var data = await api.building
       .apiGetBuildingInfo()

@@ -503,6 +503,9 @@ export default {
             return item.declareYear;
           case "floor":
             return item.floor;
+          case "characterStatus":
+            var label = this.changeOptionName(item.cStatus);
+            return label !== "" ? label : "狀態";
           default:
             return item.name;
         }
@@ -827,7 +830,9 @@ export default {
           break;
         default:
           var option =
-            format == "ContactUnitOptions"
+            format == "cStatusOptions"
+              ? "cs"
+              : format == "ContactUnitOptions"
               ? "bu"
               : format == "MaintainContentOptions" ||
                 format == "MaintainProcessOptions" ||
@@ -838,7 +843,7 @@ export default {
               ? "in"
               : "pu";
           routeData = this.$router.resolve({
-            path: "/membersetting/index",
+            path: "/settings/index",
             query: { type: option },
           });
           break;

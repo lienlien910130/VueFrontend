@@ -48,12 +48,12 @@
       width="80%"
       :modal="isneed"
     >
-      <qrcode-vue
+      <!-- <qrcode-vue
         v-if="previewType == 'qrcode'"
         :value="previewPath"
         level="H"
-      />
-      <img v-else :src="previewPath" class="previewImg" />
+      /> -->
+      <img :src="previewPath" class="previewImg" />
     </el-dialog>
   </div>
 </template>
@@ -66,7 +66,7 @@ import {
   excelmixin,
 } from "@/mixin/index";
 import { Files, Building, Floors, User } from "@/object/index";
-import QrcodeVue from "qrcode.vue";
+// import QrcodeVue from "qrcode.vue";
 
 export default {
   mixins: [sharemixin, blockmixin, dialogmixin, tablemixin, excelmixin],
@@ -96,9 +96,9 @@ export default {
   async created() {
     await this.initBuilding();
   },
-  components: {
-    QrcodeVue,
-  },
+  // components: {
+  //   QrcodeVue,
+  // },
   data() {
     return {
       uploadVisible: false,

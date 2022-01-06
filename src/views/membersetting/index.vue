@@ -14,9 +14,28 @@
           <el-col :xs="24" :sm="24" :md="24" :lg="18">
             <el-card>
               <el-tabs v-model="activeTab">
-                <el-tab-pane label="訂閱" name="subscription"> </el-tab-pane>
+                <el-tab-pane label="身體狀態" name="characterStatus">
+                  <Block
+                    ref="block"
+                    :list-query-params.sync="listQueryParams"
+                    v-bind="blockAttrs"
+                    v-on="blockEvent"
+                  ></Block>
+                </el-tab-pane>
+                <el-tab-pane label="訂閱" name="subscription">訂閱</el-tab-pane>
               </el-tabs>
             </el-card>
+          </el-col>
+        </el-row>
+      </el-tab-pane>
+      <el-tab-pane label="人物狀態" name="cStatusOptions">
+        <el-row :gutter="20">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12">
+            <SettingBlock
+              ref="settingBlock"
+              v-bind="settingAttrs('cStatusOptions')"
+              v-on:handleButton="handleButton"
+            ></SettingBlock>
           </el-col>
         </el-row>
       </el-tab-pane>
@@ -50,7 +69,7 @@
           <el-col :xs="24" :sm="24" :md="24" :lg="12">
             <SettingBlock
               ref="settingBlock"
-              v-bind="settingMaintainTimeOptions('MaintainTimeOptions')"
+              v-bind="settingAttrs('MaintainTimeOptions')"
               v-on:handleButton="handleButton"
             ></SettingBlock>
           </el-col>
@@ -105,24 +124,39 @@
       ref="dialogform"
       v-if="innerVisible === true"
       v-bind="dialogAttrs"
-      v-on:handleDialog="handleUser"
+      v-on:handleUser="handleUser"
+      v-on:handleDialog="handleDialog"
     ></DialogForm>
+
+    <DialogExcel
+      ref="dialogexcel"
+      v-if="excelVisible === true"
+      v-bind="excelAttrs"
+      v-on:handleDialog="handleDialog"
+    ></DialogExcel>
   </div>
 </template>
 
 <script>
 // const Vuex = require('vuex')
-import { dialogmixin } from "@/mixin/index";
+import { blockmixin, dialogmixin, excelmixin, sharemixin } from "@/mixin/index";
 import Setting from "@/object/setting";
 import { Account, Files, User } from "@/object";
+import CharacterStatus from "@/object/characterStatus";
 export default {
-  mixins: [dialogmixin],
+  mixins: [dialogmixin, blockmixin, excelmixin, sharemixin],
   components: {
     SettingBlock: () => import("./components/SettingBlock.vue"),
     UserCard: () => import("./components/UserCard.vue"),
   },
   computed: {
-    ...Vuex.mapGetters(["id"]),
+    blockEvent() {
+      return {
+        handleBlock: this.handleBlock,
+        clickPagination: this.getAccountCharacterStatus,
+        resetlistQueryParams: this.resetlistQueryParams,
+      };
+    },
   },
   data() {
     return {
@@ -131,13 +165,10 @@ export default {
       activeName: "personal",
       user: {},
       previewPath: "",
-      activeTab: "subscription",
+      activeTab: "characterStatus",
     };
   },
   async mounted() {
-    await this.getOptions();
-    await this.getUser();
-    await this.getUserPhoto(this.user.headShotFileId);
     if (this.$route.query.type == "bu") {
       this.activeName = "building";
     } else if (this.$route.query.type == "ma") {
@@ -146,30 +177,38 @@ export default {
       this.activeName = "report";
     } else if (this.$route.query.type == "pu") {
       this.activeName = "reportPublic";
+    } else if (this.$route.query.type == "cs") {
+      this.activeName = "cStatusOptions";
     }
   },
   methods: {
+    async init() {
+      this.tableConfig = CharacterStatus.getTableConfig();
+      await this.getOptions();
+      await this.getUser();
+      await this.getUserPhoto(this.user.headShotFileId);
+      await this.getAccountCharacterStatus();
+    },
+    async changeTable(value) {
+      this.isTable = value;
+    },
     settingAttrs(data) {
       return {
         title: data,
         option: this.optionsFilter(data),
-        // type: this.type,
-        // current: this.current,
       };
     },
-    settingMaintainTimeOptions(data) {
-      let array = this.options.filter(
-        (item, index) =>
-          item.classType == "MaintainTimeOptions" && item.value == "current"
-      );
-      return {
-        title: data,
-        option: this.optionsFilter(data),
-        // type: this.type,
-        // current: this.current,
-        radio: array[0] !== undefined ? array[0].id : "",
-      };
-    },
+    // settingMaintainTimeOptions(data) {
+    //   let array = this.options.filter(
+    //     (item, index) =>
+    //       item.classType == "MaintainTimeOptions" && item.value == "current"
+    //   );
+    //   return {
+    //     title: data,
+    //     option: this.optionsFilter(data),
+    //     radio: array[0] !== undefined ? array[0].id : "",
+    //   };
+    // },
     async getUser() {
       this.user = await Account.getOfID(this.id);
       console.log(this.user);
@@ -288,42 +327,180 @@ export default {
       if (index == "open") {
         this.dialogData = [];
         this.dialogData.push(content);
-        this.dialogConfig = User.getTableConfig();
+        this.dialogConfig = Account.getUserTableConfig();
+        this.dialogTitle = "account";
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "update" },
           { name: "取消", type: "info", status: "cancel" },
         ];
         this.innerVisible = true;
       } else if (index == "password") {
-      } else if (index == "update") {
-        var data = await Account.getSearchPage({
-          identityCard: "{LIKE}" + content.identityCard,
-          pageIndex: 1,
-          pageSize: 12,
-          total: 0,
+      }
+    },
+    async resetlistQueryParams() {
+      this.listQueryParams = {
+        pageIndex: 1,
+        pageSize: 12,
+        total: 0,
+      };
+      await this.getAccountCharacterStatus();
+    },
+    async getAccountCharacterStatus() {
+      var data = await CharacterStatus.getSearchPage(
+        "settings",
+        this.id,
+        this.listQueryParams
+      );
+      this.blockData = data.result;
+      this.listQueryParams.total = data.totalPageCount;
+    },
+    async handleBlock(title, index, content) {
+      //公安申報的操作
+      console.log(title, index, JSON.stringify(content));
+      this.dialogData = [];
+      this.dialogTitle = "characterStatus";
+      this.dialogButtonsName = [];
+      this.dialogConfig = this.tableConfig;
+      if (index === "open") {
+        this.dialogData.push(content);
+        this.dialogButtonsName = [
+          { name: "儲存", type: "primary", status: "update" },
+          { name: "取消", type: "info", status: "cancel" },
+        ];
+        this.dialogConfig = this.tableConfig;
+        this.innerVisible = true;
+        this.dialogStatus = "update";
+      } else if (index === "delete" || index === "deleteMany") {
+        var isDelete = false;
+        if (index === "delete") {
+          isDelete = await content.delete("settings");
+        } else {
+          var deleteArray = [];
+          content.forEach((item) => {
+            deleteArray.push(item.id);
+          });
+          isDelete = await CharacterStatus.deleteMany(
+            "settings",
+            deleteArray.toString()
+          );
+        }
+        if (isDelete) {
+          this.$message("刪除成功");
+          var length = content.length !== undefined ? content.length : 1;
+          var page = Math.ceil(
+            (this.listQueryParams.total - length) /
+              this.listQueryParams.pageSize
+          );
+          if (this.listQueryParams.pageIndex > page) {
+            this.listQueryParams.pageIndex = page;
+          }
+          await this.getAccountCharacterStatus();
+          this.$refs.block.clearSelectArray();
+        } else {
+          this.$message.error("系統錯誤");
+        }
+      } else if (index === "empty") {
+        this.dialogData.push(CharacterStatus.empty());
+        this.dialogButtonsName = [
+          { name: "儲存", type: "primary", status: "create" },
+          { name: "取消", type: "info", status: "cancel" },
+        ];
+        this.dialogConfig = this.tableConfig;
+        this.innerVisible = true;
+        this.dialogStatus = "create";
+      } else if (index === "exportExcel") {
+        this.exportExcelData = this.blockData;
+        this.excelVisible = true;
+        this.excelType = "exportExcel";
+      } else if (index === "uploadExcel") {
+        this.excelVisible = true;
+        this.excelType = "uploadExcel";
+      } else if (index === "updateMany") {
+        this.dialogStatus = "updateMany";
+        content.forEach((item) => {
+          var obj = _.cloneDeep(item);
+          this.dialogData.push(obj);
         });
-        var canSave =
-          data.totalPageCount == 0
-            ? true
-            : data.totalPageCount !== 0 && data.result[0].getID() == content.id
-            ? true
-            : false;
-        if (canSave) {
-          var result = await content.updateP();
-          if (Object.keys(result).length !== 0) {
-            this.$socket.sendMsg("account", index, result);
-            this.$message("更新成功");
-            this.$store.dispatch("building/setCommittee");
-            await this.getUser();
-            this.innerVisible = false;
+        this.dialogButtonsName = [
+          { name: "儲存", type: "primary", status: "updateManySave" },
+          { name: "取消", type: "info", status: "cancel" },
+        ];
+        this.innerVisible = true;
+      }
+    },
+    async handleDialog(title, index, content) {
+      //Dialog相關操作
+      console.log(title, index, JSON.stringify(content));
+      if (
+        index === "update" ||
+        index === "create" ||
+        index === "uploadExcelSave" ||
+        index === "updateManySave" ||
+        index === ""
+      ) {
+        if (title === "account") {
+          //更新&修改密碼
+          var data = await Account.getSearchPage({
+            identityCard: "{LIKE}" + content.identityCard,
+            pageIndex: 1,
+            pageSize: 12,
+            total: 0,
+          });
+          var canSave =
+            data.totalPageCount == 0
+              ? true
+              : data.totalPageCount !== 0 &&
+                data.result[0].getID() == content.id
+              ? true
+              : false;
+          if (canSave) {
+            var result = await content.updateP();
+            if (Object.keys(result).length !== 0) {
+              this.$socket.sendMsg("account", index, result);
+              this.$message("更新成功");
+              this.$store.dispatch("building/setCommittee");
+              await this.getUser();
+              this.innerVisible = false;
+            } else {
+              this.$message.error("該姓名已存在，請重新輸入");
+            }
           } else {
-            this.$message.error("該姓名已存在，請重新輸入");
+            this.$message.error("該身份證已存在，請重新輸入");
           }
         } else {
-          this.$message.error("該身份證已存在，請重新輸入");
+          var result =
+            index === "update" || index === "updateManySave"
+              ? await content.update("settings")
+              : index === "create"
+              ? await content.create("settings", this.id)
+              : await CharacterStatus.postMany("settings", this.id, content);
+          var condition =
+            index !== "uploadExcelSave"
+              ? Object.keys(result).length !== 0
+              : result.result.length !== 0;
+          if (condition) {
+            index === "update" || index === "updateManySave"
+              ? this.$message("更新成功")
+              : this.$message("新增成功");
+            await this.getAccountCharacterStatus();
+          } else {
+            this.$message.error("系統錯誤");
+          }
+          if (index !== "updateManySave") {
+            this.innerVisible = false;
+          } else {
+            this.dialogData.forEach((item, index) => {
+              if (item.id == content.id) {
+                this.dialogData.splice(index, 1, content);
+              }
+            });
+          }
+          this.excelVisible = false;
         }
       } else {
         this.innerVisible = false;
+        this.excelVisible = false;
+        this.$refs.block.clearSelectArray();
       }
     },
   },

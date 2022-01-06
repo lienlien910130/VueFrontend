@@ -167,21 +167,25 @@ export default {
     },
     changeShowFormatString() {
       return function (format, row, prop) {
-        switch (format) {
-          case "floorSelect":
-            return this.changeFloorName(row[prop]);
-          case "valueType":
-            return row.getValueTypeName();
-          case "fullType":
-            return row.getType();
-          case "addressStr":
-            return row.getAddressStr();
-          case "classLeaderSelect":
-            return this.changeAccountName(row[prop]);
-          case "certificateNumber":
-            return row.getCertificateNumber();
-          case "actionSelect":
-            return row.getActionSelect();
+        if (row !== undefined && row !== null) {
+          switch (format) {
+            case "floorSelect":
+              return this.changeFloorName(row[prop]);
+            case "valueType":
+              return row.getValueTypeName();
+            case "fullType":
+              return row.getType();
+            case "addressStr":
+              return row.getAddressStr();
+            case "classLeaderSelect":
+              return this.changeAccountName(row[prop]);
+            case "certificateNumber":
+              return row.getCertificateNumber();
+            case "actionSelect":
+              return row.getActionSelect();
+          }
+        } else {
+          return "";
         }
       };
     },
@@ -208,7 +212,7 @@ export default {
           this.$store.dispatch("building/setaccounts");
           this.$store.dispatch("record/saveAccountRecord", 1);
         }
-        if (value !== null) {
+        if (value !== null && value !== undefined) {
           let _array = this.buildingaccount.filter(
             (item, index) => item.id == value
           );
@@ -220,7 +224,7 @@ export default {
     changeContainUnit() {
       //廠商名稱
       return function (val) {
-        if (val !== null) {
+        if (val !== null && val !== undefined) {
           return val
             .map((item) => {
               return item.getName();
@@ -233,7 +237,7 @@ export default {
     changeUserName() {
       //住戶名稱
       return function (val) {
-        if (val !== null) {
+        if (val !== null && val !== undefined) {
           return val
             .map((item) => {
               return item.getName();
@@ -247,6 +251,7 @@ export default {
       return function (val) {
         if (
           val !== null &&
+          val !== undefined &&
           typeof val !== "string" &&
           typeof val !== "undefined"
         ) {
@@ -590,7 +595,10 @@ export default {
             return "合格申報";
           case "governmentApprovalBoolean":
           case "selfDeclaredBoolean":
+          case "nowHaveBoolean":
             return "是";
+          case "sexBoolean":
+            return "女";
         }
       } else {
         switch (format) {
@@ -612,7 +620,13 @@ export default {
             return "缺失申報";
           case "governmentApprovalBoolean":
           case "selfDeclaredBoolean":
+          case "nowHaveBoolean":
             return "否";
+          case "sexBoolean":
+            if (val == false) {
+              return "男";
+            }
+            return "";
         }
       }
     },
@@ -729,7 +743,8 @@ export default {
             } else if (
               item == "birthday" ||
               item == "dateOfPurchase" ||
-              item == "dateOfWarranty"
+              item == "dateOfWarranty" ||
+              item == "useLicenseDate"
             ) {
               value = moment(data[item]).format("YYYY-MM-DD");
             } else {
@@ -924,74 +939,9 @@ export default {
       }
     },
     async changeRealData(val) {
+      console.log(val);
       var constr = val.constructor;
       var config = val.constructor.getTableConfig();
-      var list = [];
-      // switch (val.constructor) {
-      //   case Account:
-      //     config = Account.getTableConfig();
-      //     // if (this.account_record == 0) {
-      //     //   await this.$store.dispatch("building/setaccounts");
-      //     //   this.$store.dispatch("record/saveAccountRecord", 1);
-      //     // }
-      //     // list = this.buildingaccount.map((v) => {
-      //     //   this.$set(v, "id", v.id);
-      //     //   this.$set(v, "label", v.name);
-      //     //   this.$set(v, "value", v.id);
-      //     //   return v;
-      //     // });
-      //     if (this.title == "committee" || this.title == "floorOfHouse") {
-      //       config = User.getTableConfig();
-      //     }
-      //     break;
-      //   case DeviceType:
-      //     config = DeviceType.getTableConfig();
-      //     break;
-      //   case Device:
-      //     config = Device.getTableConfig();
-      //     // if (this.device_record == 0) {
-      //     //   await this.$store.dispatch("building/setDevice");
-      //     //   this.$store.dispatch("record/saveDeviceRecord", 1);
-      //     // }
-      //     // list = this.buildingdevices;
-      //     break;
-      //   case Contactunit:
-      //     config = Contactunit.getTableConfig();
-      //     break;
-      //   case UsageOfFloor:
-      //     config = UsageOfFloor.getTableConfig();
-      //     if (this.floorOfHouse_record == 0) {
-      //       await this.$store.dispatch("building/setFloorOfHouse");
-      //       this.$store.dispatch("record/saveFloorOfHouseRecord", 1);
-      //     }
-      //     list = this.buildingfloorOfHouse.map((v) => {
-      //       this.$set(v, "id", v.id);
-      //       this.$set(v, "label", v.houseNumber);
-      //       this.$set(v, "value", v.id);
-      //       return v;
-      //     });
-      //     break;
-      //   case Role:
-      //     config = Role.getTableConfig();
-      //     break;
-      //   case Floors:
-      //     config = Floors.getTableConfig();
-      //     break;
-      //   case Building:
-      //     config = Building.getTableConfig();
-      //     break;
-      //   case InspectionLacks:
-      //     config = InspectionLacks.getTableConfig();
-      //     break;
-      //   case Committee:
-      //     config = Committee.getTableConfig();
-      //     if (this.committee_record == 0) {
-      //       await this.$store.dispatch("building/setCommittee");
-      //       this.$store.dispatch("record/saveCommitteeRecord", 1);
-      //     }
-      //     list = this.buildingcommittee;
-      //     break;
-      // }
       return {
         constr: constr,
         config: config,

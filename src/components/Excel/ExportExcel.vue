@@ -140,31 +140,6 @@ export default {
           } else {
             return v[j.prop];
           }
-          // if (j.format == "YYYY-MM-DD" || j.format == "YYYY") {
-          //   if (v[j.prop] !== null && v[j.prop] !== undefined) {
-          //     return moment(v[j.prop]).format(j.format);
-          //   }
-          // } else if (j.format == "fullType") {
-          //   var obj = changeDefaultFullType(v[j.prop]);
-          //   return obj.typelabel;
-          // } else if (typeof v[j.prop] == "object") {
-          //   if (v[j.prop] !== null) {
-          //     return v[j.prop].map((item) => item.getName());
-          //   }
-          // } else if (
-          //   j.format == "LackStatusOptions" ||
-          //   j.format == "MaintainProcessOptions" ||
-          //   j.format == "MaintainContentOptions" ||
-          //   j.format == "DeviceStatusOptions" ||
-          //   j.format == "ContactUnitOptions"
-          // ) {
-          //   let _array = this.buildingoptions.filter(
-          //     (item, index) => item.id == v[j.prop]
-          //   );
-          //   return _array.length !== 0 ? _array[0].textName : "";
-          // } else {
-          //   return v[j.prop];
-          // }
         })
       );
     },

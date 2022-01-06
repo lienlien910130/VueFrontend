@@ -79,7 +79,7 @@
             <!-- <router-link v-if="id !== undefined" to="/personal">
               <el-dropdown-item> 個人資料 </el-dropdown-item>
             </router-link> -->
-            <router-link v-if="buildingid !== undefined" to="/membersetting">
+            <router-link v-if="buildingid !== undefined" to="/settings">
               <el-dropdown-item> 設定 </el-dropdown-item>
             </router-link>
             <router-link v-if="buildingid !== undefined" to="/building/files">

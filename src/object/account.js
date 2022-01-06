@@ -1,6 +1,7 @@
 import Parent from "./parent";
 import api from "@/api";
 import { PhysicalInfo, Building, Role } from ".";
+import CharacterStatus from "./characterStatus";
 
 class Account extends Parent {
   constructor(data) {
@@ -23,9 +24,11 @@ class Account extends Parent {
       headShotFileId,
       verifyCellPhone,
       verifyEmail,
+      sex,
       linkRoles,
       linkBuildings,
       linkPhysicalInfos,
+      linkCharacterStatus,
     } = data;
     var roles =
       linkRoles !== undefined
@@ -45,9 +48,16 @@ class Account extends Parent {
             return new PhysicalInfo(item);
           })
         : [];
+    var characterStatus =
+      linkCharacterStatus !== undefined
+        ? linkCharacterStatus.map((item) => {
+            return new CharacterStatus(item);
+          })
+        : [];
     this.account = account;
     this.password = password;
     this.name = name;
+    this.sex = sex;
     this.identityCard = identityCard;
     this.birthday = birthday;
     this.callNumber = callNumber;
@@ -65,6 +75,7 @@ class Account extends Parent {
     this.linkRoles = roles;
     this.linkBuildings = buildings;
     this.linkPhysicalInfos = physicalInfos;
+    this.linkCharacterStatus = characterStatus;
   }
   clone(data) {
     return new Account(data);
@@ -139,6 +150,7 @@ class Account extends Parent {
       account: "",
       password: "",
       name: "",
+      sex: null,
       identityCard: "",
       birthday: null,
       callNumber: "",
@@ -199,7 +211,7 @@ class Account extends Parent {
         prop: "password",
         mandatory: true,
         message: "請輸入密碼",
-        maxlength: "15",
+        maxlength: "100",
         // pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
         // errorMsg: "請輸入至少8個字元，含大小寫字母、至少1個數字",
         isPattern: false,
@@ -207,7 +219,7 @@ class Account extends Parent {
         isSearch: false,
         placeholder: "請輸入密碼",
         isAssociate: false,
-        isEdit: true,
+        isEdit: false,
         isUpload: true,
         isExport: false,
         isBlock: false,
@@ -226,6 +238,24 @@ class Account extends Parent {
         isUpload: true,
         isExport: true,
         isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "性別",
+        prop: "sex",
+        format: "sexBoolean",
+        mandatory: true,
+        message: "請輸入性別",
+        type: "boolean",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "boolean",
         selectFilter: false,
       },
       {
@@ -248,7 +278,7 @@ class Account extends Parent {
         selectFilter: false,
       },
       {
-        label: "生日",
+        label: "年齡",
         prop: "birthday",
         format: "YYYY-MM-DD",
         mandatory: false,
@@ -301,7 +331,7 @@ class Account extends Parent {
         prop: "emergencyNumber",
         mandatory: false,
         maxlength: "15",
-        isHidden: false,
+        isHidden: true,
         isSearch: true,
         placeholder: "請輸入緊急電話",
         isAssociate: false,
@@ -405,7 +435,7 @@ class Account extends Parent {
         message: "請選擇是否允許刪除",
         type: "boolean",
         typemessage: "",
-        isHidden: false,
+        isHidden: true,
         isSearch: false,
         isAssociate: false,
         isEdit: true,
@@ -471,6 +501,24 @@ class Account extends Parent {
         selectFilter: false,
       },
       {
+        label: "性別",
+        prop: "sex",
+        format: "sexBoolean",
+        mandatory: true,
+        message: "請輸入性別",
+        type: "boolean",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "boolean",
+        selectFilter: false,
+      },
+      {
         label: "身份證",
         prop: "identityCard",
         mandatory: true,
@@ -490,7 +538,7 @@ class Account extends Parent {
         selectFilter: false,
       },
       {
-        label: "生日",
+        label: "年齡",
         prop: "birthday",
         format: "YYYY-MM-DD",
         mandatory: false,

@@ -284,8 +284,11 @@ export default {
             : index === "create"
             ? await content.create()
             : await Device.postMany(content);
-        // var condition = index !== 'uploadExcelSave' ? Object.keys(result).length !== 0 : result.result.length !== 0
-        if (Object.keys(result).length !== 0) {
+        var condition =
+          index !== "uploadExcelSave"
+            ? Object.keys(result).length !== 0
+            : result.result.length !== 0;
+        if (condition) {
           index === "update" || index === "updateManySave"
             ? this.$message("更新成功")
             : this.$message("新增成功");

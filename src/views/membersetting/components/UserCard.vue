@@ -38,6 +38,16 @@
       </div>
       <div class="user-bio-section">
         <div class="user-bio-section-header">
+          <i class="el-icon-date" /><span>性別</span>
+        </div>
+        <div class="user-bio-section-body">
+          <div class="text-muted">
+            {{ sex }}
+          </div>
+        </div>
+      </div>
+      <div class="user-bio-section">
+        <div class="user-bio-section-header">
           <i class="el-icon-date" /><span>生日</span>
         </div>
         <div class="user-bio-section-body">
@@ -58,7 +68,7 @@
         </div>
         <div class="user-bio-section-body">
           <div class="text-muted">
-            {{ user.email }}
+            {{ user.email !== undefined ? user.email : "尚未設定" }}
           </div>
         </div>
       </div>
@@ -69,7 +79,7 @@
         </div>
         <div class="user-bio-section-body">
           <div class="text-muted">
-            {{ user.callNumber }}
+            {{ user.callNumber !== undefined ? user.callNumber : "尚未設定" }}
           </div>
         </div>
       </div>
@@ -86,7 +96,11 @@
         </div>
         <div class="user-bio-section-body">
           <div class="text-muted">
-            {{ user.cellPhoneNumber }}
+            {{
+              user.cellPhoneNumber !== undefined
+                ? user.cellPhoneNumber
+                : "尚未設定"
+            }}
           </div>
         </div>
       </div>
@@ -96,7 +110,11 @@
         </div>
         <div class="user-bio-section-body">
           <div class="text-muted">
-            {{ user.emergencyNumber }}
+            {{
+              user.emergencyNumber !== undefined
+                ? user.emergencyNumber
+                : "尚未設定"
+            }}
           </div>
         </div>
       </div>
@@ -106,7 +124,9 @@
         </div>
         <div class="user-bio-section-body">
           <div class="text-muted">
-            {{ user.usageOfFloor }}
+            {{
+              user.usageOfFloor !== undefined ? user.usageOfFloor : "尚未設定"
+            }}
           </div>
         </div>
       </div>
@@ -140,13 +160,22 @@ export default {
       if (this.user.linkRoles) {
         return this.user.getRolesName();
       }
-      return "";
+      return "尚未設定";
     },
     birthday() {
       if (this.user.birthday) {
         return moment(this.user.birthday).format("YYYY-MM-DD");
       }
-      return "";
+      return "尚未設定";
+    },
+    sex() {
+      if (this.user.sex) {
+        return "女";
+      } else if (this.user.sex == false) {
+        return "男";
+      } else {
+        return "尚未設定";
+      }
     },
   },
   props: {

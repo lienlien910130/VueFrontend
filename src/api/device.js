@@ -179,6 +179,10 @@ const device = {
   //點位設定-多筆更新
   // apiPatchDevicesAddresses(data){ return req('patch','/deviceAddressManagement/s',data) },
 
+  //維護保養提醒
+  apiGetMaintainsListRemind() {
+    return req("get", "/maintainListManagement/deviceMaintainReminder");
+  },
   //維護保養大項
   apiGetBuildingMaintainsList() {
     return req("get", "/maintainListManagement/" + this.getBid() + "/a");

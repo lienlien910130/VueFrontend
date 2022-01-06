@@ -32,9 +32,6 @@ const setting = {
   apiDeleteOption(optionId) {
     return req("delete", "/settings/" + optionId);
   },
-  //查詢是否有重複值
-  // apiSearchOption(data){ return req('post','/settings/'+this.getBid()+'/ss',data)},
-  // apiCheckOption(data){ return req('post','/settings/'+this.getBid()+'/check',data)},
 };
 
 export default setting;

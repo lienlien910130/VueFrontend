@@ -243,6 +243,8 @@ export default {
   computed: {
     titleToch() {
       switch (this.title) {
+        case "cStatusOptions":
+          return "人物狀態";
         case "ContactUnitOptions":
           return "廠商類別";
         case "MaintainContentOptions":
