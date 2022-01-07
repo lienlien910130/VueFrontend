@@ -8,9 +8,24 @@ import { Floors, SampleNodeList } from ".";
 class SelfDefenseFireMarshalling extends Parent {
   constructor(data) {
     super(data);
-    const { name, classLeaderId } = data;
+    const { name, classLeaderId, linkSelfDefenseFireMarshalling, linkFloors } =
+      data;
+    var floor =
+      linkFloors !== undefined
+        ? linkFloors.map((item) => {
+            return new Floors(item);
+          })
+        : [];
+    var selfDefenseFireMarshallingMgmt =
+      linkSelfDefenseFireMarshalling !== undefined
+        ? linkSelfDefenseFireMarshalling.map((item) => {
+            return new SelfDefenseFireMarshallingMgmt(item);
+          })
+        : [];
     this.name = name;
     this.classLeaderId = classLeaderId;
+    this.linkFloors = floor;
+    this.linkSelfDefenseFireMarshalling = selfDefenseFireMarshallingMgmt;
   }
   clone(data) {
     return new SelfDefenseFireMarshalling(data);
@@ -75,6 +90,8 @@ class SelfDefenseFireMarshalling extends Parent {
       id: "",
       name: "",
       classLeaderId: "",
+      linkFloors: [],
+      linkSelfDefenseFireMarshalling: [],
     });
   }
   static getTableConfig() {
@@ -116,6 +133,7 @@ class SelfDefenseFireMarshalling extends Parent {
     var data = await api.selfDefenseFireMarshalling
       .apiGetFireMarshallingSearchPages(data)
       .then((response) => {
+        console.log(JSON.stringify(response));
         response.result = response.result.map((item) => {
           return new SelfDefenseFireMarshalling(item);
         });

@@ -743,6 +743,17 @@ class Account extends Parent {
       });
     return data;
   }
+  static async updatePassword(data) {
+    var data = await api.authority
+      .apiPatchAccountAuthority(data)
+      .then(async (response) => {
+        return true;
+      })
+      .catch((error) => {
+        return false;
+      });
+    return data;
+  }
 }
 
 export default Account;

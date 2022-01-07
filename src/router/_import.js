@@ -28,7 +28,7 @@ const map = {
   accountSetting: () => import("@/views/authority/users/index.vue"),
 
   selfDefenseFireMarshalling: () =>
-    import("@/views/emergency/marshalling/index.vue"),
+    import("@/views/emergency/marshalling/people.vue"),
   process: () => import("@/views/emergency/process/index.vue"),
   CSampleNodeListMgmt: () => import("@/views/emergency/instruction/index.vue"),
 };

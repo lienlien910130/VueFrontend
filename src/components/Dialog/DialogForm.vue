@@ -314,20 +314,6 @@
                 maxlength="100"
               />
             </span>
-            <!-- 權限設定 -->
-            <!-- <el-select
-              v-else-if="item.formType == 'actionSelect'"
-              v-model="temp[item.prop]"
-              placeholder="請選擇"
-              style="width: 100%"
-            >
-              <el-option label="查詢" key="1" value="query"></el-option>
-              <el-option label="新增" key="2" value="add"></el-option>
-              <el-option label="刪除" key="3" value="delete"></el-option>
-              <el-option label="修改" key="4" value="update"></el-option>
-              <el-option label="匯入檔案" key="5" value="export"></el-option>
-              <el-option label="匯出檔案" key="6" value="upload"></el-option>
-            </el-select> -->
             <!-- Boolean:啟用禁用 允許/禁止刪除 配合 改善 -->
             <el-select
               v-else-if="item.formType == 'boolean'"
@@ -1110,11 +1096,9 @@ export default {
     },
     //頁籤
     async handleTabClick(tab, event) {
-      console.log(tab);
       var data = this.dialogData.filter(
         (element, index) => element.id == tab.name
       )[0];
-      console.log(data);
       this.temp = data.clone(data);
       await this.setDataForm(this.temp);
     },

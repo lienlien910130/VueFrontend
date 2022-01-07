@@ -49,7 +49,11 @@ export default {
   watch: {
     selectData: {
       handler: async function () {
-        if (this.title == "Building" || this.title == "GraphicFloor") {
+        if (
+          this.title == "Building" ||
+          this.title == "GraphicFloor" ||
+          this.title == "peopleList"
+        ) {
           if (this.selectData.length) {
             this.defaultvalue = this.selectData[0].getID();
             this.currentSel(this.defaultvalue);

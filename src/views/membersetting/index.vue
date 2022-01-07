@@ -134,6 +134,31 @@
       v-bind="excelAttrs"
       v-on:handleDialog="handleDialog"
     ></DialogExcel>
+
+    <el-dialog title="更改密碼" :visible.sync="dialogFormVisible" center>
+      <el-form :model="ruleForm" :rules="rules" ref="ruleForm">
+        <el-form-item label="密碼" prop="password">
+          <el-input
+            v-model="ruleForm.password"
+            autocomplete="off"
+            show-password
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="確認密碼" prop="password2">
+          <el-input
+            v-model="ruleForm.password2"
+            autocomplete="off"
+            show-password
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="resetForm('ruleForm')">取消</el-button>
+        <el-button type="primary" @click="submitForm('ruleForm')"
+          >確認</el-button
+        >
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -159,6 +184,25 @@ export default {
     },
   },
   data() {
+    var validatePass = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("請輸入密碼"));
+      } else {
+        if (this.ruleForm.password2 !== "") {
+          this.$refs.ruleForm.validateField("password2");
+        }
+        callback();
+      }
+    };
+    var validatePass2 = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("請再次輸入密碼"));
+      } else if (value !== this.ruleForm.password) {
+        callback(new Error("再次輸入不一致，請重新輸入"));
+      } else {
+        callback();
+      }
+    };
     return {
       options: [],
       temp: [],
@@ -166,6 +210,15 @@ export default {
       user: {},
       previewPath: "",
       activeTab: "characterStatus",
+      dialogFormVisible: false,
+      ruleForm: {
+        password: "",
+        password2: "",
+      },
+      rules: {
+        password: [{ validator: validatePass, trigger: "blur" }],
+        password2: [{ validator: validatePass2, trigger: "blur" }],
+      },
     };
   },
   async mounted() {
@@ -335,6 +388,7 @@ export default {
         ];
         this.innerVisible = true;
       } else if (index == "password") {
+        this.dialogFormVisible = true;
       }
     },
     async resetlistQueryParams() {
@@ -439,7 +493,7 @@ export default {
         index === ""
       ) {
         if (title === "account") {
-          //更新&修改密碼
+          //更新
           var data = await Account.getSearchPage({
             identityCard: "{LIKE}" + content.identityCard,
             pageIndex: 1,
@@ -502,6 +556,26 @@ export default {
         this.excelVisible = false;
         this.$refs.block.clearSelectArray();
       }
+    },
+    submitForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          var temp = { id: this.id, password: this.ruleForm.password };
+          var isOk = await Account.updatePassword(temp);
+          if (isOk) {
+            this.$message("更新成功");
+            this.resetForm("ruleForm");
+          } else {
+            this.$message.error("更新失敗");
+          }
+        } else {
+          return false;
+        }
+      });
+    },
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
+      this.dialogFormVisible = false;
     },
   },
 };
