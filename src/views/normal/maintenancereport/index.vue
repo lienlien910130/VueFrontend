@@ -87,7 +87,15 @@ import {
   tablemixin,
   excelmixin,
 } from "@/mixin/index";
-import { Files, Inspection, InspectionLacks } from "@/object/index";
+import {
+  Contactunit,
+  Device,
+  Files,
+  Inspection,
+  InspectionLacks,
+  MaintainManagement,
+  MaintainManagementList,
+} from "@/object/index";
 import moment from "moment";
 
 export default {
@@ -112,6 +120,7 @@ export default {
         category: "",
         checkDate: "",
       },
+      updateMainmgmtList: [],
     };
   },
   computed: {
@@ -298,6 +307,21 @@ export default {
       } else if (index === "openlacks") {
         this.inspection = content;
         this.tablelistQueryParams = { pageIndex: 1, pageSize: 10, total: 0 };
+        this.tableheaderButtonsName = [
+          { name: "多筆刪除", icon: "el-icon-delete", status: "deleteMany" },
+          { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
+          {
+            name: "新增資料",
+            icon: "el-icon-circle-plus-outline",
+            status: "empty",
+          },
+          { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
+          { name: "匯入檔案", icon: "el-icon-upload2", status: "uploadExcel" },
+        ];
+        this.tablebuttonsName = [
+          { name: "刪除", icon: "el-icon-delete", status: "delete" },
+          { name: "編輯", icon: "el-icon-edit", status: "open" },
+        ];
         await this.getInspectionLack();
         this.tableVisible = true;
       } else if (index === "exportExcel") {
@@ -395,9 +419,25 @@ export default {
             parseInt(content),
             index === "changeAgain" ? true : false
           );
-          if (isOk) {
+          if (isOk.length !== 0) {
             this.$message("更新成功");
             this.lackFileId = content;
+            this.tableheaderButtonsName = [
+              {
+                name: "多筆更新",
+                icon: "el-icon-edit",
+                status: "updateManyMaintain",
+              },
+            ];
+            this.tablebuttonsName = [];
+            this.tablelistQueryParams = {
+              pageIndex: 1,
+              pageSize: isOk.length,
+              total: isOk.length,
+            };
+            this.dialogtableConfig = MaintainManagement.getTableConfig();
+            this.tableData = isOk;
+            this.tableVisible = true;
           } else {
             this.$message.error("檔案格式有誤，請重新設定");
           }
@@ -410,6 +450,30 @@ export default {
           this.excelVisible = false;
           this.uploadVisible = false;
           this.$refs.block.clearSelectArray();
+        }
+      } else if (title === "InspectionMaintain") {
+        if (index === "updateManyMaintain") {
+          var result = await Inspection.patchMaintain(content);
+          if (Object.keys(result).length !== 0) {
+            this.$message("更新成功");
+            this.dialogData.forEach((item, index) => {
+              if (item.id == content.id) {
+                this.dialogData.splice(index, 1, content);
+              }
+            });
+            this.tableData.forEach((item, index) => {
+              if (item.id == content.id) {
+                Object.keys(content).forEach((prop) => {
+                  item[prop] = content[prop];
+                });
+              }
+            });
+          }
+        } else {
+          this.innerVisible = false;
+          this.$nextTick(() => {
+            this.$refs.dialogtable.clearSelectArray();
+          });
         }
       } else {
         if (index === "updateLackManySave") {
@@ -547,12 +611,44 @@ export default {
           { name: "取消", type: "info", status: "cancel" },
         ];
         this.innerVisible = true;
+      } else if (index === "updateManyMaintain") {
+        this.dialogTitle = "InspectionMaintain";
+        this.dialogButtonsName = [
+          { name: "儲存", type: "primary", status: "updateManyMaintain" },
+          { name: "返回", type: "info", status: "cancel" },
+        ];
+        // this.dialogSelect = new Array(
+        //   await MaintainManagementList.getAllLack()
+        // );
+        this.dialogConfig = MaintainManagement.getTableConfig();
+        this.dialogConfig[6].isEdit = false;
+        this.dialogStatus = "updateMany";
+        content.forEach((item) => {
+          var obj = _.cloneDeep(item);
+          this.dialogData.push(obj);
+        });
+        //this.updateMainmgmtList = content;
+        this.innerVisible = true;
       } else {
         if (this.isUpdate) {
           await this.getBuildingMaintenanceReport();
           this.isUpdate = false;
         }
-        this.tableVisible = false;
+        if (this.dialogTitle === "InspectionMaintain") {
+          this.$confirm("關閉後若要修改請至維護保養，請問是否要關閉?", "提示", {
+            confirmButtonText: "確認",
+            cancelButtonText: "取消",
+            type: "warning",
+          })
+            .then(() => {
+              this.tableVisible = false;
+            })
+            .catch(() => {
+              return false;
+            });
+        } else {
+          this.tableVisible = false;
+        }
         this.lacksShow = false;
         this.lacksQueryParams = { pageIndex: 1, pageSize: 10, total: 0 };
       }

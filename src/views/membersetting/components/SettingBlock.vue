@@ -164,6 +164,7 @@
                   @click="deleteData(item.id)"
                 ></i>
                 <i
+                  v-if="!item.systemUse"
                   class="el-icon-edit"
                   style="float: right; font-size: 25px"
                   @click="changeEdit(item)"
@@ -392,6 +393,7 @@ export default {
         type: "warning",
       }).then(() => {
         this.$emit("handleButton", this.title, "delete", id);
+        this.onCancel();
       });
     },
     open() {

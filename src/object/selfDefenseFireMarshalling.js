@@ -258,11 +258,11 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
   clone(data) {
     return new SelfDefenseFireMarshallingMgmt(data);
   }
-  async update(selfDefenseFireMarshallingId) {
+  async update() {
     var temp = JSON.parse(JSON.stringify(this));
     temp.name = "{Check}" + temp.name;
     var data = await api.selfDefenseFireMarshalling
-      .apiPutFireMarshallingMgmt(selfDefenseFireMarshallingId, temp)
+      .apiPutFireMarshallingMgmt(temp)
       .then(async (response) => {
         return new SelfDefenseFireMarshallingMgmt(response.result);
       })
@@ -271,11 +271,11 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
       });
     return data;
   }
-  async create(selfDefenseFireMarshallingId) {
+  async create() {
     var temp = JSON.parse(JSON.stringify(this));
     temp.name = "{Check}" + temp.name;
     var data = await api.selfDefenseFireMarshalling
-      .apiPostFireMarshallingMgmt(selfDefenseFireMarshallingId, temp)
+      .apiPostFireMarshallingMgmt(temp)
       .then((response) => {
         return new SelfDefenseFireMarshallingMgmt(response.result);
       })
@@ -450,6 +450,20 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
           return new SelfDefenseFireMarshallingMgmt(item);
         });
         return response;
+      })
+      .catch((error) => {
+        return [];
+      });
+    return data;
+  }
+  static async getOfFloor(floorId) {
+    var data = await api.selfDefenseFireMarshalling
+      .apiGetMarshallingMgmtOfFloor(floorId)
+      .then((response) => {
+        response.result = response.result.map((item) => {
+          return new SelfDefenseFireMarshallingMgmt(item);
+        });
+        return response.result;
       })
       .catch((error) => {
         return [];

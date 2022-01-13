@@ -322,7 +322,8 @@ export default {
           index == "InspectionTypeOfTime" || index == "PublicSafeTypeOfTime"
             ? content.value.join("-")
             : index == "InspectionTimeOptions" ||
-              index == "PublicSafeTimeOptions"
+              index == "PublicSafeTimeOptions" ||
+              index == "MaintainTimeOptions"
             ? content.value
             : null,
         sort: 99,

@@ -1,7 +1,12 @@
 import Parent from "./parent";
 import api from "@/api";
 import Files from "./files";
-import { UsageOfFloor, Contactunit } from ".";
+import {
+  UsageOfFloor,
+  Contactunit,
+  MaintainManagement,
+  MaintainManagementList,
+} from ".";
 const moment = require("moment");
 
 class Inspection extends Parent {
@@ -147,12 +152,15 @@ class Inspection extends Parent {
     var data = await api.report
       .apiPostInspectionLackFiles(autoCreateMaintain, this.id, fileId, cover)
       .then((response) => {
-        console.log(response);
-        var result = response.result !== undefined ? true : false;
-        return result;
+        console.log(JSON.stringify(response));
+        var temp = [];
+        response.result.linkMaintains.forEach((element) => {
+          temp.push(new MaintainManagement(element));
+        });
+        return temp;
       })
       .catch((error) => {
-        return false;
+        return [];
       });
     return data;
   }
@@ -541,6 +549,17 @@ class Inspection extends Parent {
       .apiGetInspectionRemind()
       .then((response) => {
         return response.result;
+      })
+      .catch((error) => {
+        return {};
+      });
+    return data;
+  }
+  static async patchMaintain(data) {
+    var data = await api.report
+      .apiPatchMaintainManagementOfInspection(new Array(data))
+      .then((response) => {
+        return new MaintainManagement(response.result[0]);
       })
       .catch((error) => {
         return {};

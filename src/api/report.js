@@ -40,6 +40,10 @@ const report = {
     return req("get", "/index/" + usageOfFloorId + "/inspectionReminder");
   },
 
+  //檢修申報-更新維保細項
+  apiPatchMaintainManagementOfInspection(data) {
+    return req("patch", "/reportInspection/maintainManagement/s", null, data);
+  },
   //檢修申報缺失
   apiGetInspectionLackOfID(id) {
     return req("get", "index/reportInspection/InspectionLack/" + id);

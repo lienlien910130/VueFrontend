@@ -12,14 +12,35 @@
             )
           }}
         </h2>
-        <h2 class="count">共 {{ account.length }} 人</h2>
+        <h2 class="count">
+          共 {{ account.length }} 人
+          <i class="el-icon-circle-plus-outline" @click="'emptyUser', item" />
+          <i
+            class="el-icon-edit"
+            @click="handleOpenUser('open', marshallingClass)"
+          /><i
+            class="el-icon-delete"
+            @click="handleOpenUser('delete', marshallingClass)"
+          />
+        </h2>
       </div>
     </el-col>
     <el-col :xs="24" :sm="24" :md="24" :lg="20" class="col">
       <div class="divRight">
         <template v-for="(item, index) in account">
           <div :key="index" class="accountInfo">
-            <img :src="item.url" class="previewImg" />
+            <img
+              v-if="item.url !== ''"
+              :src="item.url"
+              class="previewImg"
+              @click="handleOpenUser('openUser', item)"
+            />
+            <svg-icon
+              v-else
+              icon-class="user"
+              class="previewImg"
+              @click="handleOpenUser('openUser', item)"
+            />
             <h3 class="name">{{ item.name }}</h3>
           </div>
         </template>
@@ -88,24 +109,54 @@ export default {
   methods: {
     //取得大頭貼
     async getUserPhoto(headShotFileId) {
-      var file = await Files.getOfID(headShotFileId);
-      var filename = file.getExtName();
-      var fileType = filename == "png" ? "image/png" : "image/jpeg";
-      var data = await Files.getImage(headShotFileId);
-      let url = URL.createObjectURL(new Blob([data], { type: fileType }));
-      return url;
+      if (headShotFileId !== undefined && headShotFileId !== null) {
+        var file = await Files.getOfID(headShotFileId);
+        var filename = file.getExtName();
+        var fileType = filename == "png" ? "image/png" : "image/jpeg";
+        var data = await Files.getImage(headShotFileId);
+        let url = URL.createObjectURL(new Blob([data], { type: fileType }));
+        return url;
+      }
+      return "";
+    },
+    async handleOpenUser(index, content) {
+      if (index === "delete") {
+        this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        })
+          .then(() => {
+            this.$message({
+              type: "success",
+              message: "删除成功!",
+            });
+          })
+          .catch(() => {
+            this.$message({
+              type: "info",
+              message: "已取消删除",
+            });
+          });
+      } else {
+        this.$emit("handleMarshallingMgmt", index, content);
+      }
     },
   },
 };
 </script>
 <style lang="scss" scoped>
+i {
+  cursor: pointer;
+}
 .classDiv {
   height: 250px;
   .col {
     height: 100%;
   }
   .divLeft {
-    background-color: red;
+    border: 1px dashed black;
+
     height: 100%;
     padding: 5px;
 
@@ -121,6 +172,7 @@ export default {
     overflow-x: auto;
     overflow-y: hidden;
     display: flex;
+    border: 1px dashed black;
     .accountInfo {
       width: 250px;
       border: 1px solid black;
@@ -145,6 +197,7 @@ export default {
     }
     .accountInfo:hover {
       border: 1px solid blue;
+      background-color: gray;
     }
   }
 }

@@ -240,7 +240,7 @@ class MaintainManagementList extends Parent {
       .apiGetMaintainsListSearchPages(data)
       .then((response) => {
         response.result = response.result
-          .sort((x, y) => x.id - y.id)
+          .sort((x, y) => y.id - x.id)
           .map((item) => {
             return new MaintainManagementList(item);
           });
@@ -274,8 +274,18 @@ class MaintainManagementList extends Parent {
     var data = await api.device
       .apiGetMaintainsListRemind()
       .then((response) => {
-        console.log(JSON.stringify(response));
-        return response.result.sort((x, y) => y.id - x.id);
+        //照下次維保時間排序
+        response.result.needMaintainDeviceLsit =
+          response.result.needMaintainDeviceLsit
+            .sort(function (a, b) {
+              return (
+                new Date(a.nextMaintainTime) - new Date(b.nextMaintainTime)
+              );
+            })
+            .map((item) => {
+              return new Device(item);
+            });
+        return response.result;
       })
       .catch((error) => {
         return [];
@@ -569,6 +579,7 @@ class MaintainManagement extends Parent {
         formType: "singleChoice",
         limit: 1,
         selectFilter: true,
+        hasEvent: true,
       },
       {
         label: "備註",
@@ -584,6 +595,47 @@ class MaintainManagement extends Parent {
         isExport: true,
         isBlock: true,
         selectFilter: false,
+      },
+    ];
+  }
+  static getConfig() {
+    return [
+      {
+        label: "改善廠商",
+        prop: "linkContactUnits",
+        format: "contactunitSelect",
+        mandatory: false,
+        type: "object",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: true,
+        isEdit: true,
+        isUpload: false,
+        isExport: true,
+        isBlock: true,
+        formType: "singleChoice",
+        limit: 1,
+        selectFilter: true,
+      },
+      {
+        label: "設備",
+        prop: "linkDevices",
+        format: "deviceSelect",
+        mandatory: true,
+        message: "請選擇設備",
+        type: "object",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: true,
+        isEdit: true,
+        isUpload: false,
+        isExport: true,
+        isBlock: true,
+        formType: "singleChoice",
+        limit: 1,
+        selectFilter: true,
       },
     ];
   }

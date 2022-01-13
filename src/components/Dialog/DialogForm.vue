@@ -484,6 +484,8 @@ export default {
           case "maintain":
             var label = this.changeOptionName(item.processContent);
             return label !== "" ? label : "維護保養";
+          case "InspectionMaintain":
+            return item.linkInspectionLacks[0].lackItem;
           case "reportInspectio":
           case "reportPublicSafe":
             return item.declareYear;
@@ -552,7 +554,7 @@ export default {
         if (temp["declareYear"] !== null && temp["declareYear"] !== "") {
           this.radioType = temp["declareYear"].substr(-3);
           temp["declareYearType"] = temp["declareYear"].substr(-3);
-          temp["declareYear"] = temp["declareYear"].substr(0, 4);
+          temp["declareYear"] = new Date(temp["declareYear"].substr(0, 4));
         }
         this.handleChangeCheckBox(this.temp["declareResult"]);
       } else if (this.title == "committee") {
@@ -686,6 +688,13 @@ export default {
             this.temp["internetNumber"] = null;
             this.$emit("handleChangeConfig", false);
           }
+        } else if (this.title == "maintain" && format == "deviceSelect") {
+          console.log(value["linkMaintainVendors"]);
+          this.temp["linkContactUnits"] =
+            value["linkMaintainVendors"] !== undefined &&
+            value["linkMaintainVendors"].length !== 0
+              ? value["linkMaintainVendors"][0]
+              : {};
         } else if (
           format == "assignFireDeviceSelect" ||
           format == "assignPLCDeviceSelect"

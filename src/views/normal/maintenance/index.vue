@@ -4,12 +4,43 @@
       <el-col :xs="24" :sm="24" :md="24" :lg="16">
         <div class="chart-wrapper">
           <div class="verticalhalfdiv">
-            <div class="label">
-              <span> 應保養清單：</span>
-            </div>
-            <div class="content">
-              <span class="report"> </span>
-            </div>
+            <el-col :xs="24" :sm="24" :md="24" :lg="4">
+              <span style="font-size: 20px"> 應保養清單：</span>
+            </el-col>
+            <el-col :xs="24" :sm="24" :md="24" :lg="20">
+              <el-table :data="remind" style="width: 100%">
+                <el-table-column type="index" width="50"> </el-table-column>
+                <el-table-column prop="name" label="設備名稱" width="180">
+                </el-table-column>
+                <el-table-column
+                  prop="nextMaintainTime"
+                  label="下次保養時間"
+                  width="180"
+                  >{{ remind.nextMaintainTime | dateChange }}
+                </el-table-column>
+                <el-table-column prop="lastMaintainTime" label="最後保養時間"
+                  >{{ remind.lastMaintainTime | dateChange }}
+                </el-table-column>
+                <el-table-column>
+                  <template slot-scope="scope">
+                    <el-button
+                      v-if="remind.status !== finishId"
+                      size="mini"
+                      @click="handleRepair(scope.$index, scope.row)"
+                      >叫修</el-button
+                    >
+                  </template>
+                </el-table-column>
+              </el-table>
+              <!-- <template v-for="(item, index) in remind">
+                <div :key="index" style="font-size: 20px">
+                  <span>{{ index + 1 }}.</span>
+                  <span>{{ item.name }}</span>
+                  <span>{{ item.nextMaintainTime | dateChange }}</span>
+                  <span>{{ item.lastMaintainTime | dateChange }}</span>
+                </div>
+              </template> -->
+            </el-col>
           </div>
         </div>
       </el-col>
@@ -35,14 +66,6 @@
         </div>
       </el-col>
     </el-row>
-    <!-- <Dialog 
-            v-if="innerVisible === true"
-            v-bind="dialogAttrs"
-            :files="maintainFiles"
-            :formtableData="formtableData"
-            :formtableconfig="formtableconfig"
-            :listQueryParams="maintainlistQueryParams"
-            v-on:handleDialog="handleDialog"></Dialog> -->
 
     <DialogForm
       ref="dialogform"
@@ -103,21 +126,10 @@ export default {
       headerButtonsName: [],
       uploadVisible: false,
       //dialog額外的參數
-      panelList: [
-        {
-          label: "本月應保養數量",
-          count: 5246,
-          svgIcon: "inspection",
-          type: "monthly",
-        },
-        {
-          label: "過期未保養",
-          count: 8764,
-          svgIcon: "maintain",
-          type: "expired",
-        },
-      ],
+      panelList: [],
       hasSearch: false,
+      remind: [],
+      finishId: null,
     };
   },
   computed: {
@@ -145,10 +157,14 @@ export default {
       };
     },
   },
+  filters: {
+    dateChange: function (val) {
+      return moment(val).format("YYYY-MM-DD");
+    },
+  },
   methods: {
     async init() {
       this.title = "maintain";
-      this.tableConfig = MaintainManagement.getTableConfig();
       this.tablebuttonsName = [
         { name: "刪除", icon: "el-icon-delete", status: "delete" },
         { name: "編輯", icon: "el-icon-edit", status: "open" },
@@ -176,6 +192,22 @@ export default {
         { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
       ];
       var reminder = await MaintainManagementList.getReminder();
+      this.finishId = await this.setting();
+      this.remind = reminder.needMaintainDeviceLsit;
+      this.panelList = [
+        {
+          label: "本月應保養數量",
+          count: reminder.thisMonthMaintainDeviceListCount,
+          svgIcon: "inspection",
+          type: "monthly",
+        },
+        {
+          label: "過期未保養",
+          count: reminder.expiredMaintainDeviceListCount,
+          svgIcon: "inspection",
+          type: "expired",
+        },
+      ];
     },
     async resetlistQueryParams() {
       this.listQueryParams = {
@@ -461,11 +493,14 @@ export default {
         }
       } else if (
         index === "create" ||
+        index === "createRepair" ||
         index === "update" ||
         index === "updateManySave"
       ) {
         var mId =
           index !== "update" && this.isTable
+            ? content.maintainList.id
+            : index == "createRepair"
             ? content.maintainList.id
             : index !== "update" && !this.isTable
             ? this.maintainList.getID()
@@ -648,6 +683,58 @@ export default {
         var data = await MaintainManagement.getOfID(this.$route.query.obj);
         await this.handleMaintain("open", data);
       }
+    },
+    async handleRepair(index, content) {
+      console.log(index, JSON.stringify(content));
+      this.dialogData = [];
+      this.dialogTitle = "maintain";
+      this.dialogConfig = MaintainManagement.getTableConfig();
+      this.dialogButtonsName = [];
+      this.dialogSelect = [];
+      var lacks = await MaintainManagementList.getAllLack();
+      this.dialogSelect.push(lacks);
+      this.dialogButtonsName = [
+        { name: "儲存", type: "primary", status: "createRepair" },
+        { name: "返回", type: "info", status: "cancel" },
+      ];
+      this.dialogConfig.unshift({
+        label: "維護保養單",
+        prop: "maintainList",
+        format: "maintainListSelect",
+        mandatory: true,
+        message: "請選擇維護保養單",
+        isHidden: false,
+        type: "object",
+        typemessage: "",
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: false,
+        isExport: true,
+        isBlock: true,
+        formType: "singleChoice",
+        limit: 1,
+      });
+      var maintainlist = await MaintainManagementList.get();
+      this.dialogSelect.push(maintainlist);
+      var data = MaintainManagement.empty();
+      data.linkDevices.push(content);
+      this.dialogData.push(data);
+      this.innerVisible = true;
+      this.dialogStatus = "create";
+    },
+    async setting() {
+      if (this.setting_record == 0) {
+        await this.$store.dispatch("building/setoptions");
+        this.$store.dispatch("record/saveSettingRecord", 1);
+      }
+      let _array = this.buildingoptions.filter(
+        (item, index) =>
+          item.classType == "MaintainProcessOptions" &&
+          item.systemUse &&
+          item.textName == "已保養"
+      );
+      return _array.length !== 0 ? _array[0].id.toString() : "";
     },
     handleSetLineChartData(type) {
       console.log("handleSetLineChartData", type);

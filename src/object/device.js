@@ -114,6 +114,7 @@ class Device extends Parent {
     var data = await api.device
       .apiGetDevicesManagementMaintain(deviceId, data)
       .then((response) => {
+        console.log(response);
         response.result = response.result
           .sort((x, y) => x.id - y.id)
           .map((item) => {

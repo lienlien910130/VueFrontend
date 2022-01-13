@@ -320,7 +320,7 @@ export default {
             })
             .catch(() => {});
         }
-      } else if (index === "updateMany") {
+      } else if (index === "updateMany" || index === "updateManyMaintain") {
         if (this.selectArray.length == 0) {
           this.$message.error("請勾選要更新的資料列");
         } else {
