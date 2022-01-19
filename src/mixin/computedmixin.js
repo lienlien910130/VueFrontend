@@ -726,7 +726,11 @@ export default {
               value = val.getLinkType().getSelectName();
             } else if (item == "linkBuildings") {
               value = val.getBuildingsName();
-            } else if (item == "status") {
+            } else if (
+              item == "status" ||
+              item == "placeCategory" ||
+              item == "buildCategory"
+            ) {
               if (val.constructor == Role) {
                 value = data[item] == true ? "啟用中" : "未啟用";
               } else {

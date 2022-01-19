@@ -79,6 +79,54 @@ const actions = {
         });
     });
   },
+  password({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      user
+        .apiPostPassword(data)
+        .then((response) => {
+          resolve("已寄送信件至信箱，請至信箱點選網址重設密碼!");
+        })
+        .catch((error) => {
+          reject("此帳號尚未設定email，請聯繫水星服務人員");
+        });
+    });
+  },
+  checkReset({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      user
+        .apiPostCheckReset(data)
+        .then((response) => {
+          resolve(response.result);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  resetPassword({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      user
+        .apiPatchResetPassword(data)
+        .then((response) => {
+          resolve(response.result);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  ipconfig({ commit }) {
+    return new Promise((resolve, reject) => {
+      user
+        .apiGetUserIP()
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
   async getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
       user

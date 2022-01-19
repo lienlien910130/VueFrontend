@@ -174,13 +174,14 @@ class Account extends Parent {
       {
         label: "大頭照",
         prop: "headShotFileId",
+        formType: "photo",
         mandatory: false,
         maxlength: "15",
         isHidden: true,
         isSearch: false,
         placeholder: "請上傳大頭照",
         isAssociate: false,
-        isEdit: false,
+        isEdit: true,
         isUpload: false,
         isExport: false,
         isBlock: false,
@@ -219,7 +220,7 @@ class Account extends Parent {
         isSearch: false,
         placeholder: "請輸入密碼",
         isAssociate: false,
-        isEdit: false,
+        isEdit: true,
         isUpload: true,
         isExport: false,
         isBlock: false,
@@ -732,9 +733,9 @@ class Account extends Parent {
       });
     return data;
   }
-  static async postPhoto(tgUserId, data) {
+  static async postPhoto(tgUserId, data, type) {
     var data = await api.authority
-      .apiPostUserPhoto(tgUserId, data)
+      .apiPostUserPhoto(tgUserId, data, type)
       .then((response) => {
         return response.result.headShotFileId;
       })
@@ -745,7 +746,7 @@ class Account extends Parent {
   }
   static async updatePassword(data) {
     var data = await api.authority
-      .apiPatchAccountAuthority(data)
+      .apiPatchAccountPassword(data)
       .then(async (response) => {
         return true;
       })

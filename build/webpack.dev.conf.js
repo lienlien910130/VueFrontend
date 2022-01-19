@@ -1,24 +1,24 @@
-const path = require('path')
-const { merge } = require('webpack-merge')
-const baseWebpackConfig = require('./webpack.base.conf')
-const webpack = require('webpack')
+const path = require("path");
+const { merge } = require("webpack-merge");
+const baseWebpackConfig = require("./webpack.base.conf");
+const webpack = require("webpack");
 
-function resolve (dir) {
-  return path.join(__dirname, '..', dir)
+function resolve(dir) {
+  return path.join(__dirname, "..", dir);
 }
 
 module.exports = merge(baseWebpackConfig, {
-  mode: 'development',
-  devtool: 'inline-source-map',
+  mode: "development",
+  devtool: "inline-source-map",
   devServer: {
     historyApiFallback: true,
     hot: true,
     inline: true,
     progress: true,
-    stats: 'errors-only',
-    contentBase: path.resolve(__dirname, './dist'),
-    publicPath: '/',
-    port: 59111
+    stats: "errors-only",
+    contentBase: path.resolve(__dirname, "./dist"),
+    publicPath: "/",
+    port: 59111,
   },
   // module: {
   //   rules: [
@@ -50,11 +50,13 @@ module.exports = merge(baseWebpackConfig, {
   // },
   plugins: [
     new webpack.DefinePlugin({
-      'process.env': {
+      "process.env": {
         NODE_ENV: '"development"',
         VUE_APP_BASE_API: '"/api"',
-        VUE_APP_WEBSOCKET:'"ws://localhost:8088/ws/"'
-      }
-    })
-  ]
-})
+        VUE_APP_BASE_IP: '"/cip"',
+        VUE_APP_WEBSOCKET: '"ws://localhost:8088/ws/"',
+        VUE_APP_RESETPASSWORD: '"http://localhost:8088/reset"',
+      },
+    }),
+  ],
+});

@@ -47,6 +47,14 @@ const service = axios.create({
   },
 });
 
+const service_ip = axios.create({
+  baseURL: process.env.VUE_APP_BASE_IP,
+  timeout: 20000,
+  headers: {
+    "Content-Type": "application/json; charset=utf-8;",
+  },
+});
+
 const errorHandle = (status, error) => {
   switch (status) {
     case 400:
@@ -192,6 +200,11 @@ export default function (
       "method:" + method + " || url:" + url + " || data:" + JSON.stringify(data)
     );
     return service.patch(url, data);
+  } else if (method == "ipconfig") {
+    console.log(
+      "method:" + method + " || url:" + url + " || data:" + JSON.stringify(data)
+    );
+    return service_ip.get(url);
   } else {
     console.error("未知的method:" + method);
     return false;

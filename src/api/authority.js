@@ -128,6 +128,9 @@ const authority = {
   apiPutAccountAuthority(data) {
     return req("put", "/accountSetting/check", null, data);
   },
+  apiPatchAccountPassword(data) {
+    return req("patch", "/index/accounts", null, data);
+  },
   apiDeleteAccountAuthority(accountId) {
     return req("delete", "/accountSetting/" + accountId);
   },
@@ -148,10 +151,10 @@ const authority = {
     return req("post", "/index/accounts/ss", this.getBid(), data, true);
   },
   //上傳大頭照
-  apiPostUserPhoto(tgUserId, data) {
+  apiPostUserPhoto(tgUserId, data, type) {
     return req(
       "upload",
-      "/settings/account/" + this.getUid() + "/upload/headShot/" + tgUserId,
+      type + "/" + this.getUid() + "/upload/headShot/" + tgUserId,
       this.getBid(),
       data
     );

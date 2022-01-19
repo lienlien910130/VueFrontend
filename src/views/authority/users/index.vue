@@ -163,12 +163,15 @@ export default {
       this.dialogButtonsName = [];
       if (index === "open") {
         this.dialogConfig[6].label = "生日";
+        this.dialogConfig[2].isEdit = false;
+        this.dialogConfig[2].mandatory = false;
         this.dialogData.push(content);
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "update" },
           { name: "取消", type: "info", status: "cancel" },
         ];
         this.innerVisible = true;
+        this.account = content;
         this.dialogStatus = "update";
       } else if (index === "delete" || index === "deleteMany") {
         var isDelete = false;
@@ -263,6 +266,22 @@ export default {
       if (index !== "cancel") {
         if (title === "characterStatus") {
           await this.onCharacterStatus(index, content);
+        } else if (title === "photo") {
+          const formData = new FormData();
+          content.forEach((item) => {
+            formData.append("file", item.raw);
+          });
+          var result = await Account.postPhoto(
+            this.account.getID(),
+            formData,
+            "/accountSetting"
+          );
+          if (result !== null) {
+            this.$message("上傳成功");
+            this.dialogData[0]["headShotFileId"] = result;
+          } else {
+            this.$message.error("上傳失敗");
+          }
         } else {
           var result =
             index === "update" || index === "updateManySave"

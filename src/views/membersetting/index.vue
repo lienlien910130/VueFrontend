@@ -368,7 +368,11 @@ export default {
       content.forEach((item) => {
         formData.append("file", item.raw);
       });
-      var result = await Account.postPhoto(this.id, formData);
+      var result = await Account.postPhoto(
+        this.id,
+        formData,
+        "/settings/account"
+      );
       if (result !== null) {
         this.$message("上傳成功");
         await this.getUserPhoto(result);

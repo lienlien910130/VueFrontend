@@ -22,6 +22,20 @@ export const constantRoutes = [
     hidden: true,
   },
   {
+    path: "/password",
+    name: "Password",
+    meta: { title: "忘記密碼", needLogin: false },
+    component: () => import("@/views/login/password.vue"),
+    hidden: true,
+  },
+  {
+    path: "/reset/:vc?",
+    name: "Reset",
+    meta: { title: "重設密碼", needLogin: false },
+    component: () => import("@/views/login/reset.vue"),
+    hidden: true,
+  },
+  {
     path: "/process",
     component: Layout,
     redirect: "/process",

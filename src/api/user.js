@@ -8,6 +8,21 @@ const user = {
   apiPostLogin(data) {
     return req("post", "/users/login", null, data);
   },
+
+  apiPostPassword(data) {
+    return req("post", "/users/forgot/checkAndSendInfo", null, data);
+  },
+  apiPostCheckReset(data) {
+    return req("post", "/users/forgot/checkAndSendInfo/modify", null, data);
+  },
+  apiPatchResetPassword(data) {
+    return req(
+      "patch",
+      "/users/forgot/checkAndSendInfo/modifyPassword",
+      null,
+      data
+    );
+  },
   // apiPostLoginSec(tgBuildingId,data){ return req('post','/users/login/'+tgBuildingId, null, data) },
   // apiPostLogout(data){ return req('post','/vue-admin-template/user/logout',data) },
   apiGetUserInfo() {
@@ -16,7 +31,9 @@ const user = {
   apiPatchUserInfo(data) {
     return req("patch", "/index/accounts", null, data);
   },
-
+  apiGetUserIP() {
+    return req("ipconfig", "/ipconfig");
+  },
   //訂閱
   apiPatchPhysicalInfo(data) {
     return req("patch", "/index/physicalInfos/check", this.getUid(), data);

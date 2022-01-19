@@ -87,6 +87,13 @@
           @click.native.prevent="handleLogin"
           >登入</el-button
         >
+        <el-button
+          class="btn"
+          :loading="loading"
+          style="width: 100%; margin-bottom: 30px"
+          @click.native.prevent="handlePassword"
+          >忘記密碼</el-button
+        >
       </el-form>
     </div>
     <div class="footer">
@@ -190,6 +197,9 @@ export default {
           return false;
         }
       });
+    },
+    handlePassword() {
+      this.$router.push({ path: "/password" });
     },
     refreshCode() {
       //

@@ -49,9 +49,29 @@
                 {{ item.label }}
               </a>
             </i>
+            <!-- 大頭貼 -->
+            <template v-if="item.formType == 'photo'">
+              <img :src="previewPath" class="previewImg" />
+              <el-upload
+                ref="upload"
+                action="upload"
+                accept="image/jpeg,image/png"
+                :on-change="handlePhotoChange"
+                :auto-upload="false"
+                :file-list="fileList"
+                :show-file-list="false"
+              >
+                <i
+                  slot="trigger"
+                  class="el-icon-upload"
+                  style="cursor: pointer"
+                />
+              </el-upload>
+            </template>
+
             <!-- 年度&日期 -->
             <el-date-picker
-              v-if="item.formType == 'date'"
+              v-else-if="item.formType == 'date'"
               v-model="temp[item.prop]"
               value-format="yyyy-MM-dd"
               placeholder="請選擇"
@@ -199,7 +219,7 @@
                 </el-option>
               </template>
             </el-select>
-            <!-- item.format == 'commitUserInfo' ? obj.getName() : obj.label -->
+            <!-- 下拉選單-多選 -->
             <el-select
               v-else-if="item.formType == 'select'"
               v-model="temp[item.prop]"
@@ -404,7 +424,12 @@ import computedmixin from "@/mixin/computedmixin";
 import Setting from "@/object/setting";
 import { changeDefaultFullType } from "@/utils/index";
 import constant from "@/constant/index";
-import { Contactunit, Inspection, SelfDefenseFireMarshalling } from "@/object";
+import {
+  Contactunit,
+  Files,
+  Inspection,
+  SelfDefenseFireMarshalling,
+} from "@/object";
 const moment = require("moment");
 export default {
   name: "DialogForm",
@@ -443,9 +468,11 @@ export default {
   },
   watch: {
     dialogData: {
-      handler: function (newValue, oldValue) {
+      handler: async function (newValue, oldValue) {
         if (oldValue == undefined && newValue !== undefined) {
           this.init();
+        } else if (this.title === "account") {
+          await this.setDataForm(this.dialogData[0]);
         }
       },
       immediate: true,
@@ -525,6 +552,8 @@ export default {
       commitUserInfoArray: [],
       accountArray: [],
       radioType: null,
+      fileList: [],
+      previewPath: "",
     };
   },
   methods: {
@@ -642,6 +671,15 @@ export default {
           this.accountArray = data.filter((item) =>
             !set.has(item.id) ? set.add(item.id) : false
           );
+        }
+      } else if (this.title == "account") {
+        if (temp["headShotFileId"] !== undefined) {
+          var file = await Files.getOfID(temp["headShotFileId"]);
+          var filename = file.getExtName();
+          var fileType = filename == "png" ? "image/png" : "image/jpeg";
+          var data = await Files.getImage(temp["headShotFileId"]);
+          let url = URL.createObjectURL(new Blob([data], { type: fileType }));
+          this.previewPath = url;
         }
       }
       this.config.forEach((item) => {
@@ -987,6 +1025,12 @@ export default {
           this.temp["processStatus"] = setting[0].id;
         }
       }
+    },
+    //大頭貼改變
+    handlePhotoChange(file, fileList) {
+      var data = _.cloneDeep(fileList);
+      this.$emit("handleDialog", "photo", "photo", data);
+      this.fileList = [];
     },
     //子傳父窗口
     handleClickOption(status) {
