@@ -113,7 +113,6 @@ class CharacterStatus extends Parent {
         isHidden: false,
         maxlength: "200",
         isSearch: true,
-        placeholder: "請輸入備註",
         isAssociate: false,
         isEdit: true,
         isUpload: true,

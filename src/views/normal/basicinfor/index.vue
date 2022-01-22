@@ -121,23 +121,17 @@
       :isP="activeName == 'Professional'"
     ></DialogExcel>
 
-    <DialogTable
+    <!-- <DialogTable
       ref="dialogtable"
       v-if="tableVisible === true"
       v-bind="tableAttrs"
       v-on="tableEvent"
-    ></DialogTable>
+    ></DialogTable> -->
   </div>
 </template>
 
 <script>
-import {
-  blockmixin,
-  dialogmixin,
-  sharemixin,
-  excelmixin,
-  tablemixin,
-} from "@/mixin/index";
+import { blockmixin, dialogmixin, sharemixin, excelmixin } from "@/mixin/index";
 import {
   Files,
   Committee,
@@ -152,7 +146,7 @@ import {
 import CharacterStatus from "@/object/characterStatus";
 export default {
   name: "Tab",
-  mixins: [sharemixin, blockmixin, dialogmixin, excelmixin, tablemixin],
+  mixins: [sharemixin, blockmixin, dialogmixin, excelmixin],
   components: {
     Form: () => import("./components/Form"),
     FloorImage: () => import("./components/Floor"),
@@ -233,12 +227,12 @@ export default {
         resetlistQueryParams: this.resetdownlistQueryParams,
       };
     },
-    tableEvent() {
-      return {
-        handleTableClick: this.handleTableClick,
-        clickPagination: this.handleTableClick,
-      };
-    },
+    // tableEvent() {
+    //   return {
+    //     handleTableClick: this.handleTableClick,
+    //     clickPagination: this.handleTableClick,
+    //   };
+    // },
   },
   data() {
     return {
@@ -307,7 +301,6 @@ export default {
         await this.resetdownlistQueryParams();
         this.downButtonsName = [
           { name: "編輯", icon: "el-icon-edit", status: "open" },
-          { name: "狀態", icon: "el-icon-user", status: "characterStatus" },
         ];
         this.downheaderButtonsName = [
           { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
@@ -367,7 +360,6 @@ export default {
       this.downConfig = Account.getUserTableConfig();
       this.downButtonsName = [
         { name: "編輯", icon: "el-icon-edit", status: "open" },
-        { name: "狀態", icon: "el-icon-user", status: "characterStatus" },
       ];
       this.downheaderButtonsName = [
         { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
@@ -407,14 +399,14 @@ export default {
         await this.getFloorOfHouseList();
       }
     },
-    async resettablelistQueryParams() {
-      this.tablelistQueryParams = {
-        pageIndex: 1,
-        pageSize: 10,
-        total: 0,
-      };
-      await this.getAccountCharacterStatus();
-    },
+    // async resettablelistQueryParams() {
+    //   this.tablelistQueryParams = {
+    //     pageIndex: 1,
+    //     pageSize: 10,
+    //     total: 0,
+    //   };
+    //   await this.getAccountCharacterStatus();
+    // },
     async getFloorImage() {
       //載入平面圖
       if (this.floorImageId == null) {
@@ -463,17 +455,17 @@ export default {
       this.downData = data.result;
       this.downlistQueryParams.total = data.totalPageCount;
     },
-    async getAccountCharacterStatus() {
-      var data = await CharacterStatus.getSearchPage(
-        "basic",
-        this.account.getID(),
-        this.tablelistQueryParams
-      );
-      this.tableTitle = "accountOfCharacterStatus";
-      this.dialogtableConfig = CharacterStatus.getTableConfig();
-      this.tableData = data.result;
-      this.tablelistQueryParams.total = data.totalPageCount;
-    },
+    // async getAccountCharacterStatus() {
+    //   var data = await CharacterStatus.getSearchPage(
+    //     "basic",
+    //     this.account.getID(),
+    //     this.tablelistQueryParams
+    //   );
+    //   this.tableTitle = "accountOfCharacterStatus";
+    //   this.dialogtableConfig = CharacterStatus.getTableConfig();
+    //   this.tableData = data.result;
+    //   this.tablelistQueryParams.total = data.totalPageCount;
+    // },
     async handleBuildingInfo(index, content) {
       //轉接口
       console.log("handleBuildingInfo", index, content);
@@ -612,6 +604,9 @@ export default {
           { name: "取消", type: "info", status: "cancel" },
         ];
         this.innerVisible = true;
+        if (title === "user") {
+          this.account = content;
+        }
       } else if (index === "delete" || index === "deleteMany") {
         var isDelete = false;
         if (index === "delete") {
@@ -734,11 +729,12 @@ export default {
           { name: "取消", type: "info", status: "cancel" },
         ];
         this.innerVisible = true;
-      } else if (index === "characterStatus") {
-        this.account = content;
-        await this.resettablelistQueryParams();
-        this.tableVisible = true;
       }
+      // else if (index === "characterStatus") {
+      //   this.account = content;
+      //   await this.resettablelistQueryParams();
+      //   this.tableVisible = true;
+      // }
     },
     async handleDialog(title, index, content) {
       //Dialog相關操作
@@ -749,14 +745,17 @@ export default {
         this.uploadVisible = false;
         if (title == "committee" || title == "contactUnit") {
           this.$refs.block.clearSelectArray();
-        } else if (title === "characterStatus") {
-          this.$refs.dialogtable.clearSelectArray();
-        } else {
+        }
+        // else if (title === "characterStatus") {
+        //   this.$refs.dialogtable.clearSelectArray();
+        // }
+        else {
           this.$refs.downblock.clearSelectArray();
         }
       } else {
         switch (title) {
           case "user":
+          case "photo":
             await this.onUserActions(index, content);
             break;
           case "committee":
@@ -771,90 +770,90 @@ export default {
           case "buildingInfo":
             await this.onBuildingActions(index, content);
             break;
-          case "characterStatus":
-            await this.onCharacterStatus(index, content);
-            break;
+          // case "characterStatus":
+          //   await this.onCharacterStatus(index, content);
+          //   break;
         }
       }
     },
-    async handleTableClick(index, content) {
-      console.log(index, JSON.stringify(content));
-      this.dialogData = [];
-      this.dialogTitle = "characterStatus";
-      this.dialogButtonsName = [];
-      this.dialogConfig = CharacterStatus.getTableConfig();
-      if (index === "cancel") {
-        this.tableVisible = false;
-      } else if (index === "clickPagination") {
-        this.tablelistQueryParams = content;
-        await this.getAccountCharacterStatus();
-      } else if (index === "open") {
-        this.dialogData.push(content);
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "update" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        //this.dialogConfig = this.tableConfig;
-        this.innerVisible = true;
-        this.dialogStatus = "update";
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete("basic");
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await CharacterStatus.deleteMany(
-            "basic",
-            deleteArray.toString()
-          );
-        }
-        if (isDelete) {
-          this.$message("刪除成功");
-          var length = content.length !== undefined ? content.length : 1;
-          var page = Math.ceil(
-            (this.listQueryParams.total - length) /
-              this.listQueryParams.pageSize
-          );
-          if (this.listQueryParams.pageIndex > page) {
-            this.listQueryParams.pageIndex = page;
-          }
-          await this.getAccountCharacterStatus();
-          this.$refs.block.clearSelectArray();
-        } else {
-          this.$message.error("系統錯誤");
-        }
-      } else if (index === "empty") {
-        this.dialogData.push(CharacterStatus.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "create" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        //this.dialogConfig = this.tableConfig;
-        this.innerVisible = true;
-        this.dialogStatus = "create";
-      } else if (index === "exportExcel") {
-        this.exportExcelData = this.tableData;
-        this.excelVisible = true;
-        this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        this.excelVisible = true;
-        this.excelType = "uploadExcel";
-      } else if (index === "updateMany") {
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "updateManySave" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-      }
-    },
+    // async handleTableClick(index, content) {
+    //   console.log(index, JSON.stringify(content));
+    //   this.dialogData = [];
+    //   this.dialogTitle = "characterStatus";
+    //   this.dialogButtonsName = [];
+    //   this.dialogConfig = CharacterStatus.getTableConfig();
+    //   if (index === "cancel") {
+    //     this.tableVisible = false;
+    //   } else if (index === "clickPagination") {
+    //     this.tablelistQueryParams = content;
+    //     await this.getAccountCharacterStatus();
+    //   } else if (index === "open") {
+    //     this.dialogData.push(content);
+    //     this.dialogButtonsName = [
+    //       { name: "儲存", type: "primary", status: "update" },
+    //       { name: "取消", type: "info", status: "cancel" },
+    //     ];
+    //     //this.dialogConfig = this.tableConfig;
+    //     this.innerVisible = true;
+    //     this.dialogStatus = "update";
+    //   } else if (index === "delete" || index === "deleteMany") {
+    //     var isDelete = false;
+    //     if (index === "delete") {
+    //       isDelete = await content.delete("basic");
+    //     } else {
+    //       var deleteArray = [];
+    //       content.forEach((item) => {
+    //         deleteArray.push(item.id);
+    //       });
+    //       isDelete = await CharacterStatus.deleteMany(
+    //         "basic",
+    //         deleteArray.toString()
+    //       );
+    //     }
+    //     if (isDelete) {
+    //       this.$message("刪除成功");
+    //       var length = content.length !== undefined ? content.length : 1;
+    //       var page = Math.ceil(
+    //         (this.listQueryParams.total - length) /
+    //           this.listQueryParams.pageSize
+    //       );
+    //       if (this.listQueryParams.pageIndex > page) {
+    //         this.listQueryParams.pageIndex = page;
+    //       }
+    //       await this.getAccountCharacterStatus();
+    //       this.$refs.block.clearSelectArray();
+    //     } else {
+    //       this.$message.error("系統錯誤");
+    //     }
+    //   } else if (index === "empty") {
+    //     this.dialogData.push(CharacterStatus.empty());
+    //     this.dialogButtonsName = [
+    //       { name: "儲存", type: "primary", status: "create" },
+    //       { name: "取消", type: "info", status: "cancel" },
+    //     ];
+    //     //this.dialogConfig = this.tableConfig;
+    //     this.innerVisible = true;
+    //     this.dialogStatus = "create";
+    //   } else if (index === "exportExcel") {
+    //     this.exportExcelData = this.tableData;
+    //     this.excelVisible = true;
+    //     this.excelType = "exportExcel";
+    //   } else if (index === "uploadExcel") {
+    //     this.excelVisible = true;
+    //     this.excelType = "uploadExcel";
+    //   } else if (index === "updateMany") {
+    //     this.dialogStatus = "updateMany";
+    //     content.forEach((item) => {
+    //       var obj = _.cloneDeep(item);
+    //       this.dialogData.push(obj);
+    //     });
+    //     this.dialogButtonsName = [
+    //       { name: "儲存", type: "primary", status: "updateManySave" },
+    //       { name: "取消", type: "info", status: "cancel" },
+    //     ];
+    //     this.innerVisible = true;
+    //   }
+    // },
     async onCommitteeActions(index, content) {
       var result =
         index === "update" || index === "updateManySave"
@@ -1008,7 +1007,7 @@ export default {
     async onUserActions(index, content) {
       //只剩下更新&多筆更新&匯出檔案的功能
       if (index == "create" || index == "update" || index == "updateManySave") {
-        var data = await Account.getSearchPage({
+        var data = await Account.getUserSearchPage({
           identityCard: "{LIKE}" + content.identityCard,
           pageIndex: 1,
           pageSize: 12,
@@ -1059,6 +1058,31 @@ export default {
         } else {
           this.$message.error("該身份證已存在，請重新輸入");
         }
+      } else if (index === "photo") {
+        const formData = new FormData();
+        content.forEach((item) => {
+          formData.append("file", item.raw);
+        });
+        var result = await Account.postPhoto(
+          this.account.getID(),
+          formData,
+          "/basic"
+        );
+        if (result !== null) {
+          this.$message("上傳成功");
+          this.dialogData[0]["headShotFileId"] = result;
+        } else {
+          this.$message.error("上傳失敗");
+        }
+      } else if (index === "removePhoto") {
+        var temp = { id: content, headShotFileId: "" };
+        var result = await Account.updateHead(temp);
+        if (result) {
+          this.$message("刪除成功");
+          this.dialogData[0]["headShotFileId"] = "";
+        } else {
+          this.$message.error("刪除失敗");
+        }
       }
       // else if (index === "uploadExcelSave") {
       //   var result = await User.postMany(content);
@@ -1080,40 +1104,40 @@ export default {
       //   }
       // }
     },
-    async onCharacterStatus(index, content) {
-      var result =
-        index === "update" || index === "updateManySave"
-          ? await content.update("basic")
-          : index === "create"
-          ? await content.create("basic", this.account.getID())
-          : await CharacterStatus.postMany(
-              "basic",
-              this.account.getID(),
-              content
-            );
-      var condition =
-        index !== "uploadExcelSave"
-          ? Object.keys(result).length !== 0
-          : result.result.length !== 0;
-      if (condition) {
-        index === "update" || index === "updateManySave"
-          ? this.$message("更新成功")
-          : this.$message("新增成功");
-        await this.getAccountCharacterStatus();
-        if (index !== "updateManySave") {
-          this.innerVisible = false;
-        } else {
-          this.dialogData.forEach((item, index) => {
-            if (item.id == content.id) {
-              this.dialogData.splice(index, 1, content);
-            }
-          });
-        }
-        this.excelVisible = false;
-      } else {
-        this.$message.error("系統錯誤");
-      }
-    },
+    // async onCharacterStatus(index, content) {
+    //   var result =
+    //     index === "update" || index === "updateManySave"
+    //       ? await content.update("basic")
+    //       : index === "create"
+    //       ? await content.create("basic", this.account.getID())
+    //       : await CharacterStatus.postMany(
+    //           "basic",
+    //           this.account.getID(),
+    //           content
+    //         );
+    //   var condition =
+    //     index !== "uploadExcelSave"
+    //       ? Object.keys(result).length !== 0
+    //       : result.result.length !== 0;
+    //   if (condition) {
+    //     index === "update" || index === "updateManySave"
+    //       ? this.$message("更新成功")
+    //       : this.$message("新增成功");
+    //     await this.getAccountCharacterStatus();
+    //     if (index !== "updateManySave") {
+    //       this.innerVisible = false;
+    //     } else {
+    //       this.dialogData.forEach((item, index) => {
+    //         if (item.id == content.id) {
+    //           this.dialogData.splice(index, 1, content);
+    //         }
+    //       });
+    //     }
+    //     this.excelVisible = false;
+    //   } else {
+    //     this.$message.error("系統錯誤");
+    //   }
+    // },
     async onBuildingActions(index, content) {
       if (index == "update") {
         var result = await content.update();

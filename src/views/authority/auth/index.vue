@@ -129,8 +129,8 @@ export default {
         }
         if (isDelete) {
           this.$message("刪除成功");
-          this.$socket.sendMsg("menus", "reset", "");
-          this.$store.dispatch("permission/setmenu", await Menu.get());
+          // this.$socket.sendMsg("menus", "reset", "");
+          // this.$store.dispatch("permission/setmenu", await Menu.get());
           this.$refs.block.clearSelectArray();
           // var array = await AccessAuthority.get(this.selectId)
           // this.blockData = array.result
@@ -210,8 +210,10 @@ export default {
           index == "update" || index == "updateManySave"
             ? this.$message("更新成功")
             : this.$message("新增成功");
-          this.$socket.sendMsg("menus", "reset", "");
-          this.$store.dispatch("permission/setmenu", await Menu.get());
+          // this.$socket.sendMsg("menus", "reset", "");
+          // this.$store.dispatch("permission/setmenu", await Menu.get());
+          var array = await AccessAuthority.get(this.selectId);
+          this.blockData = array.result;
           if (index !== "updateManySave") {
             this.innerVisible = false;
           } else {

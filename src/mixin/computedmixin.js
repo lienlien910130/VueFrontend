@@ -596,6 +596,7 @@ export default {
           case "governmentApprovalBoolean":
           case "selfDeclaredBoolean":
           case "nowHaveBoolean":
+          case "moveWithDifficultyBoolean":
             return "是";
           case "sexBoolean":
             return "女";
@@ -621,6 +622,7 @@ export default {
           case "governmentApprovalBoolean":
           case "selfDeclaredBoolean":
           case "nowHaveBoolean":
+          case "moveWithDifficultyBoolean":
             return "否";
           case "sexBoolean":
             if (val == false) {

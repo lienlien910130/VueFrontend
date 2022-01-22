@@ -16,7 +16,6 @@ class Account extends Parent {
       cellPhoneNumber,
       emergencyNumber,
       email,
-      note,
       usageOfFloor,
       description,
       status,
@@ -25,10 +24,11 @@ class Account extends Parent {
       verifyCellPhone,
       verifyEmail,
       sex,
+      moveWithDifficulty,
+      note,
       linkRoles,
       linkBuildings,
       linkPhysicalInfos,
-      linkCharacterStatus,
     } = data;
     var roles =
       linkRoles !== undefined
@@ -46,12 +46,6 @@ class Account extends Parent {
       linkPhysicalInfos !== undefined
         ? linkPhysicalInfos.map((item) => {
             return new PhysicalInfo(item);
-          })
-        : [];
-    var characterStatus =
-      linkCharacterStatus !== undefined
-        ? linkCharacterStatus.map((item) => {
-            return new CharacterStatus(item);
           })
         : [];
     this.account = account;
@@ -72,28 +66,15 @@ class Account extends Parent {
     this.headShotFileId = headShotFileId;
     this.verifyCellPhone = verifyCellPhone;
     this.verifyEmail = verifyEmail;
+    this.moveWithDifficulty = moveWithDifficulty;
     this.linkRoles = roles;
     this.linkBuildings = buildings;
     this.linkPhysicalInfos = physicalInfos;
-    this.linkCharacterStatus = characterStatus;
   }
   clone(data) {
     return new Account(data);
   }
   async update() {
-    var temp = JSON.parse(JSON.stringify(this));
-    temp.account = "{Check}" + temp.account;
-    var data = await api.authority
-      .apiPutAccountAuthority(temp)
-      .then(async (response) => {
-        return new Account(response.result);
-      })
-      .catch((error) => {
-        return {};
-      });
-    return data;
-  }
-  async updateP() {
     var temp = JSON.parse(JSON.stringify(this));
     temp.account = "{Check}" + temp.account;
     var data = await api.authority
@@ -105,6 +86,34 @@ class Account extends Parent {
         return {};
       });
     return data;
+  }
+  async updateS() {
+    //從設定頁面更新
+    var temp = JSON.parse(JSON.stringify(this));
+    temp.account = "{Check}" + temp.account;
+    var data = await api.authority
+      .apiPatchAccountAuthoritySetting(temp)
+      .then(async (response) => {
+        return new Account(response.result);
+      })
+      .catch((error) => {
+        return {};
+      });
+    return data;
+  }
+  async updateP() {
+    //basic住戶更新
+    // var temp = JSON.parse(JSON.stringify(this));
+    // temp.account = "{Check}" + temp.account;
+    // var data = await api.authority
+    //   .apiPatchAccountAuthority(temp)
+    //   .then(async (response) => {
+    //     return new Account(response.result);
+    //   })
+    //   .catch((error) => {
+    //     return {};
+    //   });
+    // return data;
   }
   async create() {
     var temp = JSON.parse(JSON.stringify(this));
@@ -165,6 +174,7 @@ class Account extends Parent {
       headShotFileId: null,
       verifyCellPhone: false,
       verifyEmail: false,
+      moveWithDifficulty: false,
       linkRoles: [],
       linkBuildings: [],
     });
@@ -376,11 +386,29 @@ class Account extends Parent {
         isBlock: true,
         selectFilter: false,
       },
-
+      {
+        label: "行動不便者",
+        prop: "moveWithDifficulty",
+        format: "moveWithDifficultyBoolean",
+        mandatory: true,
+        message: "請選擇是否為行動不便者",
+        type: "boolean",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "boolean",
+        selectFilter: false,
+      },
       {
         label: "描述",
         prop: "description",
         format: "textarea",
+        placeholder: "若為行動不便者，請輸入狀況",
         mandatory: false,
         maxlength: "200",
         isHidden: true,
@@ -473,7 +501,6 @@ class Account extends Parent {
         maxlength: "200",
         isHidden: false,
         isSearch: true,
-        placeholder: "請輸入職稱",
         isAssociate: false,
         isEdit: true,
         isUpload: true,
@@ -485,6 +512,22 @@ class Account extends Parent {
   }
   static getUserTableConfig() {
     return [
+      {
+        label: "大頭照",
+        prop: "headShotFileId",
+        formType: "photo",
+        mandatory: false,
+        maxlength: "15",
+        isHidden: true,
+        isSearch: false,
+        placeholder: "請上傳大頭照",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: false,
+        isExport: false,
+        isBlock: false,
+        selectFilter: false,
+      },
       {
         label: "姓名",
         prop: "name",
@@ -637,6 +680,40 @@ class Account extends Parent {
         selectFilter: false,
       },
       {
+        label: "行動不便者",
+        prop: "moveWithDifficulty",
+        format: "moveWithDifficultyBoolean",
+        mandatory: true,
+        message: "請選擇是否為行動不便者",
+        type: "boolean",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "boolean",
+        selectFilter: false,
+      },
+      {
+        label: "描述",
+        prop: "description",
+        format: "textarea",
+        placeholder: "若為行動不便者，請輸入狀況",
+        mandatory: false,
+        maxlength: "200",
+        isHidden: true,
+        isSearch: true,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: false,
+        selectFilter: false,
+      },
+      {
         label: "備註",
         prop: "note",
         mandatory: false,
@@ -644,7 +721,6 @@ class Account extends Parent {
         maxlength: "200",
         isHidden: false,
         isSearch: true,
-        placeholder: "請輸入職稱",
         isAssociate: false,
         isEdit: true,
         isUpload: true,
@@ -708,6 +784,20 @@ class Account extends Parent {
       });
     return data;
   }
+  static async getSettingUserSearchPage(data) {
+    var data = await api.authority
+      .apiGetAccountSettingSearchPages(data)
+      .then((response) => {
+        response.result = response.result.map((item) => {
+          return new Account(item);
+        });
+        return response;
+      })
+      .catch((error) => {
+        return [];
+      });
+    return data;
+  }
   static async postMany(data) {
     var data = await api.authority
       .apiPostAccountAuthorities(data)
@@ -746,7 +836,18 @@ class Account extends Parent {
   }
   static async updatePassword(data) {
     var data = await api.authority
-      .apiPatchAccountPassword(data)
+      .apiPatchAccountAuthoritySetting(data)
+      .then(async (response) => {
+        return true;
+      })
+      .catch((error) => {
+        return false;
+      });
+    return data;
+  }
+  static async updateHead(data) {
+    var data = await api.authority
+      .apiPatchAccountAuthority(data)
       .then(async (response) => {
         return true;
       })

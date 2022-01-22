@@ -51,7 +51,7 @@
             </i>
             <!-- 大頭貼 -->
             <template v-if="item.formType == 'photo'">
-              <img :src="previewPath" class="previewImg" />
+              <!-- <img :src="previewPath" class="previewImg" />
               <el-upload
                 ref="upload"
                 action="upload"
@@ -66,6 +66,40 @@
                   class="el-icon-upload"
                   style="cursor: pointer"
                 />
+              </el-upload> -->
+              <el-upload
+                ref="upload"
+                action="upload"
+                accept="image/jpeg,image/png"
+                list-type="picture-card"
+                :limit="1"
+                :auto-upload="false"
+                :on-change="handlePhotoChange"
+                :file-list="fileList"
+                :multiple="false"
+              >
+                <i slot="default" class="el-icon-plus"></i>
+                <!-- <i
+                  v-if="fileList.length == 0"
+                  slot="trigger"
+                  class="el-icon-upload"
+                  style="cursor: pointer"
+                /> -->
+                <div slot="file" slot-scope="{ file }">
+                  <img
+                    class="el-upload-list__item-thumbnail"
+                    :src="file.url"
+                    alt=""
+                  />
+                  <span class="el-upload-list__item-actions">
+                    <span
+                      class="el-upload-list__item-delete"
+                      @click="handleRemove"
+                    >
+                      <i class="el-icon-delete"></i>
+                    </span>
+                  </span>
+                </div>
               </el-upload>
             </template>
 
@@ -387,6 +421,7 @@
               v-else-if="item.format == 'textarea'"
               v-model="temp[item.prop]"
               :autosize="{ minRows: 4, maxRows: 8 }"
+              :placeholder="item.placeholder"
               maxlength="200"
               type="textarea"
               show-word-limit
@@ -471,8 +506,6 @@ export default {
       handler: async function (newValue, oldValue) {
         if (oldValue == undefined && newValue !== undefined) {
           this.init();
-        } else if (this.title === "account") {
-          await this.setDataForm(this.dialogData[0]);
         }
       },
       immediate: true,
@@ -673,13 +706,18 @@ export default {
           );
         }
       } else if (this.title == "account") {
-        if (temp["headShotFileId"] !== undefined) {
+        if (
+          temp["headShotFileId"] !== undefined &&
+          temp["headShotFileId"] !== null &&
+          temp["headShotFileId"] !== ""
+        ) {
           var file = await Files.getOfID(temp["headShotFileId"]);
           var filename = file.getExtName();
           var fileType = filename == "png" ? "image/png" : "image/jpeg";
           var data = await Files.getImage(temp["headShotFileId"]);
           let url = URL.createObjectURL(new Blob([data], { type: fileType }));
-          this.previewPath = url;
+          file.url = url;
+          this.fileList.push(file);
         }
       }
       this.config.forEach((item) => {
@@ -1026,11 +1064,29 @@ export default {
         }
       }
     },
-    //大頭貼改變
+    //大頭貼改變-更新的時候會直接動作
     handlePhotoChange(file, fileList) {
-      var data = _.cloneDeep(fileList);
-      this.$emit("handleDialog", "photo", "photo", data);
-      this.fileList = [];
+      this.fileList = fileList;
+      if (this.dialogStatus == "update" && fileList.length > 0) {
+        var data = _.cloneDeep(fileList);
+        this.$emit("handleDialog", "photo", "photo", data);
+      }
+    },
+    handleRemove() {
+      this.$confirm("是否確認刪除圖片?", "提示", {
+        confirmButtonText: "確定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          this.fileList = [];
+          if (this.dialogStatus == "update") {
+            this.$emit("handleDialog", "photo", "removePhoto", this.temp.id);
+          }
+        })
+        .catch(() => {
+          return false;
+        });
     },
     //子傳父窗口
     handleClickOption(status) {
@@ -1126,6 +1182,14 @@ export default {
                 if (obj.length) {
                   data["status"] = obj[0].id;
                 }
+              }
+              if (
+                this.title == "account" &&
+                this.fileList.length > 0 &&
+                status == "create"
+              ) {
+                var _p = _.cloneDeep(this.fileList);
+                data["photo"] = _p;
               }
               this.$emit("handleDialog", this.title, status, data);
             }

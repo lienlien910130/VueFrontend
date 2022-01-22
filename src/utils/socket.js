@@ -523,7 +523,7 @@ function handleMenus(index, content) {
   console.log("handleMenus", index, content);
   if (index == "reset") {
     //切換頁面的同時重新載入選單並儲存
-    store.dispatch("permission/setneedreload", true);
+    //store.dispatch("permission/setneedreload", true);
   } else if (index == "routes") {
     store.dispatch("permission/setRoutes");
   }

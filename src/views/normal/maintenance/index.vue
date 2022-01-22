@@ -24,11 +24,18 @@
                 <el-table-column>
                   <template slot-scope="scope">
                     <el-button
-                      v-if="remind.status !== finishId"
+                      v-if="scope.row.status !== finishId"
                       size="mini"
                       @click="handleRepair(scope.$index, scope.row)"
                       >叫修</el-button
                     >
+                    <!-- <el-button
+                      v-else
+                      size="mini"
+                      @click="handleRepair(scope.$index, scope.row)"
+                      disabled
+                      >{{ changeSettingsName(scope.row.status) }}</el-button
+                    > -->
                   </template>
                 </el-table-column>
               </el-table>
@@ -156,6 +163,23 @@ export default {
         files: this.maintainFiles,
       };
     },
+    changeSettingsName() {
+      //設定名稱
+      return function (value) {
+        if (this.setting_record == 0) {
+          this.$store.dispatch("building/setoptions");
+          this.$store.dispatch("record/saveSettingRecord", 1);
+        }
+        console.log(this.buildingoptions);
+        if (value !== null && value !== undefined) {
+          let _array = this.buildingoptions.filter(
+            (item, index) => item.id == value
+          );
+          return _array.length !== 0 ? _array[0].textName : "";
+        }
+        return "";
+      };
+    },
   },
   filters: {
     dateChange: function (val) {
@@ -191,8 +215,14 @@ export default {
         },
         { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
       ];
-      var reminder = await MaintainManagementList.getReminder();
       this.finishId = await this.setting();
+      var reminder = await MaintainManagementList.getReminder();
+      console.log(reminder.needMaintainDeviceLsit);
+      reminder.needMaintainDeviceLsit.forEach((item) => {
+        console.log(item.status == this.finishId);
+      });
+
+      console.log(this.finishId);
       this.remind = reminder.needMaintainDeviceLsit;
       this.panelList = [
         {

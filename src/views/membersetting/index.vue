@@ -14,14 +14,14 @@
           <el-col :xs="24" :sm="24" :md="24" :lg="18">
             <el-card>
               <el-tabs v-model="activeTab">
-                <el-tab-pane label="身體狀態" name="characterStatus">
+                <!-- <el-tab-pane label="身體狀態" name="characterStatus">
                   <Block
                     ref="block"
                     :list-query-params.sync="listQueryParams"
                     v-bind="blockAttrs"
                     v-on="blockEvent"
                   ></Block>
-                </el-tab-pane>
+                </el-tab-pane> -->
                 <el-tab-pane label="訂閱" name="subscription">訂閱</el-tab-pane>
               </el-tabs>
             </el-card>
@@ -230,9 +230,10 @@ export default {
       this.activeName = "report";
     } else if (this.$route.query.type == "pu") {
       this.activeName = "reportPublic";
-    } else if (this.$route.query.type == "cs") {
-      this.activeName = "cStatusOptions";
     }
+    // else if (this.$route.query.type == "cs") {
+    //   this.activeName = "cStatusOptions";
+    // }
   },
   methods: {
     async init() {
@@ -240,7 +241,7 @@ export default {
       await this.getOptions();
       await this.getUser();
       await this.getUserPhoto(this.user.headShotFileId);
-      await this.getAccountCharacterStatus();
+      // await this.getAccountCharacterStatus();
     },
     async changeTable(value) {
       this.isTable = value;
@@ -386,6 +387,7 @@ export default {
         this.dialogData = [];
         this.dialogData.push(content);
         this.dialogConfig = Account.getUserTableConfig();
+        this.dialogConfig[0].isEdit = false;
         this.dialogTitle = "account";
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "update" },
@@ -396,97 +398,96 @@ export default {
         this.dialogFormVisible = true;
       }
     },
-    async resetlistQueryParams() {
-      this.listQueryParams = {
-        pageIndex: 1,
-        pageSize: 12,
-        total: 0,
-      };
-      await this.getAccountCharacterStatus();
-    },
-    async getAccountCharacterStatus() {
-      var data = await CharacterStatus.getSearchPage(
-        "settings",
-        this.id,
-        this.listQueryParams
-      );
-      this.blockData = data.result;
-      this.listQueryParams.total = data.totalPageCount;
-    },
-    async handleBlock(title, index, content) {
-      //公安申報的操作
-      console.log(title, index, JSON.stringify(content));
-      this.dialogData = [];
-      this.dialogTitle = "characterStatus";
-      this.dialogButtonsName = [];
-      this.dialogConfig = this.tableConfig;
-      if (index === "open") {
-        this.dialogData.push(content);
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "update" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.dialogConfig = this.tableConfig;
-        this.innerVisible = true;
-        this.dialogStatus = "update";
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete("settings");
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await CharacterStatus.deleteMany(
-            "settings",
-            deleteArray.toString()
-          );
-        }
-        if (isDelete) {
-          this.$message("刪除成功");
-          var length = content.length !== undefined ? content.length : 1;
-          var page = Math.ceil(
-            (this.listQueryParams.total - length) /
-              this.listQueryParams.pageSize
-          );
-          if (this.listQueryParams.pageIndex > page) {
-            this.listQueryParams.pageIndex = page;
-          }
-          await this.getAccountCharacterStatus();
-          this.$refs.block.clearSelectArray();
-        } else {
-          this.$message.error("系統錯誤");
-        }
-      } else if (index === "empty") {
-        this.dialogData.push(CharacterStatus.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "create" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.dialogConfig = this.tableConfig;
-        this.innerVisible = true;
-        this.dialogStatus = "create";
-      } else if (index === "exportExcel") {
-        this.exportExcelData = this.blockData;
-        this.excelVisible = true;
-        this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        this.excelVisible = true;
-        this.excelType = "uploadExcel";
-      } else if (index === "updateMany") {
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "updateManySave" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-      }
-    },
+    // async resetlistQueryParams() {
+    //   this.listQueryParams = {
+    //     pageIndex: 1,
+    //     pageSize: 12,
+    //     total: 0,
+    //   };
+    //   await this.getAccountCharacterStatus();
+    // },
+    // async getAccountCharacterStatus() {
+    //   var data = await CharacterStatus.getSearchPage(
+    //     "settings",
+    //     this.id,
+    //     this.listQueryParams
+    //   );
+    //   this.blockData = data.result;
+    //   this.listQueryParams.total = data.totalPageCount;
+    // },
+    // async handleBlock(title, index, content) {
+    //   console.log(title, index, JSON.stringify(content));
+    //   this.dialogData = [];
+    //   this.dialogTitle = "characterStatus";
+    //   this.dialogButtonsName = [];
+    //   this.dialogConfig = this.tableConfig;
+    //   if (index === "open") {
+    //     this.dialogData.push(content);
+    //     this.dialogButtonsName = [
+    //       { name: "儲存", type: "primary", status: "update" },
+    //       { name: "取消", type: "info", status: "cancel" },
+    //     ];
+    //     this.dialogConfig = this.tableConfig;
+    //     this.innerVisible = true;
+    //     this.dialogStatus = "update";
+    //   } else if (index === "delete" || index === "deleteMany") {
+    //     var isDelete = false;
+    //     if (index === "delete") {
+    //       isDelete = await content.delete("settings");
+    //     } else {
+    //       var deleteArray = [];
+    //       content.forEach((item) => {
+    //         deleteArray.push(item.id);
+    //       });
+    //       isDelete = await CharacterStatus.deleteMany(
+    //         "settings",
+    //         deleteArray.toString()
+    //       );
+    //     }
+    //     if (isDelete) {
+    //       this.$message("刪除成功");
+    //       var length = content.length !== undefined ? content.length : 1;
+    //       var page = Math.ceil(
+    //         (this.listQueryParams.total - length) /
+    //           this.listQueryParams.pageSize
+    //       );
+    //       if (this.listQueryParams.pageIndex > page) {
+    //         this.listQueryParams.pageIndex = page;
+    //       }
+    //       await this.getAccountCharacterStatus();
+    //       this.$refs.block.clearSelectArray();
+    //     } else {
+    //       this.$message.error("系統錯誤");
+    //     }
+    //   } else if (index === "empty") {
+    //     this.dialogData.push(CharacterStatus.empty());
+    //     this.dialogButtonsName = [
+    //       { name: "儲存", type: "primary", status: "create" },
+    //       { name: "取消", type: "info", status: "cancel" },
+    //     ];
+    //     this.dialogConfig = this.tableConfig;
+    //     this.innerVisible = true;
+    //     this.dialogStatus = "create";
+    //   } else if (index === "exportExcel") {
+    //     this.exportExcelData = this.blockData;
+    //     this.excelVisible = true;
+    //     this.excelType = "exportExcel";
+    //   } else if (index === "uploadExcel") {
+    //     this.excelVisible = true;
+    //     this.excelType = "uploadExcel";
+    //   } else if (index === "updateMany") {
+    //     this.dialogStatus = "updateMany";
+    //     content.forEach((item) => {
+    //       var obj = _.cloneDeep(item);
+    //       this.dialogData.push(obj);
+    //     });
+    //     this.dialogButtonsName = [
+    //       { name: "儲存", type: "primary", status: "updateManySave" },
+    //       { name: "取消", type: "info", status: "cancel" },
+    //     ];
+    //     this.innerVisible = true;
+    //   }
+    // },
     async handleDialog(title, index, content) {
       //Dialog相關操作
       console.log(title, index, JSON.stringify(content));
@@ -499,7 +500,7 @@ export default {
       ) {
         if (title === "account") {
           //更新
-          var data = await Account.getSearchPage({
+          var data = await Account.getSettingUserSearchPage({
             identityCard: "{LIKE}" + content.identityCard,
             pageIndex: 1,
             pageSize: 12,
@@ -513,7 +514,7 @@ export default {
               ? true
               : false;
           if (canSave) {
-            var result = await content.updateP();
+            var result = await content.updateS();
             if (Object.keys(result).length !== 0) {
               this.$socket.sendMsg("account", index, result);
               this.$message("更新成功");
@@ -526,36 +527,37 @@ export default {
           } else {
             this.$message.error("該身份證已存在，請重新輸入");
           }
-        } else {
-          var result =
-            index === "update" || index === "updateManySave"
-              ? await content.update("settings")
-              : index === "create"
-              ? await content.create("settings", this.id)
-              : await CharacterStatus.postMany("settings", this.id, content);
-          var condition =
-            index !== "uploadExcelSave"
-              ? Object.keys(result).length !== 0
-              : result.result.length !== 0;
-          if (condition) {
-            index === "update" || index === "updateManySave"
-              ? this.$message("更新成功")
-              : this.$message("新增成功");
-            await this.getAccountCharacterStatus();
-          } else {
-            this.$message.error("系統錯誤");
-          }
-          if (index !== "updateManySave") {
-            this.innerVisible = false;
-          } else {
-            this.dialogData.forEach((item, index) => {
-              if (item.id == content.id) {
-                this.dialogData.splice(index, 1, content);
-              }
-            });
-          }
-          this.excelVisible = false;
         }
+        // else {
+        //   var result =
+        //     index === "update" || index === "updateManySave"
+        //       ? await content.update("settings")
+        //       : index === "create"
+        //       ? await content.create("settings", this.id)
+        //       : await CharacterStatus.postMany("settings", this.id, content);
+        //   var condition =
+        //     index !== "uploadExcelSave"
+        //       ? Object.keys(result).length !== 0
+        //       : result.result.length !== 0;
+        //   if (condition) {
+        //     index === "update" || index === "updateManySave"
+        //       ? this.$message("更新成功")
+        //       : this.$message("新增成功");
+        //     await this.getAccountCharacterStatus();
+        //   } else {
+        //     this.$message.error("系統錯誤");
+        //   }
+        //   if (index !== "updateManySave") {
+        //     this.innerVisible = false;
+        //   } else {
+        //     this.dialogData.forEach((item, index) => {
+        //       if (item.id == content.id) {
+        //         this.dialogData.splice(index, 1, content);
+        //       }
+        //     });
+        //   }
+        //   this.excelVisible = false;
+        // }
       } else {
         this.innerVisible = false;
         this.excelVisible = false;

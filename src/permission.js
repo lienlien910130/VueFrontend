@@ -31,11 +31,11 @@ router.beforeEach(async (to, from, next) => {
       NProgress.done();
     } else {
       if (to.name !== null) {
-        var isNeedReload = store.getters.needreload;
-        if (isNeedReload) {
-          await store.dispatch("permission/setmenu", await Menu.get());
-          await store.dispatch("permission/setneedreload", false);
-        }
+        // var isNeedReload = store.getters.needreload;
+        // if (isNeedReload) {
+        //   await store.dispatch("permission/setmenu", await Menu.get());
+        //   await store.dispatch("permission/setneedreload", false);
+        // }
         if (to.name == "process" || to.name == "selfDefenseClass") {
           toMenu = "selfDefenseFireMarshalling";
         }

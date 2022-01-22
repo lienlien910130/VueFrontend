@@ -121,22 +121,37 @@ const authority = {
   apiPostAccountAuthority(data) {
     return req("post", "/accountSetting/check", null, data);
   },
-  // apiPatchAccountAuthority(data){ return req('patch','/accountSetting/check',data) },
-  apiPatchAccountAuthority(data) {
+
+  apiPatchAccountAuthoritySetting(data) {
+    //設定
     return req("patch", "/settings/account/check", null, data);
   },
-  apiPutAccountAuthority(data) {
-    return req("put", "/accountSetting/check", null, data);
+  apiPatchAccountAuthority(data) {
+    //帳號管理
+    return req("patch", "/accountSetting/check", null, data);
   },
-  apiPatchAccountPassword(data) {
-    return req("patch", "/index/accounts", null, data);
+  apiPatchAccountAuthorityUser(data) {
+    //住戶
+    return req("patch", "/settings/account/check", null, data);
   },
+
+  // apiPatchAccountPassword(data) {
+  //   return req("patch", "/index/accounts", null, data);
+  // },
   apiDeleteAccountAuthority(accountId) {
     return req("delete", "/accountSetting/" + accountId);
   },
   apiGetAccountAuthoritySearchPages(data) {
-    return req("post", "/index/accounts/ss", null, data, true);
+    return req("post", "/accountSetting/ss", null, data, true);
   },
+  apiGetAccountSettingSearchPages(data) {
+    return req("post", "/settings/account/ss", null, data, true);
+  },
+  //api要改成basic
+  apiGetUserSearchPages(data) {
+    return req("post", "/index/accounts/ss", this.getBid(), data, true);
+  },
+  // "/index/accounts/ss"
   apiPostAccountAuthorities(data) {
     // data.forEach(element => {
     //     element.parentId = this.getBid()
@@ -147,9 +162,7 @@ const authority = {
   apiGetAccountAuthorityByAccount(roleId) {
     return req("get", "/accountSetting/accessAuthorities/" + roleId);
   },
-  apiGetUserSearchPages(data) {
-    return req("post", "/index/accounts/ss", this.getBid(), data, true);
-  },
+
   //上傳大頭照
   apiPostUserPhoto(tgUserId, data, type) {
     return req(

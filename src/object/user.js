@@ -234,7 +234,6 @@ class User extends Parent {
         maxlength: "200",
         isHidden: false,
         isSearch: true,
-        placeholder: "請輸入職稱",
         isAssociate: false,
         isEdit: true,
         isUpload: true,

@@ -167,7 +167,7 @@ export default {
         }
         if (isDelete) {
           this.$message("刪除成功");
-          this.$store.dispatch("permission/setRoutes");
+          //this.$store.dispatch("permission/setRoutes");
           this.$socket.sendMsg("menus", "routes", "");
           this.$refs.block.clearSelectArray();
         } else {
@@ -234,7 +234,7 @@ export default {
           index == "update" || index == "updateManySave"
             ? this.$message("更新成功")
             : this.$message("新增成功");
-          this.$store.dispatch("permission/setRoutes");
+          //this.$store.dispatch("permission/setRoutes");
           this.$socket.sendMsg("menus", "routes", "");
           if (index !== "updateManySave") {
             this.innerVisible = false;
