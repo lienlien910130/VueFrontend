@@ -1123,14 +1123,22 @@ class Account extends Parent {
       });
     return data;
   }
-  static async updateData(type, data) {
+  static async updateData(type, data, isObj = false) {
     var data = await api.authority
       .apiPatchAccountAuthority(type, data)
       .then(async (response) => {
-        return true;
+        if(isObj){
+          return new Account(response.result);
+        }else{
+          return true
+        }
       })
       .catch((error) => {
-        return false;
+        if(isObj){
+          return {}
+        }else{
+          return false
+        }
       });
     return data;
   }
@@ -1138,10 +1146,14 @@ class Account extends Parent {
     var data = await api.authority
       .apiPatchAccountFloorOfHouse(type, accountId)
       .then(async (response) => {
-        return true;
+        console.log('upgrade',response)
+        response.result = response.result.map((item) => {
+          return new Account(item);
+        });
+        return response;
       })
       .catch((error) => {
-        return false;
+        return [];
       });
     return data;
   }

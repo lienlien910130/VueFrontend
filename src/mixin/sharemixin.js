@@ -29,6 +29,8 @@ export default {
       "process",
       "processMsg",
       "setting_record",
+      "floorOfHouse_record",
+      "buildingfloorOfHouse"
     ]),
   },
   created() {

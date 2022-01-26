@@ -189,50 +189,6 @@
             >
           </el-col>
         </template>
-        <!-- <el-input
-            v-if="hasSearch == true"
-            placeholder="請輸入內容，多條件搜尋請依左側'勾選條件'依序輸入值並以'逗號'區隔"
-            v-model="inputSearch"
-            class="input-with-select"
-            style="width: 42%; float: right"
-            clearable
-            @clear="clearInputSearch"
-            @keyup.enter.native="handleSearchWord"
-          >
-            <el-select
-              v-model="inputSelect"
-              filterable
-              multiple
-              slot="prepend"
-              value-key="id"
-              placeholder="請選擇欄位"
-              style="width: 170px"
-              collapse-tags
-              clearable
-            >
-              <el-option
-                v-for="(item, index) in inputSelectChange"
-                :key="index"
-                :label="item.label"
-                :value="item.prop"
-              >
-              </el-option>
-            </el-select>
-            <el-button
-              slot="append"
-              icon="el-icon-search"
-              @click="handleSearchWord"
-            ></el-button>
-          </el-input> -->
-
-        <!-- <el-button
-            v-if="title == 'maintain' || title == 'maintainList'"
-            class="filter-item"
-            type="primary"
-            @click="change"
-          >
-            <span> 檢視大項 </span>
-          </el-button> -->
       </div>
     </el-row>
     <el-row :gutter="gutter">
@@ -1117,6 +1073,19 @@ export default {
               this.$emit("handleBlock", this.title, status, this.selectArray);
             })
             .catch(() => {});
+        }
+      } else if(status === 'multipleVerify'){
+        if (this.selectArray.length == 0) {
+          this.$message.error("請勾選要更新的資料列");
+        } else {
+          var unallow = this.selectArray.filter(item=>{
+            return item.usageOfFloor == undefined || item.usageOfFloor == null || item.usageOfFloor == ''
+          })
+          if(unallow.length !== 0){
+            this.$message.error("請勿選擇沒有設定門牌的帳號");
+          }else{
+            this.$emit("handleBlock", this.title, status, this.selectArray);
+          }
         }
       } else if (status === "setfloors") {
         if (this.selectArray.length == 0) {

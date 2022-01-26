@@ -31,12 +31,32 @@
       v-on:handleDialog="handleDialog"
     ></DialogAuthority>
 
-    <!-- <DialogTable
-      ref="dialogtable"
-      v-if="tableVisible === true"
-      v-bind="tableAttrs"
-      v-on="tableEvent"
-    ></DialogTable> -->
+    <el-dialog title="住戶認證" :visible.sync="dialogFormVisible" center>
+      <el-form :model="ruleForm" :rules="rules" ref="ruleForm">
+          <el-form-item label="門牌" prop="usageOfFloor">
+            <el-select
+              v-model="ruleForm.usageOfFloor"
+              filterable
+              placeholder="請選擇"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="(obj, index) in houseList"
+                :key="index"
+                :label="obj.label"
+                :value="obj.id"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm('ruleForm')"
+          >確認</el-button
+        >
+        <el-button @click="resetForm('ruleForm')">取消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -63,6 +83,18 @@ export default {
         accessAuthorities: this.roleAccessAuthority,
       };
     },
+    houseList() {
+      if (this.floorOfHouse_record == 0) {
+        this.$store.dispatch("building/setFloorOfHouse");
+        this.$store.dispatch("record/saveFloorOfHouseRecord", 1);
+      }
+      return this.buildingfloorOfHouse.map((v) => {
+        this.$set(v, "id", v.id);
+        this.$set(v, "label", v.houseNumber);
+        this.$set(v, "value", v.id);
+        return v;
+      });
+    },
     // tableEvent() {
     //   return {
     //     handleTableClick: this.handleTableClick,
@@ -85,6 +117,13 @@ export default {
       accessAuthority: [],
       authorityVisible: false,
       account: null,
+      dialogFormVisible:false,
+      ruleForm:{usageOfFloor:null},
+      rules:{
+          usageOfFloor: [
+            { required: true, message: "請選擇門牌", trigger: "change" },
+          ],
+      }
     };
   },
   methods: {
@@ -92,16 +131,24 @@ export default {
       this.title = "account";
       this.tableConfig = Account.getTableConfig();
       await this.getAllAccount();
+      this.headerButtonsName = [
+          { name: "多筆刪除", icon: "el-icon-delete", status: "deleteMany" },
+          { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
+          {
+            name: "新增資料",
+            icon: "el-icon-circle-plus-outline",
+            status: "empty",
+          },
+          { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
+          { name: "匯入檔案", icon: "el-icon-upload2", status: "uploadExcel" },
+          { name: "多筆驗證", icon: "el-icon-circle-check", status: "multipleVerify" },
+        ];
       this.buttonsName = [
         { name: "刪除", icon: "el-icon-delete", status: "delete" },
         { name: "編輯", icon: "el-icon-edit", status: "open" },
         { name: "查看權限", icon: "el-icon-view", status: "distribution" },
         { name: "驗證住戶", icon: "el-icon-circle-check", status: "verify" },
       ];
-      // if(this.account_record == 0){
-      //     this.$store.dispatch('building/setaccounts')
-      //     this.$store.dispatch('record/saveAccountRecord',1)
-      // }
     },
     async setMenuRoleAccess() {
       this.accessAuthority = [];
@@ -132,25 +179,6 @@ export default {
       this.blockData = data.result;
       this.listQueryParams.total = data.totalPageCount;
     },
-    // async getAccountCharacterStatus() {
-    //   var data = await CharacterStatus.getSearchPage(
-    //     "accountSetting",
-    //     this.account.getID(),
-    //     this.tablelistQueryParams
-    //   );
-    //   this.tableTitle = "accountOfCharacterStatus";
-    //   this.dialogtableConfig = CharacterStatus.getTableConfig();
-    //   this.tableData = data.result;
-    //   this.tablelistQueryParams.total = data.totalPageCount;
-    // },
-    // async resettablelistQueryParams() {
-    //   this.tablelistQueryParams = {
-    //     pageIndex: 1,
-    //     pageSize: 10,
-    //     total: 0,
-    //   };
-    //   await this.getAccountCharacterStatus();
-    // },
     async handleBlock(title, index, content) {
       console.log(title, index, JSON.stringify(content));
       this.dialogData = [];
@@ -191,7 +219,6 @@ export default {
           if (this.listQueryParams.pageIndex > page) {
             this.listQueryParams.pageIndex = page;
           }
-          // this.$store.dispatch('building/setaccounts')
           this.$store.dispatch("building/setCommittee");
           this.$socket.sendMsg(
             "account",
@@ -257,24 +284,49 @@ export default {
           content.usageOfFloor !== null &&
           content.usageOfFloor !== ""
         ) {
+          //已有設定過門牌可直接進行升級的動作
           var result = await Account.upgrade("/accountSetting", content.id);
+          if(result.length !== 0){
+            this.$message('認證成功，若要取消認證，請洽水星服務人員')
+            result.forEach(item=>{
+              this.$socket.sendMsg(
+                  "account",
+                  'update', item
+                );
+            })
+            await this.getAllAccount();
+          }else{
+            this.$message.error('認證失敗，請洽水星服務人員')
+          }
         } else {
           //跳出可以選擇門牌的視窗
+          this.account = content;
+          this.dialogFormVisible = true
         }
+      } else if(index === 'multipleVerify'){
+         var accountArray = [];
+          content.forEach((item) => {
+            accountArray.push(item.id);
+          });
+        var result = await Account.upgrade("/accountSetting", content.id);
+        if(result.length !== 0){
+                this.$message('認證成功，若要取消認證，請洽水星服務人員')
+                result.forEach(item=>{
+                  this.$socket.sendMsg(
+                      "account",
+                      'update', item
+                    );
+                })
+                await this.getAllAccount();
+              }else{
+                this.$message.error('認證失敗，請洽水星服務人員')
+              }
       }
-      // else if (index === "characterStatus") {
-      //   this.account = content;
-      //   await this.resettablelistQueryParams();
-      //   this.tableVisible = true;
-      // }
     },
     async handleDialog(title, index, content) {
       //Dialog相關操作
       console.log(title, index, content);
       if (index !== "cancel") {
-        // if (title === "characterStatus") {
-        //   await this.onCharacterStatus(index, content);
-        // } else
         if (title === "photo") {
           if (index === "photo") {
             const formData = new FormData();
@@ -378,123 +430,8 @@ export default {
         this.excelVisible = false;
         this.authorityVisible = false;
         this.$refs.block.clearSelectArray();
-        // if (title === "characterStatus") {
-        //   this.$refs.dialogtable.clearSelectArray();
-        // } else {
-        //   this.$refs.block.clearSelectArray();
-        // }
       }
     },
-    // async handleTableClick(index, content) {
-    //   console.log(index, JSON.stringify(content));
-    //   this.dialogData = [];
-    //   this.dialogTitle = "characterStatus";
-    //   this.dialogButtonsName = [];
-    //   this.dialogConfig = CharacterStatus.getTableConfig();
-    //   if (index === "cancel") {
-    //     this.tableVisible = false;
-    //   } else if (index === "clickPagination") {
-    //     this.tablelistQueryParams = content;
-    //     await this.getAccountCharacterStatus();
-    //   } else if (index === "open") {
-    //     this.dialogData.push(content);
-    //     this.dialogButtonsName = [
-    //       { name: "儲存", type: "primary", status: "update" },
-    //       { name: "取消", type: "info", status: "cancel" },
-    //     ];
-    //     this.innerVisible = true;
-    //     this.dialogStatus = "update";
-    //   } else if (index === "delete" || index === "deleteMany") {
-    //     var isDelete = false;
-    //     if (index === "delete") {
-    //       isDelete = await content.delete("accountSetting");
-    //     } else {
-    //       var deleteArray = [];
-    //       content.forEach((item) => {
-    //         deleteArray.push(item.id);
-    //       });
-    //       isDelete = await CharacterStatus.deleteMany(
-    //         "accountSetting",
-    //         deleteArray.toString()
-    //       );
-    //     }
-    //     if (isDelete) {
-    //       this.$message("刪除成功");
-    //       var length = content.length !== undefined ? content.length : 1;
-    //       var page = Math.ceil(
-    //         (this.listQueryParams.total - length) /
-    //           this.listQueryParams.pageSize
-    //       );
-    //       if (this.listQueryParams.pageIndex > page) {
-    //         this.listQueryParams.pageIndex = page;
-    //       }
-    //       await this.getAccountCharacterStatus();
-    //       this.$refs.block.clearSelectArray();
-    //     } else {
-    //       this.$message.error("系統錯誤");
-    //     }
-    //   } else if (index === "empty") {
-    //     this.dialogData.push(CharacterStatus.empty());
-    //     this.dialogButtonsName = [
-    //       { name: "儲存", type: "primary", status: "create" },
-    //       { name: "取消", type: "info", status: "cancel" },
-    //     ];
-    //     this.innerVisible = true;
-    //     this.dialogStatus = "create";
-    //   } else if (index === "exportExcel") {
-    //     this.exportExcelData = this.tableData;
-    //     this.excelVisible = true;
-    //     this.excelType = "exportExcel";
-    //   } else if (index === "uploadExcel") {
-    //     this.excelVisible = true;
-    //     this.excelType = "uploadExcel";
-    //   } else if (index === "updateMany") {
-    //     this.dialogStatus = "updateMany";
-    //     content.forEach((item) => {
-    //       var obj = _.cloneDeep(item);
-    //       this.dialogData.push(obj);
-    //     });
-    //     this.dialogButtonsName = [
-    //       { name: "儲存", type: "primary", status: "updateManySave" },
-    //       { name: "取消", type: "info", status: "cancel" },
-    //     ];
-    //     this.innerVisible = true;
-    //   }
-    // },
-    // async onCharacterStatus(index, content) {
-    //   var result =
-    //     index === "update" || index === "updateManySave"
-    //       ? await content.update("accountSetting")
-    //       : index === "create"
-    //       ? await content.create("accountSetting", this.account.getID())
-    //       : await CharacterStatus.postMany(
-    //           "accountSetting",
-    //           this.account.getID(),
-    //           content
-    //         );
-    //   var condition =
-    //     index !== "uploadExcelSave"
-    //       ? Object.keys(result).length !== 0
-    //       : result.result.length !== 0;
-    //   if (condition) {
-    //     index === "update" || index === "updateManySave"
-    //       ? this.$message("更新成功")
-    //       : this.$message("新增成功");
-    //     await this.getAccountCharacterStatus();
-    //     if (index !== "updateManySave") {
-    //       this.innerVisible = false;
-    //     } else {
-    //       this.dialogData.forEach((item, index) => {
-    //         if (item.id == content.id) {
-    //           this.dialogData.splice(index, 1, content);
-    //         }
-    //       });
-    //     }
-    //     this.excelVisible = false;
-    //   } else {
-    //     this.$message.error("系統錯誤");
-    //   }
-    // },
     async changeTable(value) {
       this.isTable = value;
       //需處理
@@ -515,6 +452,41 @@ export default {
       ) {
         await this.handleBlock("account", "empty", "");
       }
+    },
+    submitForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          var temp = {
+              id: this.account.getID(),
+              usageOfFloor: this.ruleForm.usageOfFloor,
+            };
+            var isOk = await Account.updateData("/accountSetting", temp);
+            if (isOk) {
+              var result = await Account.upgrade("/accountSetting", this.account.getID());
+              if(result.length !== 0){
+                this.$message('認證成功，若要取消認證，請洽水星服務人員')
+                result.forEach(item=>{
+                  this.$socket.sendMsg(
+                      "account",
+                      'update', item
+                    );
+                })
+                await this.getAllAccount();
+                this.dialogFormVisible = false;
+              }else{
+                this.$message.error('認證失敗，請洽水星服務人員')
+              }
+            } else {
+              this.$message.error("認證失敗，請洽水星服務人員");
+            }
+        } else {
+          return false;
+        }
+      });
+    },
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
+      this.dialogFormVisible = false;
     },
   },
 };
