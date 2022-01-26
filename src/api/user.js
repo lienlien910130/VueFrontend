@@ -8,6 +8,9 @@ const user = {
   apiPostLogin(data) {
     return req("post", "/users/login", null, data);
   },
+  apiPostRegister(data) {
+    return req("post", "/users/support/register", null, data);
+  },
 
   apiPostPassword(data) {
     return req("post", "/users/forgot/checkAndSendInfo", null, data);

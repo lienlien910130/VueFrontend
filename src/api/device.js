@@ -240,6 +240,14 @@ const device = {
       data
     );
   },
+  apiPatchMaintainsDevice(data) {
+    return req(
+      "patch",
+      "/maintainListManagement/devices/check/false",
+      null,
+      data
+    );
+  },
   apiDeleteMaintains(maintainId) {
     return req(
       "delete",
@@ -247,13 +255,28 @@ const device = {
     );
   },
   apiGetMaintainAllSearchPages(data) {
-    return req("post", "/index/maintains/ss", this.getBid(), data, true);
+    return req(
+      "post",
+      "/maintainListManagement/maintainManagement/a/ss",
+      this.getBid(),
+      data,
+      true
+    );
   },
   apiGetMaintainSearchPages(maintainListId, data) {
     return req(
       "post",
       "/maintainListManagement/maintainManagement/ss",
       maintainListId,
+      data,
+      true
+    );
+  },
+  apiGetMaintainDeviceSearchPages(data) {
+    return req(
+      "post",
+      "/maintainListManagement/devices/ss",
+      this.getBid(),
       data,
       true
     );

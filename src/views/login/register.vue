@@ -1,0 +1,233 @@
+<template>
+  <div class="login-container">
+    <div class="container">
+      <!-- <el-form
+        :model="ruleForm"
+        :rules="rules"
+        ref="ruleForm"
+        label-width="100px"
+        class="demo-ruleForm"
+      >
+        <el-form-item label="帳號" prop="account">
+          <el-input v-model="ruleForm.account"></el-input>
+        </el-form-item>
+        <el-form-item label="email" prop="email">
+          <el-input v-model="ruleForm.email"></el-input>
+        </el-form-item>
+        <el-button type="primary" @click="submitForm('ruleForm')"
+          >重設密碼</el-button
+        >
+        <el-button @click="resetForm('ruleForm')">返回首頁</el-button>
+      </el-form> -->
+      <el-tabs v-model="activeName" @tab-click="handleClick">
+        <el-tab-pane label="純住戶登記" name="first"></el-tab-pane>
+        <el-tab-pane label="成為住戶" name="second"></el-tab-pane>
+      </el-tabs>
+      <!-- <template v-if="!show">
+        <el-tooltip placement="top">
+          <div slot="content">住戶資料登記使用</div>
+          <el-button type="primary" @click="selectType('house')"
+            >純住戶登記</el-button
+          >
+        </el-tooltip>
+        <el-tooltip placement="top">
+          <div slot="content">註冊成為平台會員</div>
+          <el-button type="success" @click="selectType('register')"
+            >註冊會員</el-button
+          >
+        </el-tooltip>
+        <el-tooltip placement="top">
+          <div slot="content">已有住戶登記過資料，想升級為平台會員者</div>
+          <el-button @click="selectType('upgrade')"
+            >升級成為會員</el-button
+          >
+        </el-tooltip>
+      </template> -->
+      <el-form
+        ref="dataForm"
+        :model="temp"
+        :label-position="label"
+        label-width="auto"
+      >
+        <el-form-item
+          v-for="(item, index) in config"
+          :key="index"
+          :prop="item.prop"
+          v-show="item.isEdit"
+          :rules="[
+            { required: item.mandatory, message: item.message },
+            item.isPattern
+              ? { pattern: item.pattern, message: item.errorMsg }
+              : { type: item.type, message: item.typemessage },
+          ]"
+        >
+          <span slot="label">{{ item.label }}</span>
+          <el-date-picker
+            v-if="item.formType == 'date'"
+            v-model="temp[item.prop]"
+            value-format="yyyy-MM-dd"
+            placeholder="請選擇"
+            style="width: 100%"
+            :type="item.format == 'YYYY' ? 'year' : 'date'"
+          />
+          <el-input
+            v-else-if="item.format == 'textarea'"
+            v-model="temp[item.prop]"
+            :autosize="{ minRows: 4, maxRows: 8 }"
+            :placeholder="item.placeholder"
+            maxlength="200"
+            type="textarea"
+            show-word-limit
+          >
+          </el-input>
+          <el-select
+            v-else-if="item.formType == 'boolean'"
+            v-model="temp[item.prop]"
+            placeholder="請選擇"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="(val, index) in [true, false]"
+              :key="index"
+              :value="val"
+              :label="val | changeBoolean(item.format)"
+            ></el-option>
+          </el-select>
+          <el-select
+            v-else-if="item.formType == 'singleChoice'"
+            v-model="temp[item.prop]"
+            placeholder="請選擇"
+            filterable
+            value-key="id"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="(obj, index) in selectfilter(item.format)"
+              :key="index"
+              :label="obj.label"
+              :value="obj"
+            >
+            </el-option>
+          </el-select>
+          <el-input
+            v-else
+            v-model="temp[item.prop]"
+            :maxlength="item.maxlength"
+            show-word-limit
+            :placeholder="item.placeholder"
+            :show-password="item.prop === 'password'"
+          >
+          </el-input>
+        </el-form-item>
+        <el-button type="primary" @click="submitForm('dataForm')"
+          >儲存</el-button
+        >
+        <el-button @click="resetForm('dataForm')">清空</el-button>
+      </el-form>
+    </div>
+  </div>
+</template>
+<script>
+import computedmixin from "@/mixin/computedmixin";
+import { Account } from "@/object";
+export default {
+  mixins: [computedmixin],
+  data() {
+    return {
+      config: Account.getHouseTableConfig(),
+      temp: {},
+      activeName: "first",
+    };
+  },
+  methods: {
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$store
+            .dispatch("user/register", this.temp)
+            .then((response) => {
+              if (this.activeName == "first") {
+                this.$message(
+                  "若要成為正式帳號，請登入後申請，或是重新填寫成為住戶"
+                );
+              } else {
+                this.$message("提交完成，可直接登入系統查看資料");
+              }
+              setTimeout(() => {
+                this.$router.push({ path: "/login" });
+              }, 2000);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        } else {
+          return false;
+        }
+      });
+    },
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
+    },
+    handleClick() {
+      this.config =
+        this.activeName == "first"
+          ? Account.getHouseTableConfig()
+          : Account.getRegisterTableConfig();
+    },
+  },
+};
+</script>
+
+<style lang="scss" scoped>
+.login-container {
+  min-height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-image: url("@assets/image/login_bg.jpg");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  display: flex;
+  .container {
+    text-align: center;
+    vertical-align: middle;
+    width: 50%;
+    height: 50%;
+    margin: auto;
+  }
+}
+
+@media only screen and (min-width: 769px) and (max-width: 1440px) {
+  .login-container {
+    .container {
+      width: 90%;
+    }
+  }
+}
+
+@media only screen and (min-width: 0px) and (max-width: 768px) {
+  .login-container {
+    padding: 0px 5px;
+
+    .container {
+      width: 90%;
+    }
+
+    .title {
+      margin: 20px auto;
+    }
+    .footer {
+      .ft {
+        float: none;
+        margin-right: 0px;
+      }
+    }
+    .title {
+      text-align: center;
+      .ti {
+        margin-top: 0px;
+        margin-left: 0px;
+      }
+    }
+  }
+}
+</style>

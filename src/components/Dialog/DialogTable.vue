@@ -284,6 +284,8 @@ export default {
         floor: "樓層",
         listOfMgmt: "班別",
         contingencyProcess: "流程圖",
+        monthlyDevice: "本月應保養設備",
+        expiredDevice: "過期未保養設備",
       },
       activeName: "fire",
       //更新多筆&刪除多筆使用

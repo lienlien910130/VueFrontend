@@ -51,22 +51,6 @@
             </i>
             <!-- 大頭貼 -->
             <template v-if="item.formType == 'photo'">
-              <!-- <img :src="previewPath" class="previewImg" />
-              <el-upload
-                ref="upload"
-                action="upload"
-                accept="image/jpeg,image/png"
-                :on-change="handlePhotoChange"
-                :auto-upload="false"
-                :file-list="fileList"
-                :show-file-list="false"
-              >
-                <i
-                  slot="trigger"
-                  class="el-icon-upload"
-                  style="cursor: pointer"
-                />
-              </el-upload> -->
               <el-upload
                 ref="upload"
                 action="upload"
@@ -374,7 +358,9 @@
               v-model="temp[item.prop]"
               placeholder="請選擇"
               style="width: 100%"
-              @change="handleMainSelect($event, item.format)"
+              @change="
+                item.hasEvent ? handleMainSelect($event, item.format) : null
+              "
             >
               <el-option
                 v-for="(val, index) in [true, false]"
@@ -463,6 +449,7 @@ import {
   Contactunit,
   Files,
   Inspection,
+  MaintainManagementList,
   SelfDefenseFireMarshalling,
 } from "@/object";
 const moment = require("moment");
@@ -705,7 +692,7 @@ export default {
             !set.has(item.id) ? set.add(item.id) : false
           );
         }
-      } else if (this.title == "account") {
+      } else if (this.title == "account" || this.title == "user") {
         if (
           temp["headShotFileId"] !== undefined &&
           temp["headShotFileId"] !== null &&
@@ -765,12 +752,12 @@ export default {
             this.$emit("handleChangeConfig", false);
           }
         } else if (this.title == "maintain" && format == "deviceSelect") {
-          console.log(value["linkMaintainVendors"]);
           this.temp["linkContactUnits"] =
             value["linkMaintainVendors"] !== undefined &&
             value["linkMaintainVendors"].length !== 0
               ? value["linkMaintainVendors"][0]
               : {};
+          this.temp["nextMaintainTime"] = value["nextMaintainTime"];
         } else if (
           format == "assignFireDeviceSelect" ||
           format == "assignPLCDeviceSelect"
@@ -899,6 +886,33 @@ export default {
             query: { type: "role" },
           });
           break;
+        case "maintainListSelect":
+          this.$prompt("建立新維護保養單", "提示", {
+            confirmButtonText: "確定",
+            cancelButtonText: "取消",
+            inputValidator: (val) => {
+              if (val === null || val === "") {
+                return false;
+              }
+              return true;
+            },
+            inputErrorMessage: "請輸入名稱",
+          })
+            .then(({ value }) => {
+              this.$emit(
+                "handleDialog",
+                "maintainList",
+                "createNewSelect",
+                new MaintainManagementList({
+                  name: value,
+                  createdDate: new Date(),
+                })
+              );
+            })
+            .catch(() => {
+              return false;
+            });
+          break;
         default:
           var option =
             format == "cStatusOptions"
@@ -918,6 +932,10 @@ export default {
             query: { type: option },
           });
           break;
+      }
+      if (format == "maintainListSelect") {
+        //建立維護保養單不需繼續向下執行
+        return false;
       }
       if (window.child && window.child.open && !window.child.closed) {
         window.child.close();

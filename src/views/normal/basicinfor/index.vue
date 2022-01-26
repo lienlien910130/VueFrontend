@@ -451,7 +451,10 @@ export default {
       //取得大樓住戶資料
       this.downlistQueryParams.linkBuildings = [{ id: this.buildingid }];
       this.downlistQueryParams.usageOfFloor = "{IsNotNull}";
-      var data = await Account.getUserSearchPage(this.downlistQueryParams);
+      var data = await Account.getSearchPage(
+        "/basic/accountSetting",
+        this.downlistQueryParams
+      );
       this.downData = data.result;
       this.downlistQueryParams.total = data.totalPageCount;
     },
@@ -1007,7 +1010,7 @@ export default {
     async onUserActions(index, content) {
       //只剩下更新&多筆更新&匯出檔案的功能
       if (index == "create" || index == "update" || index == "updateManySave") {
-        var data = await Account.getUserSearchPage({
+        var data = await Account.getSearchPage("/basic/accountSetting", {
           identityCard: "{LIKE}" + content.identityCard,
           pageIndex: 1,
           pageSize: 12,
@@ -1022,7 +1025,7 @@ export default {
         if (canSave) {
           var result =
             index === "update" || index == "updateManySave"
-              ? await content.updateP()
+              ? await content.update("/basic/accountSetting")
               : await content.create();
           if (Object.keys(result).length !== 0) {
             this.$socket.sendMsg("account", index, result);
@@ -1066,7 +1069,7 @@ export default {
         var result = await Account.postPhoto(
           this.account.getID(),
           formData,
-          "/basic"
+          "/basic/accountSetting"
         );
         if (result !== null) {
           this.$message("上傳成功");
@@ -1076,7 +1079,7 @@ export default {
         }
       } else if (index === "removePhoto") {
         var temp = { id: content, headShotFileId: "" };
-        var result = await Account.updateHead(temp);
+        var result = await Account.updateData("/basic/accountSetting", temp);
         if (result) {
           this.$message("刪除成功");
           this.dialogData[0]["headShotFileId"] = "";

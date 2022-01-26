@@ -274,7 +274,7 @@
                             (option.format === 'YYYY-MM-DD')
                         "
                       >
-                        {{ dataStr(item[option.prop], option.format) }}
+                        {{ dataStr(item, option.format, option.prop) }}
                       </span>
 
                       <span v-else-if="option.format == 'range'">
@@ -649,19 +649,37 @@
                 <!-- 檔案&缺失&查看/分配權限&編輯&刪除 -->
                 <div style="float: right">
                   <span v-for="(button, index) in buttonsName" :key="index">
-                    <el-tooltip
-                      class="item"
-                      effect="dark"
-                      :content="button.name"
-                      placement="top"
-                    >
-                      <i
-                        :class="button.icon"
-                        @click="handleClickOption(button.status, scope.row)"
-                        style="cursor: pointer; font-size: 25px; float: right"
+                    <template v-if="button.status == 'verify'">
+                      <el-tooltip
+                        v-if="!scope.row.verifyUsageOfFloor"
+                        class="item"
+                        effect="dark"
+                        :content="button.name"
+                        placement="top"
                       >
-                      </i>
-                    </el-tooltip>
+                        <i
+                          :class="button.icon"
+                          @click="handleClickOption(button.status, scope.row)"
+                          style="cursor: pointer; font-size: 25px; float: right"
+                        >
+                        </i>
+                      </el-tooltip>
+                    </template>
+                    <template v-else>
+                      <el-tooltip
+                        class="item"
+                        effect="dark"
+                        :content="button.name"
+                        placement="top"
+                      >
+                        <i
+                          :class="button.icon"
+                          @click="handleClickOption(button.status, scope.row)"
+                          style="cursor: pointer; font-size: 25px; float: right"
+                        >
+                        </i>
+                      </el-tooltip>
+                    </template>
                   </span>
                 </div>
               </template>

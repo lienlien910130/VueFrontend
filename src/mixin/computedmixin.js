@@ -183,6 +183,19 @@ export default {
               return row.getCertificateNumber();
             case "actionSelect":
               return row.getActionSelect();
+            case "floorOfHouseSelect":
+              if (this.floorOfHouse_record == 0) {
+                this.$store.dispatch("building/setFloorOfHouse");
+                this.$store.dispatch("record/saveFloorOfHouseRecord", 1);
+              }
+              var data = this.buildingfloorOfHouse.filter((item) => {
+                return item.id == row[prop];
+              });
+              if (data.length) {
+                return data[0].houseNumber;
+              } else {
+                return "";
+              }
           }
         } else {
           return "";
@@ -462,9 +475,6 @@ export default {
             case "userInfo":
             case "classLeaderSelect":
             case "usageOfFloorUserInfo":
-              // if (this.title == "building") {
-              //   return this.selectData;
-              // } else {
               if (this.account_record == 0) {
                 this.$store.dispatch("building/setaccounts");
                 this.$store.dispatch("record/saveAccountRecord", 1);
@@ -475,7 +485,6 @@ export default {
                 this.$set(v, "value", v.id);
                 return v;
               });
-            //}
             case "deviceTypeSelect":
               if (this.deviceType_record == 0) {
                 this.$store.dispatch("building/setDeviceType");

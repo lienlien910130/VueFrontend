@@ -121,41 +121,29 @@ const authority = {
   apiPostAccountAuthority(data) {
     return req("post", "/accountSetting/check", null, data);
   },
-
-  apiPatchAccountAuthoritySetting(data) {
-    //設定
-    return req("patch", "/settings/account/check", null, data);
+  apiPatchAccountAuthority(type, data) {
+    //更新
+    return req("patch", type + "/check", null, data);
   },
-  apiPatchAccountAuthority(data) {
-    //帳號管理
-    return req("patch", "/accountSetting/check", null, data);
+  apiPatchAccountFloorOfHouse(type, accountId) {
+    //管理員手動驗證住戶門牌-住戶&帳號管理
+    return req("patch", type + "/addRole/member/" + accountId, null, null);
   },
-  apiPatchAccountAuthorityUser(data) {
-    //住戶
-    return req("patch", "/settings/account/check", null, data);
-  },
-
-  // apiPatchAccountPassword(data) {
-  //   return req("patch", "/index/accounts", null, data);
-  // },
   apiDeleteAccountAuthority(accountId) {
     return req("delete", "/accountSetting/" + accountId);
   },
-  apiGetAccountAuthoritySearchPages(data) {
-    return req("post", "/accountSetting/ss", null, data, true);
-  },
-  apiGetAccountSettingSearchPages(data) {
-    return req("post", "/settings/account/ss", null, data, true);
-  },
-  //api要改成basic
-  apiGetUserSearchPages(data) {
-    return req("post", "/index/accounts/ss", this.getBid(), data, true);
+
+  apiGetAccountAuthoritySearchPages(type, data) {
+    return req(
+      "post",
+      type + "/ss",
+      type == "/basic/accountSetting" ? this.getBid() : null,
+      data,
+      true
+    );
   },
   // "/index/accounts/ss"
   apiPostAccountAuthorities(data) {
-    // data.forEach(element => {
-    //     element.parentId = this.getBid()
-    // })
     return req("post", "/accountSetting/check/s", null, data);
   },
   //帳號取得權限管理
@@ -173,6 +161,7 @@ const authority = {
     );
   },
 
+  // 以下暫時用不到
   //帳號的狀態 - type: basic/accountSetting/settings
   apiGetAccountCharacterStatus(type, accountId) {
     return req("get", "/" + type + "/characterStatus/" + accountId + "/a");

@@ -16,26 +16,28 @@
                   prop="nextMaintainTime"
                   label="下次保養時間"
                   width="180"
-                  >{{ remind.nextMaintainTime | dateChange }}
+                >
+                  <template slot-scope="scope">
+                    {{ scope.row.nextMaintainTime | dateChange }}
+                  </template>
                 </el-table-column>
-                <el-table-column prop="lastMaintainTime" label="最後保養時間"
-                  >{{ remind.lastMaintainTime | dateChange }}
+                <el-table-column prop="lastMaintainTime" label="最後保養時間">
+                  <template slot-scope="scope">
+                    {{ scope.row.lastMaintainTime | dateChange }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="status" label="設備狀態">
+                  <template slot-scope="scope">
+                    {{ changeSettingsName(scope.row.status) }}
+                  </template>
                 </el-table-column>
                 <el-table-column>
                   <template slot-scope="scope">
                     <el-button
-                      v-if="scope.row.status !== finishId"
                       size="mini"
                       @click="handleRepair(scope.$index, scope.row)"
                       >叫修</el-button
                     >
-                    <!-- <el-button
-                      v-else
-                      size="mini"
-                      @click="handleRepair(scope.$index, scope.row)"
-                      disabled
-                      >{{ changeSettingsName(scope.row.status) }}</el-button
-                    > -->
                   </template>
                 </el-table-column>
               </el-table>
@@ -137,6 +139,7 @@ export default {
       hasSearch: false,
       remind: [],
       finishId: null,
+      searchDeviceType: "",
     };
   },
   computed: {
@@ -170,7 +173,6 @@ export default {
           this.$store.dispatch("building/setoptions");
           this.$store.dispatch("record/saveSettingRecord", 1);
         }
-        console.log(this.buildingoptions);
         if (value !== null && value !== undefined) {
           let _array = this.buildingoptions.filter(
             (item, index) => item.id == value
@@ -217,12 +219,6 @@ export default {
       ];
       this.finishId = await this.setting();
       var reminder = await MaintainManagementList.getReminder();
-      console.log(reminder.needMaintainDeviceLsit);
-      reminder.needMaintainDeviceLsit.forEach((item) => {
-        console.log(item.status == this.finishId);
-      });
-
-      console.log(this.finishId);
       this.remind = reminder.needMaintainDeviceLsit;
       this.panelList = [
         {
@@ -341,6 +337,21 @@ export default {
         this.maintainList = content;
         await this.resettablelistQueryParams();
         this.tableVisible = true;
+        this.tableheaderButtonsName = [
+          { name: "多筆刪除", icon: "el-icon-delete", status: "deleteMany" },
+          { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
+          {
+            name: "新增資料",
+            icon: "el-icon-circle-plus-outline",
+            status: "empty",
+          },
+          { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
+        ];
+        this.tablebuttonsName = [
+          { name: "刪除", icon: "el-icon-delete", status: "delete" },
+          { name: "編輯", icon: "el-icon-edit", status: "open" },
+          { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
+        ];
       }
     },
     async handleDialog(title, index, content) {
@@ -427,6 +438,15 @@ export default {
           //檢細大項的細項的分頁
           this.tablelistQueryParams = content;
           await this.getMaintain();
+        } else if (index === "createNewSelect") {
+          this.$delete(content, "linkMaintains");
+          var isOk = await content.create();
+          if (isOk) {
+            var maintainlist = await MaintainManagementList.get();
+            this.dialogSelect.splice(1, 1, maintainlist);
+          } else {
+            this.$message.error("新增失敗");
+          }
         }
       }
     },
@@ -455,7 +475,7 @@ export default {
             type: "object",
             typemessage: "",
             isSearch: false,
-            isAssociate: false,
+            isAssociate: true,
             isEdit: true,
             isUpload: false,
             isExport: true,
@@ -466,6 +486,7 @@ export default {
           var maintainlist = await MaintainManagementList.get();
           this.dialogSelect.push(maintainlist);
         }
+
         this.dialogData.push(MaintainManagement.empty());
         this.innerVisible = true;
         this.dialogStatus = "create";
@@ -547,11 +568,44 @@ export default {
           index === "update"
             ? this.$message("更新成功")
             : this.$message("新增成功");
-          if (this.isTable) {
-            await this.getMaintainAll();
+          if (
+            content.nextMaintainTime !== undefined &&
+            content.linkDevices.length !== 0
+          ) {
+            var result = await MaintainManagement.updateDevice({
+              id: content.linkDevices[0].id,
+              nextMaintainTime: content.nextMaintainTime,
+            });
+          }
+          if (index === "createRepair") {
+            await this.searchAndPage();
+            var reminder = await MaintainManagementList.getReminder();
+            console.log(JSON.stringify(reminder));
+            this.remind = reminder.needMaintainDeviceLsit;
+            this.panelList = [
+              {
+                label: "本月應保養數量",
+                count: reminder.thisMonthMaintainDeviceListCount,
+                svgIcon: "inspection",
+                type: "monthly",
+              },
+              {
+                label: "過期未保養",
+                count: reminder.expiredMaintainDeviceListCount,
+                svgIcon: "inspection",
+                type: "expired",
+              },
+            ];
+            if (this.tableVisible) {
+              await this.handleSetLineChartData(this.searchDeviceType);
+            }
           } else {
-            this.isUpdate = true;
-            await this.getMaintain();
+            if (this.isTable) {
+              await this.getMaintainAll();
+            } else {
+              this.isUpdate = true;
+              await this.getMaintain();
+            }
           }
         } else {
           this.$message.error("系統錯誤");
@@ -648,6 +702,8 @@ export default {
           this.isUpdate = false;
         }
         this.tableVisible = false;
+      } else if (index === "repair") {
+        await this.handleRepair(index, content);
       } else {
         await this.handleMaintain(index, content);
       }
@@ -737,7 +793,7 @@ export default {
         type: "object",
         typemessage: "",
         isSearch: false,
-        isAssociate: false,
+        isAssociate: true,
         isEdit: true,
         isUpload: false,
         isExport: true,
@@ -749,6 +805,8 @@ export default {
       this.dialogSelect.push(maintainlist);
       var data = MaintainManagement.empty();
       data.linkDevices.push(content);
+      data.linkContactUnits = content.linkMaintainVendors;
+      data.nextMaintainTime = content.nextMaintainTime;
       this.dialogData.push(data);
       this.innerVisible = true;
       this.dialogStatus = "create";
@@ -766,8 +824,37 @@ export default {
       );
       return _array.length !== 0 ? _array[0].id.toString() : "";
     },
-    handleSetLineChartData(type) {
+    async handleSetLineChartData(type) {
+      //本月應保養數量/過期未保養
+      this.searchDeviceType = type;
       console.log("handleSetLineChartData", type);
+      var data = [];
+      if (type == "monthly") {
+        const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
+        const endOfMonth = moment().endOf("month").format("YYYY-MM-DD");
+        data = await MaintainManagement.getDeviceSearchPage({
+          pageIndex: 1,
+          pageSize: 12,
+          nextMaintainTime: "{<~>}" + startOfMonth + "," + endOfMonth,
+          lastMaintainTime: "{<}[nextMaintainTime]",
+        });
+      } else {
+        const today = moment().format("YYYY-MM-DD");
+        data = await MaintainManagement.getDeviceSearchPage({
+          pageIndex: 1,
+          pageSize: 12,
+          nextMaintainTime: "{<}" + today,
+        });
+      }
+      this.tableTitle = type + "Device";
+      this.dialogtableConfig = Device.getTableConfig();
+      this.tableData = data.result;
+      this.tablelistQueryParams.total = data.totalPageCount;
+      this.tableheaderButtonsName = [];
+      this.tablebuttonsName = [
+        { name: "叫修", icon: "el-icon-s-tools", status: "repair" },
+      ];
+      this.tableVisible = true;
     },
   },
 };

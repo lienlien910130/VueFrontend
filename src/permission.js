@@ -7,7 +7,14 @@ import { Building, DeviceType, Menu } from "./object/index";
 const ElementUI = require("element-ui");
 NProgress.configure({ showSpinner: false });
 
-const whiteList = ["/login", "/emergencyGraphic/index", "/password", "/reset"]; // no redirect whitelist
+const whiteList = [
+  "/login",
+  "/emergencyGraphic/index",
+  "/password",
+  "/reset",
+  "/register",
+  "/certification",
+]; // no redirect whitelist
 
 router.beforeEach(async (to, from, next) => {
   console.log(to.name, from.name, to.meta.title);

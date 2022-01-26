@@ -1,7 +1,7 @@
 <template>
   <div class="editor-container">
     <el-tabs tab-position="left" v-model="activeName">
-      <el-tab-pane label="個人資料" name="personal">
+      <!-- <el-tab-pane label="個人資料" name="personal">
         <el-row :gutter="20">
           <el-col :xs="24" :sm="24" :md="24" :lg="6">
             <UserCard
@@ -14,21 +14,21 @@
           <el-col :xs="24" :sm="24" :md="24" :lg="18">
             <el-card>
               <el-tabs v-model="activeTab">
-                <!-- <el-tab-pane label="身體狀態" name="characterStatus">
+                 <el-tab-pane label="身體狀態" name="characterStatus">
                   <Block
                     ref="block"
                     :list-query-params.sync="listQueryParams"
                     v-bind="blockAttrs"
                     v-on="blockEvent"
                   ></Block>
-                </el-tab-pane> -->
+                </el-tab-pane> 
                 <el-tab-pane label="訂閱" name="subscription">訂閱</el-tab-pane>
               </el-tabs>
             </el-card>
           </el-col>
         </el-row>
-      </el-tab-pane>
-      <el-tab-pane label="人物狀態" name="cStatusOptions">
+      </el-tab-pane> -->
+      <!-- <el-tab-pane label="人物狀態" name="cStatusOptions">
         <el-row :gutter="20">
           <el-col :xs="24" :sm="24" :md="24" :lg="12">
             <SettingBlock
@@ -38,7 +38,7 @@
             ></SettingBlock>
           </el-col>
         </el-row>
-      </el-tab-pane>
+      </el-tab-pane> -->
       <el-tab-pane label="建築物" name="building">
         <el-row :gutter="20">
           <el-col :xs="24" :sm="24" :md="24" :lg="12">
@@ -120,13 +120,13 @@
       </el-tab-pane>
     </el-tabs>
 
-    <DialogForm
+    <!-- <DialogForm
       ref="dialogform"
       v-if="innerVisible === true"
       v-bind="dialogAttrs"
       v-on:handleUser="handleUser"
       v-on:handleDialog="handleDialog"
-    ></DialogForm>
+    ></DialogForm> -->
 
     <DialogExcel
       ref="dialogexcel"
@@ -135,7 +135,7 @@
       v-on:handleDialog="handleDialog"
     ></DialogExcel>
 
-    <el-dialog title="更改密碼" :visible.sync="dialogFormVisible" center>
+    <!-- <el-dialog title="更改密碼" :visible.sync="dialogFormVisible" center>
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm">
         <el-form-item label="密碼" prop="password">
           <el-input
@@ -158,7 +158,7 @@
           >確認</el-button
         >
       </div>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
@@ -206,10 +206,9 @@ export default {
     return {
       options: [],
       temp: [],
-      activeName: "personal",
+      activeName: "building",
       user: {},
       previewPath: "",
-      activeTab: "characterStatus",
       dialogFormVisible: false,
       ruleForm: {
         password: "",
@@ -237,10 +236,10 @@ export default {
   },
   methods: {
     async init() {
-      this.tableConfig = CharacterStatus.getTableConfig();
+      //this.tableConfig = CharacterStatus.getTableConfig();
       await this.getOptions();
-      await this.getUser();
-      await this.getUserPhoto(this.user.headShotFileId);
+      // await this.getUser();
+      // await this.getUserPhoto(this.user.headShotFileId);
       // await this.getAccountCharacterStatus();
     },
     async changeTable(value) {
@@ -500,7 +499,7 @@ export default {
       ) {
         if (title === "account") {
           //更新
-          var data = await Account.getSettingUserSearchPage({
+          var data = await Account.getSearchPage("/settings/account", {
             identityCard: "{LIKE}" + content.identityCard,
             pageIndex: 1,
             pageSize: 12,
@@ -514,7 +513,7 @@ export default {
               ? true
               : false;
           if (canSave) {
-            var result = await content.updateS();
+            var result = await content.update("/settings/account");
             if (Object.keys(result).length !== 0) {
               this.$socket.sendMsg("account", index, result);
               this.$message("更新成功");
@@ -564,26 +563,26 @@ export default {
         this.$refs.block.clearSelectArray();
       }
     },
-    submitForm(formName) {
-      this.$refs[formName].validate(async (valid) => {
-        if (valid) {
-          var temp = { id: this.id, password: this.ruleForm.password };
-          var isOk = await Account.updatePassword(temp);
-          if (isOk) {
-            this.$message("更新成功");
-            this.resetForm("ruleForm");
-          } else {
-            this.$message.error("更新失敗");
-          }
-        } else {
-          return false;
-        }
-      });
-    },
-    resetForm(formName) {
-      this.$refs[formName].resetFields();
-      this.dialogFormVisible = false;
-    },
+    // submitForm(formName) {
+    //   this.$refs[formName].validate(async (valid) => {
+    //     if (valid) {
+    //       var temp = { id: this.id, password: this.ruleForm.password };
+    //       var isOk = await Account.updateData("/settings/account", temp);
+    //       if (isOk) {
+    //         this.$message("更新成功");
+    //         this.resetForm("ruleForm");
+    //       } else {
+    //         this.$message.error("更新失敗");
+    //       }
+    //     } else {
+    //       return false;
+    //     }
+    //   });
+    // },
+    // resetForm(formName) {
+    //   this.$refs[formName].resetFields();
+    //   this.dialogFormVisible = false;
+    // },
   },
 };
 </script>

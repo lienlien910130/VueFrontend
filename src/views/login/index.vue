@@ -103,6 +103,7 @@
 </template>
 
 <script>
+import { getTmpA } from "@/utils/auth";
 import SIdentify from "./components/identify";
 export default {
   name: "Login",
@@ -110,6 +111,10 @@ export default {
   mounted() {
     this.identifyCode = "";
     this.makeCode(this.identifyCodes, 4);
+    var acc = getTmpA();
+    if (acc !== undefined) {
+      this.loginForm.username = acc;
+    }
   },
   data() {
     const validateUsername = (rule, value, callback) => {
@@ -265,8 +270,17 @@ $cursor: #fff;
         -webkit-text-fill-color: $cursor !important;
       }
     }
-  }
 
+    .el-input__count .el-input__count-inner {
+      background: transparent !important;
+    }
+  }
+  .el-textarea__inner {
+    background: transparent !important;
+  }
+  .el-textarea .el-input__count {
+    background: transparent !important;
+  }
   .el-form-item {
     border: 1px solid hsla(0, 0%, 100%, 0.1);
     background: rgba(0, 0, 0, 0.1);

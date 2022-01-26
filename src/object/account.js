@@ -23,9 +23,11 @@ class Account extends Parent {
       headShotFileId,
       verifyCellPhone,
       verifyEmail,
+      verifyUsageOfFloor,
       sex,
       moveWithDifficulty,
       note,
+      tmpAccount,
       linkRoles,
       linkBuildings,
       linkPhysicalInfos,
@@ -66,7 +68,9 @@ class Account extends Parent {
     this.headShotFileId = headShotFileId;
     this.verifyCellPhone = verifyCellPhone;
     this.verifyEmail = verifyEmail;
+    this.verifyUsageOfFloor = verifyUsageOfFloor;
     this.moveWithDifficulty = moveWithDifficulty;
+    this.tmpAccount = tmpAccount;
     this.linkRoles = roles;
     this.linkBuildings = buildings;
     this.linkPhysicalInfos = physicalInfos;
@@ -74,11 +78,11 @@ class Account extends Parent {
   clone(data) {
     return new Account(data);
   }
-  async update() {
+  async update(type) {
     var temp = JSON.parse(JSON.stringify(this));
     temp.account = "{Check}" + temp.account;
     var data = await api.authority
-      .apiPatchAccountAuthority(temp)
+      .apiPatchAccountAuthority(type, temp)
       .then(async (response) => {
         return new Account(response.result);
       })
@@ -87,34 +91,34 @@ class Account extends Parent {
       });
     return data;
   }
-  async updateS() {
-    //從設定頁面更新
-    var temp = JSON.parse(JSON.stringify(this));
-    temp.account = "{Check}" + temp.account;
-    var data = await api.authority
-      .apiPatchAccountAuthoritySetting(temp)
-      .then(async (response) => {
-        return new Account(response.result);
-      })
-      .catch((error) => {
-        return {};
-      });
-    return data;
-  }
-  async updateP() {
-    //basic住戶更新
-    // var temp = JSON.parse(JSON.stringify(this));
-    // temp.account = "{Check}" + temp.account;
-    // var data = await api.authority
-    //   .apiPatchAccountAuthority(temp)
-    //   .then(async (response) => {
-    //     return new Account(response.result);
-    //   })
-    //   .catch((error) => {
-    //     return {};
-    //   });
-    // return data;
-  }
+  // async updateS() {
+  //   //從設定頁面更新
+  //   var temp = JSON.parse(JSON.stringify(this));
+  //   temp.account = "{Check}" + temp.account;
+  //   var data = await api.authority
+  //     .apiPatchAccountAuthoritySetting(temp)
+  //     .then(async (response) => {
+  //       return new Account(response.result);
+  //     })
+  //     .catch((error) => {
+  //       return {};
+  //     });
+  //   return data;
+  // }
+  // async updateP() {
+  //   //basic住戶更新
+  //   var temp = JSON.parse(JSON.stringify(this));
+  //   temp.account = "{Check}" + temp.account;
+  //   var data = await api.authority
+  //     .apiPatchAccountAuthorityUser(temp)
+  //     .then(async (response) => {
+  //       return new Account(response.result);
+  //     })
+  //     .catch((error) => {
+  //       return {};
+  //     });
+  //   return data;
+  // }
   async create() {
     var temp = JSON.parse(JSON.stringify(this));
     temp.account = "{Check}" + temp.account;
@@ -174,6 +178,7 @@ class Account extends Parent {
       headShotFileId: null,
       verifyCellPhone: false,
       verifyEmail: false,
+      verifyUsageOfFloor: false,
       moveWithDifficulty: false,
       linkRoles: [],
       linkBuildings: [],
@@ -374,17 +379,19 @@ class Account extends Parent {
       {
         label: "門牌",
         prop: "usageOfFloor",
+        format: "floorOfHouseSelect",
         mandatory: false,
         maxlength: "15",
         isHidden: false,
         isSearch: true,
         placeholder: "請輸入職稱",
         isAssociate: false,
-        isEdit: false,
+        isEdit: true,
         isUpload: true,
         isExport: true,
         isBlock: true,
         selectFilter: false,
+        formType: "selectString",
       },
       {
         label: "行動不便者",
@@ -565,7 +572,7 @@ class Account extends Parent {
       {
         label: "身份證",
         prop: "identityCard",
-        mandatory: true,
+        mandatory: false,
         message: "請輸入身份證",
         pattern: /^[A-Z]{1}[1-2]{1}[0-9]{8}$/,
         errorMsg: "格式錯誤,請重新輸入",
@@ -667,17 +674,19 @@ class Account extends Parent {
       {
         label: "門牌",
         prop: "usageOfFloor",
+        format: "floorOfHouseSelect",
         mandatory: false,
         maxlength: "15",
         isHidden: false,
         isSearch: true,
         placeholder: "請輸入職稱",
         isAssociate: false,
-        isEdit: false,
+        isEdit: true,
         isUpload: true,
         isExport: true,
         isBlock: true,
         selectFilter: false,
+        formType: "selectString",
       },
       {
         label: "行動不便者",
@@ -730,6 +739,313 @@ class Account extends Parent {
       },
     ];
   }
+  static getRegisterTableConfig() {
+    //會員註冊
+    return [
+      {
+        label: "姓名",
+        prop: "name",
+        mandatory: true,
+        message: "請輸入姓名",
+        maxlength: "15",
+        isHidden: false,
+        isSearch: true,
+        placeholder: "請輸入姓名",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "性別",
+        prop: "sex",
+        format: "sexBoolean",
+        mandatory: true,
+        message: "請輸入性別",
+        type: "boolean",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "boolean",
+        selectFilter: false,
+      },
+      {
+        label: "身份證",
+        prop: "identityCard",
+        mandatory: false,
+        message: "請輸入身份證",
+        pattern: /^[A-Z]{1}[1-2]{1}[0-9]{8}$/,
+        errorMsg: "格式錯誤,請重新輸入",
+        isPattern: true,
+        maxlength: "10",
+        isHidden: true,
+        isSearch: false,
+        placeholder: "請輸入身份證",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: false,
+        selectFilter: false,
+      },
+      {
+        label: "生日",
+        prop: "birthday",
+        format: "YYYY-MM-DD",
+        mandatory: false,
+        isHidden: false,
+        isSearch: true,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: false,
+        formType: "date",
+        selectFilter: false,
+      },
+      {
+        label: "電話",
+        prop: "callNumber",
+        mandatory: false,
+        maxlength: "15",
+        isHidden: true,
+        isSearch: true,
+        placeholder: "請輸入電話",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "手機",
+        prop: "cellPhoneNumber",
+        mandatory: true,
+        message: "請輸入手機號碼",
+        pattern: /^09\d{8}$/,
+        errorMsg: "輸入格式為09xxxxxxxx",
+        isPattern: true,
+        maxlength: "10",
+        isHidden: false,
+        isSearch: true,
+        placeholder: "請輸入手機號碼，格式為09xxxxxxxx",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "緊急電話",
+        prop: "emergencyNumber",
+        mandatory: false,
+        maxlength: "15",
+        isHidden: false,
+        isSearch: true,
+        placeholder: "請輸入緊急電話",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "email",
+        prop: "email",
+        mandatory: false,
+        pattern:
+          /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/,
+        errorMsg: "格式錯誤,請重新輸入",
+        isPattern: true,
+        maxlength: "100",
+        isHidden: false,
+        isSearch: true,
+        placeholder: "請輸入電子信箱",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: false,
+        selectFilter: false,
+      },
+      {
+        label: "行動不便者",
+        prop: "moveWithDifficulty",
+        format: "moveWithDifficultyBoolean",
+        mandatory: true,
+        message: "請選擇是否為行動不便者",
+        type: "boolean",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "boolean",
+        selectFilter: false,
+      },
+      {
+        label: "描述",
+        prop: "description",
+        format: "textarea",
+        placeholder: "若為行動不便者，請輸入狀況",
+        mandatory: false,
+        maxlength: "200",
+        isHidden: true,
+        isSearch: true,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: false,
+        selectFilter: false,
+      },
+      {
+        label: "帳號",
+        prop: "account",
+        mandatory: true,
+        message: "請輸入帳號",
+        maxlength: "10",
+        // pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/,
+        // errorMsg: "請輸入至少6個字元，含大小寫字母、至少1個數字",
+        isPattern: false,
+        isHidden: false,
+        isSearch: true,
+        placeholder: "請輸入帳號",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+        isCheck: true,
+      },
+      {
+        label: "密碼",
+        prop: "password",
+        mandatory: true,
+        message: "請輸入密碼",
+        maxlength: "100",
+        // pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+        // errorMsg: "請輸入至少8個字元，含大小寫字母、至少1個數字",
+        isPattern: false,
+        isHidden: true,
+        isSearch: false,
+        placeholder: "請輸入密碼",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: false,
+        isBlock: false,
+        selectFilter: false,
+      },
+    ];
+  }
+  static getHouseTableConfig() {
+    //純住戶登記使用
+    return [
+      {
+        label: "姓名",
+        prop: "name",
+        mandatory: true,
+        message: "請輸入姓名",
+        maxlength: "15",
+        isHidden: false,
+        isSearch: true,
+        placeholder: "請輸入姓名",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "手機",
+        prop: "cellPhoneNumber",
+        mandatory: true,
+        message: "請輸入手機號碼",
+        pattern: /^09\d{8}$/,
+        errorMsg: "輸入格式為09xxxxxxxx",
+        isPattern: true,
+        maxlength: "10",
+        isHidden: false,
+        isSearch: true,
+        placeholder: "請輸入手機號碼，格式為09xxxxxxxx",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "行動不便者",
+        prop: "moveWithDifficulty",
+        format: "moveWithDifficultyBoolean",
+        mandatory: true,
+        message: "請選擇是否為行動不便者",
+        type: "boolean",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "boolean",
+        selectFilter: false,
+      },
+      {
+        label: "描述",
+        prop: "description",
+        format: "textarea",
+        placeholder: "若為行動不便者，請輸入狀況",
+        mandatory: false,
+        maxlength: "200",
+        isHidden: true,
+        isSearch: true,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: false,
+        selectFilter: false,
+      },
+      {
+        label: "驗證密碼",
+        prop: "password",
+        mandatory: true,
+        message: "請輸入密碼",
+        maxlength: "100",
+        // pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+        // errorMsg: "請輸入至少8個字元，含大小寫字母、至少1個數字",
+        isPattern: false,
+        isHidden: true,
+        isSearch: false,
+        placeholder: "請輸入密碼",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: false,
+        isBlock: false,
+        selectFilter: false,
+      },
+    ];
+  }
   static async get() {
     var data = await api.authority
       .apiGetAllAccount()
@@ -756,9 +1072,9 @@ class Account extends Parent {
       });
     return data;
   }
-  static async getSearchPage(data) {
+  static async getSearchPage(type, data) {
     var data = await api.authority
-      .apiGetAccountAuthoritySearchPages(data)
+      .apiGetAccountAuthoritySearchPages(type, data)
       .then((response) => {
         response.result = response.result.map((item) => {
           return new Account(item);
@@ -770,34 +1086,7 @@ class Account extends Parent {
       });
     return data;
   }
-  static async getUserSearchPage(data) {
-    var data = await api.authority
-      .apiGetUserSearchPages(data)
-      .then((response) => {
-        response.result = response.result.map((item) => {
-          return new Account(item);
-        });
-        return response;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
-  static async getSettingUserSearchPage(data) {
-    var data = await api.authority
-      .apiGetAccountSettingSearchPages(data)
-      .then((response) => {
-        response.result = response.result.map((item) => {
-          return new Account(item);
-        });
-        return response;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
+
   static async postMany(data) {
     var data = await api.authority
       .apiPostAccountAuthorities(data)
@@ -834,9 +1123,9 @@ class Account extends Parent {
       });
     return data;
   }
-  static async updatePassword(data) {
+  static async updateData(type, data) {
     var data = await api.authority
-      .apiPatchAccountAuthoritySetting(data)
+      .apiPatchAccountAuthority(type, data)
       .then(async (response) => {
         return true;
       })
@@ -845,9 +1134,9 @@ class Account extends Parent {
       });
     return data;
   }
-  static async updateHead(data) {
+  static async upgrade(type, accountId) {
     var data = await api.authority
-      .apiPatchAccountAuthority(data)
+      .apiPatchAccountFloorOfHouse(type, accountId)
       .then(async (response) => {
         return true;
       })

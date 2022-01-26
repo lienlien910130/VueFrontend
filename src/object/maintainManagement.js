@@ -305,6 +305,7 @@ class MaintainManagement extends Parent {
       processStatus,
       processContent,
       note,
+      nextMaintainTime,
       linkDevices,
       linkInspectionLacks,
       linkContactUnits,
@@ -334,6 +335,7 @@ class MaintainManagement extends Parent {
     this.processStatus = processStatus !== undefined ? processStatus : null;
     this.processContent = processContent !== undefined ? processContent : null;
     this.note = note;
+    this.nextMaintainTime = nextMaintainTime;
     this.linkDevices = devices;
     this.linkInspectionLacks = inspectionLacks;
     this.linkContactUnits = contactUnits;
@@ -582,6 +584,22 @@ class MaintainManagement extends Parent {
         hasEvent: true,
       },
       {
+        label: "下次保養時間",
+        prop: "nextMaintainTime",
+        format: "YYYY-MM-DD",
+        mandatory: false,
+        message: "請輸入保養時間",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: false,
+        isExport: true,
+        isBlock: false,
+        formType: "date",
+        selectFilter: false,
+      },
+      {
         label: "備註",
         prop: "note",
         format: "textarea",
@@ -809,6 +827,9 @@ class MaintainManagement extends Parent {
       .apiGetMaintainAllSearchPages(data)
       .then((response) => {
         response.result = response.result.map((item) => {
+          if (item.linkDevices.length !== 0) {
+            item.nextMaintainTime = item.linkDevices[0].nextMaintainTime;
+          }
           return new MaintainManagement(item);
         });
         return response;
@@ -823,12 +844,40 @@ class MaintainManagement extends Parent {
       .apiGetMaintainSearchPages(maintainListId, data)
       .then((response) => {
         response.result = response.result.map((item) => {
+          if (item.linkDevices.length !== 0) {
+            item.nextMaintainTime = item.linkDevices[0].nextMaintainTime;
+          }
           return new MaintainManagement(item);
         });
         return response;
       })
       .catch((error) => {
         return [];
+      });
+    return data;
+  }
+  static async getDeviceSearchPage(data) {
+    var data = await api.device
+      .apiGetMaintainDeviceSearchPages(data)
+      .then((response) => {
+        response.result = response.result.map((item) => {
+          return new Device(item);
+        });
+        return response;
+      })
+      .catch((error) => {
+        return [];
+      });
+    return data;
+  }
+  static async updateDevice(data) {
+    var data = await api.device
+      .apiPatchMaintainsDevice(data)
+      .then(async (response) => {
+        return true;
+      })
+      .catch((error) => {
+        return false;
       });
     return data;
   }

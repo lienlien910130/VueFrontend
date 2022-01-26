@@ -183,7 +183,7 @@ class UsageOfFloor extends Parent {
         label: "場所類別",
         prop: "placeCategory",
         format: "InspectionTypeOfTime",
-        mandatory: true,
+        mandatory: false,
         message: "請選擇場所類別",
         isHidden: false,
         isSearch: false,

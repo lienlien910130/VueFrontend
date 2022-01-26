@@ -96,6 +96,7 @@ export default {
         { name: "刪除", icon: "el-icon-delete", status: "delete" },
         { name: "編輯", icon: "el-icon-edit", status: "open" },
         { name: "查看權限", icon: "el-icon-view", status: "distribution" },
+        { name: "驗證住戶", icon: "el-icon-circle-check", status: "verify" },
       ];
       // if(this.account_record == 0){
       //     this.$store.dispatch('building/setaccounts')
@@ -124,7 +125,10 @@ export default {
       await this.getAllAccount();
     },
     async getAllAccount() {
-      var data = await Account.getSearchPage(this.listQueryParams);
+      var data = await Account.getSearchPage(
+        "/accountSetting",
+        this.listQueryParams
+      );
       this.blockData = data.result;
       this.listQueryParams.total = data.totalPageCount;
     },
@@ -247,6 +251,16 @@ export default {
           { name: "取消", type: "info", status: "cancel" },
         ];
         this.innerVisible = true;
+      } else if (index === "verify") {
+        if (
+          content.usageOfFloor !== undefined &&
+          content.usageOfFloor !== null &&
+          content.usageOfFloor !== ""
+        ) {
+          var result = await Account.upgrade("/accountSetting", content.id);
+        } else {
+          //跳出可以選擇門牌的視窗
+        }
       }
       // else if (index === "characterStatus") {
       //   this.account = content;
@@ -281,7 +295,7 @@ export default {
           } else {
             //刪除圖片
             var temp = { id: content, headShotFileId: "" };
-            var result = await Account.updateHead(temp);
+            var result = await Account.updateData("/accountSetting", temp);
             if (result) {
               this.$message("刪除成功");
               this.dialogData[0]["headShotFileId"] = "";
@@ -297,7 +311,7 @@ export default {
           }
           var result =
             index === "update" || index === "updateManySave"
-              ? await content.update()
+              ? await content.update("/accountSetting")
               : index === "create"
               ? await content.create()
               : await Account.postMany(content);

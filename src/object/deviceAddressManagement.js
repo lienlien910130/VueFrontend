@@ -378,6 +378,7 @@ class DeviceAddressManagement extends Parent {
         formType: "boolean",
         isViewerInfo: true,
         selectFilter: false,
+        hasEvent: true,
       },
       {
         label: "點位",

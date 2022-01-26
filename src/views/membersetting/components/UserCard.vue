@@ -1,7 +1,7 @@
 <template>
   <el-card style="margin-bottom: 20px">
     <div slot="header" class="clearfix">
-      <span>{{ user.name }}</span>
+      <span>{{ userCopy.name }}</span>
     </div>
 
     <div class="user-profile">
@@ -32,7 +32,7 @@
         </div>
         <div class="user-bio-section-body">
           <div class="text-muted">
-            {{ user.account }}
+            {{ userCopy.account }}
           </div>
         </div>
       </div>
@@ -59,7 +59,7 @@
       <div class="user-bio-section">
         <div class="user-bio-section-header">
           <svg-icon icon-class="email" /><span>電子信箱</span>
-          <template v-if="!user.verifyEmail">
+          <template v-if="!userCopy.verifyEmail">
             <span style="color: red">尚未認證</span>
           </template>
           <template v-else>
@@ -68,7 +68,7 @@
         </div>
         <div class="user-bio-section-body">
           <div class="text-muted">
-            {{ user.email !== undefined ? user.email : "尚未設定" }}
+            {{ userCopy.email !== undefined ? userCopy.email : "尚未設定" }}
           </div>
         </div>
       </div>
@@ -79,7 +79,11 @@
         </div>
         <div class="user-bio-section-body">
           <div class="text-muted">
-            {{ user.callNumber !== undefined ? user.callNumber : "尚未設定" }}
+            {{
+              userCopy.callNumber !== undefined
+                ? userCopy.callNumber
+                : "尚未設定"
+            }}
           </div>
         </div>
       </div>
@@ -87,7 +91,7 @@
         <div class="user-bio-section-header">
           <i class="el-icon-mobile-phone" />
           <span>手機</span>
-          <template v-if="!user.verifyCellPhone">
+          <template v-if="!userCopy.verifyCellPhone">
             <span style="color: red">尚未認證</span>
           </template>
           <template v-else>
@@ -97,8 +101,8 @@
         <div class="user-bio-section-body">
           <div class="text-muted">
             {{
-              user.cellPhoneNumber !== undefined
-                ? user.cellPhoneNumber
+              userCopy.cellPhoneNumber !== undefined
+                ? userCopy.cellPhoneNumber
                 : "尚未設定"
             }}
           </div>
@@ -111,8 +115,8 @@
         <div class="user-bio-section-body">
           <div class="text-muted">
             {{
-              user.emergencyNumber !== undefined
-                ? user.emergencyNumber
+              userCopy.emergencyNumber !== undefined
+                ? userCopy.emergencyNumber
                 : "尚未設定"
             }}
           </div>
@@ -121,16 +125,28 @@
       <div class="user-bio-section">
         <div class="user-bio-section-header">
           <i class="el-icon-house" /><span>門牌</span>
+          <template v-if="!userCopy.verifyUsageOfFloor">
+            <span style="color: red">{{
+              userCopy.usageOfFloor !== undefined && userCopy.verifyUsageOfFloor
+                ? "已認證"
+                : userCopy.usageOfFloor !== undefined &&
+                  !userCopy.verifyUsageOfFloor
+                ? "待認證"
+                : "尚未認證"
+            }}</span>
+          </template>
         </div>
         <div class="user-bio-section-body">
           <div class="text-muted">
             {{
-              user.usageOfFloor !== undefined ? user.usageOfFloor : "尚未設定"
+              userCopy.usageOfFloor !== undefined
+                ? floorOfHouse(userCopy.usageOfFloor)
+                : "尚未設定"
             }}
           </div>
         </div>
       </div>
-      <div class="user-bio-section">
+      <!-- <div class="user-bio-section">
         <div class="user-bio-section-header">
           <i class="el-icon-user" /><span>角色</span>
         </div>
@@ -139,13 +155,26 @@
             {{ roles }}
           </div>
         </div>
-      </div>
+      </div> -->
       <div style="text-align: center">
+        <el-button
+          v-if="
+            userCopy.tmpAccount == userCopy.account &&
+            !userCopy.verifyUsageOfFloor
+          "
+          size="mini"
+          type="success"
+          @click="updateUser('upgrade')"
+          >升級正式帳號</el-button
+        >
+        <!-- <el-button size="mini" type="success" @click="updateUser('upgrade')"
+          >升級正式帳號</el-button
+        > -->
         <el-button size="mini" @click="updateUser('password')"
           >修改密碼</el-button
         >
         <el-button type="primary" size="mini" @click="updateUser('open')"
-          >編輯</el-button
+          >修改資料</el-button
         >
       </div>
     </div>
@@ -156,26 +185,43 @@
 import moment from "moment";
 export default {
   computed: {
+    ...Vuex.mapGetters(["floorOfHouse_record", "buildingfloorOfHouse"]),
     roles() {
-      if (this.user.linkRoles) {
-        return this.user.getRolesName();
+      if (this.userCopy.linkRoles) {
+        return this.userCopy.getRolesName();
       }
       return "尚未設定";
     },
     birthday() {
-      if (this.user.birthday) {
-        return moment(this.user.birthday).format("YYYY-MM-DD");
+      if (this.userCopy.birthday) {
+        return moment(this.userCopy.birthday).format("YYYY-MM-DD");
       }
       return "尚未設定";
     },
     sex() {
-      if (this.user.sex) {
+      if (this.userCopy.sex) {
         return "女";
-      } else if (this.user.sex == false) {
+      } else if (this.userCopy.sex == false) {
         return "男";
       } else {
         return "尚未設定";
       }
+    },
+    floorOfHouse() {
+      return function (value) {
+        if (this.floorOfHouse_record == 0) {
+          this.$store.dispatch("building/setFloorOfHouse");
+          this.$store.dispatch("record/saveFloorOfHouseRecord", 1);
+        }
+        var data = this.buildingfloorOfHouse.filter((item) => {
+          return item.id == value;
+        });
+        if (data.length) {
+          return data[0].houseNumber;
+        } else {
+          return "尚未設定";
+        }
+      };
     },
   },
   props: {
@@ -197,7 +243,16 @@ export default {
   data() {
     return {
       fileList: [],
+      userCopy: {},
     };
+  },
+  watch: {
+    user: {
+      handler: async function () {
+        this.userCopy = _.cloneDeep(this.user);
+      },
+      immediate: true,
+    },
   },
   methods: {
     handleChange(file, fileList) {
@@ -206,7 +261,12 @@ export default {
       this.fileList = [];
     },
     updateUser(index) {
-      this.$emit("handleUser", "", index, index === "open" ? this.user : "");
+      this.$emit(
+        "handleUser",
+        "",
+        index,
+        index === "open" ? _.cloneDeep(this.user) : ""
+      );
     },
   },
 };

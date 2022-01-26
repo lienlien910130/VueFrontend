@@ -22,6 +22,20 @@ export const constantRoutes = [
     hidden: true,
   },
   {
+    path: "/info",
+    component: Layout,
+    redirect: "/info",
+    children: [
+      {
+        path: "index",
+        name: "info",
+        component: () => import("@/views/membersetting/info.vue"),
+        meta: { title: "個人資料", icon: "icon", needLogin: true },
+      },
+    ],
+    hidden: true,
+  },
+  {
     path: "/password",
     name: "Password",
     meta: { title: "忘記密碼", needLogin: false },
@@ -29,10 +43,24 @@ export const constantRoutes = [
     hidden: true,
   },
   {
+    path: "/certification",
+    name: "Certification",
+    meta: { title: "認證", needLogin: false },
+    component: () => import("@/views/login/certification.vue"),
+    hidden: true,
+  },
+  {
     path: "/reset/:vc?",
     name: "Reset",
     meta: { title: "重設密碼", needLogin: false },
     component: () => import("@/views/login/reset.vue"),
+    hidden: true,
+  },
+  {
+    path: "/register",
+    name: "Register",
+    meta: { title: "註冊", needLogin: false },
+    component: () => import("@/views/login/register.vue"),
     hidden: true,
   },
   {
