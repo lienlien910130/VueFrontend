@@ -56,6 +56,7 @@ module.exports = merge(baseWebpackConfig, {
         VUE_APP_BASE_IP: '"/cip"',
         VUE_APP_WEBSOCKET: '"ws://localhost:8088/ws/"',
         VUE_APP_RESETPASSWORD: '"http://localhost:8088/reset"',
+        VUE_APP_EMAILCERT: '"http://localhost:8088/certification"',
       },
     }),
   ],

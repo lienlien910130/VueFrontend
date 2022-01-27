@@ -60,7 +60,9 @@
         <div class="user-bio-section-header">
           <svg-icon icon-class="email" /><span>電子信箱</span>
           <template v-if="!userCopy.verifyEmail">
-            <span style="color: red">尚未認證</span>
+            <span style="color: red; cursor: pointer" @click="certEmail"
+              >尚未認證</span
+            >
           </template>
           <template v-else>
             <i class="el-icon-success" />
@@ -127,13 +129,11 @@
           <i class="el-icon-house" /><span>門牌</span>
           <template v-if="!userCopy.verifyUsageOfFloor">
             <span style="color: red">{{
-              userCopy.usageOfFloor !== undefined && userCopy.verifyUsageOfFloor
-                ? "已認證"
-                : userCopy.usageOfFloor !== undefined &&
-                  !userCopy.verifyUsageOfFloor
-                ? "待認證"
-                : "尚未認證"
+              userCopy.usageOfFloor !== undefined ? "待認證" : "尚未認證"
             }}</span>
+          </template>
+          <template v-else>
+            <i class="el-icon-success" />
           </template>
         </div>
         <div class="user-bio-section-body">
@@ -267,6 +267,28 @@ export default {
         index,
         index === "open" ? _.cloneDeep(this.user) : ""
       );
+    },
+    certEmail() {
+      if (
+        this.userCopy.email == undefined ||
+        this.userCopy.email == null ||
+        this.userCopy.email == ""
+      ) {
+        this.$message.error("請先設定email再進行驗證");
+      } else {
+        var data = {
+          accountId: this.userCopy.id,
+          transferUrl: process.env.VUE_APP_EMAILCERT,
+        };
+        this.$store
+          .dispatch("user/email", data)
+          .then((response) => {
+            this.$message(response);
+          })
+          .catch((error) => {
+            this.$message.error(error);
+          });
+      }
     },
   },
 };

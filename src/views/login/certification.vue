@@ -15,8 +15,25 @@ export default {
       message: "",
     };
   },
-  mounted() {},
+  mounted() {
+    this.check();
+  },
   methods: {
+    check() {
+      var temp = {
+        verifyCode: this.$route.query.vc,
+      };
+      this.$store
+        .dispatch("user/checkCertificationEmail", temp)
+        .then((response) => {
+          console.log(response);
+          this.message = "認證成功!將自動跳轉回個人資料頁面";
+          setTimeout(() => {
+            this.$router.push({ path: "/info/index" });
+          }, 2000);
+        })
+        .catch((error) => {});
+    },
     toInfo() {
       this.$router.push({ path: "/info/index" });
     },

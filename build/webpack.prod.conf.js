@@ -14,6 +14,7 @@ module.exports = merge(baseWebpackConfig, {
         VUE_APP_BASE_API: '"/api"',
         VUE_APP_WEBSOCKET: '"wss://demo.mercuryfire.com.tw/ws/"',
         VUE_APP_RESETPASSWORD: '"https://demo.mercuryfire.com.tw/reset"',
+        VUE_APP_EMAILCERT: '"https://demo.mercuryfire.com.tw/certification"',
       },
     }),
     new CompressionPlugin({

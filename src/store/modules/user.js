@@ -122,6 +122,30 @@ const actions = {
         });
     });
   },
+  email({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      user
+        .apiPostEmailCertification(data)
+        .then((response) => {
+          resolve("已寄送信件至信箱，請至信箱點選網址進行認證");
+        })
+        .catch((error) => {
+          reject("此帳號尚未設定email，請聯繫水星服務人員");
+        });
+    });
+  },
+  checkCertificationEmail({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      user
+        .apiPostCheckEmailCertificationReset(data)
+        .then((response) => {
+          resolve(response.result);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
   resetPassword({ commit }, data) {
     return new Promise((resolve, reject) => {
       user

@@ -33,22 +33,22 @@
 
     <el-dialog title="住戶認證" :visible.sync="dialogFormVisible" center>
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm">
-          <el-form-item label="門牌" prop="usageOfFloor">
-            <el-select
-              v-model="ruleForm.usageOfFloor"
-              filterable
-              placeholder="請選擇"
-              style="width: 100%"
+        <el-form-item label="門牌" prop="usageOfFloor">
+          <el-select
+            v-model="ruleForm.usageOfFloor"
+            filterable
+            placeholder="請選擇"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="(obj, index) in houseList"
+              :key="index"
+              :label="obj.label"
+              :value="obj.id"
             >
-              <el-option
-                v-for="(obj, index) in houseList"
-                :key="index"
-                :label="obj.label"
-                :value="obj.id"
-              >
-              </el-option>
-            </el-select>
-          </el-form-item>
+            </el-option>
+          </el-select>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm('ruleForm')"
@@ -95,12 +95,6 @@ export default {
         return v;
       });
     },
-    // tableEvent() {
-    //   return {
-    //     handleTableClick: this.handleTableClick,
-    //     clickPagination: this.handleTableClick,
-    //   };
-    // },
   },
   watch: {
     menu: {
@@ -117,13 +111,13 @@ export default {
       accessAuthority: [],
       authorityVisible: false,
       account: null,
-      dialogFormVisible:false,
-      ruleForm:{usageOfFloor:null},
-      rules:{
-          usageOfFloor: [
-            { required: true, message: "請選擇門牌", trigger: "change" },
-          ],
-      }
+      dialogFormVisible: false,
+      ruleForm: { usageOfFloor: null },
+      rules: {
+        usageOfFloor: [
+          { required: true, message: "請選擇門牌", trigger: "change" },
+        ],
+      },
     };
   },
   methods: {
@@ -132,17 +126,21 @@ export default {
       this.tableConfig = Account.getTableConfig();
       await this.getAllAccount();
       this.headerButtonsName = [
-          { name: "多筆刪除", icon: "el-icon-delete", status: "deleteMany" },
-          { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
-          {
-            name: "新增資料",
-            icon: "el-icon-circle-plus-outline",
-            status: "empty",
-          },
-          { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
-          { name: "匯入檔案", icon: "el-icon-upload2", status: "uploadExcel" },
-          { name: "多筆驗證", icon: "el-icon-circle-check", status: "multipleVerify" },
-        ];
+        { name: "多筆刪除", icon: "el-icon-delete", status: "deleteMany" },
+        { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
+        {
+          name: "新增資料",
+          icon: "el-icon-circle-plus-outline",
+          status: "empty",
+        },
+        { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
+        { name: "匯入檔案", icon: "el-icon-upload2", status: "uploadExcel" },
+        {
+          name: "多筆驗證",
+          icon: "el-icon-circle-check",
+          status: "multipleVerify",
+        },
+      ];
       this.buttonsName = [
         { name: "刪除", icon: "el-icon-delete", status: "delete" },
         { name: "編輯", icon: "el-icon-edit", status: "open" },
@@ -286,41 +284,40 @@ export default {
         ) {
           //已有設定過門牌可直接進行升級的動作
           var result = await Account.upgrade("/accountSetting", content.id);
-          if(result.length !== 0){
-            this.$message('認證成功，若要取消認證，請洽水星服務人員')
-            result.forEach(item=>{
-              this.$socket.sendMsg(
-                  "account",
-                  'update', item
-                );
-            })
+          console.log(JSON.stringify(result));
+          if (result.result.length !== 0) {
+            this.$message("認證成功，若要取消認證，請洽水星服務人員");
+            result.result.forEach((item) => {
+              this.$socket.sendMsg("account", "update", item);
+            });
             await this.getAllAccount();
-          }else{
-            this.$message.error('認證失敗，請洽水星服務人員')
+          } else {
+            this.$message.error("認證失敗，請洽水星服務人員");
           }
         } else {
           //跳出可以選擇門牌的視窗
           this.account = content;
-          this.dialogFormVisible = true
+          this.dialogFormVisible = true;
         }
-      } else if(index === 'multipleVerify'){
-         var accountArray = [];
-          content.forEach((item) => {
-            accountArray.push(item.id);
+      } else if (index === "multipleVerify") {
+        var accountArray = [];
+        content.forEach((item) => {
+          accountArray.push(item.id);
+        });
+        var result = await Account.upgrade(
+          "/accountSetting",
+          accountArray.toString()
+        );
+        if (result.result.length !== 0) {
+          this.$message("認證成功，若要取消認證，請洽水星服務人員");
+          result.result.forEach((item) => {
+            this.$socket.sendMsg("account", "update", item);
           });
-        var result = await Account.upgrade("/accountSetting", content.id);
-        if(result.length !== 0){
-                this.$message('認證成功，若要取消認證，請洽水星服務人員')
-                result.forEach(item=>{
-                  this.$socket.sendMsg(
-                      "account",
-                      'update', item
-                    );
-                })
-                await this.getAllAccount();
-              }else{
-                this.$message.error('認證失敗，請洽水星服務人員')
-              }
+          await this.getAllAccount();
+          this.$refs.block.clearSelectArray();
+        } else {
+          this.$message.error("認證失敗，請洽水星服務人員");
+        }
       }
     },
     async handleDialog(title, index, content) {
@@ -457,28 +454,28 @@ export default {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           var temp = {
-              id: this.account.getID(),
-              usageOfFloor: this.ruleForm.usageOfFloor,
-            };
-            var isOk = await Account.updateData("/accountSetting", temp);
-            if (isOk) {
-              var result = await Account.upgrade("/accountSetting", this.account.getID());
-              if(result.length !== 0){
-                this.$message('認證成功，若要取消認證，請洽水星服務人員')
-                result.forEach(item=>{
-                  this.$socket.sendMsg(
-                      "account",
-                      'update', item
-                    );
-                })
-                await this.getAllAccount();
-                this.dialogFormVisible = false;
-              }else{
-                this.$message.error('認證失敗，請洽水星服務人員')
-              }
+            id: this.account.getID(),
+            usageOfFloor: this.ruleForm.usageOfFloor,
+          };
+          var isOk = await Account.updateData("/accountSetting", temp);
+          if (isOk) {
+            var result = await Account.upgrade(
+              "/accountSetting",
+              this.account.getID()
+            );
+            if (result.result.length !== 0) {
+              this.$message("認證成功，若要取消認證，請洽水星服務人員");
+              result.result.forEach((item) => {
+                this.$socket.sendMsg("account", "update", item);
+              });
+              await this.getAllAccount();
+              this.dialogFormVisible = false;
             } else {
               this.$message.error("認證失敗，請洽水星服務人員");
             }
+          } else {
+            this.$message.error("認證失敗，請洽水星服務人員");
+          }
         } else {
           return false;
         }

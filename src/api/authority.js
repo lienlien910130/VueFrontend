@@ -160,7 +160,24 @@ const authority = {
       data
     );
   },
-
+  //產生人員屬性-以人為主:純人數mode=1, 人數+清單mode=2
+  apiGetHouseAttributes(type, mode) {
+    if (type === "PE") {
+      return req("get", "/basic/accountSetting/ageDistribution/" + mode);
+    } else {
+      return req(
+        "get",
+        "/basic/accountSetting/ageDistribution/usageOfFloor/" + mode
+      );
+    }
+  },
+  //產生人員屬性-以戶為主:門牌+純人數mode=1, 門牌+純人數+清冊mode=2
+  apiGetHouseAttributesOfUaage(mode) {
+    return req(
+      "get",
+      "/basic/accountSetting/ageDistribution/usageOfFloor" + mode
+    );
+  },
   // 以下暫時用不到
   //帳號的狀態 - type: basic/accountSetting/settings
   apiGetAccountCharacterStatus(type, accountId) {

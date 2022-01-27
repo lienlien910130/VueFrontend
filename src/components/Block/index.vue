@@ -1074,16 +1074,21 @@ export default {
             })
             .catch(() => {});
         }
-      } else if(status === 'multipleVerify'){
+      } else if (status === "multipleVerify") {
         if (this.selectArray.length == 0) {
           this.$message.error("請勾選要更新的資料列");
         } else {
-          var unallow = this.selectArray.filter(item=>{
-            return item.usageOfFloor == undefined || item.usageOfFloor == null || item.usageOfFloor == ''
-          })
-          if(unallow.length !== 0){
-            this.$message.error("請勿選擇沒有設定門牌的帳號");
-          }else{
+          var unallow = this.selectArray.filter((item) => {
+            return (
+              item.usageOfFloor == undefined ||
+              item.usageOfFloor == null ||
+              item.usageOfFloor == "" ||
+              item.verifyUsageOfFloor == true
+            );
+          });
+          if (unallow.length !== 0) {
+            this.$message.error("請勿選擇沒有設定門牌或是已驗證過的帳號");
+          } else {
             this.$emit("handleBlock", this.title, status, this.selectArray);
           }
         }

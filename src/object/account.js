@@ -14,6 +14,7 @@ class Account extends Parent {
       birthday,
       callNumber,
       cellPhoneNumber,
+      emergencyContact,
       emergencyNumber,
       email,
       usageOfFloor,
@@ -58,6 +59,7 @@ class Account extends Parent {
     this.birthday = birthday;
     this.callNumber = callNumber;
     this.cellPhoneNumber = cellPhoneNumber;
+    this.emergencyContact = emergencyContact;
     this.emergencyNumber = emergencyNumber;
     this.email = email;
     this.note = note;
@@ -168,6 +170,7 @@ class Account extends Parent {
       birthday: null,
       callNumber: "",
       cellPhoneNumber: "",
+      emergencyContact: "",
       emergencyNumber: "",
       email: "",
       note: "",
@@ -335,6 +338,21 @@ class Account extends Parent {
         isHidden: false,
         isSearch: true,
         placeholder: "請輸入手機號碼，格式為09xxxxxxxx",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "緊急聯絡人",
+        prop: "emergencyContact",
+        mandatory: false,
+        message: "請輸入緊急聯絡人",
+        maxlength: "10",
+        isHidden: false,
+        isSearch: true,
         isAssociate: false,
         isEdit: true,
         isUpload: true,
@@ -638,6 +656,21 @@ class Account extends Parent {
         selectFilter: false,
       },
       {
+        label: "緊急聯絡人",
+        prop: "emergencyContact",
+        mandatory: false,
+        message: "請輸入緊急聯絡人",
+        maxlength: "10",
+        isHidden: false,
+        isSearch: true,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
         label: "緊急電話",
         prop: "emergencyNumber",
         mandatory: false,
@@ -729,6 +762,175 @@ class Account extends Parent {
         format: "textarea",
         maxlength: "200",
         isHidden: false,
+        isSearch: true,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: false,
+        selectFilter: false,
+      },
+    ];
+  }
+  static getUserDistributedTableConfig() {
+    return [
+      {
+        label: "姓名",
+        prop: "name",
+        mandatory: true,
+        message: "請輸入姓名",
+        maxlength: "15",
+        isHidden: false,
+        isSearch: true,
+        placeholder: "請輸入姓名",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "性別",
+        prop: "sex",
+        format: "sexBoolean",
+        mandatory: true,
+        message: "請輸入性別",
+        type: "boolean",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "boolean",
+        selectFilter: false,
+      },
+      {
+        label: "年齡",
+        prop: "birthday",
+        format: "YYYY-MM-DD",
+        mandatory: false,
+        isHidden: false,
+        isSearch: true,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: false,
+        formType: "date",
+        selectFilter: false,
+      },
+      {
+        label: "電話",
+        prop: "callNumber",
+        mandatory: false,
+        maxlength: "15",
+        isHidden: true,
+        isSearch: true,
+        placeholder: "請輸入電話",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "手機",
+        prop: "cellPhoneNumber",
+        mandatory: true,
+        message: "請輸入手機號碼",
+        pattern: /^09\d{8}$/,
+        errorMsg: "輸入格式為09xxxxxxxx",
+        isPattern: true,
+        maxlength: "10",
+        isHidden: false,
+        isSearch: true,
+        placeholder: "請輸入手機號碼，格式為09xxxxxxxx",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "緊急聯絡人",
+        prop: "emergencyContact",
+        mandatory: false,
+        message: "請輸入緊急聯絡人",
+        maxlength: "10",
+        isHidden: false,
+        isSearch: true,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "緊急電話",
+        prop: "emergencyNumber",
+        mandatory: false,
+        maxlength: "15",
+        isHidden: false,
+        isSearch: true,
+        placeholder: "請輸入緊急電話",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+
+      {
+        label: "門牌",
+        prop: "usageOfFloor",
+        format: "floorOfHouseSelect",
+        mandatory: false,
+        maxlength: "15",
+        isHidden: false,
+        isSearch: true,
+        placeholder: "請輸入職稱",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+        formType: "selectString",
+      },
+      {
+        label: "行動不便者",
+        prop: "moveWithDifficulty",
+        format: "moveWithDifficultyBoolean",
+        mandatory: true,
+        message: "請選擇是否為行動不便者",
+        type: "boolean",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "boolean",
+        selectFilter: false,
+      },
+      {
+        label: "描述",
+        prop: "description",
+        format: "textarea",
+        placeholder: "若為行動不便者，請輸入狀況",
+        mandatory: false,
+        maxlength: "200",
+        isHidden: true,
         isSearch: true,
         isAssociate: false,
         isEdit: true,
@@ -837,6 +1039,21 @@ class Account extends Parent {
         isHidden: false,
         isSearch: true,
         placeholder: "請輸入手機號碼，格式為09xxxxxxxx",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
+      },
+      {
+        label: "緊急聯絡人",
+        prop: "emergencyContact",
+        mandatory: false,
+        message: "請輸入緊急聯絡人",
+        maxlength: "10",
+        isHidden: false,
+        isSearch: true,
         isAssociate: false,
         isEdit: true,
         isUpload: true,
@@ -1086,7 +1303,6 @@ class Account extends Parent {
       });
     return data;
   }
-
   static async postMany(data) {
     var data = await api.authority
       .apiPostAccountAuthorities(data)
@@ -1127,17 +1343,17 @@ class Account extends Parent {
     var data = await api.authority
       .apiPatchAccountAuthority(type, data)
       .then(async (response) => {
-        if(isObj){
+        if (isObj) {
           return new Account(response.result);
-        }else{
-          return true
+        } else {
+          return true;
         }
       })
       .catch((error) => {
-        if(isObj){
-          return {}
-        }else{
-          return false
+        if (isObj) {
+          return {};
+        } else {
+          return false;
         }
       });
     return data;
@@ -1146,11 +1362,22 @@ class Account extends Parent {
     var data = await api.authority
       .apiPatchAccountFloorOfHouse(type, accountId)
       .then(async (response) => {
-        console.log('upgrade',response)
         response.result = response.result.map((item) => {
           return new Account(item);
         });
         return response;
+      })
+      .catch((error) => {
+        return [];
+      });
+    return data;
+  }
+  static async getDistributed(type, model) {
+    var data = await api.authority
+      .apiGetHouseAttributes(type, model)
+      .then((response) => {
+        console.log(JSON.stringify(response));
+        return response.result;
       })
       .catch((error) => {
         return [];

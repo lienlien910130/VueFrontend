@@ -11,12 +11,26 @@ const user = {
   apiPostRegister(data) {
     return req("post", "/users/support/register", null, data);
   },
-
+  //忘記密碼-寄送email
   apiPostPassword(data) {
     return req("post", "/users/forgot/checkAndSendInfo", null, data);
   },
+  //確認是否超過認證期限
   apiPostCheckReset(data) {
     return req("post", "/users/forgot/checkAndSendInfo/modify", null, data);
+  },
+  //email認證
+  apiPostEmailCertification(data) {
+    return req("post", "/users/support/checkAndSendInfo/email", null, data);
+  },
+  //確認是否超過認證期限
+  apiPostCheckEmailCertificationReset(data) {
+    return req(
+      "post",
+      "/users/support/checkAndSendInfo/email/check",
+      null,
+      data
+    );
   },
   apiPatchResetPassword(data) {
     return req(

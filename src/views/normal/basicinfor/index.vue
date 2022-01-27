@@ -121,12 +121,86 @@
       :isP="activeName == 'Professional'"
     ></DialogExcel>
 
-    <!-- <DialogTable
-      ref="dialogtable"
-      v-if="tableVisible === true"
-      v-bind="tableAttrs"
-      v-on="tableEvent"
-    ></DialogTable> -->
+    <el-dialog
+      :title="dialogVisibletTitle"
+      :width="dialogVisibletWidth"
+      :visible.sync="dialogFormVisible"
+      center
+      :close-on-click-modal="false"
+      @close="handleDistributed('cancel', '')"
+    >
+      <template v-if="dialogFormType == 'cert'">
+        <el-form :model="ruleForm" :rules="rules" ref="ruleForm">
+          <el-form-item label="門牌" prop="usageOfFloor">
+            <el-select
+              v-model="ruleForm.usageOfFloor"
+              filterable
+              placeholder="請選擇"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="(obj, index) in houseList"
+                :key="index"
+                :label="obj.label"
+                :value="obj.id"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="submitForm('ruleForm')"
+            >確認</el-button
+          >
+          <el-button @click="resetForm('ruleForm')">取消</el-button>
+        </div>
+      </template>
+      <template v-else>
+        <el-tabs v-model="distributedName" @tab-click="handleDistributedTab">
+          <el-tab-pane label="以人為分佈" name="PE"></el-tab-pane>
+          <el-tab-pane label="以戶為分佈" name="USAG"></el-tab-pane>
+        </el-tabs>
+        <div v-if="!hasDistributedButton">
+          <el-button size="mini" @click="handleDistributed('exportExcel', '')"
+            >匯出檔案</el-button
+          >
+          <el-button size="mini" @click="handleDistributed('return', '')"
+            >返回上一層</el-button
+          >
+        </div>
+        <el-table
+          :data="distributedData"
+          style="width: 100%"
+          :cell-style="{ 'text-align': 'center' }"
+          :header-cell-style="{ 'text-align': 'center' }"
+        >
+          <el-table-column fixed type="index" width="150"> </el-table-column>
+          <el-table-column
+            v-for="(item, index) in distributedConfig"
+            align="left"
+            :label="item.label"
+            :key="index"
+            :prop="item.prop"
+            header-align="center"
+            :column-key="item.prop"
+            sortable="custom"
+          >
+            <template slot-scope="scope">
+              <span>{{ scope.row[item.prop] }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="hasDistributedButton" label="操作">
+            <template slot-scope="scope">
+              <el-button
+                size="mini"
+                @click="handleDistributed('view', scope.row)"
+                >查看</el-button
+              >
+            </template>
+          </el-table-column>
+        </el-table>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -136,14 +210,11 @@ import {
   Files,
   Committee,
   UsageOfFloor,
-  Setting,
   User,
   Contactunit,
   Building,
-  Floors,
   Account,
 } from "@/object/index";
-import CharacterStatus from "@/object/characterStatus";
 export default {
   name: "Tab",
   mixins: [sharemixin, blockmixin, dialogmixin, excelmixin],
@@ -227,17 +298,12 @@ export default {
         resetlistQueryParams: this.resetdownlistQueryParams,
       };
     },
-    // tableEvent() {
-    //   return {
-    //     handleTableClick: this.handleTableClick,
-    //     clickPagination: this.handleTableClick,
-    //   };
-    // },
   },
   data() {
     return {
       activeName: "MC",
       activeFloor: "US",
+      distributedName: "PE",
       selectFloor: null,
       isChoose: false,
       usageOfFloorSelectList: [],
@@ -267,6 +333,33 @@ export default {
       },
       uploadVisible: false,
       account: null,
+      dialogFormVisible: false,
+      dialogFormType: "",
+      distributedConfig: [
+        {
+          label: "種類",
+          prop: "type",
+        },
+        {
+          label: "範圍",
+          prop: "range",
+        },
+        {
+          label: "人數",
+          prop: "peopleCount",
+        },
+      ],
+      distributedData: [],
+      ruleForm: { usageOfFloor: null },
+      rules: {
+        usageOfFloor: [
+          { required: true, message: "請選擇門牌", trigger: "change" },
+        ],
+      },
+      distributedAllList: null,
+      hasDistributedButton: true,
+      dialogVisibletTitle: "",
+      dialogVisibletWidth: "",
     };
   },
   watch: {
@@ -301,10 +394,21 @@ export default {
         await this.resetdownlistQueryParams();
         this.downButtonsName = [
           { name: "編輯", icon: "el-icon-edit", status: "open" },
+          { name: "驗證住戶", icon: "el-icon-circle-check", status: "verify" },
         ];
         this.downheaderButtonsName = [
           { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
           { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
+          {
+            name: "多筆驗證",
+            icon: "el-icon-circle-check",
+            status: "multipleVerify",
+          },
+          {
+            name: "人員屬性分布",
+            icon: "el-icon-pie-chart",
+            status: "distributed",
+          },
         ];
       }
       if (this.selectFloor !== null) {
@@ -360,10 +464,21 @@ export default {
       this.downConfig = Account.getUserTableConfig();
       this.downButtonsName = [
         { name: "編輯", icon: "el-icon-edit", status: "open" },
+        { name: "驗證住戶", icon: "el-icon-circle-check", status: "verify" },
       ];
       this.downheaderButtonsName = [
         { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
         { name: "多筆更新", icon: "el-icon-edit", status: "updateMany" },
+        {
+          name: "多筆驗證",
+          icon: "el-icon-circle-check",
+          status: "multipleVerify",
+        },
+        {
+          name: "人員屬性分布",
+          icon: "el-icon-pie-chart",
+          status: "distributed",
+        },
       ];
       await this.getManagementList();
       await this.getUserList();
@@ -371,6 +486,7 @@ export default {
         document.getElementById("rangeDiv").style.height =
           document.getElementById("parent").clientHeight + "px";
       });
+      var result = await Account.getDistributed("USAG", 1);
     },
     async resetlistQueryParams() {
       this.listQueryParams = {
@@ -399,14 +515,6 @@ export default {
         await this.getFloorOfHouseList();
       }
     },
-    // async resettablelistQueryParams() {
-    //   this.tablelistQueryParams = {
-    //     pageIndex: 1,
-    //     pageSize: 10,
-    //     total: 0,
-    //   };
-    //   await this.getAccountCharacterStatus();
-    // },
     async getFloorImage() {
       //載入平面圖
       if (this.floorImageId == null) {
@@ -458,17 +566,6 @@ export default {
       this.downData = data.result;
       this.downlistQueryParams.total = data.totalPageCount;
     },
-    // async getAccountCharacterStatus() {
-    //   var data = await CharacterStatus.getSearchPage(
-    //     "basic",
-    //     this.account.getID(),
-    //     this.tablelistQueryParams
-    //   );
-    //   this.tableTitle = "accountOfCharacterStatus";
-    //   this.dialogtableConfig = CharacterStatus.getTableConfig();
-    //   this.tableData = data.result;
-    //   this.tablelistQueryParams.total = data.totalPageCount;
-    // },
     async handleBuildingInfo(index, content) {
       //轉接口
       console.log("handleBuildingInfo", index, content);
@@ -732,12 +829,61 @@ export default {
           { name: "取消", type: "info", status: "cancel" },
         ];
         this.innerVisible = true;
+      } else if (index === "verify") {
+        if (
+          content.usageOfFloor !== undefined &&
+          content.usageOfFloor !== null &&
+          content.usageOfFloor !== ""
+        ) {
+          //已有設定過門牌可直接進行升級的動作
+          var result = await Account.upgrade(
+            "/basic/accountSetting",
+            content.id
+          );
+          if (result.result.length !== 0) {
+            this.$message("認證成功，若要取消認證，請洽水星服務人員");
+            result.result.forEach((item) => {
+              this.$socket.sendMsg("account", "update", item);
+            });
+            await this.getUserList();
+          } else {
+            this.$message.error("認證失敗，請洽水星服務人員");
+          }
+        } else {
+          //跳出可以選擇門牌的視窗
+          this.account = content;
+          this.dialogVisibletTitle = "住戶認證";
+          this.dialogVisibletWidth = "50%";
+          this.dialogFormType = "cert";
+          this.dialogFormVisible = true;
+        }
+      } else if (index === "multipleVerify") {
+        var accountArray = [];
+        content.forEach((item) => {
+          accountArray.push(item.id);
+        });
+        var result = await Account.upgrade(
+          "/basic/accountSetting",
+          accountArray.toString()
+        );
+        if (result.result.length !== 0) {
+          this.$message("認證成功，若要取消認證，請洽水星服務人員");
+          result.result.forEach((item) => {
+            this.$socket.sendMsg("account", "update", item);
+          });
+          await this.getUserList();
+          this.$refs.downblock.clearSelectArray();
+        } else {
+          this.$message.error("認證失敗，請洽水星服務人員");
+        }
+      } else if (index === "distributed") {
+        this.dialogFormType = "dist";
+        this.dialogVisibletTitle = "住戶分布狀況";
+        this.dialogVisibletWidth = "80%";
+        this.dialogFormVisible = true;
+        var result = await Account.getDistributed("PE", 1);
+        this.distributedData = result;
       }
-      // else if (index === "characterStatus") {
-      //   this.account = content;
-      //   await this.resettablelistQueryParams();
-      //   this.tableVisible = true;
-      // }
     },
     async handleDialog(title, index, content) {
       //Dialog相關操作
@@ -748,11 +894,7 @@ export default {
         this.uploadVisible = false;
         if (title == "committee" || title == "contactUnit") {
           this.$refs.block.clearSelectArray();
-        }
-        // else if (title === "characterStatus") {
-        //   this.$refs.dialogtable.clearSelectArray();
-        // }
-        else {
+        } else {
           this.$refs.downblock.clearSelectArray();
         }
       } else {
@@ -773,90 +915,9 @@ export default {
           case "buildingInfo":
             await this.onBuildingActions(index, content);
             break;
-          // case "characterStatus":
-          //   await this.onCharacterStatus(index, content);
-          //   break;
         }
       }
     },
-    // async handleTableClick(index, content) {
-    //   console.log(index, JSON.stringify(content));
-    //   this.dialogData = [];
-    //   this.dialogTitle = "characterStatus";
-    //   this.dialogButtonsName = [];
-    //   this.dialogConfig = CharacterStatus.getTableConfig();
-    //   if (index === "cancel") {
-    //     this.tableVisible = false;
-    //   } else if (index === "clickPagination") {
-    //     this.tablelistQueryParams = content;
-    //     await this.getAccountCharacterStatus();
-    //   } else if (index === "open") {
-    //     this.dialogData.push(content);
-    //     this.dialogButtonsName = [
-    //       { name: "儲存", type: "primary", status: "update" },
-    //       { name: "取消", type: "info", status: "cancel" },
-    //     ];
-    //     //this.dialogConfig = this.tableConfig;
-    //     this.innerVisible = true;
-    //     this.dialogStatus = "update";
-    //   } else if (index === "delete" || index === "deleteMany") {
-    //     var isDelete = false;
-    //     if (index === "delete") {
-    //       isDelete = await content.delete("basic");
-    //     } else {
-    //       var deleteArray = [];
-    //       content.forEach((item) => {
-    //         deleteArray.push(item.id);
-    //       });
-    //       isDelete = await CharacterStatus.deleteMany(
-    //         "basic",
-    //         deleteArray.toString()
-    //       );
-    //     }
-    //     if (isDelete) {
-    //       this.$message("刪除成功");
-    //       var length = content.length !== undefined ? content.length : 1;
-    //       var page = Math.ceil(
-    //         (this.listQueryParams.total - length) /
-    //           this.listQueryParams.pageSize
-    //       );
-    //       if (this.listQueryParams.pageIndex > page) {
-    //         this.listQueryParams.pageIndex = page;
-    //       }
-    //       await this.getAccountCharacterStatus();
-    //       this.$refs.block.clearSelectArray();
-    //     } else {
-    //       this.$message.error("系統錯誤");
-    //     }
-    //   } else if (index === "empty") {
-    //     this.dialogData.push(CharacterStatus.empty());
-    //     this.dialogButtonsName = [
-    //       { name: "儲存", type: "primary", status: "create" },
-    //       { name: "取消", type: "info", status: "cancel" },
-    //     ];
-    //     //this.dialogConfig = this.tableConfig;
-    //     this.innerVisible = true;
-    //     this.dialogStatus = "create";
-    //   } else if (index === "exportExcel") {
-    //     this.exportExcelData = this.tableData;
-    //     this.excelVisible = true;
-    //     this.excelType = "exportExcel";
-    //   } else if (index === "uploadExcel") {
-    //     this.excelVisible = true;
-    //     this.excelType = "uploadExcel";
-    //   } else if (index === "updateMany") {
-    //     this.dialogStatus = "updateMany";
-    //     content.forEach((item) => {
-    //       var obj = _.cloneDeep(item);
-    //       this.dialogData.push(obj);
-    //     });
-    //     this.dialogButtonsName = [
-    //       { name: "儲存", type: "primary", status: "updateManySave" },
-    //       { name: "取消", type: "info", status: "cancel" },
-    //     ];
-    //     this.innerVisible = true;
-    //   }
-    // },
     async onCommitteeActions(index, content) {
       var result =
         index === "update" || index === "updateManySave"
@@ -1087,81 +1148,18 @@ export default {
           this.$message.error("刪除失敗");
         }
       }
-      // else if (index === "uploadExcelSave") {
-      //   var result = await User.postMany(content);
-      //   if (result.result.length !== 0) {
-      //     this.$message("新增成功");
-      //     this.$store.dispatch("building/setHouseHolders");
-      //     this.$socket.sendMsg("houseHolder", index, result.result);
-      //     await this.getUserList();
-      //     this.excelVisible = false;
-      //   }
-      //   if (result.repeatDataList !== undefined) {
-      //     var list = [];
-      //     result.repeatDataList.forEach((item) => {
-      //       list.push(item.name);
-      //     });
-      //     this.$message.error(
-      //       "【" + list.toString() + "】姓名已存在，請重新上傳"
-      //     );
-      //   }
-      // }
     },
-    // async onCharacterStatus(index, content) {
-    //   var result =
-    //     index === "update" || index === "updateManySave"
-    //       ? await content.update("basic")
-    //       : index === "create"
-    //       ? await content.create("basic", this.account.getID())
-    //       : await CharacterStatus.postMany(
-    //           "basic",
-    //           this.account.getID(),
-    //           content
-    //         );
-    //   var condition =
-    //     index !== "uploadExcelSave"
-    //       ? Object.keys(result).length !== 0
-    //       : result.result.length !== 0;
-    //   if (condition) {
-    //     index === "update" || index === "updateManySave"
-    //       ? this.$message("更新成功")
-    //       : this.$message("新增成功");
-    //     await this.getAccountCharacterStatus();
-    //     if (index !== "updateManySave") {
-    //       this.innerVisible = false;
-    //     } else {
-    //       this.dialogData.forEach((item, index) => {
-    //         if (item.id == content.id) {
-    //           this.dialogData.splice(index, 1, content);
-    //         }
-    //       });
-    //     }
-    //     this.excelVisible = false;
-    //   } else {
-    //     this.$message.error("系統錯誤");
-    //   }
-    // },
     async onBuildingActions(index, content) {
       if (index == "update") {
         var result = await content.update();
         if (Object.keys(result).length !== 0) {
           this.$message("更新成功");
           this.$socket.sendMsg("building", "info", result);
-          // if (this.buildingid == content.getID()) {
-          //   this.$store.dispatch(
-          //     "building/setBuildingInfo",
-          //     await Building.getInfo()
-          //   );
-          // }
           this.innerVisible = false;
         } else {
           this.$message.error("系統錯誤");
         }
-      }
-      // else if(index == 'selectData'){
-      //   this.$store.dispatch('building/setbuildingusers',await User.get())
-      // }
-      else {
+      } else {
         this.innerVisible = false;
       }
     },
@@ -1227,6 +1225,119 @@ export default {
           this.$message.error("請先選擇樓層再進行門牌新增");
         }
       }
+    },
+    async handleDistributedTab(reset = true) {
+      this.hasDistributedButton = true;
+      if (this.distributedName === "PE") {
+        var result = await Account.getDistributed("PE", 1);
+        this.distributedData = result;
+        this.distributedConfig = [
+          {
+            label: "種類",
+            prop: "type",
+          },
+          {
+            label: "範圍",
+            prop: "range",
+          },
+          {
+            label: "人數",
+            prop: "peopleCount",
+          },
+        ];
+      } else {
+        var result = await Account.getDistributed("USAG", 1);
+        this.distributedData = result;
+        this.distributedConfig = [
+          {
+            label: "戶號",
+            prop: "houseNumber",
+          },
+          {
+            label: "居住人數",
+            prop: "livePeople",
+          },
+          {
+            label: "避難弱者",
+            prop: "refugeTheWeak",
+          },
+        ];
+      }
+      if (result) {
+        this.distributedAllList = null;
+      }
+    },
+    async handleDistributed(index, content) {
+      if (index === "cancel") {
+        this.dialogFormVisible = false;
+        this.distributedAllList = null;
+      } else if (index === "exportExcel") {
+      } else if (index === "return") {
+        await this.handleDistributedTab(false);
+      } else {
+        //查看細項
+        this.hasDistributedButton = false; //關閉操作欄位
+        if (this.distributedAllList == null) {
+          this.distributedAllList = await Account.getDistributed(
+            this.distributedName,
+            2
+          );
+        }
+        if (this.distributedName === "PE") {
+          switch (content.type) {
+            case "小孩":
+              this.distributedData = this.distributedAllList.linkChild;
+              break;
+            case "老人":
+              this.distributedData = this.distributedAllList.linkElder;
+              break;
+            case "行動不便者":
+              this.distributedData =
+                this.distributedAllList.linkMoveWithDifficulty;
+              break;
+          }
+        } else {
+          this.distributedData = this.distributedAllList.filter((item) => {
+            return item.houseNumberId == content.houseNumberId;
+          })[0].linkReportAgeDistributionInUsageOfFloorList;
+        }
+        this.distributedConfig = Account.getUserDistributedTableConfig();
+      }
+    },
+    submitForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          var temp = {
+            id: this.account.getID(),
+            usageOfFloor: this.ruleForm.usageOfFloor,
+          };
+          var isOk = await Account.updateData("/basic/accountSetting", temp);
+          if (isOk) {
+            var result = await Account.upgrade(
+              "/basic/accountSetting",
+              this.account.getID()
+            );
+            if (result.result.length !== 0) {
+              this.$message("認證成功，若要取消認證，請洽水星服務人員");
+              result.result.forEach((item) => {
+                this.$socket.sendMsg("account", "update", item);
+              });
+              await this.getUserList();
+              this.dialogFormVisible = false;
+            } else {
+              this.$message.error("認證失敗，請洽水星服務人員");
+            }
+          } else {
+            this.$message.error("認證失敗，請洽水星服務人員");
+          }
+        } else {
+          return false;
+        }
+      });
+    },
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
+      this.dialogFormVisible = false;
     },
   },
 };
