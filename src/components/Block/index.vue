@@ -1019,17 +1019,6 @@ export default {
     };
   },
   methods: {
-    // async requestData(formType, format) {
-    //   console.log("focus");
-    //   this.dataList = [];
-    //   if (formType == "selectSetting") {
-    //     this.dataList = await this.optionfilter(format);
-    //   } else {
-    //     this.dataList = await this.selectfilter(
-    //       format == "commitUserInfo" ? "userInfo" : format
-    //     );
-    //   }
-    // },
     //區塊&表格&對外連結
     handleClickOption(status, row) {
       console.log("status=>", status, "row=>", row);

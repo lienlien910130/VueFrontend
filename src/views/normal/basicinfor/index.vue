@@ -160,19 +160,22 @@
           <el-tab-pane label="以人為分佈" name="PE"></el-tab-pane>
           <el-tab-pane label="以戶為分佈" name="USAG"></el-tab-pane>
         </el-tabs>
-        <div v-if="!hasDistributedButton">
+        <div style="float:right">
           <el-button size="mini" @click="handleDistributed('exportExcel', '')"
-            >匯出檔案</el-button
-          >
-          <el-button size="mini" @click="handleDistributed('return', '')"
-            >返回上一層</el-button
-          >
+              >匯出檔案</el-button
+            >
+          <el-button v-if="!hasDistributedButton" size="mini" @click="handleDistributed('return', '')"
+              >返回上一層</el-button
+            >
         </div>
         <el-table
           :data="distributedData"
           style="width: 100%"
           :cell-style="{ 'text-align': 'center' }"
           :header-cell-style="{ 'text-align': 'center' }"
+          :show-summary="hasDistributedButton ? true : false"
+          :summary-method="getSummaries()"
+          sum-text="總人數"
         >
           <el-table-column fixed type="index" width="150"> </el-table-column>
           <el-table-column
@@ -186,7 +189,37 @@
             sortable="custom"
           >
             <template slot-scope="scope">
-              <span>{{ scope.row[item.prop] }}</span>
+              <span v-if="item.formType == 'date'" style="width: 150px">
+                  {{ dataStr(scope.row, item.format, item.prop) }}
+                </span>
+              <span
+                  v-else-if="
+                    item.formType == 'boolean'
+                  "
+                >
+                  <template
+                    v-if="
+                      item.format == 'improvedBoolean' &&
+                      scope.row['declareResult']
+                    "
+                  >
+                    -
+                  </template>
+                  <template v-else>
+                    {{ scope.row[item.prop] | changeBoolean(item.format) }}
+                  </template>
+                </span>
+                <span
+                  v-else-if="
+                    item.formType == 'selectString'
+                  "
+                >
+                    {{
+                      changeShowFormatString(item.format, scope.row, item.prop)
+                    }}
+                </span>
+
+              <span v-else>{{ scope.row[item.prop] }}</span>
             </template>
           </el-table-column>
           <el-table-column v-if="hasDistributedButton" label="操作">
@@ -205,7 +238,7 @@
 </template>
 
 <script>
-import { blockmixin, dialogmixin, sharemixin, excelmixin } from "@/mixin/index";
+import { blockmixin, dialogmixin, sharemixin, excelmixin, computedmixin } from "@/mixin/index";
 import {
   Files,
   Committee,
@@ -217,7 +250,7 @@ import {
 } from "@/object/index";
 export default {
   name: "Tab",
-  mixins: [sharemixin, blockmixin, dialogmixin, excelmixin],
+  mixins: [sharemixin, blockmixin, dialogmixin, excelmixin, computedmixin],
   components: {
     Form: () => import("./components/Form"),
     FloorImage: () => import("./components/Floor"),
@@ -486,7 +519,6 @@ export default {
         document.getElementById("rangeDiv").style.height =
           document.getElementById("parent").clientHeight + "px";
       });
-      var result = await Account.getDistributed("USAG", 1);
     },
     async resetlistQueryParams() {
       this.listQueryParams = {
@@ -746,23 +778,6 @@ export default {
               }
               this.$refs.block.clearSelectArray();
               break;
-            // case "floorOfHouse":
-            //   this.$socket.sendMsg(
-            //     "floorOfHouse",
-            //     "delete",
-            //     index === "delete" ? content.getID() : deleteArray.toString()
-            //   );
-            // case "user": //刪除user時重整建築物資料(可能會更改到所有權人&防火管理人的資料)&管委會資料(有關聯住戶)
-            //   var data = await Building.getInfo();
-            //   this.$store.dispatch("building/setBuildingInfo", data);
-            //   this.$socket.sendMsg("building", "info", data);
-            //   this.$store.dispatch("building/setHouseHolders");
-            //   this.$socket.sendMsg(
-            //     "houseHolder",
-            //     "delete",
-            //     index === "delete" ? content.getID() : deleteArray.toString()
-            //   );
-            // case "user":
             case "floorOfHouse":
               this.$socket.sendMsg(
                 "floorOfHouse",
@@ -1227,7 +1242,6 @@ export default {
       }
     },
     async handleDistributedTab(reset = true) {
-      this.hasDistributedButton = true;
       if (this.distributedName === "PE") {
         var result = await Account.getDistributed("PE", 1);
         this.distributedData = result;
@@ -1246,8 +1260,24 @@ export default {
           },
         ];
       } else {
-        var result = await Account.getDistributed("USAG", 1);
-        this.distributedData = result;
+        var result = await Account.getDistributed("USAG", 1)
+        // result = result.sort((a,b)=>{
+        //   let reg = /[a-zA-Z0-9]/
+        //   let x = a.houseNumber
+        //   let y = b.houseNumber
+        //   if(reg.test(x) || reg.test(y)){
+        //     if(x>y){
+        //       return 1
+        //     }else if(x<y){
+        //       return -1
+        //     }else{
+        //       return 0
+        //     }
+        //   }else{
+        //     return x.localeCompare(y)
+        //   }
+        // });
+        this.distributedData = result.sort((x,y)=>{x.houseNumberId - y.houseNumberId});
         this.distributedConfig = [
           {
             label: "戶號",
@@ -1263,7 +1293,8 @@ export default {
           },
         ];
       }
-      if (result) {
+      this.hasDistributedButton = true;
+      if (reset) {
         this.distributedAllList = null;
       }
     },
@@ -1271,7 +1302,67 @@ export default {
       if (index === "cancel") {
         this.dialogFormVisible = false;
         this.distributedAllList = null;
+        this.distributedData = []
+        this.distributedName = 'PE'
+        this.distributedConfig = [
+          {
+            label: "種類",
+            prop: "type",
+          },
+          {
+            label: "範圍",
+            prop: "range",
+          },
+          {
+            label: "人數",
+            prop: "peopleCount",
+          },
+        ]
       } else if (index === "exportExcel") {
+        this.dialogConfig = Account.getUserDistributedTableConfig();
+        if(!this.hasDistributedButton){
+          this.exportExcelData = this.distributedData;
+        }else{ // 匯出全部資料
+          var list =  await Account.getDistributed(
+            this.distributedName,
+            2
+          );
+          var exportArray = []
+          if(this.distributedName == 'PE'){
+            this.dialogConfig.splice(0,0,{"label":"種類","prop":"type","isExport":true})
+            exportArray.push({type:'小孩'})
+            exportArray = exportArray.concat(list.linkChild)
+            exportArray.push({type:'老人'})
+            exportArray = exportArray.concat(list.linkElder)
+            exportArray.push({type:'行動不便者'})
+            exportArray = exportArray.concat(list.linkMoveWithDifficulty)
+            this.exportExcelData = exportArray
+          }else{
+            this.dialogConfig.splice(7,1)
+            this.dialogConfig.splice(0,0,{"label":"避難弱者","prop":"refugeTheWeak","isExport":true})
+            this.dialogConfig.splice(0,0,{"label":"居住人數","prop":"livePeople","isExport":true})
+            this.dialogConfig.splice(0,0,{"label":"戶號","prop":"houseNumber","isExport":true})
+            list.forEach(item=>{
+              var firstData = {houseNumber:item.houseNumber,livePeople:item.livePeople,refugeTheWeak:item.refugeTheWeak}
+              if(item.linkReportAgeDistributionInUsageOfFloorList.length == 0){
+                exportArray.push(firstData)
+              }else{
+                 item.linkReportAgeDistributionInUsageOfFloorList.forEach((peo,index)=>{
+                  if(index === 0){
+                    var o = Object.assign(firstData, peo)
+                    exportArray.push(o)
+                  }else{
+                    exportArray.push(peo)
+                  }
+                })
+              }
+            })
+             this.exportExcelData = exportArray
+          }
+        }
+
+        this.excelVisible = true;
+        this.excelType = "exportExcel";
       } else if (index === "return") {
         await this.handleDistributedTab(false);
       } else {
@@ -1283,6 +1374,7 @@ export default {
             2
           );
         }
+        this.distributedConfig = Account.getUserDistributedTableConfig();
         if (this.distributedName === "PE") {
           switch (content.type) {
             case "小孩":
@@ -1301,8 +1393,41 @@ export default {
             return item.houseNumberId == content.houseNumberId;
           })[0].linkReportAgeDistributionInUsageOfFloorList;
         }
-        this.distributedConfig = Account.getUserDistributedTableConfig();
+
       }
+    },
+    getSummaries(param){
+      if(param == undefined){
+        return false
+      }
+      console.log(param)
+      const { columns, data } = param;
+        const len = columns.length
+        // const count = this.distributedName == 'PE' ? len -2 :
+        const sums = [];
+        columns.forEach((column, index) => {
+          if (index === 0) {
+            sums[index] = '總和';
+            return;
+          }else if(index == len -2){ //顯示人數總和
+            const values = data.map(item => Number(item[column.property]));
+            if (!values.every(value => isNaN(value))) {
+              sums[index] = values.reduce((prev, curr) => {
+                const value = Number(curr);
+                if (!isNaN(value)) {
+                  return prev + curr;
+                } else {
+                  return prev;
+                }
+              }, 0);
+              sums[index] += ' 人';
+            } else {
+              sums[index] = 'N/A';
+            }
+          }
+        });
+
+        return sums;
     },
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
