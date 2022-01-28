@@ -46,7 +46,7 @@ router.beforeEach(async (to, from, next) => {
         if (to.name == "process" || to.name == "selfDefenseClass") {
           toMenu = "selfDefenseFireMarshalling";
         }
-        if (to.name == "emergencygraphic" || to.name == "emergencyClass") {
+        if (to.name == "drawingControlGraphic" || to.name == "emergencyClass") {
           toMenu = "drawingControl";
         }
         var menuarray = store.getters.menuNoLevel.filter(

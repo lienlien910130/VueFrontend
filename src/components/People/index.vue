@@ -14,7 +14,10 @@
         </h2>
         <h2 class="count">
           共 {{ account.length }} 人
-          <i class="el-icon-circle-plus-outline" @click="'emptyUser', item" />
+          <!-- <i
+            class="el-icon-circle-plus-outline"
+            @click="handleOpenUser('createUser', marshallingClass)"
+          /> -->
           <i
             class="el-icon-edit"
             @click="handleOpenUser('open', marshallingClass)"
@@ -55,30 +58,13 @@ export default {
   name: "People",
   mixins: [computedmixin],
   props: {
+    title: {
+      type: String,
+    },
     marshallingClass: {
       type: Object,
       default: function () {
-        return new SelfDefenseFireMarshallingMgmt({
-          name: "滅火班",
-          classLeaderId: "1",
-          linkRoles: [],
-          linkAccountList: [
-            {
-              id: "1",
-              name: "系統管理員系統管理員系統管理員",
-              headShotFileId: "3499",
-            },
-            { id: "1", name: "系統管理員", headShotFileId: "3499" },
-            { id: "1", name: "系統管理員", headShotFileId: "3499" },
-            { id: "1", name: "系統管理員", headShotFileId: "3499" },
-            { id: "1", name: "系統管理員", headShotFileId: "3499" },
-            { id: "1", name: "系統管理員", headShotFileId: "3499" },
-            { id: "1", name: "系統管理員", headShotFileId: "3499" },
-            { id: "1", name: "系統管理員", headShotFileId: "3499" },
-          ],
-          linkContingencyProcess: [],
-          linkFloors: [],
-        });
+        return new SelfDefenseFireMarshallingMgmt({});
       },
     },
   },
@@ -94,12 +80,8 @@ export default {
           this.account = [];
           for await (let element of this.marshallingClass.linkAccountList) {
             var url = await this.getUserPhoto(element.headShotFileId);
-            this.account.push({
-              id: element.id,
-              name: element.name,
-              headShotFileId: element.headShotFileId,
-              url: url,
-            });
+            element.url = url;
+            this.account.push(element);
           }
         }
       },
@@ -111,35 +93,34 @@ export default {
     async getUserPhoto(headShotFileId) {
       if (headShotFileId !== undefined && headShotFileId !== null) {
         var file = await Files.getOfID(headShotFileId);
-        var filename = file.getExtName();
-        var fileType = filename == "png" ? "image/png" : "image/jpeg";
-        var data = await Files.getImage(headShotFileId);
-        let url = URL.createObjectURL(new Blob([data], { type: fileType }));
-        return url;
+        if (file.length) {
+          var filename = file.getExtName();
+          var fileType = filename == "png" ? "image/png" : "image/jpeg";
+          var data = await Files.getImage(headShotFileId);
+          let url = URL.createObjectURL(new Blob([data], { type: fileType }));
+          return url;
+        } else {
+          return "";
+        }
       }
       return "";
     },
     async handleOpenUser(index, content) {
+      console.log(this.title);
       if (index === "delete") {
-        this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
-          confirmButtonText: "确定",
+        this.$confirm("是否確認刪除該筆編組?", "提示", {
+          confirmButtonText: "確定",
           cancelButtonText: "取消",
           type: "warning",
         })
           .then(() => {
-            this.$message({
-              type: "success",
-              message: "删除成功!",
-            });
+            this.$emit("handleMarshallingMgmt", this.title, index, content);
           })
           .catch(() => {
-            this.$message({
-              type: "info",
-              message: "已取消删除",
-            });
+            return false;
           });
       } else {
-        this.$emit("handleMarshallingMgmt", index, content);
+        this.$emit("handleMarshallingMgmt", this.title, index, content);
       }
     },
   },

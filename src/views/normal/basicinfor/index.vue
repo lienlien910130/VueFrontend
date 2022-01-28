@@ -160,13 +160,16 @@
           <el-tab-pane label="以人為分佈" name="PE"></el-tab-pane>
           <el-tab-pane label="以戶為分佈" name="USAG"></el-tab-pane>
         </el-tabs>
-        <div style="float:right">
+        <div style="float: right">
           <el-button size="mini" @click="handleDistributed('exportExcel', '')"
-              >匯出檔案</el-button
-            >
-          <el-button v-if="!hasDistributedButton" size="mini" @click="handleDistributed('return', '')"
-              >返回上一層</el-button
-            >
+            >匯出檔案</el-button
+          >
+          <el-button
+            v-if="!hasDistributedButton"
+            size="mini"
+            @click="handleDistributed('return', '')"
+            >返回上一層</el-button
+          >
         </div>
         <el-table
           :data="distributedData"
@@ -190,34 +193,24 @@
           >
             <template slot-scope="scope">
               <span v-if="item.formType == 'date'" style="width: 150px">
-                  {{ dataStr(scope.row, item.format, item.prop) }}
-                </span>
-              <span
-                  v-else-if="
-                    item.formType == 'boolean'
+                {{ dataStr(scope.row, item.format, item.prop) }}
+              </span>
+              <span v-else-if="item.formType == 'boolean'">
+                <template
+                  v-if="
+                    item.format == 'improvedBoolean' &&
+                    scope.row['declareResult']
                   "
                 >
-                  <template
-                    v-if="
-                      item.format == 'improvedBoolean' &&
-                      scope.row['declareResult']
-                    "
-                  >
-                    -
-                  </template>
-                  <template v-else>
-                    {{ scope.row[item.prop] | changeBoolean(item.format) }}
-                  </template>
-                </span>
-                <span
-                  v-else-if="
-                    item.formType == 'selectString'
-                  "
-                >
-                    {{
-                      changeShowFormatString(item.format, scope.row, item.prop)
-                    }}
-                </span>
+                  -
+                </template>
+                <template v-else>
+                  {{ scope.row[item.prop] | changeBoolean(item.format) }}
+                </template>
+              </span>
+              <span v-else-if="item.formType == 'selectString'">
+                {{ changeShowFormatString(item.format, scope.row, item.prop) }}
+              </span>
 
               <span v-else>{{ scope.row[item.prop] }}</span>
             </template>
@@ -238,7 +231,13 @@
 </template>
 
 <script>
-import { blockmixin, dialogmixin, sharemixin, excelmixin, computedmixin } from "@/mixin/index";
+import {
+  blockmixin,
+  dialogmixin,
+  sharemixin,
+  excelmixin,
+  computedmixin,
+} from "@/mixin/index";
 import {
   Files,
   Committee,
@@ -1260,7 +1259,7 @@ export default {
           },
         ];
       } else {
-        var result = await Account.getDistributed("USAG", 1)
+        var result = await Account.getDistributed("USAG", 1);
         // result = result.sort((a,b)=>{
         //   let reg = /[a-zA-Z0-9]/
         //   let x = a.houseNumber
@@ -1277,7 +1276,9 @@ export default {
         //     return x.localeCompare(y)
         //   }
         // });
-        this.distributedData = result.sort((x,y)=>{x.houseNumberId - y.houseNumberId});
+        this.distributedData = result.sort((x, y) => {
+          x.houseNumberId - y.houseNumberId;
+        });
         this.distributedConfig = [
           {
             label: "戶號",
@@ -1302,8 +1303,8 @@ export default {
       if (index === "cancel") {
         this.dialogFormVisible = false;
         this.distributedAllList = null;
-        this.distributedData = []
-        this.distributedName = 'PE'
+        this.distributedData = [];
+        this.distributedName = "PE";
         this.distributedConfig = [
           {
             label: "種類",
@@ -1317,47 +1318,71 @@ export default {
             label: "人數",
             prop: "peopleCount",
           },
-        ]
+        ];
       } else if (index === "exportExcel") {
         this.dialogConfig = Account.getUserDistributedTableConfig();
-        if(!this.hasDistributedButton){
+        if (!this.hasDistributedButton) {
           this.exportExcelData = this.distributedData;
-        }else{ // 匯出全部資料
-          var list =  await Account.getDistributed(
-            this.distributedName,
-            2
-          );
-          var exportArray = []
-          if(this.distributedName == 'PE'){
-            this.dialogConfig.splice(0,0,{"label":"種類","prop":"type","isExport":true})
-            exportArray.push({type:'小孩'})
-            exportArray = exportArray.concat(list.linkChild)
-            exportArray.push({type:'老人'})
-            exportArray = exportArray.concat(list.linkElder)
-            exportArray.push({type:'行動不便者'})
-            exportArray = exportArray.concat(list.linkMoveWithDifficulty)
-            this.exportExcelData = exportArray
-          }else{
-            this.dialogConfig.splice(7,1)
-            this.dialogConfig.splice(0,0,{"label":"避難弱者","prop":"refugeTheWeak","isExport":true})
-            this.dialogConfig.splice(0,0,{"label":"居住人數","prop":"livePeople","isExport":true})
-            this.dialogConfig.splice(0,0,{"label":"戶號","prop":"houseNumber","isExport":true})
-            list.forEach(item=>{
-              var firstData = {houseNumber:item.houseNumber,livePeople:item.livePeople,refugeTheWeak:item.refugeTheWeak}
-              if(item.linkReportAgeDistributionInUsageOfFloorList.length == 0){
-                exportArray.push(firstData)
-              }else{
-                 item.linkReportAgeDistributionInUsageOfFloorList.forEach((peo,index)=>{
-                  if(index === 0){
-                    var o = Object.assign(firstData, peo)
-                    exportArray.push(o)
-                  }else{
-                    exportArray.push(peo)
+        } else {
+          // 匯出全部資料
+          var list = await Account.getDistributed(this.distributedName, 2);
+          var exportArray = [];
+          if (this.distributedName == "PE") {
+            this.dialogConfig.splice(0, 0, {
+              label: "種類",
+              prop: "type",
+              isExport: true,
+            });
+            exportArray.push({ type: "小孩" });
+            exportArray = exportArray.concat(list.linkChild);
+            exportArray.push({ type: "老人" });
+            exportArray = exportArray.concat(list.linkElder);
+            exportArray.push({ type: "行動不便者" });
+            exportArray = exportArray.concat(list.linkMoveWithDifficulty);
+            exportArray.push({ type: "其他" });
+            exportArray = exportArray.concat(list.linkOtherUsers);
+            this.exportExcelData = exportArray;
+          } else {
+            this.dialogConfig.splice(7, 1);
+            this.dialogConfig.splice(0, 0, {
+              label: "避難弱者",
+              prop: "refugeTheWeak",
+              isExport: true,
+            });
+            this.dialogConfig.splice(0, 0, {
+              label: "居住人數",
+              prop: "livePeople",
+              isExport: true,
+            });
+            this.dialogConfig.splice(0, 0, {
+              label: "戶號",
+              prop: "houseNumber",
+              isExport: true,
+            });
+            list.forEach((item) => {
+              var firstData = {
+                houseNumber: item.houseNumber,
+                livePeople: item.livePeople,
+                refugeTheWeak: item.refugeTheWeak,
+              };
+              if (
+                item.linkReportAgeDistributionInUsageOfFloorList.length == 0
+              ) {
+                exportArray.push(firstData);
+              } else {
+                item.linkReportAgeDistributionInUsageOfFloorList.forEach(
+                  (peo, index) => {
+                    if (index === 0) {
+                      var o = Object.assign(firstData, peo);
+                      exportArray.push(o);
+                    } else {
+                      exportArray.push(peo);
+                    }
                   }
-                })
+                );
               }
-            })
-             this.exportExcelData = exportArray
+            });
+            this.exportExcelData = exportArray;
           }
         }
 
@@ -1387,47 +1412,50 @@ export default {
               this.distributedData =
                 this.distributedAllList.linkMoveWithDifficulty;
               break;
+            case "其他":
+              this.distributedData = this.distributedAllList.linkOtherUsers;
+              break;
           }
         } else {
           this.distributedData = this.distributedAllList.filter((item) => {
             return item.houseNumberId == content.houseNumberId;
           })[0].linkReportAgeDistributionInUsageOfFloorList;
         }
-
       }
     },
-    getSummaries(param){
-      if(param == undefined){
-        return false
+    getSummaries(param) {
+      if (param == undefined) {
+        return false;
       }
-      console.log(param)
+      console.log(param);
       const { columns, data } = param;
-        const len = columns.length
-        // const count = this.distributedName == 'PE' ? len -2 :
-        const sums = [];
-        columns.forEach((column, index) => {
-          if (index === 0) {
-            sums[index] = '總和';
-            return;
-          }else if(index == len -2){ //顯示人數總和
-            const values = data.map(item => Number(item[column.property]));
-            if (!values.every(value => isNaN(value))) {
-              sums[index] = values.reduce((prev, curr) => {
-                const value = Number(curr);
-                if (!isNaN(value)) {
-                  return prev + curr;
-                } else {
-                  return prev;
-                }
-              }, 0);
-              sums[index] += ' 人';
-            } else {
-              sums[index] = 'N/A';
-            }
+      const len = columns.length;
+      // const count = this.distributedName == 'PE' ? len -2 :
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = "總和";
+          return;
+        } else if (index == len - 2) {
+          //顯示人數總和
+          const values = data.map((item) => Number(item[column.property]));
+          if (!values.every((value) => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] += " 人";
+          } else {
+            sums[index] = "N/A";
           }
-        });
+        }
+      });
 
-        return sums;
+      return sums;
     },
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {

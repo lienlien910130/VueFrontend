@@ -8,6 +8,8 @@ const map = {
   "sys-Setting": () => import("@/views/membersetting/index.vue"),
   FileManager: () => import("@/views/building/files.vue"),
   drawingControl: () => import("@/views/graphic/index.vue"),
+  drawingControlGraphic: () =>
+    import("@/views/emergency/emergencyState/graphic.vue"),
   devicesManagement: () =>
     import("@/views/devicemanagement/equipment/index.vue"),
   deviceTypesManagement: () =>

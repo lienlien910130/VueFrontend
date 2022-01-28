@@ -611,6 +611,9 @@ export default {
             return "女";
         }
       } else {
+        if (val !== false) {
+          return "";
+        }
         switch (format) {
           case "accountStatusSelect":
             return "禁用";

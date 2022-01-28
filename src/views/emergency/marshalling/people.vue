@@ -19,7 +19,13 @@
       <el-col :xs="24" :sm="24" :md="24" :lg="24">
         <div class="block-wrapper">
           <template v-for="(item, index) in peopleList">
-            <People :marshallingClass="item" :key="index"> </People>
+            <People
+              :title="title"
+              :marshallingClass="item"
+              :key="index"
+              v-on:handleMarshallingMgmt="handleMarshallingMgmt"
+            >
+            </People>
           </template>
         </div>
       </el-col>
@@ -30,6 +36,75 @@
       v-bind="dialogAttrs"
       v-on:handleDialog="handleMarshallingMgmt"
     ></DialogForm>
+
+    <el-dialog
+      title="人員資料"
+      :visible.sync="dialogFormVisible"
+      center
+      width="30%"
+    >
+      <el-row>
+        <el-col
+          :xs="24"
+          :sm="24"
+          :md="8"
+          :lg="8"
+          style="width: 260px; height: 200px"
+        >
+          <div class="accountInfo">
+            <img
+              v-if="account.url !== null && account.url !== ''"
+              :src="account.url"
+              class="previewImg"
+            />
+            <svg-icon v-else icon-class="user" class="previewImg" />
+          </div>
+        </el-col>
+        <el-col :xs="24" :sm="24" :md="8" :lg="8" style="height: 200px">
+          <h3>{{ account.name }}</h3>
+          <p>
+            電話：{{
+              account.callNumber == undefined ? "尚未設定" : account.callNumber
+            }}
+          </p>
+          <p>
+            手機：{{
+              account.cellPhoneNumber == undefined
+                ? "尚未設定"
+                : account.cellPhoneNumber
+            }}
+          </p>
+          <p>
+            手機：{{
+              account.cellPhoneNumber == undefined
+                ? "尚未設定"
+                : account.cellPhoneNumber
+            }}
+          </p>
+          <p>
+            緊急連絡人：{{
+              account.emergencyContact == undefined
+                ? "尚未設定"
+                : account.emergencyContact
+            }}
+          </p>
+          <p>
+            緊急連絡人電話：{{
+              account.emergencyNumber == undefined
+                ? "尚未設定"
+                : account.emergencyNumber
+            }}
+          </p>
+        </el-col>
+      </el-row>
+    </el-dialog>
+    <el-dialog
+      title="新增人員"
+      :visible.sync="dialogFormUserVisible"
+      center
+      width="30%"
+    >
+    </el-dialog>
   </div>
 </template>
 
@@ -54,6 +129,10 @@ export default {
       selectData: [],
       floor: null,
       peopleList: [],
+      dialogFormVisible: false,
+      dialogFormUserVisible: false,
+      account: {},
+      accountList: [],
     };
   },
   created() {
@@ -62,6 +141,7 @@ export default {
   },
   methods: {
     async init() {
+      this.title = "selfDefenseFireMarshalling";
       if (this.floor_record == 0) {
         await this.$store.dispatch("building/setFloors");
         await this.$store.dispatch("record/saveFloorRecord", 1);
@@ -110,17 +190,13 @@ export default {
         var isDelete = await content.delete();
         if (isDelete) {
           this.$message("刪除成功");
-          if (
-            this.listQueryParams.pageIndex !== 1 &&
-            this.blockData.length == 1
-          ) {
-            this.listQueryParams.pageIndex = this.listQueryParams.pageIndex - 1;
-          }
           await this.getMgmt();
-          // await this.marshallingList.patchFloor();
         } else {
           this.$message.error("系統錯誤");
         }
+      } else if (index === "openUser") {
+        this.account = content;
+        this.dialogFormVisible = true;
       } else if (index === "create" || index === "update") {
         var isOk =
           index === "update" ? await content.update() : await content.create();
@@ -139,21 +215,25 @@ export default {
         this.excelVisible = false;
       }
     },
-
-    // async getMarshallingMgmt() {
-    //   //取得指定消防編組的細項
-    //   var data = await SelfDefenseFireMarshallingMgmt.getSearchPage(
-    //     this.marshallingList.getID(),
-    //     this.tablelistQueryParams
-    //   );
-    //   this.tableTitle = "listOfMgmt";
-    //   this.dialogtableConfig = SelfDefenseFireMarshallingMgmt.getTableConfig();
-    //   this.tableData = data.result;
-    //   this.tablelistQueryParams.total = data.totalPageCount;
-    // },
     async changeTable(value) {
       this.isTable = value;
     },
   },
 };
 </script>
+<style lang="scss" scoped>
+.accountInfo {
+  width: 200px;
+  border: 1px solid black;
+  margin: 5px 8px;
+  vertical-align: middle;
+  text-align: center;
+
+  .previewImg {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    width: 200px;
+    height: 180px;
+  }
+}
+</style>
