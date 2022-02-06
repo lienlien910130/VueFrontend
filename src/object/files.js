@@ -77,7 +77,7 @@ class Files extends Parent {
         return new Files(response.result[0]);
       })
       .catch((error) => {
-        return [];
+        return {};
       });
     return data;
   }

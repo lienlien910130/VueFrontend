@@ -79,6 +79,7 @@ export default {
         if (this.marshallingClass.linkAccountList.length) {
           this.account = [];
           for await (let element of this.marshallingClass.linkAccountList) {
+            console.log(element)
             var url = await this.getUserPhoto(element.headShotFileId);
             element.url = url;
             this.account.push(element);
@@ -93,7 +94,7 @@ export default {
     async getUserPhoto(headShotFileId) {
       if (headShotFileId !== undefined && headShotFileId !== null) {
         var file = await Files.getOfID(headShotFileId);
-        if (file.length) {
+        if (Object.keys(file).length) {
           var filename = file.getExtName();
           var fileType = filename == "png" ? "image/png" : "image/jpeg";
           var data = await Files.getImage(headShotFileId);
