@@ -17,8 +17,8 @@ class Building extends Parent {
       specialStorageItems,
       contactPhone,
       useful,
-      placeCategory,
-      buildCategory,
+      inspectionPlaceCategory,
+      publicPlaceCategory,
       useLicenseDate,
       linkOwners,
       linkFireManagers,
@@ -47,8 +47,8 @@ class Building extends Parent {
     this.specialStorageItems = specialStorageItems;
     this.contactPhone = contactPhone;
     this.useful = useful;
-    this.placeCategory = placeCategory;
-    this.buildCategory = buildCategory;
+    this.inspectionPlaceCategory = inspectionPlaceCategory;
+    this.publicPlaceCategory = publicPlaceCategory;
     this.useLicenseDate = useLicenseDate;
     this.linkOwners = owners;
     this.linkFireManagers = fireManagers;
@@ -280,7 +280,7 @@ class Building extends Parent {
       },
       {
         label: "場所類別",
-        prop: "placeCategory",
+        prop: "inspectionPlaceCategory",
         format: "InspectionTypeOfTime",
         mandatory: true,
         message: "請選擇場所類別",
@@ -296,7 +296,7 @@ class Building extends Parent {
       },
       {
         label: "建物類別",
-        prop: "buildCategory",
+        prop: "publicPlaceCategory",
         format: "PublicSafeTypeOfTime",
         mandatory: true,
         message: "請選擇建物類別",
@@ -520,7 +520,7 @@ class Building extends Parent {
       },
       {
         label: "場所類別",
-        prop: "placeCategory",
+        prop: "inspectionPlaceCategory",
         format: "InspectionTypeOfTime",
         mandatory: true,
         message: "請選擇場所類別",
@@ -536,7 +536,7 @@ class Building extends Parent {
       },
       {
         label: "建物類別",
-        prop: "buildCategory",
+        prop: "publicPlaceCategory",
         format: "PublicSafeTypeOfTime",
         mandatory: true,
         message: "請選擇建物類別",
@@ -614,8 +614,8 @@ class Building extends Parent {
       specialStorageItems: "",
       contactPhone: "",
       useful: "",
-      placeCategory: "",
-      buildCategory: "",
+      inspectionPlaceCategory: "",
+      publicPlaceCategory: "",
       useLicenseDate: null,
       linkOwners: [],
       linkFireManagers: [],

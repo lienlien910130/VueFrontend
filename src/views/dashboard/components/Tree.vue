@@ -20,21 +20,28 @@
       >
         <span>{{ node.label }}</span>
         <span v-if="node.level !== 3" class="count">{{ data.count }}</span>
-        <!-- <i v-if="node.level === 3 " 
-        v-show="data.del" 
-        class="el-icon-s-tools" 
-        style="float:right;" 
-        @click="nodeclick(node,data)">叫修</i> -->
-        <!-- <el-link v-show="data.del" size="mini" type="primary" @click="alert('叫修')" style="float:right;" icon="el-icon-s-tools"></el-link> -->
       </span>
     </el-tree>
+
+    <!-- <el-tree
+      class="filter-tree"
+      :data="resData"
+      :props="defaultProps"
+      default-expand-all
+      :filter-node-method="filterNode"
+      ref="tree"
+    >
+    </el-tree> -->
   </div>
 </template>
 
 <script>
 import { removeDuplicates } from "@/utils/index";
+import { Device } from "@/object";
+import { computedmixin } from "@/mixin/index";
 
 export default {
+  mixins: [computedmixin],
   props: {
     treeData: {
       type: Array,
@@ -85,13 +92,16 @@ export default {
       for (let obj of this.treeData) {
         //設備狀況
         var node = {
-          id: obj.value,
+          id: obj.status,
           name: obj.name,
-          count: obj.data.length,
+          count: obj.value,
           children: [],
         };
-        var typeArray = removeDuplicates(obj.data, "type"); //去除掉重複的設備種類
-        for (let item of typeArray) {
+        var d = removeDuplicates(obj.data, "type");
+        var newArray = d.filter((item) => {
+          return Object.keys(item).length !== 0;
+        });
+        for (let item of newArray) {
           //針對設備種類篩選對應的
           var typedata = obj.data.filter((element, index) => {
             return element.type == item.type;
@@ -106,6 +116,7 @@ export default {
             leaf: false,
             children: typedata,
           };
+          //console.log(_temp);
           node.children.push(_temp);
         }
         this.savaData.push(node);
@@ -113,152 +124,37 @@ export default {
       this.resData = this.savaData;
     },
     handleNodeClick(node, data) {
+      console.log(node, data);
       const h = this.$createElement;
-      console.log(data);
+      var config = Device.getTableConfig().filter((item) => {
+        return item.isShow == true;
+      });
+      var showList = [];
+      config.forEach((item) => {
+        var value = this.changeShowText(
+          item.prop,
+          item.formType,
+          item.format,
+          data
+        );
+        showList.push(
+          h("p", { style: "width:100%" }, [
+            h(
+              "span",
+              { style: "width:40%;display:inline-block;vertical-align:top" },
+              item.label
+            ),
+            h(
+              "span",
+              { style: "width:60%;display:inline-block;vertical-align:top" },
+              value
+            ),
+          ])
+        );
+      });
       this.$msgbox({
         title: data.getName(),
-        message: h("div", null, [
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              "種類 ："
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              data.getLinkType().getType() + "-" + data.getLinkType().getName()
-            ),
-          ]),
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              "廠牌 ："
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              data.getLinkType().getBrand()
-            ),
-          ]),
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              "廠牌 ："
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              data.getLinkType().getProductId()
-            ),
-          ]),
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              "名稱 ："
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              data.getOnlyName()
-            ),
-          ]),
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              "狀態 ："
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              node.parent.parent.data.name
-            ),
-          ]),
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              "購買日期 ："
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              data.getDateOfPurchase()
-            ),
-          ]),
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              "保固日期 ："
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              data.getDateOfWarranty()
-            ),
-          ]),
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              "保管單位 ："
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              data.getKeeperUnitsName()
-            ),
-          ]),
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              "維護廠商 ："
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              data.getMaintainVendorsName()
-            ),
-          ]),
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              "分類群組 ："
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              data.groupID
-            ),
-          ]),
-          // h('p',{ style: 'width:100%' },[
-          //   h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'圖控設置樓層 ：'),
-          //   h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getSystemUsed())
-          // ]),
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              "設置位置 ："
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              data.location
-            ),
-          ]),
-          // h('p',{ style: 'width:100%' },[
-          //   h('span',{ style: 'width:40%;display:inline-block;vertical-align:top' },'系統-迴路-點位 ：'),
-          //   h('span',{ style: 'width:60%;display:inline-block;vertical-align:top' },data.getSystem())
-          // ])
-        ]),
+        message: h("div", null, showList),
         showCancelButton: true,
         distinguishCancelAndClose: true,
         confirmButtonText: "編輯",
@@ -268,7 +164,7 @@ export default {
             done();
             this.$router.push({
               name: "devicesManagement",
-              params: { target: data },
+              params: { type: "open", target: new Array(data) },
             });
           } else {
             done();
@@ -279,6 +175,19 @@ export default {
           done();
         })
         .catch(() => {});
+    },
+    changeShowText(prop, formType, format, data) {
+      switch (formType) {
+        case "date":
+          return this.dataStr(data, format, prop);
+        case "select":
+        case "singleChoice":
+          return this.changeShowFormat(format, data, prop);
+        case "selectSetting":
+          return this.changeOptionName(data[prop]);
+        default:
+          return data[prop];
+      }
     },
     filterNode(value, data) {
       if (value.length === 0) {

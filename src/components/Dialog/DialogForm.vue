@@ -122,7 +122,7 @@
               </el-date-picker>
             </span>
             <!-- 點位 -->
-            <span v-else-if="item.formType == 'addressStr'">
+            <template v-else-if="item.formType == 'addressStr'">
               <el-row>
                 <span
                   style="width: 23%; display: inline-block; text-align: center"
@@ -185,7 +185,7 @@
                 >
                 </el-input>
               </el-row>
-            </span>
+            </template>
             <!-- 下拉選單-單-array -->
             <el-select
               v-else-if="item.formType == 'singleChoice'"
@@ -369,7 +369,15 @@
                 :label="val | changeBoolean(item.format)"
               ></el-option>
             </el-select>
-
+            <!-- 門牌-自行申報 -->
+            <template v-else-if="item.formType == 'selfDeclared'">
+              <el-checkbox v-model="temp['selfInspectionDeclared']">
+                檢修申報
+              </el-checkbox>
+              <el-checkbox v-model="temp['selfPublicDeclared']">
+                公安申報
+              </el-checkbox>
+            </template>
             <el-checkbox
               v-else-if="item.formType == 'checkbox'"
               v-model="temp[item.prop]"
@@ -603,7 +611,10 @@ export default {
         if (temp["declareYear"] !== null && temp["declareYear"] !== "") {
           this.radioType = temp["declareYear"].substr(-3);
           temp["declareYearType"] = temp["declareYear"].substr(-3);
-          temp["declareYear"] = new Date(temp["declareYear"].substr(0, 4));
+          temp["declareYear"] = moment(
+            new Date(temp["declareYear"].substr(0, 4))
+          ).format("YYYY");
+          console.log(temp["declareYear"]);
         }
         this.handleChangeCheckBox(this.temp["declareResult"]);
       } else if (this.title == "committee") {

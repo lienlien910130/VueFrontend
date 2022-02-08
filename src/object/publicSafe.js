@@ -2,7 +2,7 @@ import Parent from "./parent";
 import api from "@/api";
 const moment = require("moment");
 import Files from "./files";
-import { Contactunit } from ".";
+import { Contactunit, UsageOfFloor } from ".";
 
 class PublicSafe extends Parent {
   constructor(data) {
@@ -24,11 +24,18 @@ class PublicSafe extends Parent {
       completedCount,
       allCount,
       linkContactUnits,
+      linkUsageOfFloor,
     } = data;
     var contactUnits =
       linkContactUnits !== undefined
         ? linkContactUnits.map((item) => {
             return new Contactunit(item);
+          })
+        : [];
+    var usageOfFloors =
+      linkUsageOfFloor !== undefined
+        ? linkUsageOfFloor.map((item) => {
+            return new UsageOfFloor(item);
           })
         : [];
     this.declareYear = declareYear;
@@ -47,12 +54,20 @@ class PublicSafe extends Parent {
     this.completedCount = completedCount;
     this.allCount = allCount;
     this.linkContactUnits = contactUnits;
+    this.linkUsageOfFloor = usageOfFloors;
   }
   clone(data) {
     return new PublicSafe(data);
   }
   getNextInspectionDate() {
     return moment(this.nextInspectionDate).format("YYYY-MM-DD");
+  }
+  getUsageOfFloorsName() {
+    return this.linkUsageOfFloor
+      .map((item) => {
+        return item.getName();
+      })
+      .toString();
   }
   async update() {
     var data = await api.report
@@ -133,6 +148,7 @@ class PublicSafe extends Parent {
       completedCount: 0,
       allCount: 0,
       linkContactUnits: [],
+      linkUsageOfFloor: [],
     });
   }
   static getTableConfig() {
@@ -262,6 +278,26 @@ class PublicSafe extends Parent {
         isBlock: true,
         formType: "singleChoice",
         limit: 1,
+        selectFilter: true,
+      },
+      {
+        label: "門牌",
+        prop: "linkUsageOfFloor",
+        format: "floorOfHouseSelect",
+        mandatory: false,
+        message: "請選擇門牌",
+        type: "object",
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: true,
+        isEdit: true,
+        isUpload: false,
+        isExport: true,
+        isBlock: true,
+        formType: "singleChoice",
+        limit: 0,
+        isViewerInfo: true,
         selectFilter: true,
       },
       {

@@ -207,7 +207,10 @@ export default {
       if (_array.length) {
         this.excludeId = _array[0].id;
         this.lacksQueryParams.status = "{!=}" + _array[0].id;
-        lacks = await PublicSafeLack.getAllSearchPage(this.lacksQueryParams);
+        lacks = await PublicSafeLack.getAllSearchPage(
+          "/reportPublicSafe",
+          this.lacksQueryParams
+        );
       }
       this.panelList = [
         {
@@ -226,7 +229,10 @@ export default {
     },
     async getlacksSearchPage() {
       this.lacksQueryParams.status = "{!=}" + this.excludeId;
-      var lack = await PublicSafeLack.getAllSearchPage(this.lacksQueryParams);
+      var lack = await PublicSafeLack.getAllSearchPage(
+        "/reportPublicSafe",
+        this.lacksQueryParams
+      );
       this.tableData = lack.result;
       this.tablelistQueryParams.total = lack.totalPageCount;
     },

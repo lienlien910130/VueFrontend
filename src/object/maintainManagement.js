@@ -270,9 +270,9 @@ class MaintainManagementList extends Parent {
       });
     return data;
   }
-  static async getReminder() {
+  static async getReminder(type) {
     var data = await api.device
-      .apiGetMaintainsListRemind()
+      .apiGetMaintainsListRemind(type)
       .then((response) => {
         //照下次維保時間排序
         response.result.needMaintainDeviceLsit =

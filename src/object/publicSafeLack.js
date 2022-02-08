@@ -189,9 +189,9 @@ class PublicSafeLack extends Parent {
       });
     return data;
   }
-  static async getAllSearchPage(data) {
+  static async getAllSearchPage(type, data) {
     var data = await api.report
-      .apiGetAllPublicSafeLackSearchPages(data)
+      .apiGetAllPublicSafeLackSearchPages(type, data)
       .then((response) => {
         response.result = response.result
           .sort((x, y) => x.id - y.id)

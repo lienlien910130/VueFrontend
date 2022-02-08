@@ -13,28 +13,43 @@
         </el-col>
         <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
-            <Tree
-              :treeData="deviceGroup"
-              :currentNode="currentNode"
-              v-on:handleNodeClick="handleNodeClick"
-            />
+            <Tree :treeData="deviceGroup" :currentNode="currentNode" />
           </div>
         </el-col>
         <el-col :xs="24" :sm="24" :md="8" :lg="8">
-          <div class="chart-wrapper">設備即時訊息</div>
+          <el-card class="box-card chart-wrapper">
+            <div slot="header" class="clearfix">
+              <span>提醒事項</span>
+            </div>
+            <div
+              v-for="(item, index) in remindList"
+              :key="index"
+              class="text item"
+            >
+              <i class="el-icon-warning-outline"></i>
+              {{ "項目: " + item.label }}
+              {{ "類別: " + item.type }}
+              {{ "時間: " + item.value }}
+              {{
+                item.houseNumber !== undefined
+                  ? "門牌: " + item.houseNumber
+                  : ""
+              }}
+            </div>
+          </el-card>
+          <!-- <div class="chart-wrapper">
+            <h1>提醒事項</h1>
+          </div> -->
         </el-col>
-        <!-- <el-col :xs="24" :sm="24" :md="8" :lg="8">
-          <div class="chart-wrapper">
-            <ListDiv
-            :list-query-params.sync="maintainlistQueryParams"
-            v-bind="maintainAttrs"
-            v-on="maintainEvent"
-            ></ListDiv>
-          </div>
-        </el-col> -->
       </el-row>
       <!-- <PanelGroup></PanelGroup> -->
       <el-row :gutter="32">
+        <el-col :xs="24" :sm="24" :md="24" :lg="24">
+          <PanelGroup
+            :panelList="panelList"
+            v-on:handleSetLineChartData="handleSetLineChartData"
+          ></PanelGroup>
+        </el-col>
         <!-- <el-col :xs="24" :sm="24" :md="8" :lg="8">
           <div class="chart-wrapper">
             <ListDiv
@@ -92,11 +107,15 @@
 import constant from "../../../src/constant";
 import { removeDuplicates } from "@/utils/index";
 import Device from "@/object/device";
-import { MaintainManagement } from "@/object/maintainManagement";
+import {
+  MaintainManagement,
+  MaintainManagementList,
+} from "@/object/maintainManagement";
 import Inspection from "@/object/inspection";
 import PublicSafe from "@/object/publicSafe";
 const moment = require("moment");
 import store from "@/store";
+import { InspectionLacks, PublicSafeLack } from "@/object";
 
 export default {
   name: "Dashboard",
@@ -111,7 +130,12 @@ export default {
     // PanelGroup: () => import("./components/PanelGroup"),
   },
   computed: {
-    ...Vuex.mapGetters(["buildingid", "buildingoptions", "account"]),
+    ...Vuex.mapGetters([
+      "buildingid",
+      "buildingoptions",
+      "account",
+      "setting_record",
+    ]),
     noMore() {
       return this.count >= this.viewlist.length;
     },
@@ -166,16 +190,18 @@ export default {
     },
     buildingoptions: {
       handler: async function () {
-        if (this.buildingoptions.length !== 0) {
-          await this.getBuildingDevicesManage();
+        if (this.setting_record == 0) {
+          this.$store.dispatch("building/setoptions");
+          this.$store.dispatch("record/saveSettingRecord", 1);
         }
+        await this.getBuildingDevicesManage();
       },
       immediate: true,
     },
   },
-  async mounted() {
-    await this.init();
-  },
+  // async mounted() {
+  //   await this.init();
+  // },
   data() {
     return {
       deviceData: [],
@@ -184,59 +210,31 @@ export default {
       count: 9,
       viewlist: constant.INDEX_VIEW_NINE,
       currentNode: "",
-      maintainlist: [],
-      maintainlistQueryParams: {
-        //故障日期不是null 叫修日期null
-        dateOfFailure: "{IsNotNull}",
-        dateOfCallRepair: "{IsNull}",
+      // maintainlist: [],
+      // maintainlistQueryParams: {
+      //   //故障日期不是null 叫修日期null
+      //   dateOfFailure: "{IsNotNull}",
+      //   dateOfCallRepair: "{IsNull}",
+      //   pageIndex: 1,
+      //   pageSize: 10,
+      //   total: 0,
+      // },
+      inspectionRemind: {},
+      publicSafeRemind: {},
+      panelList: [],
+      lacksQueryParams: {
         pageIndex: 1,
         pageSize: 10,
         total: 0,
       },
-      inspectionlist: [],
-      inspectionlistQueryParams: {
-        //下次檢查日期&未改善
-        nextInspectionDate: "{IsNotNull}",
-        isImproved: false,
-        pageIndex: 1,
-        pageSize: 10,
-        total: 0,
-      },
-      publicSafelist: [],
-      publicSafelistQueryParams: {
-        //下次檢查日期&未改善
-        nextInspectionDate: "{IsNotNull}",
-        isImproved: false,
-        pageIndex: 1,
-        pageSize: 10,
-        total: 0,
-      },
+      remindList: [],
     };
   },
   methods: {
     async init() {
       // await this.getMaintain()
-      // await this.getInspection()
-      // await this.getPublicSafe()
-      // this.$messaging.getToken({vapidKey: 'BMu0NsMpDOJfRkGUVC1kwS--OOjkM1y7x8j9BJj86J505uDUeUHI05zTqzoj_fM896_QKSLGd-n4Xsq1md5QBDk'})
-      // .then(async function (currentToken) {
-      //       if (currentToken) {
-      //         console.log('currentToken',currentToken)
-      //         await store.dispatch('user/setMessageToken',currentToken)
-      //       } else {
-      //         //顯示訂閱的視窗
-      //         console.log('no token')
-      //         Notification.requestPermission(async function (permission) {
-      //           console.log(permission)
-      //             if (permission === "granted") {
-      //               await this.init()
-      //             };
-      //           });
-      //       }
-      // })
-      // .catch(function (err) {
-      //       console.log('err',err)
-      // });
+      await this.getNumber();
+      await this.getRemind();
     },
     loadMore() {
       this.loading = true;
@@ -258,57 +256,139 @@ export default {
           (item, index) => item.id == obj.status
         )[0];
         if (statusObj !== undefined) {
+          var list = this.deviceData
+            .filter((item, index) => item.status == obj.status)
+            .map((v) => {
+              this.$set(v, "name", v.getOnlyName());
+              this.$set(
+                v,
+                "type",
+                v.linkDeviceTypes.length !== 0
+                  ? v.linkDeviceTypes[0].getID()
+                  : ""
+              );
+              return v;
+            });
           _temp.push({
-            value: obj.status,
+            value: list.length,
             name: statusObj.textName,
-            data: this.deviceData
-              .filter((item, index) => item.status == obj.status)
-              .map((v) => {
-                this.$set(v, "name", v.getOnlyName());
-                this.$set(
-                  v,
-                  "type",
-                  v.linkDeviceTypes.length !== 0
-                    ? v.linkDeviceTypes[0].getID()
-                    : ""
-                );
-                return v;
-              }),
+            status: obj.status,
+            data: list,
           });
         }
       }
       this.deviceGroup = _temp;
+      //console.log(JSON.stringify(this.deviceGroup));
     },
-    async getMaintain() {
-      //取得維保細項 故障日期!=null 叫修日期null
-      this.maintainlist = [];
-      var data = await MaintainManagement.getAllSearchPage(
-        this.maintainlistQueryParams
-      );
-      this.maintainlist = data.result;
-      this.maintainlistQueryParams.total = data.totalPageCount;
-    },
-    async getInspection() {
-      //取得檢修申報 下次檢查日期
-      this.inspectionlist = [];
-      var data = await Inspection.getSearchPage(this.inspectionlistQueryParams);
-      this.inspectionlist = data.result.sort(function (x, y) {
-        var _data1 = new Date(x.nextInspectionDate);
-        var _data2 = new Date(y.nextInspectionDate);
-        return _data2 - _data1;
+    async getRemind() {
+      //檢修申報時間提醒&公安申報時間提醒
+      this.inspectionRemind = await Inspection.getRemind("/index");
+      if (
+        this.inspectionRemind.buildInfo !== undefined &&
+        this.inspectionRemind.buildInfo.alertRemind
+      ) {
+        this.remindList.push({
+          label: "大樓檢修申報",
+          type: this.inspectionRemind.buildInfo.category,
+          value:
+            moment(this.inspectionRemind.buildInfo.checkDate).format(
+              "YYYY-MM-DD"
+            ) + "前",
+        });
+      }
+      if (this.inspectionRemind.usageOfFloor.length > 0) {
+        this.inspectionRemind.usageOfFloor
+          .filter((item) => {
+            return item.alertRemind == true;
+          })
+          .forEach((item) => {
+            this.remindList.push({
+              label: "門牌檢修申報",
+              type: item.category,
+              value: moment(item.checkDate).format("YYYY-MM-DD") + "前",
+              houseNumber: item.houseNumber,
+            });
+          });
+      }
+      this.publicSafeRemind = await PublicSafe.getRemind();
+      this.publicSafeRemind.checkDate =
+        moment(this.publicSafeRemind.startDate).format("YYYY-MM-DD") +
+        "~" +
+        moment(this.publicSafeRemind.endDate).format("YYYY-MM-DD");
+      this.remindList.push({
+        label: "大樓公安申報",
+        type: this.publicSafeRemind.category,
+        value: this.publicSafeRemind.checkDate,
       });
-      this.inspectionlistQueryParams.total = data.totalPageCount;
+      console.log(this.inspectionRemind);
+      console.log(this.publicSafeRemind);
+      console.log(JSON.stringify(this.remindList));
     },
-    async getPublicSafe() {
-      //取得公安申報 下次檢查日期
-      this.publicSafelist = [];
-      var data = await PublicSafe.getSearchPage(this.publicSafelistQueryParams);
-      this.publicSafelist = data.result.sort(function (x, y) {
-        var _data1 = new Date(x.nextInspectionDate);
-        var _data2 = new Date(y.nextInspectionDate);
-        return _data2 - _data1;
+    async getNumber() {
+      //應保養設備數量&過期未保養設備數量&檢修缺失項目未改善&公安缺失項目未改善
+      var reminder = await MaintainManagementList.getReminder("/index");
+      console.log(JSON.stringify(reminder));
+      if (this.setting_record == 0) {
+        await this.$store.dispatch("building/setoptions");
+        this.$store.dispatch("record/saveSettingRecord", 1);
+      }
+      let maintainProcessOptions = this.buildingoptions.filter((item) => {
+        return (
+          item.classType == "MaintainProcessOptions" &&
+          item.textName == "已保養" &&
+          item.systemUse == true
+        );
       });
-      this.publicSafelistQueryParams.total = data.totalPageCount;
+      var inlacks = null;
+      if (maintainProcessOptions.length) {
+        this.lacksQueryParams.status = "{!=}" + maintainProcessOptions[0].id;
+        inlacks = await InspectionLacks.getAllSearchPage(
+          "/reportInspection",
+          this.lacksQueryParams
+        );
+      }
+      let lackStatusOptions = this.buildingoptions.filter((item) => {
+        return (
+          item.classType == "LackStatusOptions" &&
+          item.textName == "已改善" &&
+          item.systemUse == true
+        );
+      });
+      var pulacks = null;
+      if (lackStatusOptions.length) {
+        this.lacksQueryParams.status = "{!=}" + lackStatusOptions[0].id;
+        pulacks = await PublicSafeLack.getAllSearchPage(
+          "/reportPublicSafe",
+          this.lacksQueryParams
+        );
+      }
+
+      this.panelList = [
+        {
+          label: "應保養設備",
+          count: reminder.needMaintainDeviceLsit.length,
+          svgIcon: "inspection",
+          type: "shouldMaintain",
+        },
+        {
+          label: "過期未保養設備",
+          count: reminder.expiredMaintainDeviceListCount,
+          svgIcon: "inspection",
+          type: "expired",
+        },
+        {
+          label: "檢修缺失項目未改善",
+          count: inlacks !== null ? inlacks.totalPageCount : 0,
+          svgIcon: "inspection",
+          type: "inspectionLacks",
+        },
+        {
+          label: "公安缺失項目未改善",
+          count: pulacks !== null ? pulacks.totalPageCount : 0,
+          svgIcon: "inspection",
+          type: "publicSafeLack",
+        },
+      ];
     },
     async handleList(title, item) {
       var config =
@@ -466,10 +546,7 @@ export default {
     handleChartClick(value) {
       this.currentNode = value;
     },
-    //樹
-    handleNodeClick(data) {
-      console.log(data);
-    },
+    handleSetLineChartData(type) {},
   },
 };
 </script>
@@ -503,6 +580,22 @@ export default {
   padding-top: 10px;
   overflow-x: hidden;
   overflow-y: auto;
+}
+.text {
+  font-size: 14px;
+}
+
+.item {
+  margin-bottom: 18px;
+}
+
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: "";
+}
+.clearfix:after {
+  clear: both;
 }
 
 @media (max-width: 1024px) {

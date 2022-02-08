@@ -185,6 +185,7 @@ export default {
       this.dialogButtonsName = [];
       if (index === "open") {
         this.dialogStatus = "update";
+        console.log("content.length", content.length);
         if (content.length !== undefined) {
           //代表不是外傳近來的
           content.forEach((item) => {

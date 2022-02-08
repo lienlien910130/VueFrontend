@@ -183,6 +183,7 @@ export default {
       }
     },
     sendSelect(option) {
+      //手機上選擇選項
       console.log(option);
       var temp = { id: option.id, name: option.name };
       this.$socket.sendProcess(temp);
@@ -193,7 +194,7 @@ export default {
       }
       var floor = await Floors.getOfId(content.id);
       this.pointarray = await DrawingControl.getOfFloor(content.id);
-      var obj = await floor.getGraphicFiles();
+      var obj = await floor.getGraphicFiles("/viewerControl");
       if (floor.getImageID() == null) {
         this.$message.error("該樓層尚未設定圖控相關資料");
       } else {

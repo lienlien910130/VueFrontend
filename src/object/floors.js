@@ -97,9 +97,9 @@ class Floors extends Parent {
       });
     return data;
   }
-  async getGraphicFiles() {
+  async getGraphicFiles(type) {
     var data = await api.files
-      .apiGetFloorIdToGraphicFile(this.id)
+      .apiGetFloorIdToGraphicFile(type, this.id)
       .then((response) => {
         return response.result;
       })

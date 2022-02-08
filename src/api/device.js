@@ -180,8 +180,8 @@ const device = {
   // apiPatchDevicesAddresses(data){ return req('patch','/deviceAddressManagement/s',data) },
 
   //維護保養提醒
-  apiGetMaintainsListRemind() {
-    return req("get", "/maintainListManagement/deviceMaintainReminder");
+  apiGetMaintainsListRemind(type) {
+    return req("get", type + "/deviceMaintainReminder");
   },
   //維護保養大項
   apiGetBuildingMaintainsList() {

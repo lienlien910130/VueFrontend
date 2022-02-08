@@ -49,8 +49,8 @@
       append-to-body
       center
     >
-      <div style="text-align:center">
-        <img :src="previewPath" :class="imgClass" @click="downloadImage"/>
+      <div style="text-align: center">
+        <img :src="previewPath" :class="imgClass" @click="downloadImage" />
       </div>
     </el-dialog>
   </div>
@@ -64,7 +64,7 @@ import {
   excelmixin,
 } from "@/mixin/index";
 import { Files, Building, Floors, User } from "@/object/index";
-import QRCode from 'qrcode'
+import QRCode from "qrcode";
 
 export default {
   mixins: [sharemixin, blockmixin, dialogmixin, tablemixin, excelmixin],
@@ -90,13 +90,13 @@ export default {
         files: this.files,
       };
     },
-    imgClass(){
-      if(this.previewType == 'floorImage'){
-        return 'previewImg'
-      }else{
-        return 'qrcodeImg'
+    imgClass() {
+      if (this.previewType == "floorImage") {
+        return "previewImg";
+      } else {
+        return "qrcodeImg";
       }
-    }
+    },
   },
   async created() {
     await this.initBuilding();
@@ -118,16 +118,16 @@ export default {
       previewPath: "",
       previewTitle: "",
       previewType: "",
-      options:{
-         errorCorrectionLevel: 'H',
-         type:'image/jpeg',
-         quality:0.3,
-         margin:1,
-         color:{
-            dark:"#010599FF",
-            light:"#FFBF60FF"
-         }
-      }
+      options: {
+        errorCorrectionLevel: "H",
+        type: "image/jpeg",
+        quality: 0.3,
+        margin: 1,
+        color: {
+          dark: "#010599FF",
+          light: "#FFBF60FF",
+        },
+      },
       //dialog額外的參數
       // formtableData:[],
       // formtableconfig: Floors.getTableConfig(),
@@ -341,13 +341,17 @@ export default {
         this.previewTitle = content.buildingName + " QRcode 註冊";
         //this.previewPath = "https://demo.mercuryfire.com.tw/";
         this.previewType = "qrcode";
-        var _this = this
+        var _this = this;
         //const element = this.$refs.qrcode
-        QRCode.toDataURL('https://demo.mercuryfire.com.tw/register', this.options, function (err, url) {
-          if (err) throw err
-          //var img = document.getElementById('image')
-          _this.previewPath = url
-        })
+        QRCode.toDataURL(
+          "https://demo.mercuryfire.com.tw/register",
+          this.options,
+          function (err, url) {
+            if (err) throw err;
+            //var img = document.getElementById('image')
+            _this.previewPath = url;
+          }
+        );
         this.previewVisible = true;
       }
     },
@@ -619,7 +623,7 @@ export default {
         }
       }
     },
-    downloadImage(){
+    downloadImage() {
       let link = document.createElement("a");
       link.href = this.previewPath;
       link.download = this.previewTitle;
@@ -631,6 +635,19 @@ export default {
     },
     async changeTable(value) {
       this.isTable = value;
+      if (
+        this.$route.params.target !== undefined &&
+        this.$route.params.target.length !== 0 &&
+        this.$route.params.type == "open"
+      ) {
+        if (typeof this.$route.params.target == "object") {
+          await this.handleBlock(
+            "building",
+            "updateMany",
+            this.$route.params.target
+          );
+        }
+      }
     },
   },
 };
@@ -646,9 +663,9 @@ export default {
   cursor: pointer;
 }
 
-.qrcodeImg{
+.qrcodeImg {
   height: 200px;
-  width:auto;
+  width: auto;
   cursor: pointer;
 }
 </style>

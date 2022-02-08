@@ -25,7 +25,7 @@ const report = {
     return req("delete", "/reportInspection/" + reportInspectionListId);
   },
   apiGetInspectionSearchPages(data) {
-    return req("post", "/index/reportInspection/ss", this.getBid(), data, true);
+    return req("post", "/reportInspection/ss", this.getBid(), data, true);
   },
   apiPostInspections(data) {
     data.forEach((element) => {
@@ -36,8 +36,9 @@ const report = {
   apiGetInspectionColumn(data) {
     return req("post", "/reportInspection/list/listValue", this.getBid(), data);
   },
-  apiGetInspectionRemind(usageOfFloorId = -1) {
-    return req("get", "/index/" + usageOfFloorId + "/inspectionReminder");
+  apiGetInspectionRemind(type) {
+    // return req("get", "/index/" + usageOfFloorId + "/inspectionReminder");
+    return req("get", type + "/inspectionReminder");
   },
 
   //檢修申報-更新維保細項
@@ -94,10 +95,10 @@ const report = {
     });
     return req("post", "/reportInspection/InspectionLack/s", null, data);
   },
-  apiGetAllInspectionLackSearchPages(data) {
+  apiGetAllInspectionLackSearchPages(type, data) {
     return req(
       "post",
-      "/reportInspection/inspectionLack/buildInfo/ss",
+      type + "/inspectionLack/buildInfo/ss",
       this.getBid(),
       data
     );
@@ -120,7 +121,7 @@ const report = {
     return req("delete", "/reportPublicSafe/" + reportPublicSafeListId);
   },
   apiGetPublicSafeSearchPages(data) {
-    return req("post", "/index/reportPublicSafe/ss", this.getBid(), data, true);
+    return req("post", "/reportPublicSafe/ss", this.getBid(), data, true);
   },
   apiPostPublicSafes(data) {
     data.forEach((element) => {
@@ -162,10 +163,10 @@ const report = {
       data
     );
   },
-  apiGetAllPublicSafeLackSearchPages(data) {
+  apiGetAllPublicSafeLackSearchPages(type, data) {
     return req(
       "post",
-      "/reportPublicSafe/publicSafeLack/buildInfo/ss",
+      type + "/publicSafeLack/buildInfo/ss",
       this.getBid(),
       data
     );

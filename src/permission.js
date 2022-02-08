@@ -46,18 +46,18 @@ router.beforeEach(async (to, from, next) => {
         if (to.name == "process" || to.name == "selfDefenseClass") {
           toMenu = "selfDefenseFireMarshalling";
         }
-        if (to.name == "drawingControlGraphic" || to.name == "emergencyClass") {
-          toMenu = "drawingControl";
-        }
+        // if (to.name == "emergencyClass") {
+        //   toMenu = "drawingControl";
+        // }
         var menuarray = store.getters.menuNoLevel.filter(
           (item) => item.code == toMenu
         );
         if (menuarray.length !== 0) {
           await store.dispatch("permission/setmenuId", menuarray[0].getID()); //儲存要進入的頁面ID
-          await store.dispatch(
-            "permission/setmenuAuthority",
-            menuarray[0].getAccessAuthorities()
-          ); //儲存要進入的頁面權限
+          // await store.dispatch(
+          //   "permission/setmenuAuthority",
+          //   menuarray[0].getAccessAuthorities()
+          // ); //儲存要進入的頁面權限
           console.log("setMenuId", menuarray[0].id);
         }
       }

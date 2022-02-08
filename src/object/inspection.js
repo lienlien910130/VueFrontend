@@ -183,6 +183,7 @@ class Inspection extends Parent {
       completedCount: 0,
       allCount: 0,
       linkContactUnits: [],
+      linkUsageOfFloor: [],
     });
   }
   static getTableConfig() {
@@ -544,9 +545,9 @@ class Inspection extends Parent {
       });
     return data;
   }
-  static async getRemind() {
+  static async getRemind(type) {
     var data = await api.report
-      .apiGetInspectionRemind()
+      .apiGetInspectionRemind(type)
       .then((response) => {
         return response.result;
       })

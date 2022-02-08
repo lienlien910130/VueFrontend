@@ -530,17 +530,6 @@ export default {
                 { label: "消防設備士", id: "消防設備士" },
                 { label: "暫行裝置檢修", id: "暫行裝置檢修" },
               ];
-            case "placeCategory":
-              return [
-                { label: "甲類", id: 1 },
-                { label: "乙類", id: 2 },
-                { label: "丙類", id: 3 },
-                { label: "丁類", id: 4 },
-                { label: "戊類", id: 5 },
-                { label: "己類", id: 6 },
-                { label: "庚類", id: 7 },
-                { label: "其他", id: 8 },
-              ];
             case "actionSelect":
               return [
                 { label: "查詢", id: "query" },
@@ -603,14 +592,21 @@ export default {
           case "declareResultBoolean":
             return "合格申報";
           case "governmentApprovalBoolean":
-          case "selfDeclaredBoolean":
           case "nowHaveBoolean":
           case "moveWithDifficultyBoolean":
             return "是";
           case "sexBoolean":
             return "女";
+          case "selfDeclaredBoolean":
+            return "";
         }
       } else {
+        if (format == "selfDeclaredBoolean") {
+          var str = "";
+          if (val[0] == true) str = "檢修申報";
+          if (val[1] == true) str = str + ",公安申報";
+          return str;
+        }
         if (val !== false) {
           return "";
         }
@@ -632,7 +628,6 @@ export default {
           case "declareResultBoolean":
             return "缺失申報";
           case "governmentApprovalBoolean":
-          case "selfDeclaredBoolean":
           case "nowHaveBoolean":
           case "moveWithDifficultyBoolean":
             return "否";
@@ -742,8 +737,8 @@ export default {
               value = val.getBuildingsName();
             } else if (
               item == "status" ||
-              item == "placeCategory" ||
-              item == "buildCategory"
+              item == "inspectionPlaceCategory" ||
+              item == "publicPlaceCategory"
             ) {
               if (val.constructor == Role) {
                 value = data[item] == true ? "啟用中" : "未啟用";
@@ -758,6 +753,11 @@ export default {
               value = data[item] == true ? "已撤銷" : "未撤銷";
             } else if (item == "governmentApproval") {
               value = data[item] == true ? "是" : "否";
+            } else if (item == "selfDeclared") {
+              value = this.changeBoolean([
+                data["selfInspectionDeclared"],
+                data["selfPublicDeclared"],
+              ]);
             } else if (
               item == "birthday" ||
               item == "dateOfPurchase" ||
@@ -823,48 +823,7 @@ export default {
             )
           );
         }
-        // data.forEach(async (item, index) => {
-        //   const newDatas = [];
-        //   // var obj = list.filter((ele) => {
-        //   //   return ele.id == item.id;
-        //   // });
-        //   // console.log(obj);
-        //   var objData = await constr.getOfID(item.id);
-        //   var changetext = await this.changeText(config, objData);
-        //   changetext.forEach((obj) => {
-        //     console.log(obj);
-        //     newDatas.push(
-        //       h("p", { style: "width:100%" }, [
-        //         h(
-        //           "span",
-        //           {
-        //             style:
-        //               "width:40%;display:inline-block;vertical-align:top;word-break:break-all",
-        //           },
-        //           obj.label
-        //         ),
-        //         h(
-        //           "span",
-        //           {
-        //             style:
-        //               "width:60%;display:inline-block;vertical-align:top;word-break:break-all",
-        //           },
-        //           obj.value
-        //         ),
-        //       ])
-        //     );
-        //   });
-        //   bigData.push(
-        //     h(
-        //       "div",
-        //       { style: "border:1px solid;padding:10px;margin-bottom:5px" },
-        //       newDatas
-        //     )
-        //   );
-        //   // if (obj.length) {
-        //   //   data.splice(index, 1, obj[0]);
-        //   // }
-        // });
+
         this.$msgbox({
           title: title,
           message: h(
@@ -928,7 +887,15 @@ export default {
                   });
                   break;
                 case "floorOfHouseSelect": //門牌資料>打開當前視窗
-                  this.handleClickOption("openfloorofhouse", data);
+                  if (this.title == "committee") {
+                    this.handleClickOption("openfloorofhouse", data);
+                  } else {
+                    this.$router.push({
+                      name: "basic",
+                      params: { target: data, type: "floorOfHouse" },
+                    });
+                  }
+
                   break;
                 case "roleSelect": //角色資料>權限設定-角色管理
                   this.$router.push({
@@ -943,6 +910,14 @@ export default {
                   });
                   break;
                 case "buildingSelect":
+                  if (this.id == 1) {
+                    this.$router.push({
+                      name: "sys-Building",
+                      params: { target: data, type: "open" },
+                    });
+                  } else {
+                    this.$message.error("您沒有權限編輯");
+                  }
                   break;
               }
             } else {

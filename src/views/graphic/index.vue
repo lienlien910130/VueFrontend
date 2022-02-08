@@ -309,7 +309,7 @@ export default {
       this.pointarray = await DrawingControl.getOfFloor(this.floor.getID());
       this.cNodeList = await DrawingControl.getCNode(this.floor.getID());
       this.sortChange({ prop: "iconId", order: "ascending" }, this.pointarray);
-      var obj = await this.floor.getGraphicFiles();
+      var obj = await this.floor.getGraphicFiles("/drawingControl");
       this.codeContentId = obj.id;
       if (content.getImageID() == null) {
         this.changeType("view");

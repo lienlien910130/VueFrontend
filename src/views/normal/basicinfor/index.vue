@@ -1208,6 +1208,7 @@ export default {
           typeof this.$route.params.target == "object" &&
           this.$route.params.type == "committee"
         ) {
+          console.log(this.$route.params.target);
           this.$nextTick(async () => {
             await this.handleBlock(
               "committee",
@@ -1215,6 +1216,11 @@ export default {
               this.$route.params.target
             );
           });
+        } else if (
+          typeof this.$route.params.target == "object" &&
+          this.$route.params.type == "floorOfHouse"
+        ) {
+          this.$message.error("錯誤");
         }
       } else if (
         this.$route.query.type !== undefined &&

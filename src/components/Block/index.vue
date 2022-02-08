@@ -533,6 +533,15 @@
                   </template>
                 </span>
 
+                <span v-else-if="item.formType == 'selfDeclared'">
+                  {{
+                    [
+                      scope.row["selfInspectionDeclared"],
+                      scope.row["selfPublicDeclared"],
+                    ] | changeBoolean(item.format)
+                  }}
+                </span>
+
                 <span v-else-if="item.formType == 'nTypeChange'">
                   {{ scope.row[item.prop] | changeNType }}
                 </span>

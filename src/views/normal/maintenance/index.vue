@@ -218,7 +218,9 @@ export default {
         { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
       ];
       this.finishId = await this.setting();
-      var reminder = await MaintainManagementList.getReminder();
+      var reminder = await MaintainManagementList.getReminder(
+        "/maintainListManagement"
+      );
       this.remind = reminder.needMaintainDeviceLsit;
       this.panelList = [
         {
@@ -579,8 +581,9 @@ export default {
           }
           if (index === "createRepair") {
             await this.searchAndPage();
-            var reminder = await MaintainManagementList.getReminder();
-            console.log(JSON.stringify(reminder));
+            var reminder = await MaintainManagementList.getReminder(
+              "/maintainListManagement"
+            );
             this.remind = reminder.needMaintainDeviceLsit;
             this.panelList = [
               {

@@ -3,28 +3,52 @@
     <el-row :gutter="20">
       <el-col :xs="24" :sm="24" :md="24" :lg="16">
         <div class="chart-wrapper">
-          <div class="verticalhalfdiv">
-            <div class="label">場所類別：</div>
-            <div class="content">
-              <span class="report">
-                {{ remind.category }}
-              </span>
-            </div>
-          </div>
-          <div class="verticalhalfdiv">
-            <div class="label">
-              <i class="el-icon-edit">
-                <a @click="openWindows" style="color: #66b1ff">
-                  下次申報期限：</a
-                >
-              </i>
-            </div>
-            <div class="content">
-              <span class="report">
-                {{ remind.checkDate }}
-              </span>
-            </div>
-          </div>
+          <template v-if="viewType == 'bu'">
+            <el-col :xs="24" :sm="24" :md="24" :lg="15">
+              <div class="verticalhalfdiv">
+                <div class="label">場所類別：</div>
+                <div class="content">
+                  <span class="report">
+                    {{ remind.category }}
+                  </span>
+                </div>
+              </div>
+              <div class="verticalhalfdiv">
+                <div class="label">
+                  <i class="el-icon-edit">
+                    <a @click="openWindows" style="color: #66b1ff">
+                      下次申報期限：</a
+                    >
+                  </i>
+                </div>
+                <div class="content">
+                  <span class="report">
+                    {{ remind.checkDate }}
+                  </span>
+                </div>
+              </div>
+            </el-col>
+            <el-col :xs="24" :sm="24" :md="24" :lg="9">
+              <template v-for="(item, index) in usageOfFloorRe">
+                <li :key="index">
+                  {{ index + 1 }}.門牌:{{ item.houseNumber }}/場所:{{
+                    item.category
+                  }}/期限:{{ item.checkDate }}
+                </li>
+              </template>
+            </el-col>
+          </template>
+          <template v-else>
+            <el-col :xs="24" :sm="24" :md="24" :lg="24">
+              <template v-for="(item, index) in usageOfFloorRe">
+                <li :key="index">
+                  {{ index + 1 }}.門牌:{{ item.houseNumber }}/場所:{{
+                    item.category
+                  }}/期限:{{ item.checkDate }}
+                </li>
+              </template>
+            </el-col>
+          </template>
         </div>
       </el-col>
       <el-col :xs="24" :sm="24" :md="24" :lg="8">
@@ -116,11 +140,10 @@ export default {
       },
       lacksShow: false,
       excludeId: null,
-      remind: {
-        category: "",
-        checkDate: "",
-      },
+      remind: {},
+      usageOfFloorRe: [],
       updateMainmgmtList: [],
+      viewType: null,
     };
   },
   computed: {
@@ -159,9 +182,29 @@ export default {
         { name: "缺失內容", icon: "el-icon-document", status: "openlacks" },
         { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
       ];
-      this.remind = await Inspection.getRemind();
-      this.remind.checkDate =
-        moment(this.remind.checkDate).format("YYYY-MM-DD") + "前";
+      var data = await Inspection.getRemind("/reportInspection");
+      console.log(JSON.stringify(data));
+
+      if (data.buildInfo !== undefined) {
+        //管理員-可察看大樓檢修+門牌檢修
+        this.viewType = "bu";
+        this.remind = data.buildInfo;
+        this.remind.checkDate =
+          moment(this.remind.checkDate).format("YYYY-MM-DD") + "前";
+        if (data.usageOfFloor.length > 0) {
+          this.usageOfFloorRe = data.usageOfFloor;
+          this.usageOfFloorRe.forEach((item) => {
+            item.checkDate = moment(item.checkDate).format("YYYY-MM-DD") + "前";
+          });
+        }
+      } else {
+        //門牌檢修申報
+        this.viewType = "us";
+        this.usageOfFloorRe = data.usageOfFloor;
+        this.usageOfFloorRe.forEach((item) => {
+          item.checkDate = moment(item.checkDate).format("YYYY-MM-DD") + "前";
+        });
+      }
     },
     async resetlistQueryParams() {
       this.listQueryParams = {
@@ -227,7 +270,10 @@ export default {
       if (_array.length) {
         this.excludeId = _array[0].id;
         this.lacksQueryParams.status = "{!=}" + _array[0].id;
-        lacks = await InspectionLacks.getAllSearchPage(this.lacksQueryParams);
+        lacks = await InspectionLacks.getAllSearchPage(
+          "/reportInspection",
+          this.lacksQueryParams
+        );
       }
       this.panelList = [
         {
@@ -246,7 +292,10 @@ export default {
     },
     async getlacksSearchPage() {
       this.lacksQueryParams.status = "{!=}" + this.excludeId;
-      var lack = await InspectionLacks.getAllSearchPage(this.lacksQueryParams);
+      var lack = await InspectionLacks.getAllSearchPage(
+        "/reportInspection",
+        this.lacksQueryParams
+      );
       this.tableData = lack.result;
       this.tablelistQueryParams.total = lack.totalPageCount;
     },

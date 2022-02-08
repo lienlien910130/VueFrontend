@@ -147,10 +147,10 @@ const files = {
   // apiGetFileIdToGraphicFile(supervisoryControlSystemId){
   //     return req('get','/drawingControl/'+supervisoryControlSystemId+'/supervisoryControlSystems/file') },
   //用樓層id找資料
-  apiGetFloorIdToGraphicFile(floorId) {
+  apiGetFloorIdToGraphicFile(type, floorId) {
     return req(
       "get",
-      "/drawingControl/floors/" + floorId + "/supervisoryControlSystems"
+      type + "/floors/" + floorId + "/supervisoryControlSystems"
     );
   },
   apiPostGraphicFile(floorId, data) {

@@ -80,7 +80,7 @@
               <el-dropdown-item> 個人資料</el-dropdown-item>
             </router-link>
             <router-link v-if="buildingid !== undefined" to="/settings">
-              <el-dropdown-item> 設定 </el-dropdown-item>
+              <el-dropdown-item> 系統設定 </el-dropdown-item>
             </router-link>
             <router-link v-if="buildingid !== undefined" to="/building/files">
               <el-dropdown-item> 大樓總檔 </el-dropdown-item>

@@ -254,6 +254,7 @@ class Device extends Parent {
         isExport: true,
         isBlock: true,
         selectFilter: false,
+        isShow: true,
       },
       {
         label: "種類",
@@ -274,6 +275,7 @@ class Device extends Parent {
         limit: 1,
         selectFilter: true,
         hasEvent: true,
+        isShow: true,
       },
       {
         label: "網路編號",
@@ -290,6 +292,7 @@ class Device extends Parent {
         isExport: true,
         isBlock: true,
         selectFilter: false,
+        isShow: false,
       },
       {
         label: "IP",
@@ -306,6 +309,7 @@ class Device extends Parent {
         isExport: true,
         isBlock: true,
         selectFilter: false,
+        isShow: false,
       },
       {
         label: "Port",
@@ -329,6 +333,7 @@ class Device extends Parent {
         isBlock: true,
         formType: "inputNumber",
         selectFilter: false,
+        isShow: false,
       },
       {
         label: "標準值",
@@ -352,6 +357,7 @@ class Device extends Parent {
         isBlock: true,
         formType: "inputNumber",
         selectFilter: false,
+        isShow: false,
       },
       {
         label: "誤差值",
@@ -375,6 +381,7 @@ class Device extends Parent {
         isBlock: true,
         formType: "inputNumber",
         selectFilter: false,
+        isShow: false,
       },
       {
         label: "購買日期",
@@ -390,6 +397,7 @@ class Device extends Parent {
         isBlock: true,
         formType: "date",
         selectFilter: false,
+        isShow: true,
       },
       {
         label: "保固日期",
@@ -406,6 +414,7 @@ class Device extends Parent {
         isBlock: true,
         formType: "date",
         selectFilter: false,
+        isShow: true,
       },
       {
         label: "位置設置",
@@ -421,6 +430,7 @@ class Device extends Parent {
         isExport: true,
         isBlock: false,
         selectFilter: false,
+        isShow: true,
       },
       {
         label: "分類群組",
@@ -436,6 +446,7 @@ class Device extends Parent {
         isExport: true,
         isBlock: false,
         selectFilter: false,
+        isShow: true,
       },
       {
         label: "保管單位",
@@ -456,6 +467,7 @@ class Device extends Parent {
         formType: "singleChoice",
         limit: 1,
         selectFilter: true,
+        isShow: true,
       },
       {
         label: "維護廠商",
@@ -476,6 +488,7 @@ class Device extends Parent {
         formType: "select",
         limit: 1,
         selectFilter: true,
+        isShow: true,
       },
       {
         label: "設備狀況",
@@ -492,6 +505,7 @@ class Device extends Parent {
         isBlock: true,
         formType: "selectSetting",
         selectFilter: true,
+        isShow: true,
       },
       {
         label: "下次保養時間",
@@ -508,6 +522,7 @@ class Device extends Parent {
         isBlock: true,
         formType: "date",
         selectFilter: false,
+        isShow: true,
       },
       {
         label: "最後保養時間",
@@ -523,6 +538,7 @@ class Device extends Parent {
         isBlock: true,
         formType: "date",
         selectFilter: false,
+        isShow: true,
       },
     ];
   }

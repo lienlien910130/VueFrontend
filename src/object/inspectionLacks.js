@@ -149,9 +149,9 @@ class InspectionLacks extends Parent {
       });
     return data;
   }
-  static async getAllSearchPage(data) {
+  static async getAllSearchPage(type, data) {
     var data = await api.report
-      .apiGetAllInspectionLackSearchPages(data)
+      .apiGetAllInspectionLackSearchPages(type, data)
       .then((response) => {
         response.result = response.result
           .sort((x, y) => x.id - y.id)
