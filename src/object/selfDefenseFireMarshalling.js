@@ -65,7 +65,7 @@ class SelfDefenseFireMarshalling extends Parent {
   }
   async getMarshallingMgmt() {
     var data = await api.selfDefenseFireMarshalling
-      .apiGetFireMarshallingMgmt(this.id)
+      .apiGetFireMarshallingMgmt('/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt',this.id)
       .then((response) => {
         response.result = response.result
           .sort((x, y) => x.id - y.id)
@@ -129,20 +129,20 @@ class SelfDefenseFireMarshalling extends Parent {
       });
     return data;
   }
-  static async getSearchPage(type, data) {
-    var data = await api.selfDefenseFireMarshalling
-      .apiGetFireMarshallingSearchPages(type, data)
-      .then((response) => {
-        response.result = response.result.map((item) => {
-          return new SelfDefenseFireMarshalling(item);
-        });
-        return response;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
+  // static async getSearchPage(type, data) {
+  //   var data = await api.selfDefenseFireMarshalling
+  //     .apiGetFireMarshallingSearchPages(type, data)
+  //     .then((response) => {
+  //       response.result = response.result.map((item) => {
+  //         return new SelfDefenseFireMarshalling(item);
+  //       });
+  //       return response;
+  //     })
+  //     .catch((error) => {
+  //       return [];
+  //     });
+  //   return data;
+  // }
   static async getAccountByRole(roleId) {
     var data = await api.selfDefenseFireMarshalling
       .apiGetAccountByRole(roleId)
@@ -159,6 +159,8 @@ class SelfDefenseFireMarshalling extends Parent {
       });
     return data;
   }
+  //emergencyResponseFlowView/flowViewMgmt
+  //emergencyResponseFlowEdit/flowEditMgmt
   static async getProcess(type, selfDefenseFireMarshallingId) {
     var data = await api.selfDefenseFireMarshalling
       .apiGetAllProcess(type, selfDefenseFireMarshallingId)
@@ -178,8 +180,10 @@ class SelfDefenseFireMarshalling extends Parent {
   static async getOfIDMarshallingMgmt(id) {
     //功能同getMarshallingMgmt，開給process使用
     var data = await api.selfDefenseFireMarshalling
-      .apiGetFireMarshallingMgmt(id)
+      .apiGetFireMarshallingMgmt('/emergencyResponseFlowEdit/flowEditMgmt', id)
       .then((response) => {
+        console.log('copyFile')
+        console.log(JSON.stringify(response))
         var array = response.result
           .sort((x, y) => x.id - y.id)
           .map((item) => {
@@ -455,6 +459,9 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
       });
     return data;
   }
+  //selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt
+  //emergencyResponseFlowEdit/flowEditMgmt
+  //emergencyResponseFlowView/flowViewMgmt
   static async getOfFloor(type, floorId) {
     var data = await api.selfDefenseFireMarshalling
       .apiGetMarshallingMgmtOfFloor(type, floorId)
@@ -601,9 +608,11 @@ class ContingencyProcess extends Parent {
       });
     return data;
   }
-  static async getJson(pid) {
+  ///emergencyResponseFlowView/contingencyProcess
+  //emergencyResponseFlowEdit/flowEditContingencyProcess
+  static async getJson(type,pid) {
     var data = await api.selfDefenseFireMarshalling
-      .apiGetContingencyProcessJson(pid)
+      .apiGetContingencyProcessJson(type,pid)
       .then(async (response) => {
         return response.result;
       })

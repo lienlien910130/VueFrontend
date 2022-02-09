@@ -293,22 +293,7 @@ export default {
   },
   async mounted() {
     this.jsPlumb = jsPlumb.getInstance({ Container: "zll-index" });
-    //取得預設節點資料
-    //pa=>預設載入第一個
-    if (this.$route.query.l !== undefined) {
-      //取得所有流程圖
-      this.selfDefenseFireMarshallingId = this.$route.query.l;
-      this.processArray = await SelfDefenseFireMarshalling.getProcess(
-        "/emergencyResponseFlowEdit/flowEditMgmt",
-        this.selfDefenseFireMarshallingId
-      );
-      this.sampleNodeArray = await SelfDefenseFireMarshalling.getSampleNode();
-      await this.getJsonFile(
-        this.processArray.length ? this.processArray[0].getID() : null
-      );
-    } else {
-      // this.$message.error("尚未選擇自衛消防編組");
-      if (this.floor_record == 0) {
+    if (this.floor_record == 0) {
         await this.$store.dispatch("building/setFloors");
         await this.$store.dispatch("record/saveFloorRecord", 1);
       }
@@ -319,30 +304,25 @@ export default {
         return v;
       });
       this.selectItemVisible = true;
-    }
-    document.onkeydown = async (e) => {
-      if (e.keyCode == 46) {
-        await this.handleOperateMenu("delete");
-      }
-      if (e.keyCode == 67 && e.ctrlKey) {
-        this.copy();
-      }
-      if (e.keyCode == 86 && e.ctrlKey) {
-        this.paste();
-      }
-      if (e.keyCode == 90 && e.ctrlKey) {
-        //上一步 Z
-        await this.handleOperateMenu("upper-step");
-      }
-      if (e.keyCode == 89 && e.ctrlKey) {
-        //下一步 y
-        await this.handleOperateMenu("next-step");
-      }
-      if (e.keyCode == 83 && e.ctrlKey) {
-        //存檔 s
-        await this.handleOperateMenu("save");
-      }
-    };
+    //取得預設節點資料
+    //pa=>預設載入第一個
+    // if (this.$route.query.l !== undefined) {
+    //   //取得所有流程圖
+    //   this.selfDefenseFireMarshallingId = this.$route.query.l;
+    //   this.processArray = await SelfDefenseFireMarshalling.getProcess(
+    //     "/emergencyResponseFlowEdit/flowEditMgmt",
+    //     this.selfDefenseFireMarshallingId
+    //   );
+    //   this.sampleNodeArray = await SelfDefenseFireMarshalling.getSampleNode();
+    //   await this.getJsonFile(
+    //     this.processArray.length ? this.processArray[0].getID() : null
+    //   );
+    //   await this.onkeydownSetting()
+    // } else {
+    //   // this.$message.error("尚未選擇自衛消防編組");
+
+    // }
+
   },
   beforeDestroy() {
     document.onkeydown = async (e) => {
@@ -374,6 +354,31 @@ export default {
       this.title = "contingencyProcess";
     },
     async changeTable() {},
+    async onkeydownSetting(){
+      document.onkeydown = async (e) => {
+      if (e.keyCode == 46) {
+        await this.handleOperateMenu("delete");
+      }
+      if (e.keyCode == 67 && e.ctrlKey) {
+        this.copy();
+      }
+      if (e.keyCode == 86 && e.ctrlKey) {
+        this.paste();
+      }
+      if (e.keyCode == 90 && e.ctrlKey) {
+        //上一步 Z
+        await this.handleOperateMenu("upper-step");
+      }
+      if (e.keyCode == 89 && e.ctrlKey) {
+        //下一步 y
+        await this.handleOperateMenu("next-step");
+      }
+      if (e.keyCode == 83 && e.ctrlKey) {
+        //存檔 s
+        await this.handleOperateMenu("save");
+      }
+    };
+    },
     mousedownHandler(e) {
       let event = window.event || e;
       this.dragMove.isDown = true;
@@ -1175,7 +1180,7 @@ export default {
       }
       if (pid !== null) {
         this.$socket.sendMsg("process", "enterProcess", pid);
-        var result = await ContingencyProcess.getJson(pid);
+        var result = await ContingencyProcess.getJson("/emergencyResponseFlowEdit/flowEditContingencyProcess",pid);
         this.processNodeArray = await CNode.get(this.processId);
         this.processLineArray = await COption.getOfProcess(this.processId);
         console.log(JSON.stringify(this.processNodeArray));
@@ -1334,27 +1339,34 @@ export default {
       console.log(index, content);
       if (index === "floor") {
         event.target.blur();
+        //取得樓層的自衛消防編組細項
         this.fireMarshalling = await SelfDefenseFireMarshallingMgmt.getOfFloor(
           "/emergencyResponseFlowEdit/flowEditMgmt",
           content
         );
+        console.log(JSON.stringify(this.fireMarshalling))
       } else if (index === "fireMarshalling") {
         this.selfDefenseFireMarshallingId = content;
+        //取得自衛消防編組大項的細項的流程圖
         this.processArray = await SelfDefenseFireMarshalling.getProcess(
           "/emergencyResponseFlowEdit/flowEditMgmt",
           this.selfDefenseFireMarshallingId
         );
+        console.log(JSON.stringify(this.processArray))
         this.sampleNodeArray = await SelfDefenseFireMarshalling.getSampleNode();
         await this.getJsonFile(
           this.processArray.length ? this.processArray[0].getID() : null
         );
         this.selectItemVisible = false;
+        await this.onkeydownSetting()
       } else if (index === "cancel") {
         if (this.selfDefenseFireMarshallingId == null) {
           this.$message.error("請選擇自衛消防編組再開始編輯");
           return false;
         }
         this.selectItemVisible = false;
+      } else if(index === 'open'){
+        this.selectItemVisible = true;
       }
     },
   },

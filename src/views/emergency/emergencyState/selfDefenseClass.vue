@@ -238,7 +238,7 @@ export default {
         if (this.process == true && ws.processWs.floorId !== null) {
           this.$nextTick(async () => {
             this.processArray = await SelfDefenseFireMarshalling.getProcess(
-              "/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt",
+              "/emergencyResponseFlowView/flowViewMgmt",
               ws.processWs.selfDefenseFireMarshallingListId
             );
             await this.getJsonFile(ws.processWs.contingencyProcessId);
@@ -313,7 +313,7 @@ export default {
     async getJsonFile(pid = null) {
       //讀取指定的process ID取得JSON，載入流程圖
       if (pid !== null) {
-        var result = await ContingencyProcess.getJson(pid);
+        var result = await ContingencyProcess.getJson("/emergencyResponseFlowView/contingencyProcess",pid);
         this.processId = pid;
         this.processNodeArray = await CNode.get(this.processId);
         this.processLineArray = await COption.getOfProcess(this.processId);

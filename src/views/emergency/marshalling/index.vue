@@ -120,13 +120,13 @@ export default {
     },
     async getMarshallingList() {
       //取得消防編組大項
-      var data = await SelfDefenseFireMarshalling.getSearchPage(
-        "/selfDefenseFireMarshalling",
-        this.listQueryParams
-      );
+      // var data = await SelfDefenseFireMarshalling.getSearchPage(
+      //   "/selfDefenseFireMarshalling",
+      //   this.listQueryParams
+      // );
 
-      this.blockData = data.result;
-      this.listQueryParams.total = data.totalPageCount;
+      // this.blockData = data.result;
+      // this.listQueryParams.total = data.totalPageCount;
     },
     async getMarshallingMgmt() {
       //取得指定消防編組的細項
