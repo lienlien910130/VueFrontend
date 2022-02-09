@@ -510,9 +510,9 @@ class PublicSafe extends Parent {
       });
     return data;
   }
-  static async getRemind() {
+  static async getRemind(type) {
     var data = await api.report
-      .apiGetPublicSafeRemind()
+      .apiGetPublicSafeRemind(type)
       .then((response) => {
         return response.result;
       })

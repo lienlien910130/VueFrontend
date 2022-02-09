@@ -238,6 +238,7 @@ export default {
         if (this.process == true && ws.processWs.floorId !== null) {
           this.$nextTick(async () => {
             this.processArray = await SelfDefenseFireMarshalling.getProcess(
+              "/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt",
               ws.processWs.selfDefenseFireMarshallingListId
             );
             await this.getJsonFile(ws.processWs.contingencyProcessId);

@@ -142,52 +142,52 @@ export default {
     disabled() {
       return this.loading || this.noMore;
     },
-    maintainAttrs() {
-      return {
-        title: "maintain",
-        list: this.maintainlist,
-      };
-    },
-    maintainEvent() {
-      return {
-        clickPagination: this.getMaintain,
-        handleList: this.handleList,
-      };
-    },
-    inspectionAttrs() {
-      return {
-        title: "inspection",
-        list: this.inspectionlist,
-      };
-    },
-    inspectionEvent() {
-      return {
-        clickPagination: this.getInspection,
-        handleList: this.handleList,
-      };
-    },
-    publicSafeAttrs() {
-      return {
-        title: "publicSafe",
-        list: this.publicSafelist,
-      };
-    },
-    publicSafeEvent() {
-      return {
-        clickPagination: this.getPublicSafe,
-        handleList: this.handleList,
-      };
-    },
+    // maintainAttrs() {
+    //   return {
+    //     title: "maintain",
+    //     list: this.maintainlist,
+    //   };
+    // },
+    // maintainEvent() {
+    //   return {
+    //     clickPagination: this.getMaintain,
+    //     handleList: this.handleList,
+    //   };
+    // },
+    // inspectionAttrs() {
+    //   return {
+    //     title: "inspection",
+    //     list: this.inspectionlist,
+    //   };
+    // },
+    // inspectionEvent() {
+    //   return {
+    //     clickPagination: this.getInspection,
+    //     handleList: this.handleList,
+    //   };
+    // },
+    // publicSafeAttrs() {
+    //   return {
+    //     title: "publicSafe",
+    //     list: this.publicSafelist,
+    //   };
+    // },
+    // publicSafeEvent() {
+    //   return {
+    //     clickPagination: this.getPublicSafe,
+    //     handleList: this.handleList,
+    //   };
+    // },
   },
   watch: {
-    buildingid: {
-      handler: async function () {
-        if (this.buildingid !== undefined) {
-          await this.init();
-        }
-      },
-      immediate: true,
-    },
+    // buildingid: {
+    //   handler: async function () {
+    //     if (this.buildingid !== undefined) {
+    //       await this.init();
+    //     }
+    //   },
+    //   immediate: true,
+    // },
     buildingoptions: {
       handler: async function () {
         if (this.setting_record == 0) {
@@ -195,6 +195,8 @@ export default {
           this.$store.dispatch("record/saveSettingRecord", 1);
         }
         await this.getBuildingDevicesManage();
+        await this.getNumber();
+        await this.getRemind();
       },
       immediate: true,
     },
@@ -210,15 +212,6 @@ export default {
       count: 9,
       viewlist: constant.INDEX_VIEW_NINE,
       currentNode: "",
-      // maintainlist: [],
-      // maintainlistQueryParams: {
-      //   //故障日期不是null 叫修日期null
-      //   dateOfFailure: "{IsNotNull}",
-      //   dateOfCallRepair: "{IsNull}",
-      //   pageIndex: 1,
-      //   pageSize: 10,
-      //   total: 0,
-      // },
       inspectionRemind: {},
       publicSafeRemind: {},
       panelList: [],
@@ -231,11 +224,10 @@ export default {
     };
   },
   methods: {
-    async init() {
-      // await this.getMaintain()
-      await this.getNumber();
-      await this.getRemind();
-    },
+    // async init() {
+    //   // await this.getNumber();
+    //   // await this.getRemind();
+    // },
     loadMore() {
       this.loading = true;
       setTimeout(() => {
@@ -281,6 +273,7 @@ export default {
       //console.log(JSON.stringify(this.deviceGroup));
     },
     async getRemind() {
+      this.remindList = [];
       //檢修申報時間提醒&公安申報時間提醒
       this.inspectionRemind = await Inspection.getRemind("/index");
       if (
@@ -310,16 +303,42 @@ export default {
             });
           });
       }
-      this.publicSafeRemind = await PublicSafe.getRemind();
-      this.publicSafeRemind.checkDate =
-        moment(this.publicSafeRemind.startDate).format("YYYY-MM-DD") +
-        "~" +
-        moment(this.publicSafeRemind.endDate).format("YYYY-MM-DD");
-      this.remindList.push({
-        label: "大樓公安申報",
-        type: this.publicSafeRemind.category,
-        value: this.publicSafeRemind.checkDate,
-      });
+      this.publicSafeRemind = await PublicSafe.getRemind("/index");
+      if (
+        this.publicSafeRemind.buildInfo !== undefined &&
+        this.publicSafeRemind.buildInfo.alertRemind
+      ) {
+        this.remindList.push({
+          label: "大樓公安申報",
+          type: this.publicSafeRemind.buildInfo.category,
+          value:
+            moment(this.publicSafeRemind.buildInfo.startDate).format(
+              "YYYY-MM-DD"
+            ) +
+            "~" +
+            moment(this.publicSafeRemind.buildInfo.endDate).format(
+              "YYYY-MM-DD"
+            ),
+        });
+      }
+      if (this.publicSafeRemind.usageOfFloor.length > 0) {
+        this.publicSafeRemind.usageOfFloor
+          .filter((item) => {
+            return item.alertRemind == true;
+          })
+          .forEach((item) => {
+            this.remindList.push({
+              label: "門牌公安申報",
+              type: item.category,
+              value:
+                moment(item.startDate).format("YYYY-MM-DD") +
+                "~" +
+                moment(item.endDate).format("YYYY-MM-DD"),
+              houseNumber: item.houseNumber,
+            });
+          });
+      }
+
       console.log(this.inspectionRemind);
       console.log(this.publicSafeRemind);
       console.log(JSON.stringify(this.remindList));

@@ -30,6 +30,9 @@ const map = {
 
   selfDefenseFireMarshalling: () =>
     import("@/views/emergency/marshalling/people.vue"),
-  process: () => import("@/views/emergency/process/index.vue"),
+  emergencyResponseFlowEdit: () =>
+    import("@/views/emergency/process/index.vue"),
+  emergencyResponseFlowView: () =>
+    import("@/views/emergency/emergencyState/selfDefenseClass.vue"),
   CSampleNodeListMgmt: () => import("@/views/emergency/instruction/index.vue"),
 };

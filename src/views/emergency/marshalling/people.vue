@@ -98,13 +98,6 @@
         </el-col>
       </el-row>
     </el-dialog>
-    <el-dialog
-      title="新增人員"
-      :visible.sync="dialogFormUserVisible"
-      center
-      width="30%"
-    >
-    </el-dialog>
   </div>
 </template>
 
@@ -130,7 +123,6 @@ export default {
       floor: null,
       peopleList: [],
       dialogFormVisible: false,
-      dialogFormUserVisible: false,
       account: {},
       accountList: [],
     };
@@ -161,6 +153,7 @@ export default {
     },
     async getMgmt() {
       this.peopleList = await SelfDefenseFireMarshallingMgmt.getOfFloor(
+        "/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt",
         this.floor.getID()
       );
     },

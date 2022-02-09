@@ -63,20 +63,20 @@ export const constantRoutes = [
     component: () => import("@/views/login/register.vue"),
     hidden: true,
   },
-  {
-    path: "/process",
-    component: Layout,
-    redirect: "/process",
-    children: [
-      {
-        path: "index",
-        name: "process",
-        component: () => import("@/views/emergency/process/index.vue"),
-        meta: { title: "應變流程", icon: "icon", needLogin: true },
-      },
-    ],
-    hidden: true,
-  },
+  // {
+  //   path: "/process",
+  //   component: Layout,
+  //   redirect: "/process",
+  //   children: [
+  //     {
+  //       path: "index",
+  //       name: "process",
+  //       component: () => import("@/views/emergency/process/index.vue"),
+  //       meta: { title: "應變流程", icon: "icon", needLogin: true },
+  //     },
+  //   ],
+  //   hidden: true,
+  // },
   {
     path: "/cctv",
     component: Layout,
@@ -91,35 +91,35 @@ export const constantRoutes = [
     ],
     hidden: true,
   },
-  {
-    path: "/emergencyGraphic",
-    component: Layout,
-    redirect: "/emergencyGraphic",
-    children: [
-      {
-        path: "index",
-        name: "emergencygraphic",
-        component: () => import("@/views/emergency/emergencyState/graphic.vue"),
-        meta: { title: "緊急應變圖控", icon: "icon", needLogin: true },
-      },
-    ],
-    hidden: true,
-  },
-  {
-    path: "/selfDefenseClass",
-    component: Layout,
-    redirect: "/selfDefenseClass",
-    children: [
-      {
-        path: "index",
-        name: "selfDefenseClass",
-        component: () =>
-          import("@/views/emergency/emergencyState/selfDefenseClass.vue"),
-        meta: { title: "緊急應變班別", icon: "icon", needLogin: true },
-      },
-    ],
-    hidden: true,
-  },
+  // {
+  //   path: "/emergencyGraphic",
+  //   component: Layout,
+  //   redirect: "/emergencyGraphic",
+  //   children: [
+  //     {
+  //       path: "index",
+  //       name: "emergencygraphic",
+  //       component: () => import("@/views/emergency/emergencyState/graphic.vue"),
+  //       meta: { title: "緊急應變圖控", icon: "icon", needLogin: true },
+  //     },
+  //   ],
+  //   hidden: true,
+  // },
+  // {
+  //   path: "/selfDefenseClass",
+  //   component: Layout,
+  //   redirect: "/selfDefenseClass",
+  //   children: [
+  //     {
+  //       path: "index",
+  //       name: "selfDefenseClass",
+  //       component: () =>
+  //         import("@/views/emergency/emergencyState/selfDefenseClass.vue"),
+  //       meta: { title: "緊急應變班別", icon: "icon", needLogin: true },
+  //     },
+  //   ],
+  //   hidden: true,
+  // },
   {
     path: "/actions",
     component: Layout,

@@ -132,8 +132,8 @@ const report = {
   apiGetPublicSafeColumn(data) {
     return req("post", "/reportPublicSafe/list/listValue", this.getBid(), data);
   },
-  apiGetPublicSafeRemind() {
-    return req("get", "/index/publicSafeReminder");
+  apiGetPublicSafeRemind(type) {
+    return req("get", type + "/publicSafeReminder");
   },
 
   //公安申報缺失

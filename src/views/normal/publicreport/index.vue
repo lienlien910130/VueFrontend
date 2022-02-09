@@ -3,30 +3,55 @@
     <el-row :gutter="20">
       <el-col :xs="24" :sm="24" :md="24" :lg="16">
         <div class="chart-wrapper">
-          <div class="verticalhalfdiv">
-            <div class="label">場所類別：</div>
-            <div class="content">
-              <span class="report">
-                {{ remind.category }}
-              </span>
-            </div>
-          </div>
-          <div class="verticalhalfdiv">
-            <div class="label">
-              <i class="el-icon-edit">
-                <a @click="openWindows" style="color: #66b1ff">
-                  下次申報區間：</a
-                >
-              </i>
-            </div>
-            <div class="content">
-              <span class="report">
-                {{ remind.checkDate }}
-              </span>
-            </div>
-          </div>
+          <template v-if="viewType == 'bu'">
+            <el-col :xs="24" :sm="24" :md="24" :lg="15">
+              <div class="verticalhalfdiv">
+                <div class="label">場所類別：</div>
+                <div class="content">
+                  <span class="report">
+                    {{ remind.category }}
+                  </span>
+                </div>
+              </div>
+              <div class="verticalhalfdiv">
+                <div class="label">
+                  <i class="el-icon-edit">
+                    <a @click="openWindows" style="color: #66b1ff">
+                      下次申報區間：</a
+                    >
+                  </i>
+                </div>
+                <div class="content">
+                  <span class="report">
+                    {{ remind.checkDate }}
+                  </span>
+                </div>
+              </div>
+            </el-col>
+            <el-col :xs="24" :sm="24" :md="24" :lg="9">
+              <template v-for="(item, index) in usageOfFloorRe">
+                <li :key="index">
+                  {{ index + 1 }}.門牌:{{ item.houseNumber }}/場所:{{
+                    item.category
+                  }}/區間:{{ item.checkDate }}
+                </li>
+              </template>
+            </el-col>
+          </template>
+          <template v-else>
+            <el-col :xs="24" :sm="24" :md="24" :lg="24">
+              <template v-for="(item, index) in usageOfFloorRe">
+                <li :key="index">
+                  {{ index + 1 }}.門牌:{{ item.houseNumber }}/場所:{{
+                    item.category
+                  }}/區間:{{ item.checkDate }}
+                </li>
+              </template>
+            </el-col>
+          </template>
         </div>
       </el-col>
+
       <el-col :xs="24" :sm="24" :md="24" :lg="8">
         <div class="right-wrapper">
           <PanelGroup
@@ -107,6 +132,8 @@ export default {
       lacksShow: false,
       excludeId: null,
       remind: {},
+      viewType: null,
+      usageOfFloorRe: [],
     };
   },
   computed: {
@@ -144,12 +171,40 @@ export default {
         { name: "缺失內容", icon: "el-icon-document", status: "openlacks" },
         { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
       ];
-      this.remind = await PublicSafe.getRemind();
+      var data = await PublicSafe.getRemind("/reportPublicSafe");
       console.log(this.remind);
-      this.remind.checkDate =
-        moment(this.remind.startDate).format("YYYY-MM-DD") +
-        "~" +
-        moment(this.remind.endDate).format("YYYY-MM-DD");
+      // this.remind.checkDate =
+      //   moment(this.remind.startDate).format("YYYY-MM-DD") +
+      //   "~" +
+      //   moment(this.remind.endDate).format("YYYY-MM-DD");
+      if (data.buildInfo !== undefined) {
+        //管理員-可察看大樓檢修+門牌檢修
+        this.viewType = "bu";
+        this.remind = data.buildInfo;
+        this.remind.checkDate =
+          moment(this.remind.startDate).format("YYYY-MM-DD") +
+          "~" +
+          moment(this.remind.endDate).format("YYYY-MM-DD");
+        if (data.usageOfFloor.length > 0) {
+          this.usageOfFloorRe = data.usageOfFloor;
+          this.usageOfFloorRe.forEach((item) => {
+            item.checkDate =
+              moment(item.startDate).format("YYYY-MM-DD") +
+              "~" +
+              moment(item.endDate).format("YYYY-MM-DD");
+          });
+        }
+      } else {
+        //門牌檢修申報
+        this.viewType = "us";
+        this.usageOfFloorRe = data.usageOfFloor;
+        this.usageOfFloorRe.forEach((item) => {
+          item.checkDate =
+            moment(item.startDate).format("YYYY-MM-DD") +
+            "~" +
+            moment(item.endDate).format("YYYY-MM-DD");
+        });
+      }
     },
     async resetlistQueryParams() {
       this.listQueryParams = {

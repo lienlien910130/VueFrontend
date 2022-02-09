@@ -93,6 +93,36 @@
       v-bind="tableAttrs"
       v-on:handleTableClick="handleTableClick"
     ></DialogTable>
+
+    <el-dialog
+      title="選擇樓層及消防編組"
+      :visible="selectItemVisible"
+      width="50%"
+      :close-on-click-modal="false"
+      append-to-body
+      @close="handleFloorDialog('cancel', '')"
+      center
+    >
+      <el-row>
+        <template v-for="(item, index) in floorData">
+          <el-button
+            :key="index"
+            @click="handleFloorDialog('floor', item.id, $event)"
+            >{{ item.label }}</el-button
+          >
+        </template>
+      </el-row>
+      <el-row v-if="fireMarshalling.length">
+        <h3>該樓層自衛消防編組</h3>
+        <template v-for="(item, index) in fireMarshalling">
+          <el-button
+            :key="index"
+            @click="handleFloorDialog('fireMarshalling', item.id)"
+            >{{ item.name }}</el-button
+          >
+        </template>
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 
@@ -106,11 +136,15 @@ import {
   ContingencyProcess,
   COption,
   SelfDefenseFireMarshalling,
+  SelfDefenseFireMarshallingMgmt,
 } from "@/object";
 import constant from "@/constant/development";
 export default {
   data() {
     return {
+      selectItemVisible: false,
+      floorData: [],
+      fireMarshalling: [],
       operateMenu: constant.ProcessMenu,
       title: "",
       jsPlumb: null,
@@ -173,6 +207,7 @@ export default {
       copyFile: false,
       isEdit: false, //是否可編輯
       processStatus: "view",
+      selfDefenseFireMarshallingId: null,
     };
   },
   mixins: [sharemixin, flowmixin, tablemixin, dialogmixin],
@@ -204,7 +239,7 @@ export default {
   watch: {
     processMsg: {
       handler: async function () {
-        if (this.processMsg !== null) {
+        if (this.processMsg !== null && this.processMsg !== undefined) {
           var data = JSON.parse(this.graphicMsg.data);
           var type = data.SendType;
           var sendId = data.Data.Id; // 傳送的人
@@ -262,15 +297,28 @@ export default {
     //pa=>預設載入第一個
     if (this.$route.query.l !== undefined) {
       //取得所有流程圖
+      this.selfDefenseFireMarshallingId = this.$route.query.l;
       this.processArray = await SelfDefenseFireMarshalling.getProcess(
-        this.$route.query.l
+        "/emergencyResponseFlowEdit/flowEditMgmt",
+        this.selfDefenseFireMarshallingId
       );
       this.sampleNodeArray = await SelfDefenseFireMarshalling.getSampleNode();
       await this.getJsonFile(
         this.processArray.length ? this.processArray[0].getID() : null
       );
     } else {
-      this.$message.error("尚未選擇自衛消防編組");
+      // this.$message.error("尚未選擇自衛消防編組");
+      if (this.floor_record == 0) {
+        await this.$store.dispatch("building/setFloors");
+        await this.$store.dispatch("record/saveFloorRecord", 1);
+      }
+      this.floorData = this.buildingfloors.map((v) => {
+        this.$set(v, "value", v.getID());
+        this.$set(v, "label", v.getName());
+        this.$set(v, "id", v.getID());
+        return v;
+      });
+      this.selectItemVisible = true;
     }
     document.onkeydown = async (e) => {
       if (e.keyCode == 46) {
@@ -1194,7 +1242,8 @@ export default {
         if (isDelete) {
           this.$message("刪除成功");
           this.processArray = await SelfDefenseFireMarshalling.getProcess(
-            this.$route.query.l
+            "/emergencyResponseFlowEdit/flowEditMgmt",
+            this.selfDefenseFireMarshallingId
           );
           this.tableData = _.cloneDeep(this.processArray);
           if (content.getID() == this.processId) {
@@ -1219,7 +1268,7 @@ export default {
       } else if (index == "empty" || index == "copyFile") {
         this.dialogSelect =
           await SelfDefenseFireMarshalling.getOfIDMarshallingMgmt(
-            this.$route.query.l
+            this.selfDefenseFireMarshallingId
           );
         this.dialogButtonsName = [
           {
@@ -1245,7 +1294,8 @@ export default {
             ? this.$message("更新成功")
             : this.$message("新增成功");
           this.processArray = await SelfDefenseFireMarshalling.getProcess(
-            this.$route.query.l
+            "/emergencyResponseFlowEdit/flowEditMgmt",
+            this.selfDefenseFireMarshallingId
           );
           this.tableData = _.cloneDeep(this.processArray);
           this.innerVisible = false;
@@ -1278,6 +1328,33 @@ export default {
         }
       } else {
         this.innerVisible = false;
+      }
+    },
+    async handleFloorDialog(index, content, event) {
+      console.log(index, content);
+      if (index === "floor") {
+        event.target.blur();
+        this.fireMarshalling = await SelfDefenseFireMarshallingMgmt.getOfFloor(
+          "/emergencyResponseFlowEdit/flowEditMgmt",
+          content
+        );
+      } else if (index === "fireMarshalling") {
+        this.selfDefenseFireMarshallingId = content;
+        this.processArray = await SelfDefenseFireMarshalling.getProcess(
+          "/emergencyResponseFlowEdit/flowEditMgmt",
+          this.selfDefenseFireMarshallingId
+        );
+        this.sampleNodeArray = await SelfDefenseFireMarshalling.getSampleNode();
+        await this.getJsonFile(
+          this.processArray.length ? this.processArray[0].getID() : null
+        );
+        this.selectItemVisible = false;
+      } else if (index === "cancel") {
+        if (this.selfDefenseFireMarshallingId == null) {
+          this.$message.error("請選擇自衛消防編組再開始編輯");
+          return false;
+        }
+        this.selectItemVisible = false;
       }
     },
   },

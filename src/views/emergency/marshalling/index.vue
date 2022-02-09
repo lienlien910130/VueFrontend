@@ -121,6 +121,7 @@ export default {
     async getMarshallingList() {
       //取得消防編組大項
       var data = await SelfDefenseFireMarshalling.getSearchPage(
+        "/selfDefenseFireMarshalling",
         this.listQueryParams
       );
 

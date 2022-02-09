@@ -43,7 +43,7 @@ router.beforeEach(async (to, from, next) => {
         //   await store.dispatch("permission/setmenu", await Menu.get());
         //   await store.dispatch("permission/setneedreload", false);
         // }
-        if (to.name == "process" || to.name == "selfDefenseClass") {
+        if (to.name == "selfDefenseClass") {
           toMenu = "selfDefenseFireMarshalling";
         }
         // if (to.name == "emergencyClass") {
