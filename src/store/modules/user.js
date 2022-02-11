@@ -84,6 +84,7 @@ const actions = {
       user
         .apiPostLogin({ account: username.trim(), password: password })
         .then((response) => {
+          console.log("login", response);
           idb.getDb();
           commit("SET_TOKEN", response.accessToken); //store 儲存
           setToken(response.accessToken); //cookie儲存

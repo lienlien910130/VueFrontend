@@ -95,7 +95,7 @@
     ></DialogTable>
 
     <el-dialog
-      title="選擇樓層及消防編組"
+      title="選擇樓層"
       :visible="selectItemVisible"
       width="50%"
       :close-on-click-modal="false"
@@ -112,7 +112,7 @@
           >
         </template>
       </el-row>
-      <el-row v-if="fireMarshalling.length">
+      <!-- <el-row v-if="fireMarshalling.length">
         <h3>該樓層自衛消防編組</h3>
         <template v-for="(item, index) in fireMarshalling">
           <el-button
@@ -121,7 +121,7 @@
             >{{ item.name }}</el-button
           >
         </template>
-      </el-row>
+      </el-row> -->
     </el-dialog>
   </div>
 </template>
@@ -144,7 +144,8 @@ export default {
     return {
       selectItemVisible: false,
       floorData: [],
-      fireMarshalling: [],
+      selectFloorId: null,
+      // fireMarshalling: [],
       operateMenu: constant.ProcessMenu,
       title: "",
       jsPlumb: null,
@@ -294,16 +295,16 @@ export default {
   async mounted() {
     this.jsPlumb = jsPlumb.getInstance({ Container: "zll-index" });
     if (this.floor_record == 0) {
-        await this.$store.dispatch("building/setFloors");
-        await this.$store.dispatch("record/saveFloorRecord", 1);
-      }
-      this.floorData = this.buildingfloors.map((v) => {
-        this.$set(v, "value", v.getID());
-        this.$set(v, "label", v.getName());
-        this.$set(v, "id", v.getID());
-        return v;
-      });
-      this.selectItemVisible = true;
+      await this.$store.dispatch("building/setFloors");
+      await this.$store.dispatch("record/saveFloorRecord", 1);
+    }
+    this.floorData = this.buildingfloors.map((v) => {
+      this.$set(v, "value", v.getID());
+      this.$set(v, "label", v.getName());
+      this.$set(v, "id", v.getID());
+      return v;
+    });
+    this.selectItemVisible = true;
     //取得預設節點資料
     //pa=>預設載入第一個
     // if (this.$route.query.l !== undefined) {
@@ -322,7 +323,6 @@ export default {
     //   // this.$message.error("尚未選擇自衛消防編組");
 
     // }
-
   },
   beforeDestroy() {
     document.onkeydown = async (e) => {
@@ -354,30 +354,30 @@ export default {
       this.title = "contingencyProcess";
     },
     async changeTable() {},
-    async onkeydownSetting(){
+    async onkeydownSetting() {
       document.onkeydown = async (e) => {
-      if (e.keyCode == 46) {
-        await this.handleOperateMenu("delete");
-      }
-      if (e.keyCode == 67 && e.ctrlKey) {
-        this.copy();
-      }
-      if (e.keyCode == 86 && e.ctrlKey) {
-        this.paste();
-      }
-      if (e.keyCode == 90 && e.ctrlKey) {
-        //上一步 Z
-        await this.handleOperateMenu("upper-step");
-      }
-      if (e.keyCode == 89 && e.ctrlKey) {
-        //下一步 y
-        await this.handleOperateMenu("next-step");
-      }
-      if (e.keyCode == 83 && e.ctrlKey) {
-        //存檔 s
-        await this.handleOperateMenu("save");
-      }
-    };
+        if (e.keyCode == 46) {
+          await this.handleOperateMenu("delete");
+        }
+        if (e.keyCode == 67 && e.ctrlKey) {
+          this.copy();
+        }
+        if (e.keyCode == 86 && e.ctrlKey) {
+          this.paste();
+        }
+        if (e.keyCode == 90 && e.ctrlKey) {
+          //上一步 Z
+          await this.handleOperateMenu("upper-step");
+        }
+        if (e.keyCode == 89 && e.ctrlKey) {
+          //下一步 y
+          await this.handleOperateMenu("next-step");
+        }
+        if (e.keyCode == 83 && e.ctrlKey) {
+          //存檔 s
+          await this.handleOperateMenu("save");
+        }
+      };
     },
     mousedownHandler(e) {
       let event = window.event || e;
@@ -1180,7 +1180,10 @@ export default {
       }
       if (pid !== null) {
         this.$socket.sendMsg("process", "enterProcess", pid);
-        var result = await ContingencyProcess.getJson("/emergencyResponseFlowEdit/flowEditContingencyProcess",pid);
+        var result = await ContingencyProcess.getJson(
+          "/emergencyResponseFlowEdit/flowEditContingencyProcess",
+          pid
+        );
         this.processNodeArray = await CNode.get(this.processId);
         this.processLineArray = await COption.getOfProcess(this.processId);
         console.log(JSON.stringify(this.processNodeArray));
@@ -1219,7 +1222,13 @@ export default {
       this.dialogtableConfig = ContingencyProcess.getTableConfig();
       this.dialogtableConfig.shift();
       this.tableTitle = "contingencyProcess";
-      this.tableData = _.cloneDeep(this.processArray);
+      var data = [];
+      this.processArray.forEach((item) => {
+        item.children.forEach((children) => {
+          data.push(children);
+        });
+      });
+      this.tableData = _.cloneDeep(data);
       this.tableheaderButtonsName = [
         {
           name: "新增資料",
@@ -1243,15 +1252,22 @@ export default {
       if (index == "cancel") {
         this.tableVisible = false;
       } else if (index == "delete") {
-        var isDelete = await ContingencyProcess.delete(content.getID());
+        var isDelete = await ContingencyProcess.delete(content.id);
         if (isDelete) {
           this.$message("刪除成功");
-          this.processArray = await SelfDefenseFireMarshalling.getProcess(
-            "/emergencyResponseFlowEdit/flowEditMgmt",
-            this.selfDefenseFireMarshallingId
-          );
-          this.tableData = _.cloneDeep(this.processArray);
-          if (content.getID() == this.processId) {
+          await this.getPrcessOfFloor();
+          // this.processArray = await SelfDefenseFireMarshalling.getProcess(
+          //   "/emergencyResponseFlowEdit/flowEditMgmt",
+          //   this.selfDefenseFireMarshallingId
+          // );
+          var data = [];
+          this.processArray.forEach((item) => {
+            item.children.forEach((children) => {
+              data.push(children);
+            });
+          });
+          this.tableData = _.cloneDeep(data);
+          if (content.id == this.processId) {
             //重置
             this.processId = null;
             this.processNodeArray = [];
@@ -1271,10 +1287,11 @@ export default {
         this.innerVisible = true;
         this.dialogStatus = "update";
       } else if (index == "empty" || index == "copyFile") {
-        this.dialogSelect =
-          await SelfDefenseFireMarshalling.getOfIDMarshallingMgmt(
-            this.selfDefenseFireMarshallingId
-          );
+        // this.dialogSelect =
+        //   await SelfDefenseFireMarshalling.getOfIDMarshallingMgmt(
+        //     this.selfDefenseFireMarshallingId
+        //   );
+        this.dialogSelect = this.processArray;
         this.dialogButtonsName = [
           {
             name: "儲存",
@@ -1298,11 +1315,18 @@ export default {
           index == "update"
             ? this.$message("更新成功")
             : this.$message("新增成功");
-          this.processArray = await SelfDefenseFireMarshalling.getProcess(
-            "/emergencyResponseFlowEdit/flowEditMgmt",
-            this.selfDefenseFireMarshallingId
-          );
-          this.tableData = _.cloneDeep(this.processArray);
+          await this.getPrcessOfFloor();
+          // this.processArray = await SelfDefenseFireMarshalling.getProcess(
+          //   "/emergencyResponseFlowEdit/flowEditMgmt",
+          //   this.selfDefenseFireMarshallingId
+          // );
+          var data = [];
+          this.processArray.forEach((item) => {
+            item.children.forEach((children) => {
+              data.push(children);
+            });
+          });
+          this.tableData = _.cloneDeep(data);
           this.innerVisible = false;
           if (index == "createCopy") {
             this.copyFile = true;
@@ -1339,35 +1363,54 @@ export default {
       console.log(index, content);
       if (index === "floor") {
         event.target.blur();
-        //取得樓層的自衛消防編組細項
-        this.fireMarshalling = await SelfDefenseFireMarshallingMgmt.getOfFloor(
-          "/emergencyResponseFlowEdit/flowEditMgmt",
-          content
-        );
-        console.log(JSON.stringify(this.fireMarshalling))
-      } else if (index === "fireMarshalling") {
-        this.selfDefenseFireMarshallingId = content;
-        //取得自衛消防編組大項的細項的流程圖
-        this.processArray = await SelfDefenseFireMarshalling.getProcess(
-          "/emergencyResponseFlowEdit/flowEditMgmt",
-          this.selfDefenseFireMarshallingId
-        );
-        console.log(JSON.stringify(this.processArray))
+        this.selectFloorId = content;
+        await this.getPrcessOfFloor();
+        //取得樓層的所有流程圖
+
+        // else if (index === "fireMarshalling") {
+        //   this.selfDefenseFireMarshallingId = content;
+        //   //取得自衛消防編組大項的細項的流程圖
+        //   this.processArray = await SelfDefenseFireMarshalling.getProcess(
+        //     "/emergencyResponseFlowEdit/flowEditMgmt",
+        //     this.selfDefenseFireMarshallingId
+        //   );
+        //   console.log(JSON.stringify(this.processArray))
         this.sampleNodeArray = await SelfDefenseFireMarshalling.getSampleNode();
         await this.getJsonFile(
-          this.processArray.length ? this.processArray[0].getID() : null
+          null
+          // this.processArray.length ? this.processArray[0].getID() : null
         );
         this.selectItemVisible = false;
-        await this.onkeydownSetting()
+        await this.onkeydownSetting();
       } else if (index === "cancel") {
-        if (this.selfDefenseFireMarshallingId == null) {
-          this.$message.error("請選擇自衛消防編組再開始編輯");
-          return false;
-        }
+        // if (this.selfDefenseFireMarshallingId == null) {
+        //   this.$message.error("請選擇自衛消防編組再開始編輯");
+        //   return false;
+        // }
         this.selectItemVisible = false;
-      } else if(index === 'open'){
+      } else if (index === "open") {
         this.selectItemVisible = true;
       }
+    },
+    async getPrcessOfFloor() {
+      var data = await SelfDefenseFireMarshallingMgmt.getOfFloor(
+        "/emergencyResponseFlowEdit/flowEditMgmt",
+        this.selectFloorId
+      );
+      var processList = [];
+      data.forEach((item) => {
+        var temp = {
+          id: item.id,
+          name: item.name,
+          open: false,
+          children: [],
+        };
+        item.linkContingencyProcess.forEach((process) => {
+          temp.children.push({ id: process.id, name: process.name });
+        });
+        processList.push(temp);
+      });
+      this.processArray = processList;
     },
   },
 };

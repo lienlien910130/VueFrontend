@@ -145,6 +145,7 @@ export default {
         { name: "刪除", icon: "el-icon-delete", status: "delete" },
         { name: "編輯", icon: "el-icon-edit", status: "open" },
         { name: "查看權限", icon: "el-icon-view", status: "distribution" },
+        { name: "聯絡方式", icon: "el-icon-phone-outline", status: "contact" },
         { name: "驗證住戶", icon: "el-icon-circle-check", status: "verify" },
       ];
     },
@@ -179,65 +180,61 @@ export default {
     },
     async handleBlock(title, index, content) {
       console.log(title, index, JSON.stringify(content));
-      this.dialogData = [];
+      // this.dialogData = [];
       this.dialogConfig = Account.getTableConfig();
-      this.dialogTitle = this.title;
+      // this.dialogTitle = this.title;
+      // this.dialogButtonsName = [];
       this.dialogSelect = this.accessAuthority;
-      this.dialogButtonsName = [];
       if (index === "open") {
         this.dialogConfig[6].label = "生日";
         this.dialogConfig[2].isEdit = false;
         this.dialogConfig[2].mandatory = false;
-        this.dialogData.push(content);
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "update" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
         this.account = content;
-        this.dialogStatus = "update";
+        await this.handleBlockMixin(title, index, content, Account);
       } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete();
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await Account.deleteMany(deleteArray.toString());
-        }
+        var isDelete = await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          Account
+        );
         if (isDelete) {
-          this.$message("刪除成功");
-          var length = content.length !== undefined ? content.length : 1;
-          var page = Math.ceil(
-            (this.listQueryParams.total - length) /
-              this.listQueryParams.pageSize
-          );
-          if (this.listQueryParams.pageIndex > page) {
-            this.listQueryParams.pageIndex = page;
-          }
           this.$store.dispatch("building/setCommittee");
-          this.$socket.sendMsg(
-            "account",
-            "delete",
-            index === "delete" ? content.getID() : deleteArray.toString()
-          );
           await this.getAllAccount();
-          this.$refs.block.clearSelectArray();
-        } else {
-          this.$message.error("系統錯誤");
         }
       } else if (index === "empty") {
         this.dialogConfig[6].label = "生日";
-        this.dialogData.push(Account.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "create" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "create";
-      } else if (index === "distribution") {
+        await this.handleBlockMixin(title, index, content, Account);
+        // this.dialogData.push(Account.empty());
+        // this.dialogButtonsName = [
+        //   { name: "儲存", type: "primary", status: "create" },
+        //   { name: "取消", type: "info", status: "cancel" },
+        // ];
+        // this.innerVisible = true;
+        // this.dialogStatus = "create";
+      } else if (
+        index === "exportExcel" ||
+        index === "uploadExcel" ||
+        index === "updateMany"
+      ) {
+        if (index === "updateMany") this.dialogConfig[6].label = "生日";
+        await this.handleBlockMixin(title, index, content, Account);
+      }
+      // else if (index === "updateMany") {
+      //   this.dialogConfig[6].label = "生日";
+      //   await this.handleBlockMixin(title, index, content, Account);
+      //   this.dialogStatus = "updateMany";
+      //   content.forEach((item) => {
+      //     var obj = _.cloneDeep(item);
+      //     this.dialogData.push(obj);
+      //   });
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "updateManySave" },
+      //     { name: "取消", type: "info", status: "cancel" },
+      //   ];
+      //   this.innerVisible = true;
+      // }
+      else if (index === "distribution") {
         var roles = content.getRoles();
         var array = [];
         for (let element of roles) {
@@ -257,26 +254,16 @@ export default {
           return new Menu(item);
         });
         this.authorityVisible = true;
-      } else if (index === "exportExcel") {
-        this.exportExcelData = this.blockData;
-        this.excelVisible = true;
-        this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        this.excelVisible = true;
-        this.excelType = "uploadExcel";
-      } else if (index === "updateMany") {
-        this.dialogConfig[6].label = "生日";
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "updateManySave" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-      } else if (index === "verify") {
+      }
+      // else if (index === "exportExcel") {
+      //   this.exportExcelData = this.blockData;
+      //   this.excelVisible = true;
+      //   this.excelType = "exportExcel";
+      // } else if (index === "uploadExcel") {
+      //   this.excelVisible = true;
+      //   this.excelType = "uploadExcel";
+      // }
+      else if (index === "verify") {
         if (
           content.usageOfFloor !== undefined &&
           content.usageOfFloor !== null &&
@@ -318,6 +305,7 @@ export default {
         } else {
           this.$message.error("認證失敗，請洽水星服務人員");
         }
+      } else if (index === "contact") {
       }
     },
     async handleDialog(title, index, content) {

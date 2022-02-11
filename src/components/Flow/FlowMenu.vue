@@ -1,6 +1,13 @@
 <template>
   <div class="flow-menu" ref="tool">
-    <div style="height: 300px; overflow-y: auto; overflow-x: hidden">
+    <div
+      style="
+        height: 300px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin-bottom: 10px;
+      "
+    >
       <span class="ef-node-pmenu-process">
         <i class="el-icon-caret-bottom"></i>&nbsp;{{ "流程圖" }}
         <el-tooltip
@@ -17,7 +24,35 @@
           ></i>
         </el-tooltip>
       </span>
-      <ul v-show="processopen" class="ef-node-menu-process-ul">
+      <div
+        v-for="menu in processArray"
+        :key="menu.id"
+        style="padding-left: 20px"
+      >
+        <span class="ef-node-pmenu" @click="menu.open = !menu.open">
+          <i
+            :class="{
+              'el-icon-caret-bottom': menu.open,
+              'el-icon-caret-right': !menu.open,
+            }"
+          ></i
+          >&nbsp;{{ menu.name }}</span
+        >
+        <ul v-show="menu.open" class="ef-node-menu-process-ul">
+          <li
+            v-for="subMenu in menu.children"
+            :class="{
+              'ef-node-active': processId == subMenu.id ? true : false,
+              'ef-node-menu-process-li': true,
+            }"
+            :key="subMenu.id"
+            @click="changeProcess(subMenu.id)"
+          >
+            {{ subMenu.name }}
+          </li>
+        </ul>
+      </div>
+      <!-- <ul v-show="processopen" class="ef-node-menu-process-ul">
         <li
           v-for="subMenu in processArray"
           :class="{ 'ef-node-active': processId == subMenu.id ? true : false }"
@@ -27,7 +62,7 @@
         >
           {{ subMenu.name }}
         </li>
-      </ul>
+      </ul> -->
     </div>
     <template v-if="sampleNodeArray.length">
       <div style="height: 550px; overflow-y: auto; overflow-x: hidden">

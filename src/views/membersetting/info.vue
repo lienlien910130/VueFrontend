@@ -290,7 +290,11 @@ export default {
               account: this.ruleForm.account,
               usageOfFloor: this.ruleForm.usageOfFloor,
             };
-            var result = await Account.updateData("/settings/account", temp, true);
+            var result = await Account.updateData(
+              "/settings/account",
+              temp,
+              true
+            );
             if (Object.keys(result).length !== 0) {
               this.$message("提交成功，待管理人審核");
               this.resetForm("ruleForm");

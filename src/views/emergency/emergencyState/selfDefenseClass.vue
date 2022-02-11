@@ -152,6 +152,25 @@
         </el-tab-pane>
       </el-tabs>
     </div>
+    <el-dialog
+      title="選擇樓層"
+      :visible="selectItemVisible"
+      width="50%"
+      :close-on-click-modal="false"
+      append-to-body
+      @close="handleFloorDialog('cancel', '')"
+      center
+    >
+      <el-row>
+        <template v-for="(item, index) in floorData">
+          <el-button
+            :key="index"
+            @click="handleFloorDialog('floor', item.id, $event)"
+            >{{ item.label }}</el-button
+          >
+        </template>
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -303,6 +322,7 @@ export default {
       processLineArray: [],
       list: [],
       input: "",
+      selectFloorId: null,
     };
   },
   async mounted() {
@@ -313,7 +333,10 @@ export default {
     async getJsonFile(pid = null) {
       //讀取指定的process ID取得JSON，載入流程圖
       if (pid !== null) {
-        var result = await ContingencyProcess.getJson("/emergencyResponseFlowView/contingencyProcess",pid);
+        var result = await ContingencyProcess.getJson(
+          "/emergencyResponseFlowView/contingencyProcess",
+          pid
+        );
         this.processId = pid;
         this.processNodeArray = await CNode.get(this.processId);
         this.processLineArray = await COption.getOfProcess(this.processId);
@@ -567,6 +590,59 @@ export default {
       } else {
         this.list = _.cloneDeep(this.nodeResult);
       }
+    },
+    async handleFloorDialog(index, content, event) {
+      console.log(index, content);
+      if (index === "floor") {
+        event.target.blur();
+        this.selectFloorId = content;
+        await this.getPrcessOfFloor();
+        //取得樓層的所有流程圖
+
+        // else if (index === "fireMarshalling") {
+        //   this.selfDefenseFireMarshallingId = content;
+        //   //取得自衛消防編組大項的細項的流程圖
+        //   this.processArray = await SelfDefenseFireMarshalling.getProcess(
+        //     "/emergencyResponseFlowEdit/flowEditMgmt",
+        //     this.selfDefenseFireMarshallingId
+        //   );
+        //   console.log(JSON.stringify(this.processArray))
+        this.sampleNodeArray = await SelfDefenseFireMarshalling.getSampleNode();
+        await this.getJsonFile(
+          null
+          // this.processArray.length ? this.processArray[0].getID() : null
+        );
+        this.selectItemVisible = false;
+        await this.onkeydownSetting();
+      } else if (index === "cancel") {
+        // if (this.selfDefenseFireMarshallingId == null) {
+        //   this.$message.error("請選擇自衛消防編組再開始編輯");
+        //   return false;
+        // }
+        this.selectItemVisible = false;
+      } else if (index === "open") {
+        this.selectItemVisible = true;
+      }
+    },
+    async getPrcessOfFloor() {
+      var data = await SelfDefenseFireMarshallingMgmt.getOfFloor(
+        "/emergencyResponseFlowEdit/flowEditMgmt",
+        this.selectFloorId
+      );
+      var processList = [];
+      data.forEach((item) => {
+        var temp = {
+          id: item.id,
+          name: item.name,
+          open: false,
+          children: [],
+        };
+        item.linkContingencyProcess.forEach((process) => {
+          temp.children.push({ id: process.id, name: process.name });
+        });
+        processList.push(temp);
+      });
+      this.processArray = processList;
     },
   },
 };

@@ -454,6 +454,7 @@ import Setting from "@/object/setting";
 import { changeDefaultFullType } from "@/utils/index";
 import constant from "@/constant/index";
 import {
+  Account,
   Contactunit,
   Files,
   Inspection,
@@ -704,6 +705,7 @@ export default {
           );
         }
       } else if (this.title == "account" || this.title == "user") {
+        this.handleChangeCheckBox(this.temp["moveWithDifficulty"]);
         if (
           temp["headShotFileId"] !== undefined &&
           temp["headShotFileId"] !== null &&
@@ -1008,6 +1010,22 @@ export default {
           this.temp["declarationImproveDate"] = "";
           this.temp["isImproved"] = true;
           this.temp["nextInspectionDate"] = "";
+        }
+      } else if (this.title == "account") {
+        if (value) {
+          this.config.forEach((item) => {
+            if (!item.isEdit && item.prop == "description") {
+              item.isEdit = true;
+            }
+          });
+        } else {
+          var c = _.cloneDeep(Account.getTableConfig());
+          c[6].label = "生日";
+          if (this.dialogStatus === "update") {
+            c[2].isEdit = false;
+            c[2].mandatory = false;
+          }
+          this.config = c;
         }
       }
     },
