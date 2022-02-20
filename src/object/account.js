@@ -1,7 +1,6 @@
 import Parent from "./parent";
 import api from "@/api";
 import { PhysicalInfo, Building, Role } from ".";
-import CharacterStatus from "./characterStatus";
 
 class Account extends Parent {
   constructor(data) {
