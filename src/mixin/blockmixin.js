@@ -2,15 +2,14 @@ export default {
   computed: {
     blockAttrs() {
       return {
-        hasSearch: this.hasSearch,
-        blockData: this.blockData,
-        config: this.tableConfig,
         title: this.title,
+        config: this.tableConfig,
+        blockData: this.blockData,
+        hasSearch: this.hasSearch,
         isTable: this.isTable,
-        isHasButtons: this.isHasButtons,
         buttonsName: this.buttonsName,
         headerButtonsName: this.headerButtonsName,
-        selectSetting: this.selectSetting,
+        pageSizeList: this.pageSizeList
       };
     },
   },
@@ -25,7 +24,6 @@ export default {
         pageSize: 12,
         total: 0,
       },
-      isHasButtons: true,
       buttonsName: [
         { name: "刪除", icon: "el-icon-delete", status: "delete" },
         { name: "編輯", icon: "el-icon-edit", status: "open" },
@@ -41,6 +39,7 @@ export default {
         { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
         { name: "匯入檔案", icon: "el-icon-upload2", status: "uploadExcel" },
       ],
+      pageSizeList: [12, 30, 50, 100]
     };
   },
   methods: {
@@ -121,7 +120,6 @@ export default {
         ];
         this.innerVisible = true;
       }
-    },
-    changeConstr() {},
-  },
+    }
+  }
 };

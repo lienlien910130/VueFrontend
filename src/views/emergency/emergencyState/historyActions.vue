@@ -74,7 +74,7 @@ export default {
         { label: "點位", prop: "label", isHidden: false },
       ];
       this.headerButtonsName = [];
-      this.isHasButtons = false;
+      //this.isHasButtons = false;
       this.buttonsName = [];
     },
     // async clickPagination() {

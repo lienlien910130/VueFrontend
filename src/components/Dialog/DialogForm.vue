@@ -63,12 +63,6 @@
                 :multiple="false"
               >
                 <i slot="default" class="el-icon-plus"></i>
-                <!-- <i
-                  v-if="fileList.length == 0"
-                  slot="trigger"
-                  class="el-icon-upload"
-                  style="cursor: pointer"
-                /> -->
                 <div slot="file" slot-scope="{ file }">
                   <img
                     class="el-upload-list__item-thumbnail"

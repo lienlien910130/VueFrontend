@@ -423,9 +423,9 @@
                     </div>
                   </div>
                 </div>
+                <!-- v-if="isHasButtons" -->
                 <div class="footer">
                   <div
-                    v-if="isHasButtons"
                     style="float: right; margin-top: 10px"
                   >
                     <span v-for="(button, index) in buttonsName" :key="index">
@@ -683,19 +683,6 @@
         </template>
       </div>
     </el-row>
-    <!-- <el-row v-else-if="isTable == false" style="margin-left: -10px">
-      <div class="pagination-container">
-        <el-pagination
-          small
-          @current-change="handleCurrentChange"
-          :current-page.sync="page"
-          :page-size="limit"
-          layout="total, prev, pager, next"
-          :total="total"
-        >
-        </el-pagination>
-      </div>
-    </el-row> -->
   </div>
 </template>
 
@@ -739,10 +726,10 @@ export default {
         ];
       },
     },
-    isHasButtons: {
-      type: Boolean,
-      default: true,
-    },
+    // isHasButtons: {
+    //   type: Boolean,
+    //   default: true,
+    // },
     hasSearch: {
       type: Boolean,
       default: true,
@@ -755,15 +742,15 @@ export default {
       type: String,
       required: true,
     },
-    selectData: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
-    selectSetting: {
-      type: Array,
-    },
+    // selectData: {
+    //   type: Array,
+    //   default: function () {
+    //     return [];
+    //   },
+    // },
+    // selectSetting: {
+    //   type: Array,
+    // },
     listQueryParams: {
       type: Object,
     },
@@ -803,37 +790,37 @@ export default {
       return this.config.filter((item) => item.isSearch == true);
     },
     table() {
-      var array = [];
-      if (this.filterSearch.length) {
-        for (let obj of this.filterSearch) {
-          var i = this.blockData.filter((item) => {
-            return item[obj[0]].indexOf(obj[1]) > -1;
-          });
-          if (i.length) {
-            array.push(i[0]);
-          }
-        }
-      }
-      var temp = array.length !== 0 ? array : this.blockData;
+      // var array = [];
+      // if (this.filterSearch.length) {
+      //   for (let obj of this.filterSearch) {
+      //     var i = this.blockData.filter((item) => {
+      //       return item[obj[0]].indexOf(obj[1]) > -1;
+      //     });
+      //     if (i.length) {
+      //       array.push(i[0]);
+      //     }
+      //   }
+      // }
+      // var temp = array.length !== 0 ? array : this.blockData;
 
-      if (this.sortValue !== "" && this.sortOrder !== "") {
-        var self = this;
-        var sortvalue = this.sortValue;
-        if (this.sortOrder == "descending") {
-          temp = temp.sort(function (str1, str2) {
-            var s1 = str1[sortvalue] == null ? "" : str1[sortvalue];
-            var s2 = str2[sortvalue] == null ? "" : str2[sortvalue];
-            return self.sortRule(s2, s1);
-          });
-        } else {
-          temp = temp.sort(function (str1, str2) {
-            var s1 = str1[sortvalue] == null ? "" : str1[sortvalue];
-            var s2 = str2[sortvalue] == null ? "" : str2[sortvalue];
-            return self.sortRule(s1, s2);
-          });
-        }
-      }
-      return temp;
+      // if (this.sortValue !== "" && this.sortOrder !== "") {
+      //   var self = this;
+      //   var sortvalue = this.sortValue;
+      //   if (this.sortOrder == "descending") {
+      //     temp = temp.sort(function (str1, str2) {
+      //       var s1 = str1[sortvalue] == null ? "" : str1[sortvalue];
+      //       var s2 = str2[sortvalue] == null ? "" : str2[sortvalue];
+      //       return self.sortRule(s2, s1);
+      //     });
+      //   } else {
+      //     temp = temp.sort(function (str1, str2) {
+      //       var s1 = str1[sortvalue] == null ? "" : str1[sortvalue];
+      //       var s2 = str2[sortvalue] == null ? "" : str2[sortvalue];
+      //       return self.sortRule(s1, s2);
+      //     });
+      //   }
+      // }
+       return  this.blockData;
     },
     labelstyle() {
       if (this.$store.state.app.device === "mobile") {
@@ -1008,7 +995,7 @@ export default {
       selectArray: [],
       //電腦版搜尋
       activeNames: ["1"],
-      filterSearch: [],
+      // filterSearch: [],
       sortValue: "",
       sortOrder: "",
       deviceIdSelect: null,
