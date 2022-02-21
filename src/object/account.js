@@ -1298,6 +1298,9 @@ class Account extends Parent {
       },
     ];
   }
+  static getChName() {
+    return "帳號";
+  }
   static async get() {
     var data = await api.authority
       .apiGetAllAccount()

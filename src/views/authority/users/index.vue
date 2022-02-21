@@ -346,17 +346,26 @@ export default {
             _p = _.cloneDeep(content.photo);
             this.$delete(content, "photo");
           }
-          var result =
-            index === "update" || index === "updateManySave"
-              ? await content.update("/accountSetting")
-              : index === "create"
-              ? await content.create()
-              : await Account.postMany(content);
-          var condition =
-            index !== "uploadExcelSave"
-              ? Object.keys(result).length !== 0
-              : result.result.length !== 0;
-          if (condition) {
+          const { object, isSuccess } = await this.handleDialogMixin(
+            title,
+            index,
+            content,
+            Account,
+            "/accountSetting"
+          );
+
+          // var result =
+          //   index === "update" || index === "updateManySave"
+          //     ? await content.update("/accountSetting")
+          //     : index === "create"
+          //     ? await content.create()
+          //     : await Account.postMany(content);
+          // var condition =
+          //   index !== "uploadExcelSave"
+          //     ? Object.keys(result).length !== 0
+          //     : result.result.length !== 0;
+
+          if (isSuccess) {
             index === "update" || index === "updateManySave"
               ? this.$message("更新成功")
               : this.$message("新增成功");
@@ -366,7 +375,7 @@ export default {
                 formData.append("file", item.raw);
               });
               var _result = await Account.postPhoto(
-                result.id,
+                object.id,
                 formData,
                 "/accountSetting"
               );
@@ -375,40 +384,48 @@ export default {
             if (index === "update" || index == "updateManySave") {
               this.$store.dispatch("building/setCommittee");
             }
-            // this.$store.dispatch('building/setaccounts')
             this.$socket.sendMsg(
               "account",
               index,
-              index !== "uploadExcelSave" ? result : result.result
+              index !== "uploadExcelSave" ? object : object.result
             );
             await this.getAllAccount();
-            if (index !== "updateManySave") {
-              this.innerVisible = false;
-            } else {
-              this.dialogData.forEach((item, index) => {
-                if (item.id == content.id) {
-                  this.dialogData.splice(index, 1, content);
-                }
-              });
-            }
-            this.excelVisible = false;
-          } else {
-            if (index !== "uploadExcelSave") {
-              this.$message.error("該帳號已存在，請重新輸入");
-            }
+
+            // if (index !== "updateManySave") {
+            //   this.innerVisible = false;
+            // } else {
+            //   this.dialogData.forEach((item, index) => {
+            //     if (item.id == content.id) {
+            //       this.dialogData.splice(index, 1, content);
+            //     }
+            //   });
+            // }
+            // this.excelVisible = false;
           }
-          if (
-            index == "uploadExcelSave" &&
-            result.repeatDataList !== undefined
-          ) {
-            var list = [];
-            result.repeatDataList.forEach((item) => {
-              list.push(item.account);
-            });
-            this.$message.error(
-              "【" + list.toString() + "】帳號已存在，請重新上傳"
-            );
-          }
+          // else {
+          //   if (index !== "uploadExcelSave") {
+          //     this.$message.error("該帳號已存在，請重新輸入");
+          //   }
+          // }
+          await this.handleDialogMixin_common(
+            Account,
+            isSuccess,
+            index,
+            content,
+            object
+          );
+          // if (
+          //   index == "uploadExcelSave" &&
+          //   result.repeatDataList !== undefined
+          // ) {
+          //   var list = [];
+          //   result.repeatDataList.forEach((item) => {
+          //     list.push(item.account);
+          //   });
+          //   this.$message.error(
+          //     "【" + list.toString() + "】帳號已存在，請重新上傳"
+          //   );
+          // }
         }
       } else {
         this.innerVisible = false;

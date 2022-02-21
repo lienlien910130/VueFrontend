@@ -425,9 +425,7 @@
                 </div>
                 <!-- v-if="isHasButtons" -->
                 <div class="footer">
-                  <div
-                    style="float: right; margin-top: 10px"
-                  >
+                  <div style="float: right; margin-top: 10px">
                     <span v-for="(button, index) in buttonsName" :key="index">
                       <el-button
                         :type="
@@ -820,7 +818,7 @@ export default {
       //     });
       //   }
       // }
-       return  this.blockData;
+      return this.blockData;
     },
     labelstyle() {
       if (this.$store.state.app.device === "mobile") {
@@ -919,8 +917,9 @@ export default {
         this.isTable == true ? (this.gutter = 0) : (this.gutter = 32);
         if (this.isTable == true) {
           this.rowlabel = this.config.filter(
-            (item, index) => item.isHidden == true
+            (item, index) => item.isHidden == false
           );
+          // item.isTable == true  item.isHidden == false
         } else {
           this.rowlabel = this.config.filter(
             (item, index) => item.isBlock == true
