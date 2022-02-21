@@ -52,7 +52,15 @@ export default {
       this.dialogButtonsName = [];
       if (index === "open") {
         this.dialogStatus = "update";
-        this.dialogData.push(content);
+        if (content.length !== undefined) {
+          //代表不是外傳近來的
+          content.forEach((item) => {
+            this.dialogData.push(item);
+          });
+        } else {
+          this.dialogData.push(content);
+        }
+        //this.dialogData.push(content);
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "update" },
           { name: "取消", type: "info", status: "cancel" },
@@ -87,8 +95,6 @@ export default {
           );
           this.$refs.block.clearSelectArray();
           return true;
-          // this.$store.dispatch("building/setCommittee");
-          // await this.getAllAccount();
         } else {
           this.$message.error("系統錯誤");
           return false;

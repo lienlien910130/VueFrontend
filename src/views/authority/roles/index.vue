@@ -35,7 +35,7 @@
 </template>
 <script>
 import { blockmixin, dialogmixin, sharemixin, excelmixin } from "@/mixin/index";
-import { AccessAuthority, Menu, Role } from "@/object/index";
+import {  Menu, Role } from "@/object/index";
 
 export default {
   mixins: [sharemixin, blockmixin, dialogmixin, excelmixin],
@@ -92,10 +92,6 @@ export default {
           status: "distribution",
         },
       ];
-      // if(this.role_record == 0){
-      //     this.$store.dispatch('building/setroles')
-      //     this.$store.dispatch('record/saveRoleRecord',1)
-      // }
     },
     async resetlistQueryParams() {
       this.listQueryParams = {
@@ -127,67 +123,9 @@ export default {
     },
     async handleBlock(title, index, content) {
       console.log(title, index, JSON.stringify(content));
-      this.dialogData = [];
       this.dialogConfig = this.tableConfig;
-      this.dialogTitle = this.title;
       this.dialogSelect = this.accessAuthority;
-      this.dialogButtonsName = [];
-      if (index === "open") {
-        if (content.length !== undefined) {
-          //代表不是外傳近來的
-          content.forEach((item) => {
-            this.dialogData.push(item);
-          });
-        } else {
-          this.dialogData.push(content);
-        }
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "update" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "update";
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete();
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await Role.deleteMany(deleteArray.toString());
-        }
-        if (isDelete) {
-          this.$message("刪除成功");
-          var length = content.length !== undefined ? content.length : 1;
-          var page = Math.ceil(
-            (this.listQueryParams.total - length) /
-              this.listQueryParams.pageSize
-          );
-          if (this.listQueryParams.pageIndex > page) {
-            this.listQueryParams.pageIndex = page;
-          }
-          //this.$store.dispatch('building/setroles')
-          this.$socket.sendMsg(
-            "roles",
-            "delete",
-            index === "delete" ? content.getID() : deleteArray.toString()
-          );
-          await this.getAllRole();
-          this.$refs.block.clearSelectArray();
-        } else {
-          this.$message.error("系統錯誤");
-        }
-      } else if (index === "empty") {
-        this.dialogData.push(Role.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "create" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "create";
-      } else if (index === "distribution") {
+      if(index === "distribution"){
         this.selectRoleId = content.getID();
         this.roleAccessAuthority = await content.getAccess("role"); //取得角色所有權限的id
         this.originalRoleAccessAuthority = JSON.parse(
@@ -197,82 +135,26 @@ export default {
           return new Menu(item);
         });
         this.authorityVisible = true;
-      } else if (index === "exportExcel") {
-        this.exportExcelData = this.blockData;
-        this.excelVisible = true;
-        this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        this.excelVisible = true;
-        this.excelType = "uploadExcel";
-      } else if (index === "updateMany") {
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "updateManySave" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
+      }else if (index === "delete" || index === "deleteMany") {
+        var isDelete = await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          Role
+        );
+        if (isDelete) {
+          await this.getAllRole();
+        }
+      } else{
+        await this.handleBlockMixin(title, index, content, Role);
       }
     },
     async handleDialog(title, index, content) {
       //Dialog相關操作
       console.log(title, index, JSON.stringify(content));
-      if (
-        index === "update" ||
-        index === "create" ||
-        index === "uploadExcelSave" ||
-        index === "updateManySave"
-      ) {
-        var result =
-          index === "update" || index === "updateManySave"
-            ? await content.update()
-            : index === "create"
-            ? await content.create()
-            : await Role.postMany(content);
-        var condition =
-          index !== "uploadExcelSave"
-            ? Object.keys(result).length !== 0
-            : result.result.length !== 0;
-        if (condition) {
-          index === "update" || index === "updateManySave"
-            ? this.$message("更新成功")
-            : this.$message("新增成功");
-          // this.$store.dispatch('building/setroles')
-          this.$socket.sendMsg(
-            "roles",
-            index,
-            index !== "uploadExcelSave" ? result : result.result
-          );
-          await this.getAllRole();
-          if (index !== "updateManySave") {
-            this.innerVisible = false;
-          } else {
-            this.dialogData.forEach((item, index) => {
-              if (item.id == content.id) {
-                this.dialogData.splice(index, 1, content);
-              }
-            });
-          }
-          this.excelVisible = false;
-        } else {
-          if (index !== "uploadExcelSave") {
-            this.$message.error("角色名稱已存在，請重新輸入");
-          }
-        }
-        if (index == "uploadExcelSave" && result.repeatDataList !== undefined) {
-          var list = [];
-          result.repeatDataList.forEach((item) => {
-            list.push(item.name);
-          });
-          this.$message.error(
-            "【" + list.toString() + "】角色已存在，請重新上傳"
-          );
-        }
-      } else if (index === "authoritycreate") {
-        var array = this.originalRoleAccessAuthority;
+      if (index !== "cancel") {
+        if (index === "authoritycreate"){
+          var array = this.originalRoleAccessAuthority;
         var array2 = content;
         var remove = [];
         var add = [];
@@ -346,33 +228,32 @@ export default {
         } else {
           this.$message.error("系統錯誤");
         }
-      } else {
-        this.innerVisible = false;
-        this.excelVisible = false;
-        this.authorityVisible = false;
-        this.$refs.block.clearSelectArray();
+        }else{
+          const { object, isSuccess } = await this.handleDialogMixin(
+            title,
+            index,
+            content,
+            Role,
+            null
+          );
+          if(isSuccess){
+            await this.getAllRole();
+          }
+          await this.handleDialogMixin_common(
+            Role,
+            isSuccess,
+            index,
+            content,
+            object
+          );
+        }
+      }else{
+        this.closeAll()
       }
     },
     async changeTable(value) {
       this.isTable = value;
-      if (
-        this.$route.params.target !== undefined &&
-        this.$route.params.target.length !== 0 &&
-        this.$route.params.type == "open"
-      ) {
-        if (typeof this.$route.params.target == "object") {
-          await this.handleBlock(
-            "roles",
-            "updateMany",
-            this.$route.params.target
-          );
-        }
-      } else if (
-        this.$route.query.type !== undefined &&
-        this.$route.query.type == "role"
-      ) {
-        await this.handleBlock("role", "empty", "");
-      }
+      await this.openDialogWindows()
     },
   },
 };

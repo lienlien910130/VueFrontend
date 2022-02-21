@@ -61,8 +61,7 @@
 </template>
 <script>
 import { blockmixin, dialogmixin, sharemixin, excelmixin } from "@/mixin/index";
-import { Menu, Role, Account } from "@/object/index";
-import CharacterStatus from "@/object/characterStatus";
+import { Menu, Account } from "@/object/index";
 
 export default {
   mixins: [sharemixin, blockmixin, dialogmixin, excelmixin],
@@ -366,9 +365,6 @@ export default {
           //     : result.result.length !== 0;
 
           if (isSuccess) {
-            index === "update" || index === "updateManySave"
-              ? this.$message("更新成功")
-              : this.$message("新增成功");
             if (index === "create" && _p !== null) {
               const formData = new FormData();
               _p.forEach((item) => {
@@ -384,11 +380,11 @@ export default {
             if (index === "update" || index == "updateManySave") {
               this.$store.dispatch("building/setCommittee");
             }
-            this.$socket.sendMsg(
-              "account",
-              index,
-              index !== "uploadExcelSave" ? object : object.result
-            );
+            // this.$socket.sendMsg(
+            //   "account",
+            //   index,
+            //   index !== "uploadExcelSave" ? object : object.result
+            // );
             await this.getAllAccount();
 
             // if (index !== "updateManySave") {
@@ -428,32 +424,34 @@ export default {
           // }
         }
       } else {
-        this.innerVisible = false;
-        this.excelVisible = false;
-        this.authorityVisible = false;
-        this.$refs.block.clearSelectArray();
+        // this.innerVisible = false;
+        // this.excelVisible = false;
+        // this.authorityVisible = false;
+        // this.$refs.block.clearSelectArray();
+        this.closeAll()
       }
     },
     async changeTable(value) {
       this.isTable = value;
+      await this.openDialogWindows()
       //需處理
-      if (
-        this.$route.params.target !== undefined &&
-        this.$route.params.target !== ""
-      ) {
-        this.$nextTick(async () => {
-          await this.handleBlock(
-            "account",
-            "updateMany",
-            this.$route.params.target
-          );
-        });
-      } else if (
-        this.$route.query.type !== undefined &&
-        this.$route.query.type !== ""
-      ) {
-        await this.handleBlock("account", "empty", "");
-      }
+      // if (
+      //   this.$route.params.target !== undefined &&
+      //   this.$route.params.target !== ""
+      // ) {
+      //   this.$nextTick(async () => {
+      //     await this.handleBlock(
+      //       "account",
+      //       "updateMany",
+      //       this.$route.params.target
+      //     );
+      //   });
+      // } else if (
+      //   this.$route.query.type !== undefined &&
+      //   this.$route.query.type !== ""
+      // ) {
+      //   await this.handleBlock("account", "empty", "");
+      // }
     },
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {

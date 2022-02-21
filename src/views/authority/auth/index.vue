@@ -22,9 +22,6 @@
         </div>
       </el-col>
     </el-row>
-    <!-- <Dialog
-                v-bind="dialogAttrs"
-                v-on:handleDialog="handleDialog"></Dialog> -->
     <DialogForm
       ref="dialogform"
       v-if="innerVisible === true"
@@ -42,7 +39,7 @@
 </template>
 <script>
 import { blockmixin, dialogmixin, sharemixin, excelmixin } from "@/mixin/index";
-import { Menu, AccessAuthority, Role } from "@/object/index";
+import {  AccessAuthority } from "@/object/index";
 
 export default {
   mixins: [sharemixin, blockmixin, dialogmixin, excelmixin],
@@ -98,89 +95,33 @@ export default {
     async handleTreeNode(node, data) {
       this.selectId = data.getID();
       this.classCode = data.getCode();
-      console.log(this.classCode);
       var array = await AccessAuthority.get(this.selectId);
       this.blockData = array.result;
     },
     async handleBlock(title, index, content) {
       console.log(title, index, JSON.stringify(content));
-      this.dialogData = [];
       this.dialogConfig = this.tableConfig;
-      this.dialogTitle = this.title;
-      this.dialogButtonsName = [];
-      if (index === "open") {
-        this.dialogData.push(content);
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "update" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "update";
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete();
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await AccessAuthority.deleteMany(deleteArray.toString());
-        }
+      if (index === "delete" || index === "deleteMany"){
+        var isDelete = await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          AccessAuthority
+        );
         if (isDelete) {
-          this.$message("刪除成功");
-          // this.$socket.sendMsg("menus", "reset", "");
-          // this.$store.dispatch("permission/setmenu", await Menu.get());
-          this.$refs.block.clearSelectArray();
-          // var array = await AccessAuthority.get(this.selectId)
-          // this.blockData = array.result
-        } else {
-          this.$message.error("系統錯誤");
+          var array = await AccessAuthority.get(this.selectId);
+          this.blockData = array.result;
         }
-      } else if (index === "empty") {
-        if (this.selectId == null) {
-          this.$message.error({
-            message: "請選擇目錄",
-          });
-        } else {
-          this.dialogData.push(AccessAuthority.empty());
-          this.dialogButtonsName = [
-            { name: "儲存", type: "primary", status: "create" },
-            { name: "取消", type: "info", status: "cancel" },
-          ];
-          this.innerVisible = true;
-          this.dialogStatus = "create";
+      }else {
+        if(index === 'empty' || index === "exportExcel" || index === "uploadExcel"){
+          if (this.selectId == null) {
+            this.$message.error({
+              message: "請選擇目錄",
+            });
+            return false
+          }
         }
-      } else if (index === "exportExcel") {
-        if (this.selectId == null) {
-          this.$message.error({
-            message: "請選擇目錄",
-          });
-        } else {
-          this.exportExcelData = this.blockData;
-          this.excelVisible = true;
-          this.excelType = "exportExcel";
-        }
-      } else if (index === "uploadExcel") {
-        if (this.selectId == null) {
-          this.$message.error({
-            message: "請選擇目錄",
-          });
-        } else {
-          this.excelVisible = true;
-          this.excelType = "uploadExcel";
-        }
-      } else if (index === "updateMany") {
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "updateManySave" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
+        await this.handleBlockMixin(title, index, content, AccessAuthority);
       }
     },
     async handleDialog(title, index, content) {
@@ -196,50 +137,26 @@ export default {
             element.linkMainMenus = [{ id: this.selectId }];
           });
         }
-        var result =
-          index === "update" || index === "updateManySave"
-            ? await content.update()
-            : index === "create"
-            ? await content.create()
-            : await AccessAuthority.postMany(content);
-        var condition =
-          index !== "uploadExcelSave"
-            ? result == true
-            : result.result.length !== 0;
-        if (condition) {
-          index == "update" || index == "updateManySave"
-            ? this.$message("更新成功")
-            : this.$message("新增成功");
-          // this.$socket.sendMsg("menus", "reset", "");
-          // this.$store.dispatch("permission/setmenu", await Menu.get());
-          var array = await AccessAuthority.get(this.selectId);
-          this.blockData = array.result;
-          if (index !== "updateManySave") {
-            this.innerVisible = false;
-          } else {
-            this.dialogData.forEach((item, index) => {
-              if (item.id == content.id) {
-                this.dialogData.splice(index, 1, content);
-              }
-            });
-          }
-          this.excelVisible = false;
-        } else {
-          this.$message.error("該權限已存在，請重新輸入");
-        }
-        if (index == "uploadExcelSave" && result.repeatDataList !== undefined) {
-          var list = [];
-          result.repeatDataList.forEach((item) => {
-            list.push(item.name);
-          });
-          this.$message.error(
-            "【" + list.toString() + "】權限已存在，請重新上傳"
+         const { object, isSuccess } = await this.handleDialogMixin(
+            title,
+            index,
+            content,
+            AccessAuthority,
+            null
           );
-        }
+          if(isSuccess){
+             var array = await AccessAuthority.get(this.selectId);
+            this.blockData = array.result;
+          }
+          await this.handleDialogMixin_common(
+            AccessAuthority,
+            isSuccess,
+            index,
+            content,
+            object
+          );
       } else {
-        this.innerVisible = false;
-        this.excelVisible = false;
-        this.$refs.block.clearSelectArray();
+        this.closeAll()
       }
     },
     async changeTable(value) {

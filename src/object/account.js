@@ -92,34 +92,6 @@ class Account extends Parent {
       });
     return data;
   }
-  // async updateS() {
-  //   //從設定頁面更新
-  //   var temp = JSON.parse(JSON.stringify(this));
-  //   temp.account = "{Check}" + temp.account;
-  //   var data = await api.authority
-  //     .apiPatchAccountAuthoritySetting(temp)
-  //     .then(async (response) => {
-  //       return new Account(response.result);
-  //     })
-  //     .catch((error) => {
-  //       return {};
-  //     });
-  //   return data;
-  // }
-  // async updateP() {
-  //   //basic住戶更新
-  //   var temp = JSON.parse(JSON.stringify(this));
-  //   temp.account = "{Check}" + temp.account;
-  //   var data = await api.authority
-  //     .apiPatchAccountAuthorityUser(temp)
-  //     .then(async (response) => {
-  //       return new Account(response.result);
-  //     })
-  //     .catch((error) => {
-  //       return {};
-  //     });
-  //   return data;
-  // }
   async create() {
     var temp = JSON.parse(JSON.stringify(this));
     temp.account = "{Check}" + temp.account;

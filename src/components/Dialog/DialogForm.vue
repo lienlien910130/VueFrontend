@@ -72,7 +72,7 @@
                   <span class="el-upload-list__item-actions">
                     <span
                       class="el-upload-list__item-delete"
-                      @click="handleRemove"
+                      @click="handleRemovePhoto"
                     >
                       <i class="el-icon-delete"></i>
                     </span>
@@ -1113,7 +1113,7 @@ export default {
         this.$emit("handleDialog", "photo", "photo", data);
       }
     },
-    handleRemove() {
+    handleRemovePhoto() {
       this.$confirm("是否確認刪除圖片?", "提示", {
         confirmButtonText: "確定",
         cancelButtonText: "取消",

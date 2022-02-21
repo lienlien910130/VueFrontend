@@ -142,117 +142,56 @@ export default {
     },
     async handleBlock(title, index, content) {
       console.log(title, index, JSON.stringify(content));
-      this.dialogData = [];
       this.dialogConfig = this.tableConfig;
-      this.dialogTitle = this.title;
-      this.dialogButtonsName = [];
-      if (index === "open") {
-        this.dialogData.push(content);
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "update" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "update";
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete();
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await Menu.deleteMany(deleteArray.toString());
-        }
+      if (index === "delete" || index === "deleteMany") {
+        var isDelete = await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          Menu
+        );
         if (isDelete) {
-          this.$message("刪除成功");
-          //this.$store.dispatch("permission/setRoutes");
           this.$socket.sendMsg("menus", "routes", "");
-          this.$refs.block.clearSelectArray();
-        } else {
-          this.$message.error("系統錯誤");
         }
-      } else if (index === "empty") {
-        this.dialogData.push(Menu.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "create" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "create";
-      } else if (index === "exportExcel") {
-        if (this.selectId == null) {
-          this.$message.error({
-            message: "請選擇目錄",
-          });
-        } else {
-          this.exportExcelData = this.blockData;
-          this.excelVisible = true;
-          this.excelType = "exportExcel";
+      }else{
+        if(index === "exportExcel" || index === "uploadExcel"){
+          if (this.selectId == null) {
+            this.$message.error({
+              message: "請選擇目錄",
+            });
+            return false
+          }
         }
-      } else if (index === "uploadExcel") {
-        if (this.selectId == null) {
-          this.$message.error({
-            message: "請選擇目錄",
-          });
-        } else {
-          this.excelVisible = true;
-          this.excelType = "uploadExcel";
-        }
-      } else if (index === "updateMany") {
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "updateManySave" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
+        await this.handleBlockMixin(title, index, content, Menu);
       }
     },
     async handleDialog(title, index, content) {
       //Dialog相關操作
       console.log(title, index, JSON.stringify(content));
-      if (
-        index == "update" ||
-        index == "create" ||
-        index === "uploadExcelSave" ||
-        index === "updateManySave"
-      ) {
+      if (index !== "cancel") {
         delete content.linkMainMenus;
         delete content.linkAccessAuthorities;
-        var isOk =
-          index == "update" || index == "updateManySave"
-            ? await content.update()
-            : index === "create"
-            ? await content.create(this.selectId == "0" ? null : this.selectId)
-            : await Menu.postMany(this.selectId, content);
-        if (isOk) {
-          index == "update" || index == "updateManySave"
-            ? this.$message("更新成功")
-            : this.$message("新增成功");
-          //this.$store.dispatch("permission/setRoutes");
-          this.$socket.sendMsg("menus", "routes", "");
-          if (index !== "updateManySave") {
-            this.innerVisible = false;
-          } else {
-            this.dialogData.forEach((item, index) => {
-              if (item.id == content.id) {
-                this.dialogData.splice(index, 1, content);
-              }
-            });
+        const { object, isSuccess } = await this.handleDialogMixin(
+            title,
+            index,
+            content,
+            Menu,
+            null,
+            this.selectId == "0" ? null : this.selectId,
+            {mainMenuId: this.selectId, content: content}
+          );
+          if(isSuccess){
+            this.$socket.sendMsg("menus", "routes", "");
           }
-          this.excelVisible = false;
-        } else {
-          this.$message.error("系統錯誤");
-        }
-      } else {
-        this.innerVisible = false;
-        this.excelVisible = false;
-        this.$refs.block.clearSelectArray();
+          await this.handleDialogMixin_common(
+            Menu,
+            isSuccess,
+            index,
+            content,
+            object
+          );
+      }else{
+        this.closeAll()
       }
     },
     async changeTable(value) {

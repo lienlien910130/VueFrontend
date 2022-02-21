@@ -82,4 +82,32 @@ export default {
       selectArray: [],
     };
   },
+  methods:{
+    async openDialogWindows(){
+      if (
+        this.$route.params.target !== undefined &&
+        this.$route.params.target.length !== 0 &&
+        this.$route.params.type == "open"
+      ) {
+        if (typeof this.$route.params.target == "object") {
+          await this.handleBlock(
+            this.title,
+            "updateMany",
+            this.$route.params.target
+          );
+        }
+      } else if (
+        this.$route.query.type !== undefined &&
+        this.$route.query.type == this.title
+      ) {
+        await this.handleBlock(this.title, "empty", "");
+      }
+    },
+    closeAll(){
+      this.innerVisible = false;
+        this.excelVisible = false;
+        this.authorityVisible = false;
+        this.$refs.block.clearSelectArray();
+    }
+  }
 };

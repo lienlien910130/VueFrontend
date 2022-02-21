@@ -47,10 +47,10 @@ class AccessAuthority extends Parent {
     var data = await api.authority
       .apiPatchAccessAuthority(temp)
       .then(async (response) => {
-        return true;
+        return new AccessAuthority(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -61,10 +61,10 @@ class AccessAuthority extends Parent {
     var data = await api.authority
       .apiPostAccessAuthority(temp)
       .then((response) => {
-        return true;
+        return new AccessAuthority(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -241,6 +241,9 @@ class AccessAuthority extends Parent {
         formType: "boolean",
       },
     ];
+  }
+  static getChName() {
+    return "權限";
   }
   static async get(mainMenuId) {
     var data = await api.authority

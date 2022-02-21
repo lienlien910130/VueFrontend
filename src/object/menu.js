@@ -66,10 +66,10 @@ class Menu extends Parent {
     var data = await api.authority
       .apiPatchMainMenuAuthority(this)
       .then(async (response) => {
-        return true;
+        return new Menu(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -78,20 +78,20 @@ class Menu extends Parent {
       var data = await api.authority
         .apiPostMainMenu(this)
         .then((response) => {
-          return true;
+          return new Menu(response.result);
         })
         .catch((error) => {
-          return false;
+          return {};
         });
       return data;
     } else {
       var data = await api.authority
         .apiPostSubMainMenu(mainMenuId, this)
         .then((response) => {
-          return true;
+          return new Menu(response.result);
         })
         .catch((error) => {
-          return false;
+          return {};
         });
       return data;
     }
@@ -275,6 +275,9 @@ class Menu extends Parent {
       },
     ];
   }
+  static getChName() {
+    return "選單";
+  }
   static async get() {
     var data = await api.authority
       .apiGetBuildingMainMenuAuthority()
@@ -295,14 +298,18 @@ class Menu extends Parent {
       });
     return data;
   }
-  static async postMany(mainMenuId, data) {
+  static async postMany(data) {
+    const {mainMenuId, content } = data
     var data = await api.authority
-      .apiPostMainMenus(mainMenuId, data)
+      .apiPostMainMenus(mainMenuId, content)
       .then((response) => {
-        return true;
+        response.result = response.result.map((item) => {
+          return new Menu(item);
+        });
+        return response;
       })
       .catch((error) => {
-        return false;
+        return [];
       });
     return data;
   }

@@ -212,6 +212,9 @@ class Role extends Parent {
       },
     ];
   }
+  static getChName() {
+    return "角色";
+  }
   static async get() {
     var data = await api.authority
       .apiGetAllRole()
