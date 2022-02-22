@@ -181,8 +181,6 @@ export default {
       console.log(title, index, JSON.stringify(content));
       this.dialogConfig = Account.getTableConfig();
       this.dialogData = [];
-      // this.dialogTitle = this.title;
-      // this.dialogButtonsName = [];
       this.dialogSelect = this.accessAuthority;
       if (index === "open") {
         this.dialogConfig[6].label = "生日";
@@ -204,13 +202,6 @@ export default {
       } else if (index === "empty") {
         this.dialogConfig[6].label = "生日";
         await this.handleBlockMixin(title, index, content, Account);
-        // this.dialogData.push(Account.empty());
-        // this.dialogButtonsName = [
-        //   { name: "儲存", type: "primary", status: "create" },
-        //   { name: "取消", type: "info", status: "cancel" },
-        // ];
-        // this.innerVisible = true;
-        // this.dialogStatus = "create";
       } else if (
         index === "exportExcel" ||
         index === "uploadExcel" ||
@@ -218,22 +209,7 @@ export default {
       ) {
         if (index === "updateMany") this.dialogConfig[6].label = "生日";
         await this.handleBlockMixin(title, index, content, Account);
-      }
-      // else if (index === "updateMany") {
-      //   this.dialogConfig[6].label = "生日";
-      //   await this.handleBlockMixin(title, index, content, Account);
-      //   this.dialogStatus = "updateMany";
-      //   content.forEach((item) => {
-      //     var obj = _.cloneDeep(item);
-      //     this.dialogData.push(obj);
-      //   });
-      //   this.dialogButtonsName = [
-      //     { name: "儲存", type: "primary", status: "updateManySave" },
-      //     { name: "取消", type: "info", status: "cancel" },
-      //   ];
-      //   this.innerVisible = true;
-      // }
-      else if (index === "distribution") {
+      } else if (index === "distribution") {
         var roles = content.getRoles();
         var array = [];
         for (let element of roles) {
@@ -253,16 +229,7 @@ export default {
           return new Menu(item);
         });
         this.authorityVisible = true;
-      }
-      // else if (index === "exportExcel") {
-      //   this.exportExcelData = this.blockData;
-      //   this.excelVisible = true;
-      //   this.excelType = "exportExcel";
-      // } else if (index === "uploadExcel") {
-      //   this.excelVisible = true;
-      //   this.excelType = "uploadExcel";
-      // }
-      else if (index === "verify") {
+      } else if (index === "verify") {
         if (
           content.usageOfFloor !== undefined &&
           content.usageOfFloor !== null &&
