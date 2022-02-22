@@ -1,12 +1,7 @@
 import Parent from "./parent";
 import api from "@/api";
 import Files from "./files";
-import {
-  UsageOfFloor,
-  Contactunit,
-  MaintainManagement,
-  MaintainManagementList,
-} from ".";
+import { UsageOfFloor, Contactunit, MaintainManagement } from ".";
 const moment = require("moment");
 
 class Inspection extends Parent {
@@ -81,10 +76,10 @@ class Inspection extends Parent {
     var data = await api.report
       .apiPatchInspection(this)
       .then(async (response) => {
-        return true;
+        return new Inspection(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -92,10 +87,10 @@ class Inspection extends Parent {
     var data = await api.report
       .apiPostInspection(this)
       .then((response) => {
-        return true;
+        return new Inspection(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -482,6 +477,9 @@ class Inspection extends Parent {
       },
     ];
   }
+  static getChName() {
+    return "檢修申報";
+  }
   static async get() {
     var data = await api.report
       .apiGetBuildingInspection()
@@ -527,10 +525,13 @@ class Inspection extends Parent {
     var data = await api.report
       .apiPostInspections(data)
       .then((response) => {
-        return true;
+        response.result = response.result.map((item) => {
+          return new Inspection(item);
+        });
+        return response;
       })
       .catch((error) => {
-        return false;
+        return [];
       });
     return data;
   }

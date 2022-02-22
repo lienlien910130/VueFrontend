@@ -9,7 +9,7 @@ export default {
         isTable: this.isTable,
         buttonsName: this.buttonsName,
         headerButtonsName: this.headerButtonsName,
-        pageSizeList: this.pageSizeList
+        pageSizeList: this.pageSizeList,
       };
     },
   },
@@ -39,19 +39,17 @@ export default {
         { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
         { name: "匯入檔案", icon: "el-icon-upload2", status: "uploadExcel" },
       ],
-      pageSizeList: [12, 30, 50, 100]
+      pageSizeList: [12, 30, 50, 100],
     };
   },
   methods: {
     async handleBlockMixin(title, index, content, constr) {
       console.log("handleBlockMixin", index, content);
-      this.dialogData = [];
-      //this.dialogConfig = constr.getTableConfig();
-      //console.log(this.dialogConfig);
       this.dialogTitle = this.title;
       this.dialogButtonsName = [];
       if (index === "open") {
         this.dialogStatus = "update";
+        console.log("content.length", content.length);
         if (content.length !== undefined) {
           //代表不是外傳近來的
           content.forEach((item) => {
@@ -69,14 +67,19 @@ export default {
       } else if (index === "delete" || index === "deleteMany") {
         var isDelete = false;
         if (index === "delete") {
-          isDelete = await content.delete();
+          isDelete =
+            this.title == "devicePLCAddressManagement"
+              ? await content.delete(true)
+              : await content.delete();
         } else {
-          // var constr = content[0].constructor;
           var deleteArray = [];
           content.forEach((item) => {
             deleteArray.push(item.id);
           });
-          isDelete = await constr.deleteMany(deleteArray.toString());
+          isDelete =
+            this.title == "devicePLCAddressManagement"
+              ? await constr.deleteMany(deleteArray.toString(), true)
+              : await constr.deleteMany(deleteArray.toString());
         }
         if (isDelete) {
           this.$message("刪除成功");
@@ -126,6 +129,6 @@ export default {
         ];
         this.innerVisible = true;
       }
-    }
-  }
+    },
+  },
 };

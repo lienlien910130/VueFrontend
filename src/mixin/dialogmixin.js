@@ -24,35 +24,43 @@ export default {
     },
   },
   methods: {
-    async handleDialogMixin(title, index, content, constr, apiRouter = null, createParam = null, postManyParam = null) {
+    async handleDialogMixin(
+      title,
+      index,
+      content,
+      constr,
+      updateParam = null,
+      createParam = null,
+      postManyParam = null
+    ) {
       // index === "update" ||
       // index === "create" ||
       // index === "uploadExcelSave" ||
       // index === "updateManySave"
       var result =
         index === "update" || index === "updateManySave"
-          ? apiRouter == null
+          ? updateParam == null
             ? await content.update()
-            : await content.update(apiRouter)
+            : await content.update(updateParam)
           : index === "create"
-          ? createParam == null ?
-            await content.create() :
-            await content.create(createParam)
-          : postManyParam == null ?
-            await constr.postMany(content) :
-            await constr.postMany(postManyParam) ;
+          ? createParam == null
+            ? await content.create()
+            : await content.create(createParam)
+          : postManyParam == null
+          ? await constr.postMany(content)
+          : await constr.postMany(postManyParam);
       var condition =
         index !== "uploadExcelSave"
           ? Object.keys(result).length !== 0
           : result.result.length !== 0;
-      if(condition){
+      if (condition) {
         index === "update" || index === "updateManySave"
-              ? this.$message("更新成功")
-              : this.$message("新增成功");
+          ? this.$message("更新成功")
+          : this.$message("新增成功");
         this.$socket.sendMsg(
-                title,
-                index,
-                index !== "uploadExcelSave" ? result : result.result
+          title,
+          index,
+          index !== "uploadExcelSave" ? result : result.result
         );
       }
       return { object: result, isSuccess: condition };

@@ -30,7 +30,7 @@ export default {
       "processMsg",
       "setting_record",
       "floorOfHouse_record",
-      "buildingfloorOfHouse"
+      "buildingfloorOfHouse",
     ]),
   },
   created() {
@@ -82,8 +82,8 @@ export default {
       selectArray: [],
     };
   },
-  methods:{
-    async openDialogWindows(){
+  methods: {
+    async openDialogWindows() {
       if (
         this.$route.params.target !== undefined &&
         this.$route.params.target.length !== 0 &&
@@ -103,11 +103,12 @@ export default {
         await this.handleBlock(this.title, "empty", "");
       }
     },
-    closeAll(){
+    closeAll() {
       this.innerVisible = false;
-        this.excelVisible = false;
-        this.authorityVisible = false;
-        this.$refs.block.clearSelectArray();
-    }
-  }
+      this.excelVisible = false;
+      this.uploadVisible = false;
+      this.authorityVisible = false;
+      this.$refs.block.clearSelectArray();
+    },
+  },
 };

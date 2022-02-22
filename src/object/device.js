@@ -66,7 +66,8 @@ class Device extends Parent {
   clone(data) {
     return new Device(data);
   }
-  async update(resetLink) {
+  async update(content) {
+    const { resetLink } = content;
     var temp = JSON.parse(JSON.stringify(this));
     if (
       temp.internetNumber !== null &&
@@ -541,6 +542,9 @@ class Device extends Parent {
         isShow: true,
       },
     ];
+  }
+  static getChName() {
+    return "設備";
   }
   static async get() {
     var data = await api.device

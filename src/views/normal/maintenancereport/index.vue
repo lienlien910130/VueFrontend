@@ -112,13 +112,10 @@ import {
   excelmixin,
 } from "@/mixin/index";
 import {
-  Contactunit,
-  Device,
   Files,
   Inspection,
   InspectionLacks,
   MaintainManagement,
-  MaintainManagementList,
 } from "@/object/index";
 import moment from "moment";
 
@@ -303,51 +300,17 @@ export default {
       //檢修申報的操作
       console.log(index, JSON.stringify(content));
       this.dialogData = [];
-      this.dialogTitle = this.title;
-      this.dialogButtonsName = [];
       this.dialogConfig = this.tableConfig;
-      if (index === "open") {
-        this.dialogData.push(content);
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "update" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "update";
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete();
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await Inspection.deleteMany(deleteArray.toString());
-        }
+      if (index === "delete" || index === "deleteMany") {
+        var isDelete = await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          Inspection
+        );
         if (isDelete) {
-          this.$message("刪除成功");
-          var length = content.length !== undefined ? content.length : 1;
-          var page = Math.ceil(
-            (this.listQueryParams.total - length) /
-              this.listQueryParams.pageSize
-          );
-          if (this.listQueryParams.pageIndex > page) {
-            this.listQueryParams.pageIndex = page;
-          }
           await this.getBuildingMaintenanceReport();
-          this.$refs.block.clearSelectArray();
-        } else {
-          this.$message.error("系統錯誤");
         }
-      } else if (index === "empty") {
-        this.dialogData.push(Inspection.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "create" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "create";
       } else if (index === "openfiles") {
         this.inspection = content;
         this.files = await content.files();
@@ -373,24 +336,8 @@ export default {
         ];
         await this.getInspectionLack();
         this.tableVisible = true;
-      } else if (index === "exportExcel") {
-        this.exportExcelData = this.blockData;
-        this.excelVisible = true;
-        this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        this.excelVisible = true;
-        this.excelType = "uploadExcel";
-      } else if (index === "updateMany") {
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "updateManySave" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
+      } else {
+        await this.handleBlockMixin(title, index, content, Inspection);
       }
     },
     async handleDialog(title, index, content) {
@@ -404,30 +351,22 @@ export default {
           index === "uploadExcelSave" ||
           index === "updateManySave"
         ) {
-          var isOk =
-            index === "update" || index === "updateManySave"
-              ? await content.update()
-              : index === "create"
-              ? await content.create()
-              : await Inspection.postMany(content);
-          if (isOk) {
-            index === "update" || index === "updateManySave"
-              ? this.$message("更新成功")
-              : this.$message("新增成功");
+          const { object, isSuccess } = await this.handleDialogMixin(
+            title,
+            index,
+            content,
+            Inspection
+          );
+          if (isSuccess) {
             await this.getBuildingMaintenanceReport();
-          } else {
-            this.$message.error("系統錯誤");
           }
-          if (index !== "updateManySave") {
-            this.innerVisible = false;
-          } else {
-            this.dialogData.forEach((item, index) => {
-              if (item.id == content.id) {
-                this.dialogData.splice(index, 1, content);
-              }
-            });
-          }
-          this.excelVisible = false;
+          await this.handleDialogMixin_common(
+            Inspection,
+            isSuccess,
+            index,
+            content,
+            object
+          );
         } else if (index === "createfile") {
           const formData = new FormData();
           content.forEach((item) => {
@@ -495,10 +434,7 @@ export default {
             await this.getBuildingMaintenanceReport();
             this.isUpdate = false;
           }
-          this.innerVisible = false;
-          this.excelVisible = false;
-          this.uploadVisible = false;
-          this.$refs.block.clearSelectArray();
+          this.closeAll();
         }
       } else if (title === "InspectionMaintain") {
         if (index === "updateManyMaintain") {
@@ -583,92 +519,44 @@ export default {
     async handleTableClick(index, content) {
       console.log(index, JSON.stringify(content));
       this.dialogData = [];
-      this.dialogTitle = "inspectionlack";
       this.dialogConfig = InspectionLacks.getTableConfig();
-      if (index === "empty") {
-        this.dialogData.push(InspectionLacks.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "createlack" },
-          { name: "返回", type: "info", status: "cancellack" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "create";
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete();
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await InspectionLacks.deleteMany(deleteArray.toString());
-        }
+      var title = "inspectionlack";
+      if (index === "delete" || index === "deleteMany") {
+        var isDelete = await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          InspectionLacks
+        );
         if (isDelete) {
-          this.$message("刪除成功");
-          if (
-            this.tablelistQueryParams.pageIndex !== 1 &&
-            this.tableData.length == 1
-          ) {
-            this.tablelistQueryParams.pageIndex =
-              this.tablelistQueryParams.pageIndex - 1;
-          }
           await this.getInspectionLack();
           this.$refs.dialogtable.clearSelectArray();
           this.isUpdate = true;
-        } else {
-          this.$message.error("系統錯誤");
         }
       } else if (index === "open") {
-        if (content.length !== undefined) {
-          //代表不是外傳近來的
-          content.forEach((item) => {
-            this.dialogData.push(item);
-          });
-        } else {
-          this.dialogData.push(content);
-        }
+        await this.handleBlockMixin(title, index, content, InspectionLacks);
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "updatelack" },
           { name: "取消", type: "info", status: "cancellack" },
         ];
-        this.innerVisible = true;
-        this.dialogStatus = "update";
-      } else if (index === "exportExcel") {
-        this.exportExcelData = this.tableData;
-        this.excelVisible = true;
-        this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        this.excelVisible = true;
-        this.excelType = "uploadExcel";
-      } else if (index === "clickPagination") {
-        if (this.lacksShow) {
-          this.lacksQueryParams = content;
-          await this.getlacksSearchPage();
-        } else {
-          this.tablelistQueryParams = content;
-          await this.getInspectionLack();
-        }
       } else if (index === "updateMany") {
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
+        await this.handleBlockMixin(title, index, content, InspectionLacks);
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "updateLackManySave" },
           { name: "取消", type: "info", status: "cancel" },
         ];
-        this.innerVisible = true;
+      } else if (index === "empty") {
+        await this.handleBlockMixin(title, index, content, InspectionLacks);
+        this.dialogButtonsName = [
+          { name: "儲存", type: "primary", status: "createlack" },
+          { name: "返回", type: "info", status: "cancellack" },
+        ];
       } else if (index === "updateManyMaintain") {
         this.dialogTitle = "InspectionMaintain";
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "updateManyMaintain" },
           { name: "返回", type: "info", status: "cancel" },
         ];
-        // this.dialogSelect = new Array(
-        //   await MaintainManagementList.getAllLack()
-        // );
         this.dialogConfig = MaintainManagement.getTableConfig();
         this.dialogConfig[6].isEdit = false;
         this.dialogStatus = "updateMany";
@@ -678,6 +566,16 @@ export default {
         });
         //this.updateMainmgmtList = content;
         this.innerVisible = true;
+      } else if (index === "clickPagination") {
+        if (this.lacksShow) {
+          this.lacksQueryParams = content;
+          await this.getlacksSearchPage();
+        } else {
+          this.tablelistQueryParams = content;
+          await this.getInspectionLack();
+        }
+      } else if (index === "exportExcel" || index === "uploadExcel") {
+        await this.handleBlockMixin(title, index, content, InspectionLacks);
       } else {
         if (this.isUpdate) {
           await this.getBuildingMaintenanceReport();
@@ -701,26 +599,141 @@ export default {
         this.lacksShow = false;
         this.lacksQueryParams = { pageIndex: 1, pageSize: 10, total: 0 };
       }
+      this.dialogTitle = "inspectionlack";
+      // if (index === "empty") {
+      //   this.dialogData.push(InspectionLacks.empty());
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "createlack" },
+      //     { name: "返回", type: "info", status: "cancellack" },
+      //   ];
+      //   this.innerVisible = true;
+      //   this.dialogStatus = "create";
+      // } else if (index === "delete" || index === "deleteMany") {
+      //   var isDelete = false;
+      //   if (index === "delete") {
+      //     isDelete = await content.delete();
+      //   } else {
+      //     var deleteArray = [];
+      //     content.forEach((item) => {
+      //       deleteArray.push(item.id);
+      //     });
+      //     isDelete = await InspectionLacks.deleteMany(deleteArray.toString());
+      //   }
+      //   if (isDelete) {
+      //     this.$message("刪除成功");
+      //     if (
+      //       this.tablelistQueryParams.pageIndex !== 1 &&
+      //       this.tableData.length == 1
+      //     ) {
+      //       this.tablelistQueryParams.pageIndex =
+      //         this.tablelistQueryParams.pageIndex - 1;
+      //     }
+      //     await this.getInspectionLack();
+      //     this.$refs.dialogtable.clearSelectArray();
+      //     this.isUpdate = true;
+      //   } else {
+      //     this.$message.error("系統錯誤");
+      //   }
+      // } else if (index === "open") {
+      //   if (content.length !== undefined) {
+      //     //代表不是外傳近來的
+      //     content.forEach((item) => {
+      //       this.dialogData.push(item);
+      //     });
+      //   } else {
+      //     this.dialogData.push(content);
+      //   }
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "updatelack" },
+      //     { name: "取消", type: "info", status: "cancellack" },
+      //   ];
+      //   this.innerVisible = true;
+      //   this.dialogStatus = "update";
+      // } else if (index === "exportExcel") {
+      //   this.exportExcelData = this.tableData;
+      //   this.excelVisible = true;
+      //   this.excelType = "exportExcel";
+      // } else if (index === "uploadExcel") {
+      //   this.excelVisible = true;
+      //   this.excelType = "uploadExcel";
+      // } else if (index === "clickPagination") {
+      //   if (this.lacksShow) {
+      //     this.lacksQueryParams = content;
+      //     await this.getlacksSearchPage();
+      //   } else {
+      //     this.tablelistQueryParams = content;
+      //     await this.getInspectionLack();
+      //   }
+      // } else if (index === "updateMany") {
+      //   this.dialogStatus = "updateMany";
+      //   content.forEach((item) => {
+      //     var obj = _.cloneDeep(item);
+      //     this.dialogData.push(obj);
+      //   });
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "updateLackManySave" },
+      //     { name: "取消", type: "info", status: "cancel" },
+      //   ];
+      //   this.innerVisible = true;
+      // } else if (index === "updateManyMaintain") {
+      //   this.dialogTitle = "InspectionMaintain";
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "updateManyMaintain" },
+      //     { name: "返回", type: "info", status: "cancel" },
+      //   ];
+      //   this.dialogConfig = MaintainManagement.getTableConfig();
+      //   this.dialogConfig[6].isEdit = false;
+      //   this.dialogStatus = "updateMany";
+      //   content.forEach((item) => {
+      //     var obj = _.cloneDeep(item);
+      //     this.dialogData.push(obj);
+      //   });
+      //   //this.updateMainmgmtList = content;
+      //   this.innerVisible = true;
+      // } else {
+      //   if (this.isUpdate) {
+      //     await this.getBuildingMaintenanceReport();
+      //     this.isUpdate = false;
+      //   }
+      //   if (this.dialogTitle === "InspectionMaintain") {
+      //     this.$confirm("關閉後若要修改請至維護保養，請問是否要關閉?", "提示", {
+      //       confirmButtonText: "確認",
+      //       cancelButtonText: "取消",
+      //       type: "warning",
+      //     })
+      //       .then(() => {
+      //         this.tableVisible = false;
+      //       })
+      //       .catch(() => {
+      //         return false;
+      //       });
+      //   } else {
+      //     this.tableVisible = false;
+      //   }
+      //   this.lacksShow = false;
+      //   this.lacksQueryParams = { pageIndex: 1, pageSize: 10, total: 0 };
+      // }
     },
     async changeTable(value) {
       this.isTable = value;
-      if (
-        this.$route.params.target !== undefined &&
-        this.$route.params.target.length !== 0 &&
-        this.$route.params.type == "open"
-      ) {
-        if (typeof this.$route.params.target == "object") {
-          if (this.$route.params.type == "open") {
-            await this.handleTableClick("open", this.$route.params.target);
-          }
-        }
-      } else if (
-        this.$route.query.type !== undefined &&
-        this.$route.query.type == "inspection"
-      ) {
-        await this.handleBlock("", "empty", "");
-        this.$message("請先建立新的檢修申報後進行缺失項目的檔案設定");
-      }
+      await this.openDialogWindows();
+      // if (
+      //   this.$route.params.target !== undefined &&
+      //   this.$route.params.target.length !== 0 &&
+      //   this.$route.params.type == "open"
+      // ) {
+      //   if (typeof this.$route.params.target == "object") {
+      //     if (this.$route.params.type == "open") {
+      //       await this.handleTableClick("open", this.$route.params.target);
+      //     }
+      //   }
+      // } else if (
+      //   this.$route.query.type !== undefined &&
+      //   this.$route.query.type == "inspection"
+      // ) {
+      //   await this.handleBlock("", "empty", "");
+      //   this.$message("請先建立新的檢修申報後進行缺失項目的檔案設定");
+      // }
     },
     async handleSetLineChartData(type) {
       console.log("handleSetLineChartData", type);

@@ -3,8 +3,7 @@ import store from "./store";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import { getToken, getBuildingid } from "@/utils/auth";
-import { Building, DeviceType, Menu } from "./object/index";
-const ElementUI = require("element-ui");
+import { Building, DeviceType } from "./object/index";
 NProgress.configure({ showSpinner: false });
 
 const whiteList = [

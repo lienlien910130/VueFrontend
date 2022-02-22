@@ -26,10 +26,10 @@ class PublicSafeLack extends Parent {
     var data = await api.report
       .apiPatchPublicSafeLack(this)
       .then(async (response) => {
-        return true;
+        return new PublicSafeLack(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -37,10 +37,10 @@ class PublicSafeLack extends Parent {
     var data = await api.report
       .apiPostPublicSafeLack(publicSafeId, this)
       .then((response) => {
-        return true;
+        return new PublicSafeLack(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -158,6 +158,9 @@ class PublicSafeLack extends Parent {
       },
     ];
   }
+  static getChName() {
+    return "公安申報缺失項目";
+  }
   static async get(publicSafeId) {
     var data = await api.report
       .apiGetPublicSafeLack(publicSafeId)
@@ -209,10 +212,13 @@ class PublicSafeLack extends Parent {
     var data = await api.report
       .apiPostPublicSafeLacks(publicSafeId, data)
       .then((response) => {
-        return true;
+        response.result = response.result.map((item) => {
+          return new PublicSafeLack(item);
+        });
+        return response;
       })
       .catch((error) => {
-        return false;
+        return [];
       });
     return data;
   }

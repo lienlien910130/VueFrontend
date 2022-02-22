@@ -15,7 +15,7 @@ const map = {
     import("@/views/devicemanagement/devicetype/index.vue"),
   deviceAddressManagement: () =>
     import("@/views/devicemanagement/deviceaddress/index.vue"),
-  devicePlcAddressManagement: () =>
+  devicePLCAddressManagement: () =>
     import("@/views/devicemanagement/deviceaddress/plc.vue"),
   historyAnalysis: () => import("@/views/analysis/index.vue"),
 

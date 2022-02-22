@@ -155,6 +155,9 @@ class DeviceType extends Parent {
       },
     ];
   }
+  static getChName() {
+    return "設備種類";
+  }
   static async get() {
     var data = await api.device
       .apiGetDevicesTypeByDevicesManagement()

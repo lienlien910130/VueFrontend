@@ -39,7 +39,7 @@
 </template>
 <script>
 import { blockmixin, dialogmixin, sharemixin, excelmixin } from "@/mixin/index";
-import {  AccessAuthority } from "@/object/index";
+import { AccessAuthority } from "@/object/index";
 
 export default {
   mixins: [sharemixin, blockmixin, dialogmixin, excelmixin],
@@ -101,7 +101,8 @@ export default {
     async handleBlock(title, index, content) {
       console.log(title, index, JSON.stringify(content));
       this.dialogConfig = this.tableConfig;
-      if (index === "delete" || index === "deleteMany"){
+      this.dialogData = [];
+      if (index === "delete" || index === "deleteMany") {
         var isDelete = await this.handleBlockMixin(
           title,
           index,
@@ -112,13 +113,17 @@ export default {
           var array = await AccessAuthority.get(this.selectId);
           this.blockData = array.result;
         }
-      }else {
-        if(index === 'empty' || index === "exportExcel" || index === "uploadExcel"){
+      } else {
+        if (
+          index === "empty" ||
+          index === "exportExcel" ||
+          index === "uploadExcel"
+        ) {
           if (this.selectId == null) {
             this.$message.error({
               message: "請選擇目錄",
             });
-            return false
+            return false;
           }
         }
         await this.handleBlockMixin(title, index, content, AccessAuthority);
@@ -137,26 +142,26 @@ export default {
             element.linkMainMenus = [{ id: this.selectId }];
           });
         }
-         const { object, isSuccess } = await this.handleDialogMixin(
-            title,
-            index,
-            content,
-            AccessAuthority,
-            null
-          );
-          if(isSuccess){
-             var array = await AccessAuthority.get(this.selectId);
-            this.blockData = array.result;
-          }
-          await this.handleDialogMixin_common(
-            AccessAuthority,
-            isSuccess,
-            index,
-            content,
-            object
-          );
+        const { object, isSuccess } = await this.handleDialogMixin(
+          title,
+          index,
+          content,
+          AccessAuthority,
+          null
+        );
+        if (isSuccess) {
+          var array = await AccessAuthority.get(this.selectId);
+          this.blockData = array.result;
+        }
+        await this.handleDialogMixin_common(
+          AccessAuthority,
+          isSuccess,
+          index,
+          content,
+          object
+        );
       } else {
-        this.closeAll()
+        this.closeAll();
       }
     },
     async changeTable(value) {

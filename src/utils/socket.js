@@ -465,13 +465,14 @@ function getMessage(msg) {
         case "floorOfHouse":
           handleFloorOfHouse(data.SendType, data.Data.Content);
           break;
-        case "device":
+        case "equipment":
           handleDevice(data.SendType, data.Data.Content);
           break;
         case "deviceType":
           handleDeviceType(data.SendType, data.Data.Content);
           break;
-        case "deviceAddress":
+        case "deviceAddressManagement":
+        case "devicePLCAddressManagement":
           handleDeviceAddress(data.SendType, data.Data.Content);
           break;
         case "graphic":

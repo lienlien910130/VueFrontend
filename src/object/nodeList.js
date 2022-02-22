@@ -115,6 +115,9 @@ class SampleNodeList extends Parent {
       },
     ];
   }
+  static getChName() {
+    return "指令";
+  }
   // static async get (){
   //     var data = await api.nodeList.apiGetAllSampleNode().then(response => {
   //         var array = response.result.sort((x,y) => x.id - y.id)

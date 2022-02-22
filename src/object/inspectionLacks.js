@@ -16,10 +16,10 @@ class InspectionLacks extends Parent {
     var data = await api.report
       .apiPatchInspectionLack(this)
       .then(async (response) => {
-        return true;
+        return new InspectionLacks(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -27,10 +27,10 @@ class InspectionLacks extends Parent {
     var data = await api.report
       .apiPostInspectionLack(inspectionId, this)
       .then((response) => {
-        return true;
+        return new InspectionLacks(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -106,6 +106,9 @@ class InspectionLacks extends Parent {
       },
     ];
   }
+  static getChName() {
+    return "檢修申報缺失項目";
+  }
   static async get(inspectionId) {
     var data = await api.report
       .apiGetInspectionLack(inspectionId)
@@ -169,10 +172,13 @@ class InspectionLacks extends Parent {
     var data = await api.report
       .apiPostInspectionLacks(inspectionId, data)
       .then((response) => {
-        return true;
+        response.result = response.result.map((item) => {
+          return new InspectionLacks(item);
+        });
+        return response;
       })
       .catch((error) => {
-        return false;
+        return [];
       });
     return data;
   }

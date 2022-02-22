@@ -295,53 +295,17 @@ export default {
       //公安申報的操作
       console.log(title, index, JSON.stringify(content));
       this.dialogData = [];
-      this.dialogTitle = this.title;
-      this.dialogButtonsName = [];
       this.dialogConfig = this.tableConfig;
-      if (index === "open") {
-        this.dialogData.push(content);
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "update" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.dialogConfig = this.tableConfig;
-        this.innerVisible = true;
-        this.dialogStatus = "update";
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete();
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await PublicSafe.deleteMany(deleteArray.toString());
-        }
+      if (index === "delete" || index === "deleteMany") {
+        var isDelete = await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          PublicSafe
+        );
         if (isDelete) {
-          this.$message("刪除成功");
-          var length = content.length !== undefined ? content.length : 1;
-          var page = Math.ceil(
-            (this.listQueryParams.total - length) /
-              this.listQueryParams.pageSize
-          );
-          if (this.listQueryParams.pageIndex > page) {
-            this.listQueryParams.pageIndex = page;
-          }
           await this.getBuildingPublicSafeReport();
-          this.$refs.block.clearSelectArray();
-        } else {
-          this.$message.error("系統錯誤");
         }
-      } else if (index === "empty") {
-        this.dialogData.push(PublicSafe.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "create" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.dialogConfig = this.tableConfig;
-        this.innerVisible = true;
-        this.dialogStatus = "create";
       } else if (index === "openfiles") {
         this.publicSafe = content;
         this.files = await content.files();
@@ -351,24 +315,8 @@ export default {
         this.tablelistQueryParams = { pageIndex: 1, pageSize: 10, total: 0 };
         await this.getPublicSafeLack();
         this.tableVisible = true;
-      } else if (index === "exportExcel") {
-        this.exportExcelData = this.blockData;
-        this.excelVisible = true;
-        this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        this.excelVisible = true;
-        this.excelType = "uploadExcel";
-      } else if (index === "updateMany") {
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "updateManySave" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
+      } else {
+        await this.handleBlockMixin(title, index, content, PublicSafe);
       }
     },
     async handleDialog(title, index, content) {
@@ -382,30 +330,22 @@ export default {
           index === "uploadExcelSave" ||
           index === "updateManySave"
         ) {
-          isOk =
-            index === "update" || index === "updateManySave"
-              ? await content.update()
-              : index === "create"
-              ? await content.create()
-              : await PublicSafe.postMany(content);
-          if (isOk) {
-            index === "update" || index === "updateManySave"
-              ? this.$message("更新成功")
-              : this.$message("新增成功");
+          const { object, isSuccess } = await this.handleDialogMixin(
+            title,
+            index,
+            content,
+            PublicSafe
+          );
+          if (isSuccess) {
             await this.getBuildingPublicSafeReport();
-          } else {
-            this.$message.error("系統錯誤");
           }
-          if (index !== "updateManySave") {
-            this.innerVisible = false;
-          } else {
-            this.dialogData.forEach((item, index) => {
-              if (item.id == content.id) {
-                this.dialogData.splice(index, 1, content);
-              }
-            });
-          }
-          this.excelVisible = false;
+          await this.handleDialogMixin_common(
+            PublicSafe,
+            isSuccess,
+            index,
+            content,
+            object
+          );
         } else if (index === "createfile") {
           const formData = new FormData();
           content.forEach((item) => {
@@ -432,10 +372,7 @@ export default {
             await this.getBuildingPublicSafeReport();
             this.isUpdate = false;
           }
-          this.innerVisible = false;
-          this.excelVisible = false;
-          this.uploadVisible = false;
-          this.$refs.block.clearSelectArray();
+          this.closeAll();
         }
       } else {
         if (index === "updateLackManySave") {
@@ -496,68 +433,32 @@ export default {
     async handleTableClick(index, content) {
       console.log(index, JSON.stringify(content));
       this.dialogData = [];
-      this.dialogTitle = "publicsafelack";
       this.dialogConfig = this.dialogtableConfig;
-      if (index === "empty") {
-        this.dialogData.push(PublicSafeLack.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "createlack" },
-          { name: "返回", type: "info", status: "cancellack" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "create";
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete();
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await PublicSafeLack.deleteMany(deleteArray.toString());
-        }
+      var title = "publicsafelack";
+      if (index === "delete" || index === "deleteMany") {
+        var isDelete = await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          PublicSafeLack
+        );
         if (isDelete) {
-          this.$message("刪除成功");
-          if (
-            this.tablelistQueryParams.pageIndex !== 1 &&
-            this.tableData.length == 1
-          ) {
-            this.tablelistQueryParams.pageIndex =
-              this.tablelistQueryParams.pageIndex - 1;
-          }
           await this.getPublicSafeLack();
           this.$refs.dialogtable.clearSelectArray();
           this.isUpdate = true;
-        } else {
-          this.$message.error("系統錯誤");
         }
       } else if (index === "open") {
-        this.dialogData.push(content);
+        await this.handleBlockMixin(title, index, content, PublicSafeLack);
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "updatelack" },
           { name: "取消", type: "info", status: "cancellack" },
         ];
-        this.innerVisible = true;
-        this.dialogStatus = "update";
-      } else if (index === "exportExcel") {
-        this.exportExcelData = this.tableData;
-        this.excelVisible = true;
-        this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        this.excelVisible = true;
-        this.excelType = "uploadExcel";
       } else if (index === "updateMany") {
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
+        await this.handleBlockMixin(title, index, content, PublicSafeLack);
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "updateLackManySave" },
           { name: "取消", type: "info", status: "cancel" },
         ];
-        this.innerVisible = true;
       } else if (index === "clickPagination") {
         if (this.lacksShow) {
           this.lacksQueryParams = content;
@@ -566,6 +467,14 @@ export default {
           this.tablelistQueryParams = content;
           await this.getPublicSafeLack();
         }
+      } else if (index === "empty") {
+        await this.handleBlockMixin(title, index, content, PublicSafeLack);
+        this.dialogButtonsName = [
+          { name: "儲存", type: "primary", status: "createlack" },
+          { name: "返回", type: "info", status: "cancellack" },
+        ];
+      } else if (index === "exportExcel" || index === "uploadExcel") {
+        await this.handleBlockMixin(title, index, content, PublicSafeLack);
       } else {
         if (this.isUpdate) {
           await this.getBuildingPublicSafeReport();
@@ -575,6 +484,85 @@ export default {
         this.lacksShow = false;
         this.lacksQueryParams = { pageIndex: 1, pageSize: 10, total: 0 };
       }
+      this.dialogTitle = "publicsafelack";
+
+      // if (index === "empty") {
+      //   this.dialogData.push(PublicSafeLack.empty());
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "createlack" },
+      //     { name: "返回", type: "info", status: "cancellack" },
+      //   ];
+      //   this.innerVisible = true;
+      //   this.dialogStatus = "create";
+      // } else if (index === "delete" || index === "deleteMany") {
+      //   var isDelete = false;
+      //   if (index === "delete") {
+      //     isDelete = await content.delete();
+      //   } else {
+      //     var deleteArray = [];
+      //     content.forEach((item) => {
+      //       deleteArray.push(item.id);
+      //     });
+      //     isDelete = await PublicSafeLack.deleteMany(deleteArray.toString());
+      //   }
+      //   if (isDelete) {
+      //     this.$message("刪除成功");
+      //     if (
+      //       this.tablelistQueryParams.pageIndex !== 1 &&
+      //       this.tableData.length == 1
+      //     ) {
+      //       this.tablelistQueryParams.pageIndex =
+      //         this.tablelistQueryParams.pageIndex - 1;
+      //     }
+      //     await this.getPublicSafeLack();
+      //     this.$refs.dialogtable.clearSelectArray();
+      //     this.isUpdate = true;
+      //   } else {
+      //     this.$message.error("系統錯誤");
+      //   }
+      // } else if (index === "open") {
+      //   this.dialogData.push(content);
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "updatelack" },
+      //     { name: "取消", type: "info", status: "cancellack" },
+      //   ];
+      //   this.innerVisible = true;
+      //   this.dialogStatus = "update";
+      // } else if (index === "exportExcel") {
+      //   this.exportExcelData = this.tableData;
+      //   this.excelVisible = true;
+      //   this.excelType = "exportExcel";
+      // } else if (index === "uploadExcel") {
+      //   this.excelVisible = true;
+      //   this.excelType = "uploadExcel";
+      // } else if (index === "updateMany") {
+      //   this.dialogStatus = "updateMany";
+      //   content.forEach((item) => {
+      //     var obj = _.cloneDeep(item);
+      //     this.dialogData.push(obj);
+      //   });
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "updateLackManySave" },
+      //     { name: "取消", type: "info", status: "cancel" },
+      //   ];
+      //   this.innerVisible = true;
+      // } else if (index === "clickPagination") {
+      //   if (this.lacksShow) {
+      //     this.lacksQueryParams = content;
+      //     await this.getlacksSearchPage();
+      //   } else {
+      //     this.tablelistQueryParams = content;
+      //     await this.getPublicSafeLack();
+      //   }
+      // } else {
+      //   if (this.isUpdate) {
+      //     await this.getBuildingPublicSafeReport();
+      //     this.isUpdate = false;
+      //   }
+      //   this.tableVisible = false;
+      //   this.lacksShow = false;
+      //   this.lacksQueryParams = { pageIndex: 1, pageSize: 10, total: 0 };
+      // }
     },
     async handleSetLineChartData(type) {
       console.log("handleSetLineChartData", type);
@@ -596,11 +584,6 @@ export default {
     },
     async changeTable(value) {
       this.isTable = value;
-      //  if(this.$route.params.target !== undefined && this.$route.params.target !== ''){
-      //   if(typeof this.$route.params.target == 'object'){
-      //     await this.handleBlock('','open',this.$route.params.target)
-      //   }
-      // }
     },
     openWindows() {
       var routeData = this.$router.resolve({

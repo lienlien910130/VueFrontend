@@ -73,10 +73,10 @@ class PublicSafe extends Parent {
     var data = await api.report
       .apiPatchPublicSafe(this)
       .then(async (response) => {
-        return true;
+        return new PublicSafe(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -84,10 +84,10 @@ class PublicSafe extends Parent {
     var data = await api.report
       .apiPostPublicSafe(this)
       .then((response) => {
-        return true;
+        return new PublicSafe(response.result);
       })
       .catch((error) => {
-        return false;
+        return {};
       });
     return data;
   }
@@ -447,6 +447,9 @@ class PublicSafe extends Parent {
       },
     ];
   }
+  static getChName() {
+    return "公安申報";
+  }
   static async get() {
     var data = await api.report
       .apiGetBuildingPublicSafe()
@@ -492,10 +495,13 @@ class PublicSafe extends Parent {
     var data = await api.report
       .apiPostPublicSafes(data)
       .then((response) => {
-        return true;
+        response.result = response.result.map((item) => {
+          return new PublicSafe(item);
+        });
+        return response;
       })
       .catch((error) => {
-        return false;
+        return [];
       });
     return data;
   }

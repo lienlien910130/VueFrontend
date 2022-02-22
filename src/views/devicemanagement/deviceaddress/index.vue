@@ -12,11 +12,6 @@
         </div>
       </el-col>
     </el-row>
-    <!-- <Dialog
-        ref="dialog"
-        v-if="innerVisible === true"
-        v-bind="dialogAttrs"
-        v-on:handleDialog="handleDialog"></Dialog> -->
 
     <DialogForm
       ref="dialogform"
@@ -76,7 +71,6 @@ export default {
         { name: "匯入檔案", icon: "el-icon-upload2", status: "uploadExcel" },
       ];
       this.tableConfig = DeviceAddressManagement.getTableConfig();
-      //await this.getBuildingDeviceAddressManagement()
     },
     async resetlistQueryParams() {
       this.listQueryParams = {
@@ -97,74 +91,18 @@ export default {
     async handleBlock(title, index, content) {
       //設備
       console.log(title, index, JSON.stringify(content));
-      this.dialogData = [];
       this.dialogConfig = _.cloneDeep(DeviceAddressManagement.getTableConfig());
-      this.dialogTitle = this.title;
-      this.dialogButtonsName = [];
-      if (index === "open") {
-        this.dialogConfig.shift();
-        this.dialogStatus = "update";
-        if (content.length !== undefined) {
-          //代表不是外傳近來的
-          content.forEach((item) => {
-            this.dialogData.push(item);
-          });
-        } else {
-          this.dialogData.push(content);
-        }
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "update" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete();
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await DeviceAddressManagement.deleteMany(
-            deleteArray.toString()
-          );
-        }
+      this.dialogData = [];
+      if (index === "delete" || index === "deleteMany") {
+        var isDelete = await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          DeviceAddressManagement
+        );
         if (isDelete) {
-          this.$message("刪除成功");
-          var length = content.length !== undefined ? content.length : 1;
-          var page = Math.ceil(
-            (this.listQueryParams.total - length) /
-              this.listQueryParams.pageSize
-          );
-          if (this.listQueryParams.pageIndex > page) {
-            this.listQueryParams.pageIndex = page;
-          }
-          this.$socket.sendMsg(
-            "deviceAddress",
-            "delete",
-            index === "delete" ? content.getID() : deleteArray.toString()
-          );
           await this.getBuildingDeviceAddressManagement();
-          this.$refs.block.clearSelectArray();
-        } else {
-          this.$message.error("系統錯誤");
         }
-      } else if (index === "empty") {
-        this.dialogData.push(DeviceAddressManagement.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "create" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "create";
-      } else if (index === "exportExcel") {
-        this.exportExcelData = this.blockData;
-        this.excelVisible = true;
-        this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        this.excelVisible = true;
-        this.excelType = "uploadExcel";
       } else if (index === "manyempty") {
         this.dialogConfig = DeviceAddressManagement.getManyEmptyTableConfig();
         this.dialogData.push(DeviceAddressManagement.empty());
@@ -185,59 +123,133 @@ export default {
         this.dialogStatus = "update";
         this.innerVisible = true;
         this.selectArray = _.cloneDeep(content);
-      } else if (index === "updateMany") {
-        this.dialogConfig.shift();
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "updateManySave" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
+      } else {
+        if (index === "open" || index === "updateMany") {
+          this.dialogConfig.shift();
+        }
+        await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          DeviceAddressManagement
+        );
       }
+
+      // if (index === "open") {
+      //   this.dialogConfig.shift();
+      //   this.dialogStatus = "update";
+      //   if (content.length !== undefined) {
+      //     //代表不是外傳近來的
+      //     content.forEach((item) => {
+      //       this.dialogData.push(item);
+      //     });
+      //   } else {
+      //     this.dialogData.push(content);
+      //   }
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "update" },
+      //     { name: "取消", type: "info", status: "cancel" },
+      //   ];
+      //   this.innerVisible = true;
+      // } else if (index === "delete" || index === "deleteMany") {
+      //   var isDelete = false;
+      //   if (index === "delete") {
+      //     isDelete = await content.delete();
+      //   } else {
+      //     var deleteArray = [];
+      //     content.forEach((item) => {
+      //       deleteArray.push(item.id);
+      //     });
+      //     isDelete = await DeviceAddressManagement.deleteMany(
+      //       deleteArray.toString()
+      //     );
+      //   }
+      //   if (isDelete) {
+      //     this.$message("刪除成功");
+      //     var length = content.length !== undefined ? content.length : 1;
+      //     var page = Math.ceil(
+      //       (this.listQueryParams.total - length) /
+      //         this.listQueryParams.pageSize
+      //     );
+      //     if (this.listQueryParams.pageIndex > page) {
+      //       this.listQueryParams.pageIndex = page;
+      //     }
+      //     this.$socket.sendMsg(
+      //       "deviceAddress",
+      //       "delete",
+      //       index === "delete" ? content.getID() : deleteArray.toString()
+      //     );
+      //     await this.getBuildingDeviceAddressManagement();
+      //     this.$refs.block.clearSelectArray();
+      //   } else {
+      //     this.$message.error("系統錯誤");
+      //   }
+      // } else if (index === "empty") {
+      //   this.dialogData.push(DeviceAddressManagement.empty());
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "create" },
+      //     { name: "取消", type: "info", status: "cancel" },
+      //   ];
+      //   this.innerVisible = true;
+      //   this.dialogStatus = "create";
+      // } else if (index === "exportExcel") {
+      //   this.exportExcelData = this.blockData;
+      //   this.excelVisible = true;
+      //   this.excelType = "exportExcel";
+      // } else if (index === "uploadExcel") {
+      //   this.excelVisible = true;
+      //   this.excelType = "uploadExcel";
+      // } else if (index === "manyempty") {
+      //   this.dialogConfig = DeviceAddressManagement.getManyEmptyTableConfig();
+      //   this.dialogData.push(DeviceAddressManagement.empty());
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "createmany" },
+      //     { name: "取消", type: "info", status: "cancel" },
+      //   ];
+      //   this.innerVisible = true;
+      //   this.dialogStatus = "create";
+      // } else if (index === "setfloors") {
+      //   var array = [];
+      //   array.push(this.dialogConfig[1]);
+      //   this.dialogConfig = array;
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "floorsupdate" },
+      //     { name: "取消", type: "info", status: "cancelfloor" },
+      //   ];
+      //   this.dialogStatus = "update";
+      //   this.innerVisible = true;
+      //   this.selectArray = _.cloneDeep(content);
+      // } else if (index === "updateMany") {
+      //   this.dialogConfig.shift();
+      //   this.dialogStatus = "updateMany";
+      //   content.forEach((item) => {
+      //     var obj = _.cloneDeep(item);
+      //     this.dialogData.push(obj);
+      //   });
+      //   this.dialogButtonsName = [
+      //     { name: "儲存", type: "primary", status: "updateManySave" },
+      //     { name: "取消", type: "info", status: "cancel" },
+      //   ];
+      //   this.innerVisible = true;
+      // }
     },
     async handleDialog(title, index, content) {
       //Dialog相關操作
       console.log(title, index, JSON.stringify(content));
-      if (index == "createmany" || index == "create") {
+      if (index == "createmany") {
         var deviceId = content.linkAssignDevices[0].getID();
-        //delete content.linkAssignDevices
-        if (index == "createmany") {
-          delete content.linkDevices;
-          delete content.systemUsed;
-          delete content.status;
-        }
-        var result =
-          index === "create"
-            ? await content.create(deviceId)
-            : await DeviceAddressManagement.batchInsert(deviceId, content);
-        if (Object.keys(result).length !== 0 || result == true) {
+        delete content.linkDevices;
+        delete content.systemUsed;
+        delete content.status;
+        var result = await DeviceAddressManagement.batchInsert(
+          deviceId,
+          content
+        );
+        if (result) {
           this.$message("新增成功");
-          this.$socket.sendMsg("deviceAddress", index, result);
+          this.$socket.sendMsg("deviceAddressManagement", index, result);
           await this.getBuildingDeviceAddressManagement();
           this.innerVisible = false;
-        } else {
-          this.$message.error("點位已存在，請重新輸入");
-        }
-      } else if (index == "update" || index == "updateManySave") {
-        delete content.linkAssignDevices;
-        var result = await content.update(this.deviceId, false);
-        if (Object.keys(result).length !== 0) {
-          this.$message("更新成功");
-          this.$socket.sendMsg("deviceAddress", index, result);
-          await this.getBuildingDeviceAddressManagement();
-          if (index !== "updateManySave") {
-            this.innerVisible = false;
-          } else {
-            this.dialogData.forEach((item, index) => {
-              if (item.id == content.id) {
-                this.dialogData.splice(index, 1, content);
-              }
-            });
-          }
         } else {
           this.$message.error("點位已存在，請重新輸入");
         }
@@ -255,27 +267,55 @@ export default {
         );
         if (Object.keys(result).length !== 0) {
           this.$message("更新成功");
-          this.$socket.sendMsg("deviceAddress", index, result);
+          this.$socket.sendMsg("deviceAddressManagement", index, result);
           await this.getBuildingDeviceAddressManagement();
           this.innerVisible = false;
           this.$refs.block.clearSelectArray();
         } else {
           this.$message.error("樓層更新錯誤");
         }
-      } else if (index === "uploadExcelSave") {
-        var result = await DeviceAddressManagement.postMany(
-          this.deviceId,
-          content
-        );
-        if (result.result.length !== 0) {
-          this.$message("新增成功");
-          this.$socket.sendMsg("deviceAddress", index, result.result);
-          await this.getBuildingDeviceAddressManagement();
-          this.excelVisible = false;
+      } else if (
+        index == "create" ||
+        index == "update" ||
+        index == "updateManySave" ||
+        index === "uploadExcelSave"
+      ) {
+        var deviceId = null;
+        if (index == "create") {
+          deviceId = content.linkAssignDevices[0].getID();
+        } else if (index == "update" || index == "updateManySave") {
+          delete content.linkAssignDevices;
         }
-        if (result.repeatDataList !== undefined) {
+        const { object, isSuccess } = await this.handleDialogMixin(
+          title,
+          index,
+          content,
+          DeviceAddressManagement,
+          { deviceId: this.deviceId, resetLink: false, isPLC: false },
+          { deviceId: deviceId, isPLC: false },
+          { deviceId: this.deviceId, content: content, isPLC: false }
+        );
+        if (isSuccess) {
+          await this.getBuildingDeviceAddressManagement();
+          if (index !== "updateManySave") {
+            this.innerVisible = false;
+          } else {
+            this.dialogData.forEach((item, index) => {
+              if (item.id == content.id) {
+                this.dialogData.splice(index, 1, content);
+              }
+            });
+          }
+          this.excelVisible = false;
+        } else {
+          if (index !== "uploadExcelSave") {
+            this.$message.error("該點位已存在，請重新輸入");
+          }
+        }
+
+        if (object.repeatDataList !== undefined) {
           var list = [];
-          result.repeatDataList.forEach((item) => {
+          object.repeatDataList.forEach((item) => {
             var str = [
               item.internet,
               item.system,
@@ -291,24 +331,114 @@ export default {
           );
         }
       } else {
-        this.innerVisible = false;
-        this.excelVisible = false;
-        this.$refs.block.clearSelectArray();
+        this.closeAll();
       }
+
+      // if (index == "createmany" || index == "create") {
+      //   var deviceId = content.linkAssignDevices[0].getID();
+      //   if (index == "createmany") {
+      //     delete content.linkDevices;
+      //     delete content.systemUsed;
+      //     delete content.status;
+      //   }
+      //   var result =
+      //     index === "create"
+      //       ? await content.create(deviceId)
+      //       : await DeviceAddressManagement.batchInsert(deviceId, content);
+      //   if (Object.keys(result).length !== 0 || result == true) {
+      //     this.$message("新增成功");
+      //     this.$socket.sendMsg("deviceAddressManagement", index, result);
+      //     await this.getBuildingDeviceAddressManagement();
+      //     this.innerVisible = false;
+      //   } else {
+      //     this.$message.error("點位已存在，請重新輸入");
+      //   }
+      // } else if (index == "update" || index == "updateManySave") {
+      //   delete content.linkAssignDevices;
+      //   var result = await content.update(this.deviceId, false);
+      //   if (Object.keys(result).length !== 0) {
+      //     this.$message("更新成功");
+      //     this.$socket.sendMsg("deviceAddressManagement", index, result);
+      //     await this.getBuildingDeviceAddressManagement();
+      //     if (index !== "updateManySave") {
+      //       this.innerVisible = false;
+      //     } else {
+      //       this.dialogData.forEach((item, index) => {
+      //         if (item.id == content.id) {
+      //           this.dialogData.splice(index, 1, content);
+      //         }
+      //       });
+      //     }
+      //   } else {
+      //     this.$message.error("點位已存在，請重新輸入");
+      //   }
+      // } else if (index == "floorsupdate") {
+      //   var updateData = [];
+      //   this.selectArray.forEach((item) => {
+      //     updateData.push({
+      //       id: item.id,
+      //       floorsId: content.floorsId,
+      //     });
+      //   });
+      //   var result = await DeviceAddressManagement.updateMany(
+      //     this.deviceId,
+      //     updateData
+      //   );
+      //   if (Object.keys(result).length !== 0) {
+      //     this.$message("更新成功");
+      //     this.$socket.sendMsg("deviceAddressManagement", index, result);
+      //     await this.getBuildingDeviceAddressManagement();
+      //     this.innerVisible = false;
+      //     this.$refs.block.clearSelectArray();
+      //   } else {
+      //     this.$message.error("樓層更新錯誤");
+      //   }
+      // } else if (index === "uploadExcelSave") {
+      //   var result = await DeviceAddressManagement.postMany(
+      //     this.deviceId,
+      //     content
+      //   );
+      //   if (result.result.length !== 0) {
+      //     this.$message("新增成功");
+      //     this.$socket.sendMsg("deviceAddressManagement", index, result.result);
+      //     await this.getBuildingDeviceAddressManagement();
+      //     this.excelVisible = false;
+      //   }
+      //   if (result.repeatDataList !== undefined) {
+      //     var list = [];
+      //     result.repeatDataList.forEach((item) => {
+      //       var str = [
+      //         item.internet,
+      //         item.system,
+      //         item.address,
+      //         item.number,
+      //         item.memeryLoc,
+      //       ];
+      //       str = str.filter(Boolean).join("-");
+      //       list.push(str);
+      //     });
+      //     this.$message.error(
+      //       "【" + list.toString() + "】點位已存在，請重新上傳"
+      //     );
+      //   }
+      // } else {
+      //   this.closeAll();
+      // }
     },
     setDeviceIdSelect(deviceId) {
       this.deviceId = deviceId;
     },
     async changeTable(value) {
       this.isTable = value;
-      if (
-        this.$route.query.type !== undefined &&
-        this.$route.query.type == "address" &&
-        this.$route.query.obj !== ""
-      ) {
-        var data = await DeviceAddressManagement.getOfID(this.$route.query.obj);
-        await this.handleBlock("", "open", data);
-      }
+      await this.openDialogWindows();
+      // if (
+      //   this.$route.query.type !== undefined &&
+      //   this.$route.query.type == "address" &&
+      //   this.$route.query.obj !== ""
+      // ) {
+      //   var data = await DeviceAddressManagement.getOfID(this.$route.query.obj);
+      //   await this.handleBlock("", "open", data);
+      // }
     },
   },
 };

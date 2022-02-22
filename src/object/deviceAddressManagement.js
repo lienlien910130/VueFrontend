@@ -53,9 +53,10 @@ class DeviceAddressManagement extends Parent {
   clone(data) {
     return new DeviceAddressManagement(data);
   }
-  async update(deviceId, resetLink, isPLC = null) {
+  async update(content) {
+    const { deviceId, resetLink, isPLC } = content;
     var temp = JSON.parse(JSON.stringify(this));
-    if (isPLC == null) {
+    if (!isPLC) {
       temp.internet = "{Check}" + temp.internet;
       temp.system = "{Check}" + temp.system;
       temp.address = "{Check}" + temp.address;
@@ -89,9 +90,10 @@ class DeviceAddressManagement extends Parent {
       return data;
     }
   }
-  async create(deviceId, isPLC = null) {
+  async create(content) {
+    const { deviceId, isPLC } = content;
     var temp = JSON.parse(JSON.stringify(this));
-    if (isPLC == null) {
+    if (!isPLC) {
       temp.internet = "{Check}" + temp.internet;
       temp.system = "{Check}" + temp.system;
       temp.address = "{Check}" + temp.address;
@@ -120,7 +122,6 @@ class DeviceAddressManagement extends Parent {
           return new DeviceAddressManagement(response.result);
         })
         .catch((error) => {
-          console.log(error);
           return {};
         });
       return data;
@@ -192,6 +193,7 @@ class DeviceAddressManagement extends Parent {
       linkUsageOfFloors: [],
     });
   }
+
   static getManyEmptyTableConfig() {
     return [
       {
@@ -927,6 +929,9 @@ class DeviceAddressManagement extends Parent {
       },
     ];
   }
+  static getChName() {
+    return "點位";
+  }
   static async getOfID(deviceAddressId, isPLC = null) {
     if (isPLC == null) {
       var data = await api.device
@@ -1012,10 +1017,11 @@ class DeviceAddressManagement extends Parent {
       return data;
     }
   }
-  static async postMany(deviceId, data, isPLC = null) {
-    if (isPLC == null) {
+  static async postMany(data) {
+    const { deviceId, content, isPLC } = data;
+    if (!isPLC) {
       var data = await api.device
-        .apiPostDevicesAddresses(deviceId, data)
+        .apiPostDevicesAddresses(deviceId, content)
         .then((response) => {
           response.result = response.result
             .sort((x, y) => x.id - y.id)
@@ -1030,7 +1036,7 @@ class DeviceAddressManagement extends Parent {
       return data;
     } else {
       var data = await api.device
-        .apiPostDevicesPLCAddresses(deviceId, data)
+        .apiPostDevicesPLCAddresses(deviceId, content)
         .then((response) => {
           response.result = response.result
             .sort((x, y) => x.id - y.id)

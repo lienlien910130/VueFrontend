@@ -35,7 +35,7 @@
 </template>
 <script>
 import { blockmixin, dialogmixin, sharemixin, excelmixin } from "@/mixin/index";
-import {  Menu, Role } from "@/object/index";
+import { Menu, Role } from "@/object/index";
 
 export default {
   mixins: [sharemixin, blockmixin, dialogmixin, excelmixin],
@@ -124,8 +124,9 @@ export default {
     async handleBlock(title, index, content) {
       console.log(title, index, JSON.stringify(content));
       this.dialogConfig = this.tableConfig;
+      this.dialogData = [];
       this.dialogSelect = this.accessAuthority;
-      if(index === "distribution"){
+      if (index === "distribution") {
         this.selectRoleId = content.getID();
         this.roleAccessAuthority = await content.getAccess("role"); //取得角色所有權限的id
         this.originalRoleAccessAuthority = JSON.parse(
@@ -135,17 +136,12 @@ export default {
           return new Menu(item);
         });
         this.authorityVisible = true;
-      }else if (index === "delete" || index === "deleteMany") {
-        var isDelete = await this.handleBlockMixin(
-          title,
-          index,
-          content,
-          Role
-        );
+      } else if (index === "delete" || index === "deleteMany") {
+        var isDelete = await this.handleBlockMixin(title, index, content, Role);
         if (isDelete) {
           await this.getAllRole();
         }
-      } else{
+      } else {
         await this.handleBlockMixin(title, index, content, Role);
       }
     },
@@ -153,82 +149,82 @@ export default {
       //Dialog相關操作
       console.log(title, index, JSON.stringify(content));
       if (index !== "cancel") {
-        if (index === "authoritycreate"){
+        if (index === "authoritycreate") {
           var array = this.originalRoleAccessAuthority;
-        var array2 = content;
-        var remove = [];
-        var add = [];
-        array.forEach((item) => {
-          //以原始的role為基礎 比對是否有移除掉的權限
-          var stra = item;
-          var count = 0;
-          for (var j = 0; j < array2.length; j++) {
-            var strb = array2[j];
-            if (stra == strb) {
-              count++;
+          var array2 = content;
+          var remove = [];
+          var add = [];
+          array.forEach((item) => {
+            //以原始的role為基礎 比對是否有移除掉的權限
+            var stra = item;
+            var count = 0;
+            for (var j = 0; j < array2.length; j++) {
+              var strb = array2[j];
+              if (stra == strb) {
+                count++;
+              }
             }
-          }
-          if (count === 0) {
-            remove.push(stra);
-          }
-        });
-        array2.forEach((item) => {
-          //以原始的role為基礎 比對是否有新增的權限
-          var stra = item;
-          var count = 0;
-          for (var j = 0; j < array.length; j++) {
-            var strb = array[j];
-            if (stra == strb) {
-              count++;
+            if (count === 0) {
+              remove.push(stra);
             }
-          }
-          if (count === 0) {
-            add.push(stra);
-          }
-        });
-        console.log("原始", JSON.stringify(array));
-        console.log("此次傳來", JSON.stringify(array2));
-        console.log("移除", JSON.stringify(remove));
-        console.log("新增", JSON.stringify(add));
-        var isOk = false;
-        var updateArray = [];
-        for (let obj of remove) {
-          var data = this.accessAuthority.filter(
-            (item, index) => item.id == obj
-          )[0];
-          var array = [];
-          var newRole = data.linkRoles.filter(
-            (item, index) => item.id !== this.selectRoleId
-          );
-          newRole.forEach((role) => {
-            array.push({ id: role.id });
           });
-          data.linkRoles = array;
-          updateArray.push(data);
-        }
-        for (let obj of add) {
-          var data = this.accessAuthority.filter(
-            (item, index) => item.id == obj
-          )[0];
-          var array = [];
-          data.linkRoles.forEach((role) => {
-            array.push({ id: role.id });
+          array2.forEach((item) => {
+            //以原始的role為基礎 比對是否有新增的權限
+            var stra = item;
+            var count = 0;
+            for (var j = 0; j < array.length; j++) {
+              var strb = array[j];
+              if (stra == strb) {
+                count++;
+              }
+            }
+            if (count === 0) {
+              add.push(stra);
+            }
           });
-          array.push({ id: this.selectRoleId });
-          data.linkRoles = array;
-          updateArray.push(data);
-        }
-        isOk = await Role.updateAccessAuthority(updateArray);
-        if (isOk) {
-          this.$message("更新成功");
-          // this.$store.dispatch('permission/setmenu',await Menu.get())
-          // this.$socket.sendMsg('menus', 'reset' , await Menu.get())
-          await this.getAllRole();
-          this.authorityVisible = false;
+          console.log("原始", JSON.stringify(array));
+          console.log("此次傳來", JSON.stringify(array2));
+          console.log("移除", JSON.stringify(remove));
+          console.log("新增", JSON.stringify(add));
+          var isOk = false;
+          var updateArray = [];
+          for (let obj of remove) {
+            var data = this.accessAuthority.filter(
+              (item, index) => item.id == obj
+            )[0];
+            var array = [];
+            var newRole = data.linkRoles.filter(
+              (item, index) => item.id !== this.selectRoleId
+            );
+            newRole.forEach((role) => {
+              array.push({ id: role.id });
+            });
+            data.linkRoles = array;
+            updateArray.push(data);
+          }
+          for (let obj of add) {
+            var data = this.accessAuthority.filter(
+              (item, index) => item.id == obj
+            )[0];
+            var array = [];
+            data.linkRoles.forEach((role) => {
+              array.push({ id: role.id });
+            });
+            array.push({ id: this.selectRoleId });
+            data.linkRoles = array;
+            updateArray.push(data);
+          }
+          isOk = await Role.updateAccessAuthority(updateArray);
+          if (isOk) {
+            this.$message("更新成功");
+            // this.$store.dispatch('permission/setmenu',await Menu.get())
+            // this.$socket.sendMsg('menus', 'reset' , await Menu.get())
+            await this.getAllRole();
+            this.authorityVisible = false;
+          } else {
+            this.$message.error("系統錯誤");
+          }
         } else {
-          this.$message.error("系統錯誤");
-        }
-        }else{
           const { object, isSuccess } = await this.handleDialogMixin(
             title,
             index,
@@ -236,7 +232,7 @@ export default {
             Role,
             null
           );
-          if(isSuccess){
+          if (isSuccess) {
             await this.getAllRole();
           }
           await this.handleDialogMixin_common(
@@ -247,13 +243,13 @@ export default {
             object
           );
         }
-      }else{
-        this.closeAll()
+      } else {
+        this.closeAll();
       }
     },
     async changeTable(value) {
       this.isTable = value;
-      await this.openDialogWindows()
+      await this.openDialogWindows();
     },
   },
 };

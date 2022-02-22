@@ -179,8 +179,8 @@ export default {
     },
     async handleBlock(title, index, content) {
       console.log(title, index, JSON.stringify(content));
-      // this.dialogData = [];
       this.dialogConfig = Account.getTableConfig();
+      this.dialogData = [];
       // this.dialogTitle = this.title;
       // this.dialogButtonsName = [];
       this.dialogSelect = this.accessAuthority;
@@ -428,12 +428,12 @@ export default {
         // this.excelVisible = false;
         // this.authorityVisible = false;
         // this.$refs.block.clearSelectArray();
-        this.closeAll()
+        this.closeAll();
       }
     },
     async changeTable(value) {
       this.isTable = value;
-      await this.openDialogWindows()
+      await this.openDialogWindows();
       //需處理
       // if (
       //   this.$route.params.target !== undefined &&

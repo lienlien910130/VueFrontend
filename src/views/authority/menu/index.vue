@@ -143,23 +143,19 @@ export default {
     async handleBlock(title, index, content) {
       console.log(title, index, JSON.stringify(content));
       this.dialogConfig = this.tableConfig;
+      this.dialogData = [];
       if (index === "delete" || index === "deleteMany") {
-        var isDelete = await this.handleBlockMixin(
-          title,
-          index,
-          content,
-          Menu
-        );
+        var isDelete = await this.handleBlockMixin(title, index, content, Menu);
         if (isDelete) {
           this.$socket.sendMsg("menus", "routes", "");
         }
-      }else{
-        if(index === "exportExcel" || index === "uploadExcel"){
+      } else {
+        if (index === "exportExcel" || index === "uploadExcel") {
           if (this.selectId == null) {
             this.$message.error({
               message: "請選擇目錄",
             });
-            return false
+            return false;
           }
         }
         await this.handleBlockMixin(title, index, content, Menu);
@@ -172,26 +168,26 @@ export default {
         delete content.linkMainMenus;
         delete content.linkAccessAuthorities;
         const { object, isSuccess } = await this.handleDialogMixin(
-            title,
-            index,
-            content,
-            Menu,
-            null,
-            this.selectId == "0" ? null : this.selectId,
-            {mainMenuId: this.selectId, content: content}
-          );
-          if(isSuccess){
-            this.$socket.sendMsg("menus", "routes", "");
-          }
-          await this.handleDialogMixin_common(
-            Menu,
-            isSuccess,
-            index,
-            content,
-            object
-          );
-      }else{
-        this.closeAll()
+          title,
+          index,
+          content,
+          Menu,
+          null,
+          this.selectId == "0" ? null : this.selectId,
+          { mainMenuId: this.selectId, content: content }
+        );
+        if (isSuccess) {
+          this.$socket.sendMsg("menus", "routes", "");
+        }
+        await this.handleDialogMixin_common(
+          Menu,
+          isSuccess,
+          index,
+          content,
+          object
+        );
+      } else {
+        this.closeAll();
       }
     },
     async changeTable(value) {

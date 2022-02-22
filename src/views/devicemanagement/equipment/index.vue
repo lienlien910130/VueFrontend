@@ -12,14 +12,6 @@
         </div>
       </el-col>
     </el-row>
-    <!-- <Dialog
-        ref="dialog"
-        v-if="innerVisible === true"
-        v-bind="dialogAttrs"
-        :formtableData="formtableData"
-        :formtableconfig="formtableconfig"
-        :listQueryParams="maintainlistQueryParams"
-        v-on:handleDialog="handleDialog"></Dialog> -->
 
     <DialogForm
       ref="dialogform"
@@ -56,8 +48,6 @@ import {
 import {
   Device,
   DeviceType,
-  Contactunit,
-  Setting,
   DeviceAddressManagement,
   MaintainManagement,
 } from "@/object/index";
@@ -169,9 +159,10 @@ export default {
       this.dialogtableConfig.shift();
       this.tableData = tabledata;
       this.tablelistQueryParams.total = data.totalPageCount;
-      this.tablebuttonsName = [
-        { name: "檢視", icon: "el-icon-view", status: "openaddress" },
-      ];
+      this.tablebuttonsName =
+        this.searchType == "fire"
+          ? [{ name: "檢視", icon: "el-icon-view", status: "openaddress" }]
+          : [{ name: "檢視", icon: "el-icon-view", status: "openplcaddress" }];
     },
     handleChangeConfig(isMandatory) {
       this.dialogConfig[2].mandatory = isMandatory;
@@ -181,90 +172,24 @@ export default {
       console.log(title, index, JSON.stringify(content));
       this.dialogData = [];
       this.dialogConfig = Device.getTableConfig();
-      this.dialogTitle = this.title;
-      this.dialogButtonsName = [];
-      if (index === "open") {
-        this.dialogStatus = "update";
-        console.log("content.length", content.length);
-        if (content.length !== undefined) {
-          //代表不是外傳近來的
-          content.forEach((item) => {
-            this.dialogData.push(item);
-          });
-        } else {
-          this.dialogData.push(content);
-        }
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "update" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          isDelete = await content.delete();
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          isDelete = await Device.deleteMany(deleteArray.toString());
-        }
+      if (index === "delete" || index === "deleteMany") {
+        var isDelete = await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          Device
+        );
         if (isDelete) {
-          this.$message("刪除成功");
-          // this.$store.dispatch('building/setDevice')
-          this.$socket.sendMsg(
-            "device",
-            "delete",
-            index === "delete" ? content.getID() : deleteArray.toString()
-          );
-          var length = content.length !== undefined ? content.length : 1;
-          var page = Math.ceil(
-            (this.listQueryParams.total - length) /
-              this.listQueryParams.pageSize
-          );
-          if (this.listQueryParams.pageIndex > page) {
-            this.listQueryParams.pageIndex = page;
-          }
           await this.getBuildingDevicesManage();
-          this.$refs.block.clearSelectArray();
-        } else {
-          this.$message.error("系統錯誤");
         }
-      } else if (index === "empty") {
-        this.dialogData.push(Device.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "create" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "create";
-      } else if (index === "openmaintain") {
+      } else if (index === "openmaintain" || index === "openaddress") {
         this.selectdevice = content;
-        await this.resettablelistQueryParams(true);
+        await this.resettablelistQueryParams(
+          index === "openmaintain" ? true : false
+        );
         this.tableVisible = true;
-      } else if (index === "exportExcel") {
-        this.exportExcelData = this.blockData;
-        this.excelVisible = true;
-        this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        this.excelVisible = true;
-        this.excelType = "uploadExcel";
-      } else if (index === "openaddress") {
-        this.selectdevice = content;
-        await this.resettablelistQueryParams(false);
-        this.tableVisible = true;
-      } else if (index === "updateMany") {
-        this.dialogStatus = "updateMany";
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "updateManySave" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
+      } else {
+        await this.handleBlockMixin(title, index, content, Device);
       }
     },
     async handleDialog(resetLink, index, content) {
@@ -279,59 +204,25 @@ export default {
         if (content.internetNumber == "") {
           content.internetNumber = null;
         }
-        var result =
-          index === "update" || index === "updateManySave"
-            ? await content.update(resetLink)
-            : index === "create"
-            ? await content.create()
-            : await Device.postMany(content);
-        var condition =
-          index !== "uploadExcelSave"
-            ? Object.keys(result).length !== 0
-            : result.result.length !== 0;
-        if (condition) {
-          index === "update" || index === "updateManySave"
-            ? this.$message("更新成功")
-            : this.$message("新增成功");
-          // this.$store.dispatch('building/setDevice')
-          this.$socket.sendMsg(
-            "device",
-            index,
-            index !== "uploadExcelSave" ? result : result.result
-          );
-          if (index === "create" || index === "updateManySave") {
-            this.$alert("需要接訊號請洽水星服務人員", "提醒", {
-              confirmButtonText: "確定",
-            });
-          }
+        const { object, isSuccess } = await this.handleDialogMixin(
+          this.title,
+          index,
+          content,
+          Device,
+          { resetLink: resetLink }
+        );
+        if (isSuccess) {
           await this.getBuildingDevicesManage();
-          if (index !== "updateManySave") {
-            this.innerVisible = false;
-          } else {
-            this.dialogData.forEach((item, index) => {
-              if (item.id == content.id) {
-                this.dialogData.splice(index, 1, content);
-              }
-            });
-          }
-          this.excelVisible = false;
-        } else {
-          this.$message.error("網路編號已存在，請重新輸入");
-          // if(index !== 'uploadExcelSave'){
-          //     this.$message.error('網路編號已存在，請重新輸入')
-          // }
         }
-        // if(index == 'uploadExcelSave' && result.repeatDataList !== undefined){
-        //     var list = []
-        //     result.repeatDataList.forEach(item=>{
-        //         list.push(item.name)
-        //     })
-        //     this.$message.error('【'+list.toString()+'】設備的網路編號已存在，請重新上傳')
-        // }
+        await this.handleDialogMixin_common(
+          Device,
+          isSuccess,
+          index,
+          content,
+          object
+        );
       } else {
-        this.innerVisible = false;
-        this.excelVisible = false;
-        this.$refs.block.clearSelectArray();
+        this.closeAll();
       }
     },
     async handleTableClick(index, content) {
@@ -343,17 +234,15 @@ export default {
         });
         window.open(routeData.href, "_blank");
       } else if (index == "openaddress") {
-        var routeData = this.$router.resolve({
-          path: "/deviceaddress/index",
-          query: { type: "address", obj: content.getID() },
+        this.$router.push({
+          name: "deviceAddressManagement",
+          params: { target: new Array(content), type: "open" },
         });
-        window.open(routeData.href, "_blank");
       } else if (index == "openplcaddress") {
-        var routeData = this.$router.resolve({
-          path: "/deviceaddress/plc",
-          query: { type: "plc", obj: content.getID() },
+        this.$router.push({
+          name: "devicePLCAddressManagement",
+          params: { target: new Array(content), type: "open" },
         });
-        window.open(routeData.href, "_blank");
       } else if (index == "clickPagination") {
         this.tablelistQueryParams = content;
         if (this.tableTitle == "devicemaintain") {
@@ -368,24 +257,7 @@ export default {
     },
     async changeTable(value) {
       this.isTable = value;
-      if (
-        this.$route.params.target !== undefined &&
-        this.$route.params.target.length !== 0 &&
-        this.$route.params.type == "open"
-      ) {
-        if (typeof this.$route.params.target == "object") {
-          await this.handleBlock(
-            "equipment",
-            "updateMany",
-            this.$route.params.target
-          );
-        }
-      } else if (
-        this.$route.query.type !== undefined &&
-        this.$route.query.type == "device"
-      ) {
-        await this.handleBlock("", "empty", "");
-      }
+      await this.openDialogWindows();
     },
     async searchChange(index) {
       this.searchType = index;
