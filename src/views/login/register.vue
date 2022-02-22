@@ -20,7 +20,7 @@
         <el-button @click="resetForm('ruleForm')">返回首頁</el-button>
       </el-form> -->
       <el-tabs v-model="activeName" @tab-click="handleClick">
-        <el-tab-pane label="純住戶登記" name="first"></el-tab-pane>
+        <el-tab-pane label="訪客登記" name="first"></el-tab-pane>
         <el-tab-pane label="成為住戶" name="second"></el-tab-pane>
       </el-tabs>
       <!-- <template v-if="!show">

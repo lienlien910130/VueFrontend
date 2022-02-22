@@ -917,7 +917,7 @@ export default {
         this.isTable == true ? (this.gutter = 0) : (this.gutter = 32);
         if (this.isTable == true) {
           this.rowlabel = this.config.filter(
-            (item, index) => item.isTable == true
+            (item, index) => item.isHidden == false
           );
           // item.isTable == true  item.isHidden == false
         } else {

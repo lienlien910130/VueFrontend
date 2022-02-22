@@ -41,14 +41,6 @@
                   </template>
                 </el-table-column>
               </el-table>
-              <!-- <template v-for="(item, index) in remind">
-                <div :key="index" style="font-size: 20px">
-                  <span>{{ index + 1 }}.</span>
-                  <span>{{ item.name }}</span>
-                  <span>{{ item.nextMaintainTime | dateChange }}</span>
-                  <span>{{ item.lastMaintainTime | dateChange }}</span>
-                </div>
-              </template> -->
             </el-col>
           </div>
         </div>
@@ -117,9 +109,7 @@ import {
   Files,
   MaintainManagementList,
   MaintainManagement,
-  Setting,
   Device,
-  Contactunit,
 } from "@/object/index";
 const moment = require("moment");
 

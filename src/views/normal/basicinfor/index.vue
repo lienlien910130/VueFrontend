@@ -1510,15 +1510,6 @@ export default {
   height: 780px !important;
 }
 
-// .floornotMobile {
-//   background: #fff;
-//   padding: 10px;
-//   margin-bottom: 32px;
-//   height: 720px;
-//   overflow-x: hidden;
-//   overflow-y: auto;
-// }
-
 .floorMobile {
   background: #fff;
   padding: 0px 16px 15px;

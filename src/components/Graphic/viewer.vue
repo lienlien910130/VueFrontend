@@ -116,13 +116,13 @@ export default {
       immediate: true,
       deep: true,
     },
-    isReturn: {
-      handler: async function () {
-        if (this.isReturn == true) {
-        }
-      },
-      immediate: true,
-    },
+    // isReturn: {
+    //   handler: async function () {
+    //     if (this.isReturn == true) {
+    //     }
+    //   },
+    //   immediate: true,
+    // },
     waitingNode: {
       handler: async function () {
         if (this.waitingNode.length) {
