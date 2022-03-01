@@ -17,6 +17,13 @@
       v-on:handleDialog="handleDialog"
     ></DialogForm>
 
+     <DialogContact
+      ref="dialogcontact"
+      v-if="contactVisible === true"
+      v-bind="contactAttrs"     
+      v-on:handleDialog="handleDialog"      
+    ></DialogContact>
+
     <DialogExcel
       ref="dialogexcel"
       v-if="excelVisible === true"
@@ -103,6 +110,10 @@ export default {
       immediate: true,
     },
   },
+  mounted() {
+    console.log('mounted-dialog',this.dialogAttrs)
+    console.log("class",this.menu)
+  },
   data() {
     return {
       roleAccessAuthority: [],
@@ -110,6 +121,7 @@ export default {
       accessAuthority: [],
       authorityVisible: false,
       account: null,
+      contactVisible : true,
       dialogFormVisible: false,
       ruleForm: { usageOfFloor: null },
       rules: {
@@ -226,6 +238,7 @@ export default {
         this.roleAccessAuthority = concatarray;
         console.log(this.roleAccessAuthority);
         this.treeData = this.menu.map((item) => {
+          
           return new Menu(item);
         });
         this.authorityVisible = true;
@@ -271,12 +284,18 @@ export default {
         } else {
           this.$message.error("認證失敗，請洽水星服務人員");
         }
-      } else if (index === "contact") {
+      } else if (index === "contact") {  
+        this.account = content;
+        await this.handleBlockMixin(title, index, content, Account); 
+        // this.contactVisible = true;   
+        
+        
       }
     },
     async handleDialog(title, index, content) {
       //Dialog相關操作
-      console.log(title, index, content);
+      console.log(123,title, index, content,);
+      
       if (index !== "cancel") {
         if (title === "photo") {
           if (index === "photo") {

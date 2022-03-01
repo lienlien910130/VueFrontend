@@ -61,7 +61,9 @@ const firebaseConfig = {
 }
 
 firebase.initializeApp(firebaseConfig)
-const messaging = firebase.messaging()
+// const messaging = firebase.messaging()
+console.log('firebase.messaging.isSupported()=>',firebase.messaging.isSupported())
+const messaging =  firebase.messaging.isSupported() ? firebase.messaging() : null
 Vue.prototype.$messaging = messaging
 navigator.serviceWorker.register('/firebase-messaging-sw.js',{scope: '/'})
   .then((registration) => {

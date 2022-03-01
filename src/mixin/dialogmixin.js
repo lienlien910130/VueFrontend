@@ -3,6 +3,7 @@ export default {
     return {
       dialogTitle: "",
       innerVisible: false,
+      contactVisible: false,
       dialogData: [],
       dialogStatus: "",
       dialogButtonsName: [],
@@ -16,12 +17,18 @@ export default {
         title: this.dialogTitle,
         visible: this.innerVisible,
         dialogData: this.dialogData,
+        contactVisible :this.contactVisible,
         dialogStatus: this.dialogStatus,
         buttonsName: this.dialogButtonsName,
         config: this.dialogConfig,
         selectData: this.dialogSelect,
       };
     },
+    contactAttrs() {
+      return {
+        visible : this.contactVisible
+      }
+    }
   },
   methods: {
     async handleDialogMixin(

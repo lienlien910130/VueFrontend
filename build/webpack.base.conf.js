@@ -45,7 +45,6 @@ module.exports = {
       //   options: {
       //     name: 'image/[name].[ext]',
       //     esModule: false,
-
       //   }
       // },
       {

@@ -1016,7 +1016,7 @@ export default {
   methods: {
     //區塊&表格&對外連結
     handleClickOption(status, row) {
-      console.log("status=>", status, "row=>", row);
+      console.log("status=>", status, "row=>", row, "c");
       if (status === "delete") {
         if (row.removable !== undefined && row.removable == false) {
           this.$message.error("該筆資料不可刪除");
@@ -1053,7 +1053,7 @@ export default {
             center: true,
           })
             .then(() => {
-              console.log(this.selectArray);
+              console.log(this.selectArray , "d");
               this.$emit("handleBlock", this.title, status, this.selectArray);
             })
             .catch(() => {});
@@ -1082,11 +1082,15 @@ export default {
         } else {
           this.$emit("handleBlock", this.title, status, this.selectArray);
         }
-      } else {
+      }  else if (status === "contact") {
+        this.$emit("handleDialog", this.title, status, row);
+        console.log( 123,this.title, status, row)
+        
+      }else {
         if (this.title == "maintain") {
           this.$emit("handleDialog", this.title, status, row);
         } else {
-          console.log(this.title, status, row);
+          console.log(this.title, status, row , "e");
           this.$emit("handleBlock", this.title, status, row);
         }
       }
@@ -1223,7 +1227,7 @@ export default {
           return obj.searchValue !== "";
         });
       var reg = this.reorganization(arr);
-      console.log(JSON.stringify(reg));
+      console.log(JSON.stringify(reg), "a");
       reg.forEach((item) => {
         var cond =
           item.type == "date"
@@ -1260,7 +1264,7 @@ export default {
           typeof data == "string" ? cond + data : data
         );
       });
-      console.log(JSON.stringify(this.listQueryParams));
+      console.log(JSON.stringify(this.listQueryParams), "b");
       this.$emit("update:listQueryParams", this.listQueryParams);
       if (this.title == "floorOfHouse") {
         this.$emit("searchEvent");
