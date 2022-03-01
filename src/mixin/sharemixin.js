@@ -9,6 +9,7 @@ export default {
       "buildingdevices",
       "buildingoptions",
       "buildingusers",
+      
       "buildingcontactunit",
       "buildingroles",
       "buildingarray",
@@ -105,6 +106,7 @@ export default {
     },
     closeAll() {
       this.innerVisible = false;
+      this.contactVisible = false;
       this.excelVisible = false;
       this.uploadVisible = false;
       this.authorityVisible = false;
