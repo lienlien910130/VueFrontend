@@ -109,6 +109,7 @@ export default {
       this.excelVisible = false;
       this.uploadVisible = false;
       this.authorityVisible = false;
+      this.contactAttrs.visible = false;
       this.$refs.block.clearSelectArray();
     },
   },

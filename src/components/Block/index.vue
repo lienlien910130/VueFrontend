@@ -447,7 +447,7 @@
                           item.removable == false
                         "
                       >
-                        <span>{{ button.name }}</span>
+                        <span>{{ button.name }} </span>
                       </el-button>
                     </span>
                   </div>
@@ -1082,9 +1082,8 @@ export default {
         } else {
           this.$emit("handleBlock", this.title, status, this.selectArray);
         }
-      }  else if (status === "contact") {
-        this.$emit("handleDialog", this.title, status, row);
-        console.log( 123,this.title, status, row)
+      } else if (status === "contact") {
+        this.$emit("handleBlock", this.title, status, row);        
         
       }else {
         if (this.title == "maintain") {

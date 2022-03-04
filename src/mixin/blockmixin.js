@@ -129,7 +129,12 @@ export default {
         ];
         this.innerVisible = true;
       } else if (index === "contact") {
+<<<<<<< HEAD
         this.contactVisible = true;
+=======
+        this.contactVisible =true;
+        console.log('click')
+>>>>>>> origin/jim
       }
     },
   },
