@@ -255,9 +255,7 @@ class Role extends Parent {
       .catch((error) => {
         return [];
       });
-      console.log(data, "123456");
     return data;
-    
   }
   static async postMany(data) {
     var data = await api.authority

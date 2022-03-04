@@ -9,7 +9,6 @@ export default {
       "buildingdevices",
       "buildingoptions",
       "buildingusers",
-      
       "buildingcontactunit",
       "buildingroles",
       "buildingarray",

@@ -105,21 +105,21 @@ export const constantRoutes = [
   //   ],
   //   hidden: true,
   // },
-  // {
-  //   path: "/selfDefenseClass",
-  //   component: Layout,
-  //   redirect: "/selfDefenseClass",
-  //   children: [
-  //     {
-  //       path: "index",
-  //       name: "selfDefenseClass",
-  //       component: () =>
-  //         import("@/views/emergency/emergencyState/selfDefenseClass.vue"),
-  //       meta: { title: "緊急應變班別", icon: "icon", needLogin: true },
-  //     },
-  //   ],
-  //   hidden: true,
-  // },
+  {
+    path: "/selfDefenseClass",
+    component: Layout,
+    redirect: "/selfDefenseClass",
+    children: [
+      {
+        path: "index",
+        name: "selfDefenseClass",
+        component: () =>
+          import("@/views/emergency/emergencyState/selfDefenseClass.vue"),
+        meta: { title: "緊急應變班別", icon: "icon", needLogin: true },
+      },
+    ],
+    hidden: true,
+  },
   {
     path: "/actions",
     component: Layout,
