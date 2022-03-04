@@ -704,13 +704,13 @@ export default {
           temp["headShotFileId"] !== undefined &&
           temp["headShotFileId"] !== null &&
           temp["headShotFileId"] !== ""
-        ) {
+        ) {          
           var file = await Files.getOfID(temp["headShotFileId"]);
           var filename = file.getExtName();
           var fileType = filename == "png" ? "image/png" : "image/jpeg";
           var data = await Files.getImage(temp["headShotFileId"]);
-          let url = URL.createObjectURL(new Blob([data], { type: fileType }));
-          file.url = url;
+          let url = URL.createObjectURL(new Blob([data], { type: fileType }));          
+          file.url = url;          
           this.fileList.push(file);
         }
       }

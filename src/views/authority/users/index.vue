@@ -19,7 +19,7 @@
 
      <DialogContact
       ref="dialogcontact"
-      v-if="contactVisible === true"
+      v-if="contactAttrs.visible === true"
       v-bind="contactAttrs"     
       v-on:handleDialog="handleDialog"      
     ></DialogContact>
@@ -109,11 +109,7 @@ export default {
       },
       immediate: true,
     },
-  },
-  mounted() {
-    console.log('mounted-dialog',this.dialogAttrs)
-    console.log("class",this.menu)
-  },
+  }, 
   data() {
     return {
       roleAccessAuthority: [],
@@ -129,6 +125,10 @@ export default {
           { required: true, message: "請選擇門牌", trigger: "change" },
         ],
       },
+      contactAttrs : {
+        visible : false,
+        account : ""
+      }
     };
   },
   methods: {
@@ -285,8 +285,9 @@ export default {
           this.$message.error("認證失敗，請洽水星服務人員");
         }
       } else if (index === "contact") {  
-        this.account = content;
-        await this.handleBlockMixin(title, index, content, Account); 
+        this.contactAttrs.visible = true;
+        this.contactAttrs.account = content;
+        // await this.handleBlockMixin(title, index, content, Account); 
         // this.contactVisible = true;   
         
         
@@ -294,8 +295,8 @@ export default {
     },
     async handleDialog(title, index, content) {
       //Dialog相關操作
-      console.log(123,title, index, content,);
-      
+      console.log(title, index, content,);
+      console.log("父")
       if (index !== "cancel") {
         if (title === "photo") {
           if (index === "photo") {

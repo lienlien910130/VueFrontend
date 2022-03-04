@@ -16,9 +16,10 @@
           style="width:200px;height:90px" />
       </router-link>
     </div> v-if="process"-->
-
+    
     <div class="right-menu">
       <span @click="showToken">TOKEN</span>
+      <span @click="dialogVisible = true" >消防支援</span>
       <!-- 火災時的平面圖--有緊急應變才顯示 -->
       <div
         v-if="deviceType !== 'null' && fireButton"
@@ -35,7 +36,8 @@
         id="screenfull"
         class="right-menu-item hover-effect"
       />
-
+      
+      
       <template v-if="buildingarray.length">
         <el-dropdown
           class="avatar-container right-menu-item hover-effect"
@@ -59,7 +61,7 @@
           </el-dropdown-menu>
         </el-dropdown>
       </template>
-
+      
       <template v-if="name !== null">
         <el-dropdown
           class="avatar-container right-menu-item hover-effect"
@@ -105,6 +107,21 @@
         </div>
       </div>
     </div>
+
+    <el-dialog
+      title="提示"
+      :visible.sync="dialogVisible"
+      width="30%"
+      append-to-body
+      center
+      :before-close="handleClose">
+      <div></div>
+      <!-- <span>这是一段信息</span> -->
+      <!-- <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+      </span> -->
+    </el-dialog>  
   </div>
 </template>
 
@@ -210,6 +227,7 @@ export default {
       buildingName: "請選擇建築物",
       backVisible: false,
       fireButton: false,
+      dialogVisible: false
     };
   },
   methods: {
@@ -266,6 +284,11 @@ export default {
       alert(hastoken.length !== 0);
       alert(this.mToken);
     },
+    handleClose(done) {   
+        done();       
+       
+      }
+    
   },
 };
 // background-image:url("../../assets/image/navbarimg.png");

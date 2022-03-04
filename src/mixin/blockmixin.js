@@ -44,8 +44,7 @@ export default {
   },
   methods: {
     async handleBlockMixin(title, index, content, constr) {
-      console.log("handleBlockMixin", index, content);
-      console.log(123456);
+           
       this.dialogTitle = this.title;
       this.dialogButtonsName = [];
       if (index === "open") {
@@ -131,6 +130,7 @@ export default {
         this.innerVisible = true;
       } else if (index === "contact") {
         this.contactVisible =true;
+        console.log('click')
       }
     },
   },
