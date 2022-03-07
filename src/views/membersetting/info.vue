@@ -115,7 +115,10 @@ export default {
   watch: {
     id: {
       handler: async function () {
-        await this.init();
+        console.log("id", this.id);
+        if (this.id !== undefined && this.id !== null) {
+          await this.init();
+        }
       },
       immediate: true,
     },

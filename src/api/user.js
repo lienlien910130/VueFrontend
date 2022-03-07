@@ -13,11 +13,11 @@ const user = {
   },
   //忘記密碼-寄送email
   apiPostPassword(data) {
-    return req("post", "/users/forgot/checkAndSendInfo", null, data);
+    return req("post", "/users/support/forgot/checkAndSendInfo", null, data);
   },
   //確認是否超過認證期限
   apiPostCheckReset(data) {
-    return req("post", "/users/forgot/checkAndSendInfo/modify", null, data);
+    return req("post", "/users/support/checkAndSendInfo/modify", null, data);
   },
   //email認證
   apiPostEmailCertification(data) {
@@ -35,7 +35,7 @@ const user = {
   apiPatchResetPassword(data) {
     return req(
       "patch",
-      "/users/forgot/checkAndSendInfo/modifyPassword",
+      "/users/support/checkAndSendInfo/modifyPassword",
       null,
       data
     );
