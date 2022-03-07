@@ -628,6 +628,22 @@
                         </i>
                       </el-tooltip>
                     </template>
+                    <template v-else-if="button.status == 'openlacks'">
+                      <el-tooltip
+                        v-if="!scope.row.declareResult"
+                        class="item"
+                        effect="dark"
+                        :content="button.name"
+                        placement="top"
+                      >
+                        <i
+                          :class="button.icon"
+                          @click="handleClickOption(button.status, scope.row)"
+                          style="cursor: pointer; font-size: 25px; float: right"
+                        >
+                        </i>
+                      </el-tooltip>
+                    </template>
                     <template v-else>
                       <el-tooltip
                         class="item"
@@ -1053,7 +1069,7 @@ export default {
             center: true,
           })
             .then(() => {
-              console.log(this.selectArray , "d");
+              console.log(this.selectArray, "d");
               this.$emit("handleBlock", this.title, status, this.selectArray);
             })
             .catch(() => {});
@@ -1083,13 +1099,12 @@ export default {
           this.$emit("handleBlock", this.title, status, this.selectArray);
         }
       } else if (status === "contact") {
-        this.$emit("handleBlock", this.title, status, row);        
-        
-      }else {
+        this.$emit("handleBlock", this.title, status, row);
+      } else {
         if (this.title == "maintain") {
           this.$emit("handleDialog", this.title, status, row);
         } else {
-          console.log(this.title, status, row , "e");
+          console.log(this.title, status, row, "e");
           this.$emit("handleBlock", this.title, status, row);
         }
       }
