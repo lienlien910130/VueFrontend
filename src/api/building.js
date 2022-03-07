@@ -136,6 +136,9 @@ const building = {
   apiGetFloorOfHouse(floorId) {
     return req("get", "/basic/usageOfFloors/" + floorId + "/a");
   },
+  apiGetFloorOfHouseFromRegister(buildingId) {
+    return req("get", "/index/usageOfFloors/" + buildingId + "/nLink/a");
+  },
   // apiGetHouse(usageOfFloorId){ return req('get','/basic/usage-of-floors/'+usageOfFloorId) },
   apiPostFloorOfHouse(floorId, data) {
     return req("post", "/basic/usageOfFloors/check", floorId, data);

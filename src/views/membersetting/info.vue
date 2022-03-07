@@ -115,7 +115,6 @@ export default {
   watch: {
     id: {
       handler: async function () {
-        console.log("id", this.id);
         if (this.id !== undefined && this.id !== null) {
           await this.init();
         }

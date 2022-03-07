@@ -459,6 +459,22 @@ class UsageOfFloor extends Parent {
       });
     return data;
   }
+  static async getFromRegister(buildingId) {
+    var data = await api.building
+      .apiGetFloorOfHouseFromRegister(buildingId)
+      .then((response) => {
+        var result = response.result
+          .sort((x, y) => x.id - y.id)
+          .map((item) => {
+            return new UsageOfFloor(item);
+          });
+        return result;
+      })
+      .catch((error) => {
+        return [];
+      });
+    return data;
+  }
 }
 
 export default UsageOfFloor;

@@ -190,13 +190,15 @@ export default {
     // },
     buildingoptions: {
       handler: async function () {
-        if (this.setting_record == 0) {
-          this.$store.dispatch("building/setoptions");
-          this.$store.dispatch("record/saveSettingRecord", 1);
+        if (this.buildingoptions.length) {
+          if (this.setting_record == 0) {
+            this.$store.dispatch("building/setoptions");
+            this.$store.dispatch("record/saveSettingRecord", 1);
+          }
+          await this.getBuildingDevicesManage();
+          await this.getNumber();
+          await this.getRemind();
         }
-        await this.getBuildingDevicesManage();
-        await this.getNumber();
-        await this.getRemind();
       },
       immediate: true,
     },

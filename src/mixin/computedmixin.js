@@ -1,19 +1,7 @@
 // const Vuex = require('vuex')
 const moment = require("moment");
 import constant from "@/constant/index";
-import {
-  Device,
-  DeviceType,
-  Contactunit,
-  UsageOfFloor,
-  Role,
-  Building,
-  InspectionLacks,
-  Account,
-  User,
-  Committee,
-  Floors,
-} from "@/object/index";
+import { Role } from "@/object/index";
 import { _ } from "core-js";
 
 export default {
@@ -462,16 +450,20 @@ export default {
             case "inspectionSelect":
               return this.selectData[0];
             case "floorOfHouseSelect":
-              if (this.floorOfHouse_record == 0) {
-                this.$store.dispatch("building/setFloorOfHouse");
-                this.$store.dispatch("record/saveFloorOfHouseRecord", 1);
+              if (this.$route.query.bID == undefined) {
+                if (this.floorOfHouse_record == 0) {
+                  this.$store.dispatch("building/setFloorOfHouse");
+                  this.$store.dispatch("record/saveFloorOfHouseRecord", 1);
+                }
+                return this.buildingfloorOfHouse.map((v) => {
+                  this.$set(v, "id", v.id);
+                  this.$set(v, "label", v.houseNumber);
+                  this.$set(v, "value", v.id);
+                  return v;
+                });
+              } else {
+                return this.selectData;
               }
-              return this.buildingfloorOfHouse.map((v) => {
-                this.$set(v, "id", v.id);
-                this.$set(v, "label", v.houseNumber);
-                this.$set(v, "value", v.id);
-                return v;
-              });
             case "userInfo":
             case "classLeaderSelect":
             case "usageOfFloorUserInfo":

@@ -344,7 +344,7 @@ export default {
         var _this = this;
         //const element = this.$refs.qrcode
         QRCode.toDataURL(
-          "https://demo.mercuryfire.com.tw/register",
+          "https://demo.mercuryfire.com.tw/register?bID=" + content.id,
           this.options,
           function (err, url) {
             if (err) throw err;

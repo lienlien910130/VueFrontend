@@ -65,7 +65,7 @@ const actions = {
       user
         .apiPostRegister(userInfo)
         .then((response) => {
-          resolve();
+          resolve(response);
         })
         .catch((error) => {
           reject(error);

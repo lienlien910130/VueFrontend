@@ -71,6 +71,21 @@
             >
             </el-option>
           </el-select>
+          <el-select
+            v-else-if="item.formType == 'selectString'"
+            v-model="temp[item.prop]"
+            filterable
+            placeholder="請選擇"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="(obj, index) in selectfilter(item.format)"
+              :key="index"
+              :label="obj.label"
+              :value="obj.id"
+            >
+            </el-option>
+          </el-select>
           <el-input
             v-else
             v-model="temp[item.prop]"
@@ -93,8 +108,8 @@
 </template>
 <script>
 import computedmixin from "@/mixin/computedmixin";
-import { Account } from "@/object";
-import { getToken, setTmpA } from "@/utils/auth";
+import { Account, UsageOfFloor } from "@/object";
+import { setTmpA } from "@/utils/auth";
 export default {
   mixins: [computedmixin],
   data() {
@@ -102,7 +117,20 @@ export default {
       config: Account.getHouseTableConfig(),
       temp: {},
       activeName: "first",
+      selectData: [],
     };
+  },
+  async mounted() {
+    if (this.$route.query.bID !== undefined) {
+      var data = await UsageOfFloor.getFromRegister(this.$route.query.bID);
+      this.selectData = data.map((v) => {
+        this.$set(v, "id", v.id);
+        this.$set(v, "label", v.houseNumber);
+        this.$set(v, "value", v.id);
+        return v;
+      });
+      this.temp["linkBuildings"] = [{ id: this.$route.query.bID }];
+    }
   },
   methods: {
     submitForm(formName) {
@@ -115,8 +143,9 @@ export default {
           this.$store
             .dispatch("user/register", this.temp)
             .then((response) => {
-              if (getToken()) {
+              if (this.buildingid) {
                 this.$message("會員註冊成功");
+                this.temp = {};
               } else {
                 if (this.activeName == "first") {
                   this.$message(
