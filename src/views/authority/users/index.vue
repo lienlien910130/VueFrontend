@@ -17,11 +17,11 @@
       v-on:handleDialog="handleDialog"
     ></DialogForm>
 
-     <DialogContact
+    <DialogContact
       ref="dialogcontact"
       v-if="contactAttrs.visible === true"
-      v-bind="contactAttrs"     
-      v-on:handleDialog="handleDialog"      
+      v-bind="contactAttrs"
+      v-on:handleDialog="handleDialog"
     ></DialogContact>
 
     <DialogExcel
@@ -109,7 +109,7 @@ export default {
       },
       immediate: true,
     },
-  }, 
+  },
   data() {
     return {
       roleAccessAuthority: [],
@@ -117,7 +117,7 @@ export default {
       accessAuthority: [],
       authorityVisible: false,
       account: null,
-      contactVisible : true,
+      contactVisible: true,
       dialogFormVisible: false,
       ruleForm: { usageOfFloor: null },
       rules: {
@@ -125,10 +125,10 @@ export default {
           { required: true, message: "請選擇門牌", trigger: "change" },
         ],
       },
-      contactAttrs : {
-        visible : false,
-        account : ""
-      }
+      contactAttrs: {
+        visible: false,
+        account: {},
+      },
     };
   },
   methods: {
@@ -238,7 +238,6 @@ export default {
         this.roleAccessAuthority = concatarray;
         console.log(this.roleAccessAuthority);
         this.treeData = this.menu.map((item) => {
-          
           return new Menu(item);
         });
         this.authorityVisible = true;
@@ -284,19 +283,15 @@ export default {
         } else {
           this.$message.error("認證失敗，請洽水星服務人員");
         }
-      } else if (index === "contact") {  
+      } else if (index === "contact") {
         this.contactAttrs.visible = true;
         this.contactAttrs.account = content;
-        // await this.handleBlockMixin(title, index, content, Account); 
-        // this.contactVisible = true;   
-        
-        
       }
     },
     async handleDialog(title, index, content) {
       //Dialog相關操作
-      console.log(title, index, content,);
-      console.log("父")
+      console.log(title, index, content);
+      console.log("父");
       if (index !== "cancel") {
         if (title === "photo") {
           if (index === "photo") {
