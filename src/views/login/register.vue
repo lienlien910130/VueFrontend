@@ -1,48 +1,10 @@
 <template>
   <div class="login-container">
     <div class="container">
-      <!-- <el-form
-        :model="ruleForm"
-        :rules="rules"
-        ref="ruleForm"
-        label-width="100px"
-        class="demo-ruleForm"
-      >
-        <el-form-item label="帳號" prop="account">
-          <el-input v-model="ruleForm.account"></el-input>
-        </el-form-item>
-        <el-form-item label="email" prop="email">
-          <el-input v-model="ruleForm.email"></el-input>
-        </el-form-item>
-        <el-button type="primary" @click="submitForm('ruleForm')"
-          >重設密碼</el-button
-        >
-        <el-button @click="resetForm('ruleForm')">返回首頁</el-button>
-      </el-form> -->
       <el-tabs v-model="activeName" @tab-click="handleClick">
         <el-tab-pane label="訪客登記" name="first"></el-tab-pane>
         <el-tab-pane label="成為住戶" name="second"></el-tab-pane>
       </el-tabs>
-      <!-- <template v-if="!show">
-        <el-tooltip placement="top">
-          <div slot="content">住戶資料登記使用</div>
-          <el-button type="primary" @click="selectType('house')"
-            >純住戶登記</el-button
-          >
-        </el-tooltip>
-        <el-tooltip placement="top">
-          <div slot="content">註冊成為平台會員</div>
-          <el-button type="success" @click="selectType('register')"
-            >註冊會員</el-button
-          >
-        </el-tooltip>
-        <el-tooltip placement="top">
-          <div slot="content">已有住戶登記過資料，想升級為平台會員者</div>
-          <el-button @click="selectType('upgrade')"
-            >升級成為會員</el-button
-          >
-        </el-tooltip>
-      </template> -->
       <el-form
         ref="dataForm"
         :model="temp"
@@ -115,7 +77,9 @@
             :maxlength="item.maxlength"
             show-word-limit
             :placeholder="item.placeholder"
-            :show-password="item.prop === 'password'"
+            :show-password="
+              item.prop === 'password' || item.prop === 'password2'
+            "
           >
           </el-input>
         </el-form-item>
@@ -130,6 +94,7 @@
 <script>
 import computedmixin from "@/mixin/computedmixin";
 import { Account } from "@/object";
+import { getToken, setTmpA } from "@/utils/auth";
 export default {
   mixins: [computedmixin],
   data() {
@@ -141,21 +106,30 @@ export default {
   },
   methods: {
     submitForm(formName) {
+      if (this.temp["password"] !== this.temp["password2"]) {
+        this.$message.error("密碼輸入不一致，請重新輸入");
+        return false;
+      }
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.$store
             .dispatch("user/register", this.temp)
             .then((response) => {
-              if (this.activeName == "first") {
-                this.$message(
-                  "若要成為正式帳號，請登入後申請，或是重新填寫成為住戶"
-                );
+              if (getToken()) {
+                this.$message("會員註冊成功");
               } else {
-                this.$message("提交完成，可直接登入系統查看資料");
+                if (this.activeName == "first") {
+                  this.$message(
+                    "若要成為正式帳號，請登入後申請，或是重新填寫成為住戶"
+                  );
+                } else {
+                  this.$message("註冊成功，可直接登入系統查看資料");
+                }
+                setTmpA(response.result.account);
+                setTimeout(() => {
+                  this.$router.push({ path: "/login" });
+                }, 2000);
               }
-              setTimeout(() => {
-                this.$router.push({ path: "/login" });
-              }, 2000);
             })
             .catch((error) => {
               console.log(error);

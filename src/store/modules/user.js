@@ -65,12 +65,6 @@ const actions = {
       user
         .apiPostRegister(userInfo)
         .then((response) => {
-          console.log(response);
-          // idb.getDb();
-          // commit("SET_TOKEN", response.accessToken); //store 儲存
-          setTmpA(response.result.account); //cookie儲存
-          // commit("SET_USER", response.userId); //store 儲存
-          // setID(response.userId); //cookie儲存
           resolve();
         })
         .catch((error) => {

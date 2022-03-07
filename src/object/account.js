@@ -1157,7 +1157,7 @@ class Account extends Parent {
         isCheck: true,
       },
       {
-        label: "密碼",
+        label: "設定密碼",
         prop: "password",
         mandatory: true,
         message: "請輸入密碼",
@@ -1175,10 +1175,29 @@ class Account extends Parent {
         isBlock: false,
         selectFilter: false,
       },
+      {
+        label: "確認密碼",
+        prop: "password2",
+        mandatory: true,
+        message: "請再次輸入密碼",
+        maxlength: "100",
+        // pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+        // errorMsg: "請輸入至少8個字元，含大小寫字母、至少1個數字",
+        isPattern: false,
+        isHidden: true,
+        isSearch: false,
+        placeholder: "請再次輸入密碼",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: false,
+        isBlock: false,
+        selectFilter: false,
+      },
     ];
   }
   static getHouseTableConfig() {
-    //純住戶登記使用
+    //訪客登記使用
     return [
       {
         label: "姓名",
@@ -1250,7 +1269,7 @@ class Account extends Parent {
         selectFilter: false,
       },
       {
-        label: "驗證密碼",
+        label: "設定密碼",
         prop: "password",
         mandatory: true,
         message: "請輸入密碼",
@@ -1261,6 +1280,25 @@ class Account extends Parent {
         isHidden: true,
         isSearch: false,
         placeholder: "請輸入密碼",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: false,
+        isBlock: false,
+        selectFilter: false,
+      },
+      {
+        label: "確認密碼",
+        prop: "password2",
+        mandatory: true,
+        message: "請再次輸入密碼",
+        maxlength: "100",
+        // pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+        // errorMsg: "請輸入至少8個字元，含大小寫字母、至少1個數字",
+        isPattern: false,
+        isHidden: true,
+        isSearch: false,
+        placeholder: "請再次輸入密碼",
         isAssociate: false,
         isEdit: true,
         isUpload: true,
