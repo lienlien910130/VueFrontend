@@ -502,7 +502,7 @@ export default {
       deep: true,
     },
   },
-  computed: {
+  computed: {  
     dialogWidth() {
       if (this.$store.state.app.device === "mobile") {
         return "90%";
@@ -510,7 +510,6 @@ export default {
         return "1000px";
       }
     },
-
     changeTabLabel() {
       return function (item) {
         switch (this.title) {
@@ -574,6 +573,7 @@ export default {
       originalInternet: null,
       commitUserInfoArray: [],
       accountArray: [],
+      classLeaderArray:[],      
       radioType: null,
       fileList: [],
       previewPath: "",
@@ -697,7 +697,8 @@ export default {
           this.accountArray = data.filter((item) =>
             !set.has(item.id) ? set.add(item.id) : false
           );
-        }
+        }        
+        this.classLeaderArray = temp.linkAccountList;        
       } else if (this.title == "account" || this.title == "user") {
         this.handleChangeCheckBox(this.temp["moveWithDifficulty"]);
         if (
@@ -776,12 +777,12 @@ export default {
     // 點位-指定設備
     // 消防編組細項-選擇角色時要撈出account清單
     async checkMode(value, format) {
-      console.log(value);
+      console.log(value);                   
       if (value.length) {
         if (
           this.title == "selfDefenseFireMarshallingMgmt" &&
           format == "roleSelect"
-        ) {
+        ) {            
           var data = [];
           for (let item of value) {
             var account = await SelfDefenseFireMarshalling.getAccountByRole(
@@ -795,7 +796,17 @@ export default {
           this.accountArray = data.filter((item) =>
             !set.has(item.id) ? set.add(item.id) : false
           );
-          this.disable = false;
+          this.disable = false;         
+        } else if (
+          this.title == "selfDefenseFireMarshallingMgmt" &&
+          format == "accountSelect"
+        ) {
+          this.classLeaderArray = value;
+          let idArray = value.map((item) => item.id)     
+          if(!idArray.includes(this.temp.classLeaderId)) {
+            this.temp.classLeaderId = ""
+          }
+                
         }
       } else {
         // if (this.title == "equipment" && format == "deviceTypeSelect") {
@@ -815,6 +826,14 @@ export default {
         ) {
           this.disable = true;
           this.temp["linkAccountList"] = [];
+          this.temp.classLeaderId = "";
+          this.classLeaderArray = []; 
+        } else if (
+          this.title == "selfDefenseFireMarshallingMgmt" &&
+          format == "accountSelect"
+        ) {
+          this.temp.classLeaderId = "";
+          this.classLeaderArray = []; 
         }
       }
     },
@@ -1256,8 +1275,8 @@ export default {
     async handleTabClick(tab, event) {
       var data = this.dialogData.filter(
         (element, index) => element.id == tab.name
-      )[0];
-      this.temp = data.clone(data);
+      )[0];     
+      this.temp = data.clone(data);          
       await this.setDataForm(this.temp);
     },
     changeObjectToArray() {

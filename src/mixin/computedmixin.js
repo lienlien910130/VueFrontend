@@ -464,8 +464,7 @@ export default {
               } else {
                 return this.selectData;
               }
-            case "userInfo":
-            case "classLeaderSelect":
+            case "userInfo":            
             case "usageOfFloorUserInfo":
               if (this.account_record == 0) {
                 this.$store.dispatch("building/setaccounts");
@@ -516,6 +515,13 @@ export default {
               return this.commitUserInfoArray;
             case "accountSelect":
               return this.accountArray;
+            case "classLeaderSelect":      
+              return this.classLeaderArray.map((v) => {            
+              this.$set(v, "value", v.id);
+              this.$set(v, "label", v.name);
+              this.$set(v, "id", v.id);
+              return v;
+            });
             case "certificateNumber":
               return [
                 { label: "消防設備師", id: "消防設備師" },

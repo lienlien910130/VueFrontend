@@ -4,7 +4,7 @@
       <div class="divLeft">
         <h1>{{ marshallingClass.name }}</h1>
         <h2>
-          隊長：{{
+          班長：{{
             changeShowFormatString(
               "classLeaderSelect",
               marshallingClass,
