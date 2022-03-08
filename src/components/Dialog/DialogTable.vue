@@ -90,7 +90,8 @@
                 <span
                   v-else-if="
                     item.formType == 'selectString' ||
-                    item.formType == 'addressStr'
+                    item.formType == 'addressStr' ||
+                    item.formType == 'fullType'
                   "
                 >
                   {{

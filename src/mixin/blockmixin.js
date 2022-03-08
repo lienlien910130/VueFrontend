@@ -45,7 +45,7 @@ export default {
   methods: {
     async handleBlockMixin(title, index, content, constr) {
       console.log("handleBlockMixin", index, content);
-      this.dialogTitle = this.title;
+      this.dialogTitle = title;
       this.dialogButtonsName = [];
       if (index === "open") {
         this.dialogStatus = "update";
