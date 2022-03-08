@@ -212,6 +212,7 @@ export default {
         "/maintainListManagement"
       );
       this.remind = reminder.needMaintainDeviceLsit;
+      console.log(JSON.stringify(this.remind));
       this.panelList = [
         {
           label: "本月應保養數量",

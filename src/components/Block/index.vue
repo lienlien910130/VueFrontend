@@ -2,26 +2,29 @@
   <div>
     <el-row>
       <el-col :xs="24" :sm="24" :md="24" :lg="24">
-        <el-select
+        <template
           v-if="
             title == 'deviceAddressManagement' ||
             title == 'devicePLCAddressManagement'
           "
-          v-model="deviceIdSelect"
-          filterable
-          placeholder="請選擇設備"
-          style="width: 500px; margin-bottom: 10px"
-          value-key="id"
-          @change="searchDevice"
         >
-          <el-option
-            v-for="(item, index) in deviceSelectArray"
-            :key="index"
-            :label="item.label"
-            :value="item"
+          <el-select
+            v-model="deviceIdSelect"
+            filterable
+            placeholder="請選擇設備"
+            style="width: 500px; margin-bottom: 10px"
+            value-key="id"
+            @change="searchDevice"
           >
-          </el-option>
-        </el-select>
+            <el-option
+              v-for="(item, index) in deviceSelectArray"
+              :key="index"
+              :label="item.label"
+              :value="item"
+            >
+            </el-option>
+          </el-select>
+        </template>
         <template v-if="title == 'maintainList'">
           <el-button type="primary" @click="change"> 檢視及搜尋細項 </el-button>
           <el-button type="primary" @click="handleClickOption('empty', '')">
@@ -186,6 +189,13 @@
               @click="change"
               size="mini"
               >檢視大項</el-button
+            >
+            <el-button
+              v-if="title == 'equipment'"
+              type="primary"
+              @click="openDeviceType"
+              size="mini"
+              >設備種類</el-button
             >
           </el-col>
         </template>
@@ -703,8 +713,6 @@
 <script>
 import { computedmixin } from "@/mixin/index";
 const moment = require("moment");
-import constant from "@/constant/index";
-import { getUUID } from "@/utils";
 import { getDevice } from "@/utils/auth";
 
 export default {
@@ -1137,6 +1145,9 @@ export default {
     change() {
       this.$emit("changeTable", !this.isTable);
     },
+    openDeviceType() {
+      this.$emit("handleBlock", this.title, "opendeviceType", "");
+    },
     searchDevice() {
       this.listQueryParams.internet = this.deviceIdSelect.getInternetNumber();
       this.$emit("setDeviceIdSelect", this.deviceIdSelect.getID());
@@ -1241,7 +1252,6 @@ export default {
           return obj.searchValue !== "";
         });
       var reg = this.reorganization(arr);
-      console.log(JSON.stringify(reg), "a");
       reg.forEach((item) => {
         var cond =
           item.type == "date"
@@ -1278,7 +1288,6 @@ export default {
           typeof data == "string" ? cond + data : data
         );
       });
-      console.log(JSON.stringify(this.listQueryParams), "b");
       this.$emit("update:listQueryParams", this.listQueryParams);
       if (this.title == "floorOfHouse") {
         this.$emit("searchEvent");

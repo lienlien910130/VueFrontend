@@ -15,7 +15,6 @@ class Device extends Parent {
       dateOfPurchase,
       dateOfWarranty,
       location,
-      groupID,
       ip,
       port,
       normalValue,
@@ -50,7 +49,6 @@ class Device extends Parent {
     this.dateOfPurchase = dateOfPurchase;
     this.dateOfWarranty = dateOfWarranty;
     this.location = location;
-    this.groupID = groupID;
     this.status = status;
     this.ip = ip;
     this.port = port;
@@ -241,23 +239,6 @@ class Device extends Parent {
   static getTableConfig() {
     return [
       {
-        label: "名稱",
-        prop: "name",
-        mandatory: true,
-        message: "請輸入名稱",
-        isHidden: false,
-        maxlength: "20",
-        isSearch: true,
-        placeholder: "請輸入名稱",
-        isAssociate: false,
-        isEdit: true,
-        isUpload: true,
-        isExport: true,
-        isBlock: true,
-        selectFilter: false,
-        isShow: true,
-      },
-      {
         label: "種類",
         prop: "linkDeviceTypes",
         format: "deviceTypeSelect",
@@ -276,6 +257,23 @@ class Device extends Parent {
         limit: 1,
         selectFilter: true,
         hasEvent: true,
+        isShow: true,
+      },
+      {
+        label: "名稱",
+        prop: "name",
+        mandatory: true,
+        message: "請輸入名稱",
+        isHidden: false,
+        maxlength: "20",
+        isSearch: true,
+        placeholder: "請輸入名稱",
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        selectFilter: false,
         isShow: true,
       },
       {
@@ -425,22 +423,6 @@ class Device extends Parent {
         maxlength: "20",
         isSearch: true,
         placeholder: "請輸入位置設置",
-        isAssociate: false,
-        isEdit: true,
-        isUpload: true,
-        isExport: true,
-        isBlock: false,
-        selectFilter: false,
-        isShow: true,
-      },
-      {
-        label: "分類群組",
-        prop: "groupID",
-        mandatory: false,
-        isHidden: false,
-        maxlength: "10",
-        isSearch: true,
-        placeholder: "請輸入分類群組",
         isAssociate: false,
         isEdit: true,
         isUpload: true,
