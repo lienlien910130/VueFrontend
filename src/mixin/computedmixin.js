@@ -192,6 +192,7 @@ export default {
     },
     changeOptionName() {
       //設定名稱
+      
       return function (value) {
         if (this.setting_record == 0) {
           this.$store.dispatch("building/setoptions");
@@ -200,11 +201,10 @@ export default {
         if (value !== null && value !== undefined) {          
           let _array = this.buildingoptions.filter(
             (item, index) => item.id == value
-          );
-          if(_array[0].id == 142) {
+          );          
+          if(_array[0].classType = "MaintainProcessOptions" && _array[0].textName === "已保養") {
             _array[0].textName = "正常"
-          }
-          if(_array[0].id == 269) {
+          } else if (_array[0].classType = "MaintainProcessOptions" && _array[0].textName === "故障中") {
             _array[0].textName = "故障"
           }
           return _array.length !== 0 ? _array[0].textName : "";
