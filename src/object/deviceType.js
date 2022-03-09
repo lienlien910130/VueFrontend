@@ -71,14 +71,7 @@ class DeviceType extends Parent {
   //設備清單使用
   getSelectName() {
     return this.getType() !== "" && this.getType() !== undefined
-      ? "【" +
-          this.getType() +
-          "】" +
-          this.name +
-          "-" +
-          this.brand +
-          "-" +
-          this.productId
+      ? "【" + this.getType() + "】" + this.brand
       : "";
   }
   static empty() {

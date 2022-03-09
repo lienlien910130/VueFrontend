@@ -75,21 +75,34 @@ const device = {
   apiGetDevicesTypeOfID(id) {
     return req("get", "/index/deviceTypes/" + id);
   },
-  // apiGetDevicesType(){ return req('get','/deviceTypesManagement/a') },
   apiPostDevicesType(data) {
-    return req("post", "/deviceTypesManagement", null, data);
+    return req("post", "/devicesManagement/deviceTypesManagement", null, data);
   },
   apiPatchDevicesType(data) {
-    return req("patch", "/deviceTypesManagement", null, data);
+    return req("patch", "/devicesManagement/deviceTypesManagement", null, data);
   },
   apiDeleteDevicesType(deviceTypeId) {
-    return req("delete", "/deviceTypesManagement/" + deviceTypeId);
+    return req(
+      "delete",
+      "/devicesManagement/deviceTypesManagement/" + deviceTypeId
+    );
   },
   apiGetDevicesTypeSearchPages(data) {
-    return req("post", "/deviceTypesManagement/ss", null, data, true);
+    return req(
+      "post",
+      "/devicesManagement/deviceTypesManagement/ss",
+      null,
+      data,
+      true
+    );
   },
   apiPostDevicesTypes(data) {
-    return req("post", "/deviceTypesManagement/s", null, data);
+    return req(
+      "post",
+      "/devicesManagement/deviceTypesManagement/s",
+      null,
+      data
+    );
   },
 
   //點位設定-火警總機
