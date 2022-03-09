@@ -28,7 +28,7 @@
                 </el-table-column>
                 <el-table-column prop="status" label="設備狀態">
                   <template slot-scope="scope">
-                    {{ changeSettingsName(scope.row.status) }}
+                    {{ changeSettingsName(scope.row.status, "status") }}
                   </template>
                 </el-table-column>
                 <el-table-column>
@@ -36,7 +36,7 @@
                     <el-button
                       size="mini"
                       @click="handleRepair(scope.$index, scope.row)"
-                      >叫修</el-button
+                      >{{ changeSettingsName(scope.row.status, "button") }}</el-button
                     >
                   </template>
                 </el-table-column>
@@ -158,7 +158,7 @@ export default {
     },
     changeSettingsName() {
       //設定名稱
-      return function (value) {
+      return function (value, options) {        
         if (this.setting_record == 0) {
           this.$store.dispatch("building/setoptions");
           this.$store.dispatch("record/saveSettingRecord", 1);
@@ -167,7 +167,24 @@ export default {
           let _array = this.buildingoptions.filter(
             (item, index) => item.id == value
           );
-          return _array.length !== 0 ? _array[0].textName : "";
+          
+          if(options === "status") {           
+            if(_array[0].classType === "MaintainProcessOptions" && _array[0].textName === "已保養") {
+            _array[0].textName = "正常"
+          } else if (_array[0].classType === "MaintainProcessOptions" && _array[0].textName === "故障中") {
+            _array[0].textName = "故障"
+          }         
+            return _array.length !== 0 ? _array[0].textName : "";               
+          } else if (options === "button") {            
+            if(_array[0].classType === "MaintainProcessOptions" && _array[0].textName === "正常") {
+            return _array.length !== 0 ? "定期檢測" : ""; 
+          } else if (_array[0].classType === "MaintainProcessOptions" && _array[0].textName === "故障") {
+            return _array.length !== 0 ? "叫修" : ""; 
+          } else {
+            return _array.length !== 0 ? "其他" : ""; 
+          }           
+          }                 
+          
         }
         return "";
       };
@@ -211,7 +228,7 @@ export default {
       var reminder = await MaintainManagementList.getReminder(
         "/maintainListManagement"
       );
-      this.remind = reminder.needMaintainDeviceLsit;
+      this.remind = reminder.needMaintainDeviceLsit;      
       console.log(JSON.stringify(this.remind));
       this.panelList = [
         {
@@ -575,7 +592,7 @@ export default {
             var reminder = await MaintainManagementList.getReminder(
               "/maintainListManagement"
             );
-            this.remind = reminder.needMaintainDeviceLsit;
+            this.remind = reminder.needMaintainDeviceLsit;            
             this.panelList = [
               {
                 label: "本月應保養數量",
