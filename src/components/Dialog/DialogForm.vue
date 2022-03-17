@@ -182,7 +182,7 @@
             </template>
             <!-- 下拉選單-單-array -->
             <el-select
-              v-else-if="item.formType == 'singleChoice'"
+              v-else-if="item.formType == 'singleChoice'"              
               v-model="temp[item.prop]"
               placeholder="請選擇"
               filterable
@@ -216,6 +216,17 @@
                   >
                   </el-option>
                 </el-option-group>
+              </template>
+              <template v-else-if="item.format == 'maintainReportSelect'">
+                <el-option
+                  v-for="(obj, index) in selectfilter('maintainReportSelect')"
+                  :key="index"
+                  :label="                    
+                    obj.label                      
+                  "
+                  :value="obj.value"
+                >
+                </el-option>
               </template>
               <template v-else>
                 <el-option
@@ -415,6 +426,24 @@
               show-word-limit
             >
             </el-input>
+            <!-- 維保類別 -->
+            <template v-else-if="item.formType == 'maintainTypeRadio'">
+              <el-radio-group v-model="maintainType" @change="maintainTypeChange">
+                <el-radio :label="'維護保養'">維護保養</el-radio>
+                <el-radio :label="'故障叫修'">故障叫修</el-radio>
+                <el-radio :label="'申報改善單'">申報改善單</el-radio>
+                <el-radio :label="'其他'">其他</el-radio>
+              </el-radio-group>
+
+              <el-input         
+                v-model="maintainTypeDescription"
+                v-if="maintainTypeOtherShow"
+                placeholder="勾選其他時，需填寫此欄位"
+                @input="maintainTypeDescriptionInput"
+              >
+            </el-input>
+
+            </template>
             <el-input
               v-else
               v-model="temp[item.prop]"
@@ -577,12 +606,16 @@ export default {
       radioType: null,
       fileList: [],
       previewPath: "",
+      maintainTypeDescription:"",
+      maintainType:"維護保養",
+      maintainTypeOtherShow: false,
+      
     };
   },
   methods: {
     async init() {
       // window.addEventListener("message", this.receiveMessage, false)
-      console.log("form", this.title, this.dialogStatus);
+      console.log("form", this.title, this.dialogStatus);      
       if (this.dialogData.length) {
         this.activeName = this.dialogData[0].getID();
         this.temp =
@@ -912,6 +945,12 @@ export default {
             query: { type: "role" },
           });
           break;
+        case "maintainReportSelect":
+          routeData = this.$router.resolve({
+            path: "/normal/maintenancereport",
+            query: { type: "maintenancereport" },
+          });
+          break;
         case "maintainListSelect":
           this.$prompt("建立新維護保養單", "提示", {
             confirmButtonText: "確定",
@@ -1150,6 +1189,7 @@ export default {
     },
     //子傳父窗口
     handleClickOption(status) {
+      console.log("title", this.title, "status", status)
       if (this.title == "reportInspectio" || this.title == "reportPublicSafe") {
         this.temp["checkStartDate"] = this.rangevalue[0];
         this.temp["checkEndDate"] = this.rangevalue[1];
@@ -1160,8 +1200,8 @@ export default {
         status !== "canceldeviceType" &&
         status !== "empty" &&
         status !== "cancelfloor"
-      ) {
-        this.$refs.dataForm.validate(async (valid) => {
+      ) {        
+        this.$refs.dataForm.validate(async (valid) => {          
           if (valid) {
             if (this.createOption.length !== 0) {
               //有動態新增選項
@@ -1294,6 +1334,33 @@ export default {
       });
       return data;
     },
+    maintainTypeChange(value) {   
+      let reportIndex = this.config.findIndex((item) => item.label == "申報改善單")      
+      this.temp["maintainType"] = value;
+      this.temp["reportSelectId"] = "";
+
+      if(this.maintainType === "其他" ) {   
+        this.config[reportIndex].isEdit = false;      
+        this.maintainTypeOtherShow = true;       
+      }else if (this.maintainType === "申報改善單") {        
+        this.config[reportIndex].isEdit = true;
+        this.maintainTypeOtherShow = false;
+        this.maintainTypeDescription = "";         
+      }else {       
+        this.config[reportIndex].isEdit = false; 
+        this.maintainTypeOtherShow = false;
+        this.maintainTypeDescription = "";
+      }
+    },
+    maintainTypeDescriptionInput(value) {    
+      if(value === "") {
+        this.temp["maintainType"] = "其他"
+      } else {
+        this.temp["maintainType"] = value; 
+      }
+         
+     
+    }
   },
 };
 </script>

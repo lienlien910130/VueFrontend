@@ -1,10 +1,11 @@
 <template>
-  <div class="editor-container">
+  <div class="editor-container">    
     <el-row :gutter="20">
       <el-col :xs="24" :sm="24" :md="24" :lg="16">
         <div class="chart-wrapper">
-          <div class="verticalhalfdiv">
-            <el-col :xs="24" :sm="24" :md="24" :lg="4">
+          <div><a @click="openWindows()" style="font-size: 20px; color: #66b1ff">設定保養天數 : {{maintainDays}}</a></div>
+          <div class="verticalhalfdiv">            
+            <el-col :xs="24" :sm="24" :md="24" :lg="4">              
               <span style="font-size: 20px"> 應保養清單：</span>
             </el-col>
             <el-col :xs="24" :sm="24" :md="24" :lg="20">
@@ -130,6 +131,7 @@ export default {
       remind: [],
       finishId: null,
       searchDeviceType: "",
+      maintainDays:""
     };
   },
   computed: {
@@ -227,8 +229,9 @@ export default {
       this.finishId = await this.setting();
       var reminder = await MaintainManagementList.getReminder(
         "/maintainListManagement"
-      );
-      this.remind = reminder.needMaintainDeviceLsit;      
+      ); 
+      this.remind = reminder.needMaintainDeviceLsit;   
+      this.getMaintainDays();
       console.log(JSON.stringify(this.remind));
       this.panelList = [
         {
@@ -283,7 +286,7 @@ export default {
       );
       this.blockData = data.result;
       this.listQueryParams.total = data.totalPageCount;
-    },
+    },    
     async getMaintain() {
       //取得指定維保大項的細項
       var data = await MaintainManagement.getSearchPage(
@@ -330,7 +333,8 @@ export default {
       } else if (index === "empty") {
         this.dialogTitle = "maintainList";
         this.dialogConfig = MaintainManagementList.getCreateConfig();
-        this.dialogData.push(MaintainManagementList.empty());
+        this.dialogData.push(MaintainManagementList.empty());        
+        this.dialogSelect = await MaintainManagementList.getReportInspection();
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "create" },
           { name: "取消", type: "info", status: "cancel" },
@@ -367,6 +371,7 @@ export default {
     async handleDialog(title, index, content) {
       //Dialog相關操作
       console.log(title, index, JSON.stringify(content));
+      
       if (title === "maintain") {
         if (index === "updateManySave") {
           var isOk = await content.update();
@@ -391,11 +396,17 @@ export default {
         }
       } else {
         if (index === "create" || index === "update") {
+          
           this.$delete(content, "linkMaintains");
-          var isOk =
+          if(content.reportSelectId !== "") {                     
+            var isOk = await content.createReport(content.reportSelectId)            
+          } else {
+            var isOk =
             index === "update"
-              ? await content.update()
-              : await content.create();
+            ? await content.update()
+            : await content.create();
+          }
+         
           if (isOk) {
             this.innerVisible = false;
             index === "update"
@@ -461,7 +472,7 @@ export default {
       }
     },
     async handleMaintain(index, content) {
-      console.log(index, content);
+      console.log(index, content);      
       this.dialogData = [];
       this.dialogTitle = "maintain";
       this.dialogConfig = MaintainManagement.getTableConfig();
@@ -866,6 +877,23 @@ export default {
         { name: "叫修", icon: "el-icon-s-tools", status: "repair" },
       ];
       this.tableVisible = true;
+    },
+    async getMaintainDays() {
+      this.maintainDays = await this.$store.getters.buildingoptions.filter((item)=> {
+        return item.classType === "MaintainTimeOptions" && item.checked === true
+      })[0].textName
+      
+    },
+    openWindows() {
+      var routeData ;
+      routeData = this.$router.resolve({
+          path: "/settings/index",
+          query: { type: "ma" },
+        });
+      if (window.child && window.child.open && !window.child.closed) {
+        window.child.close();
+      }
+      window.child = window.open(routeData.href, "_blank");
     },
   },
 };

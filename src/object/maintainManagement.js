@@ -10,7 +10,7 @@ import InspectionLacks from "./inspectionLacks";
 class MaintainManagementList extends Parent {
   constructor(data) {
     super(data);
-    const { name, createdDate, completedCount, allCount, linkMaintains } = data;
+    const { name, createdDate, completedCount,maintainType, allCount, linkMaintains, reportSelectId } = data;
     var maintain =
       linkMaintains !== undefined
         ? linkMaintains.map((item) => {
@@ -20,8 +20,10 @@ class MaintainManagementList extends Parent {
     this.name = name;
     this.createdDate = createdDate;
     this.completedCount = completedCount;
+    this.maintainType = maintainType;
     this.allCount = allCount;
     this.linkMaintains = maintain;
+    this.reportSelectId = reportSelectId;
   }
   clone(data) {
     return new MaintainManagementList(data);
@@ -47,6 +49,18 @@ class MaintainManagementList extends Parent {
         return true;
       })
       .catch((error) => {
+        return false;
+      });
+    return data;
+  }  
+  async createReport(InspectionListId) {
+    let data = await api.device
+      .apiPostInspectionListImport(this, InspectionListId)
+      .then((response) => {
+        return true;
+      })
+      .catch((error) => {
+        console.log(error)
         return false;
       });
     return data;
@@ -94,8 +108,10 @@ class MaintainManagementList extends Parent {
       name: "",
       createdDate: moment().format("YYYY-MM-DD"),
       completedCount: 0,
+      maintainType:"維護保養",
       allCount: 0,
       linkMaintains: [],
+      reportSelectId:""
     });
   }
   static getTableConfig() {
@@ -129,6 +145,21 @@ class MaintainManagementList extends Parent {
         isExport: true,
         isBlock: true,
         formType: "date",
+      },
+      {
+        label: "類別",
+        prop: "maintainType",
+        format: "radio",
+        mandatory: true,
+        message: "請勾選類別",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "maintainTypeRadio",
       },
       {
         label: "已保養細項",
@@ -192,6 +223,38 @@ class MaintainManagementList extends Parent {
         isExport: true,
         isBlock: true,
         formType: "date",
+      },
+      {
+        label: "類別",
+        prop: "maintainType",
+        format: "radio",
+        mandatory: true,
+        message: "請勾選類別",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: false,
+        isEdit: true,
+        isUpload: true,
+        isExport: true,
+        isBlock: true,
+        formType: "maintainTypeRadio",
+      },
+      {
+        label: "申報改善單",        
+        format: "maintainReportSelect",
+        prop: "reportSelectId",
+        mandatory: false,        
+        typemessage: "",
+        isHidden: false,
+        isSearch: false,
+        isAssociate: true,
+        isEdit: false,
+        isUpload: false,
+        isExport: true,
+        isBlock: true,
+        formType: "singleChoice",
+        limit: 1,
+        selectFilter: true,
       },
     ];
   }
@@ -275,6 +338,7 @@ class MaintainManagementList extends Parent {
       .apiGetMaintainsListRemind(type)
       .then((response) => {
         //照下次維保時間排序
+        console.log("123",response)
         response.result.needMaintainDeviceLsit =
           response.result.needMaintainDeviceLsit
             .sort(function (a, b) {
@@ -290,6 +354,16 @@ class MaintainManagementList extends Parent {
       .catch((error) => {
         return [];
       });
+    return data;
+  }
+  static async getReportInspection() {
+    let data = await api.device
+      .apiPostMaintainReportInspection()
+      .then((response) => {
+        return response.result})
+      .catch((error) => {
+        return [];
+      })    
     return data;
   }
 }
@@ -546,7 +620,7 @@ class MaintainManagement extends Parent {
         selectFilter: true,
       },
       {
-        label: "檢修申報",
+        label: "缺失內容",
         prop: "linkInspectionLacks",
         format: "inspectionSelect",
         mandatory: false,
@@ -583,6 +657,26 @@ class MaintainManagement extends Parent {
         selectFilter: true,
         hasEvent: true,
       },
+      // {
+      //   label: "新設備",
+      //   prop: "linkDevices",
+      //   format: "deviceSelect",
+      //   mandatory: true,
+      //   message: "請選擇設備",
+      //   type: "object",
+      //   typemessage: "",
+      //   isHidden: false,
+      //   isSearch: false,
+      //   isAssociate: true,
+      //   isEdit: true,
+      //   isUpload: false,
+      //   isExport: true,
+      //   isBlock: true,
+      //   formType: "singleChoice",
+      //   limit: 1,
+      //   selectFilter: true,
+      //   hasEvent: true,
+      // },
       {
         label: "下次保養時間",
         prop: "nextMaintainTime",

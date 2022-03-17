@@ -201,12 +201,15 @@ export default {
         if (value !== null && value !== undefined) {          
           let _array = this.buildingoptions.filter(
             (item, index) => item.id == value
-          );          
-          if(_array[0].classType = "MaintainProcessOptions" && _array[0].textName === "已保養") {
-            _array[0].textName = "正常"
-          } else if (_array[0].classType = "MaintainProcessOptions" && _array[0].textName === "故障中") {
-            _array[0].textName = "故障"
-          }
+          ); 
+          if(_array.length !==0){
+            if(_array[0].classType = "MaintainProcessOptions" && _array[0].textName === "已保養") {
+              _array[0].textName = "正常"
+            } else if (_array[0].classType = "MaintainProcessOptions" && _array[0].textName === "故障中") {
+              _array[0].textName = "故障"
+            }
+          }         
+          
           return _array.length !== 0 ? _array[0].textName : "";
         }
         return "";
@@ -543,6 +546,14 @@ export default {
                 { label: "匯入檔案", id: "export" },
                 { label: "匯出檔案", id: "upload" },
               ];
+            case "maintainReportSelect":              
+              return this.selectData.map((v) => {            
+                this.$set(v, "value", v.id);
+                this.$set(v, "label", v.declareYear);
+                this.$set(v, "id", v.id);
+                return v;
+            })           
+              
           }
         } else {
           return "";

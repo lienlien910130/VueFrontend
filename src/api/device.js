@@ -220,7 +220,14 @@ const device = {
   apiGetInspectionListByMaintain() {
     return req("get", "/maintainListManagement/options");
   },
-
+   // 在維保頁面撈取檢修申報大項
+  apiPostMaintainReportInspection() {
+    return req("post", "/index/reportInspection/ss", this.getBid() ,{})
+  },
+  //維護保養選取檢修申報id自動新增維保單
+  apiPostInspectionListImport(data, InspectionListId) {
+    return req("post", '/maintainListManagement/inspectionListImport/' + InspectionListId,null, data)
+  },
   //維護保養細項
   apiGetMaintainAll() {
     return req("get", "/maintainListManagement/maintainManagement/a/ss");

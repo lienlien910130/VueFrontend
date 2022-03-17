@@ -277,6 +277,7 @@ export default {
     async getOptions() {
       //取得大樓的所有分類
       this.options = await Setting.getAllOption();
+      console.log('123', this.options)
       this.$store.dispatch("building/setoptions", this.options);
       if (this.setting_record == 0) {
         this.$store.dispatch("record/saveSettingRecord", 1);
