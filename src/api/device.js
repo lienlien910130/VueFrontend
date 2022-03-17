@@ -220,7 +220,7 @@ const device = {
     return req(
       "post",
       "/maintainListManagement/inspectionListImport/" + InspectionListId,
-      null,
+      this.getBid(),
       data
     );
   },

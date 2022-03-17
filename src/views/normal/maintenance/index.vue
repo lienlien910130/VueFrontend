@@ -176,7 +176,7 @@ export default {
             (item, index) => item.id == value
           );
 
-          if (options === "status") {
+          if (_array.length !== 0 && options === "status") {
             if (
               _array[0].classType === "MaintainProcessOptions" &&
               _array[0].textName === "已保養"
@@ -188,20 +188,20 @@ export default {
             ) {
               _array[0].textName = "故障";
             }
-            return _array.length !== 0 ? _array[0].textName : "";
-          } else if (options === "button") {
+            return _array[0].textName;
+          } else if (_array.length !== 0 && options === "button") {
             if (
               _array[0].classType === "MaintainProcessOptions" &&
               _array[0].textName === "正常"
             ) {
-              return _array.length !== 0 ? "定期檢測" : "";
+              return "定期檢測";
             } else if (
               _array[0].classType === "MaintainProcessOptions" &&
               _array[0].textName === "故障"
             ) {
-              return _array.length !== 0 ? "叫修" : "";
+              return "叫修";
             } else {
-              return _array.length !== 0 ? "其他" : "";
+              return "其他";
             }
           }
         }
