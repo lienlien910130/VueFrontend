@@ -59,12 +59,6 @@ class DeviceType extends Parent {
   getName() {
     return this.name;
   }
-  getBrand() {
-    return this.brand;
-  }
-  getProductId() {
-    return this.productId;
-  }
   getFullType() {
     return this.fullType;
   }
@@ -88,63 +82,72 @@ class DeviceType extends Parent {
       {
         label: "系統",
         prop: "fullType",
+        formType: "fullType",
         format: "fullType",
+        isTable: true,
+        isBlock: true,
+        isSearch: false,
+        selectFilter: true,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請選擇系統",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: false,
-        isEdit: true,
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: true,
-        formType: "fullType",
-        selectFilter: true,
       },
       {
         label: "種類",
         prop: "name",
-        mandatory: false,
-        isHidden: false,
+        formType: "inputString",
+        isTable: true,
+        isBlock: true,
         isSearch: true,
+        selectFilter: false,
         isAssociate: false,
+        isShow: true,
         isEdit: false,
+        mandatory: false,
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: true,
-        selectFilter: false,
       },
       {
         label: "廠牌",
         prop: "brand",
-        mandatory: false,
-        message: "請輸入廠牌",
-        isHidden: false,
-        maxlength: "20",
+        formType: "inputString",
+        isTable: true,
+        isBlock: true,
         isSearch: true,
-        placeholder: "請輸入廠牌",
+        selectFilter: false,
         isAssociate: false,
+        isShow: true,
         isEdit: true,
+        mandatory: false,
+        maxlength: "20",
+        placeholder: "請輸入廠牌",
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: true,
-        selectFilter: false,
       },
       {
         label: "型號",
         prop: "productId",
-        mandatory: false,
-        message: "請輸入型號",
-        isHidden: false,
-        maxlength: "20",
+        formType: "inputString",
+        isTable: true,
+        isBlock: true,
         isSearch: true,
-        placeholder: "請輸入型號",
+        selectFilter: false,
         isAssociate: false,
+        isShow: true,
         isEdit: true,
+        mandatory: false,
+        maxlength: "20",
+        placeholder: "請輸入型號",
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: true,
-        selectFilter: false,
       },
     ];
   }
@@ -227,15 +230,6 @@ class DeviceType extends Parent {
       });
     return data;
   }
-  // static async updateMany(data){
-  //   var data = await api.device.apiPatchDevicesType(data).then(response => {
-  //     response.result = response.result.map(item=>{ return new DeviceType(item)})
-  //     return response.result
-  //   }).catch(error=>{
-  //       return []
-  //   })
-  //   return data
-  // }
 }
 
 export default DeviceType;

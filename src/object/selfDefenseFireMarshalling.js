@@ -65,7 +65,10 @@ class SelfDefenseFireMarshalling extends Parent {
   }
   async getMarshallingMgmt() {
     var data = await api.selfDefenseFireMarshalling
-      .apiGetFireMarshallingMgmt('/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt',this.id)
+      .apiGetFireMarshallingMgmt(
+        "/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt",
+        this.id
+      )
       .then((response) => {
         response.result = response.result
           .sort((x, y) => x.id - y.id)
@@ -180,10 +183,10 @@ class SelfDefenseFireMarshalling extends Parent {
   static async getOfIDMarshallingMgmt(id) {
     //功能同getMarshallingMgmt，開給process使用
     var data = await api.selfDefenseFireMarshalling
-      .apiGetFireMarshallingMgmt('/emergencyResponseFlowEdit/flowEditMgmt', id)
+      .apiGetFireMarshallingMgmt("/emergencyResponseFlowEdit/flowEditMgmt", id)
       .then((response) => {
-        console.log('copyFile')
-        console.log(JSON.stringify(response))
+        console.log("copyFile");
+        console.log(JSON.stringify(response));
         var array = response.result
           .sort((x, y) => x.id - y.id)
           .map((item) => {
@@ -303,9 +306,6 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
   }
   getLinkRole() {
     return this.linkRoles;
-  }
-  getRolesName() {
-    return this.linkRoles.map((item) => item.getName()).toString();
   }
   getAccountName() {
     return this.linkAccountList.map((item) => item.getName()).toString();
@@ -610,9 +610,9 @@ class ContingencyProcess extends Parent {
   }
   ///emergencyResponseFlowView/contingencyProcess
   //emergencyResponseFlowEdit/flowEditContingencyProcess
-  static async getJson(type,pid) {
+  static async getJson(type, pid) {
     var data = await api.selfDefenseFireMarshalling
-      .apiGetContingencyProcessJson(type,pid)
+      .apiGetContingencyProcessJson(type, pid)
       .then(async (response) => {
         return response.result;
       })

@@ -52,7 +52,7 @@
               v-for="(val, index) in [true, false]"
               :key="index"
               :value="val"
-              :label="val | changeBoolean(item.format)"
+              :label="val | booleanFilter(item.format)"
             ></el-option>
           </el-select>
           <el-select
@@ -64,7 +64,7 @@
             style="width: 100%"
           >
             <el-option
-              v-for="(obj, index) in selectfilter(item.format)"
+              v-for="(obj, index) in optionFilter(item.format)"
               :key="index"
               :label="obj.label"
               :value="obj"
@@ -79,7 +79,7 @@
             style="width: 100%"
           >
             <el-option
-              v-for="(obj, index) in selectfilter(item.format)"
+              v-for="(obj, index) in optionFilter(item.format)"
               :key="index"
               :label="obj.label"
               :value="obj.id"
@@ -186,6 +186,7 @@ export default {
   min-height: 100%;
   width: 100%;
   overflow: hidden;
+  //background-image: url("../../assets/image/login_bg.jpg");
   background-image: url("@assets/image/login_bg.jpg");
   background-size: 100% 100%;
   background-repeat: no-repeat;

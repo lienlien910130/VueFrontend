@@ -21,8 +21,6 @@ const authority = {
   apiPostSubMainMenu(mainMenuId, data) {
     return req("post", "/mainMenuSetting/sub/" + mainMenuId, mainMenuId, data);
   },
-  // apiPostLevelOneMainMenuAuthority(data){ return req('post','/mainMenuSetting/buildings/'+this.getBid(),data) },
-  // apiPostLevelTwoMainMenuAuthority(mainMenuId,data){ return req('post','/mainMenuSetting/mainMenu/'+mainMenuId,data) },
   apiPatchMainMenuAuthority(data) {
     return req("patch", "/mainMenuSetting", null, data);
   },
@@ -41,10 +39,7 @@ const authority = {
     }
     return req("post", "/mainMenuSetting/sub/" + mainMenuId + "/s", null, data);
   },
-  // apiGetAccessAuthoritySearchPages(mainMenuId,data){ return req('post','/mainMenuSetting/accessAuthorities/'+mainMenuId,data)  },
-
   //權限管理
-  // apiGetAccessAuthority(accessAuthorityId){ return req('get','/accessAuthoritySetting/'+accessAuthorityId) },
   apiGetMainMenuAccessAuthority(mainMenuId) {
     return req("get", "/accessAuthoritySetting/mainMenu/" + mainMenuId);
   },
@@ -57,7 +52,6 @@ const authority = {
   apiDeleteAccessAuthority(accessAuthorityId) {
     return req("delete", "/accessAuthoritySetting/" + accessAuthorityId);
   },
-  // apiGetCheckAccessAuthority(){ return req('get','/accessAuthoritySetting/checkAssign') },
   apiPostAccessAuthorities(data) {
     data.forEach((element) => {
       element.parentId = this.getBid();
@@ -72,7 +66,9 @@ const authority = {
   apiGetRoleOfID(id) {
     return req("get", "/index/roles/" + id);
   },
-  // apiGetAllRoleAuthority(){ return req('get','/roleSetting/a') },
+  apiGetRoleAuthoritySearchPages(data) {
+    return req("post", "/roleSetting/ss", this.getBid(), data);
+  },
   apiGetRoleAuthority(roleId) {
     return req("get", "/roleSetting/" + roleId);
   },
@@ -85,9 +81,6 @@ const authority = {
   apiDeleteRoleAuthority(roleId) {
     return req("delete", "/roleSetting/" + roleId);
   },
-  apiGetRoleAuthoritySearchPages(data) {
-    return req("post", "/roleSetting/ss", this.getBid(), data);
-  },
   apiPostRoleAuthorities(data) {
     data.forEach((element) => {
       element.parentId = this.getBid();
@@ -98,22 +91,20 @@ const authority = {
   apiGetAccountAuthorityByRole(roleId) {
     return req("get", "/roleSetting/accessAuthorities/r/" + roleId);
   },
-  //角色管理修改權限 - 多筆更新
+  //角色管理修改權限 - 一次多筆更新
   apiPutAuthorityByRole(data) {
     return req("put", "/roleSetting/accessAuthorities", null, data);
   },
-  //角色管理透過mainmenuid取得權限管理
-  // apiGetAccountAuthorityByMenu(mainMenuId){ return req('get','/roleSetting/accessAuthorities/m/'+mainMenuId) },
 
   //帳號管理
-  apiGetAllAccountAuthority() {
-    return req("get", "/accountSetting/a");
-  },
   apiGetAllAccount() {
     return req("get", "/index/accounts/a");
   },
   apiGetAccountOfID(id) {
     return req("get", "/index/accounts/" + id);
+  },
+  apiGetAllAccountAuthority() {
+    return req("get", "/accountSetting/a");
   },
   apiGetAccountAuthority(accountId) {
     return req("get", "/accountSetting/" + accountId);
@@ -122,17 +113,15 @@ const authority = {
     return req("post", "/accountSetting/check", null, data);
   },
   apiPatchAccountAuthority(type, data) {
-    //更新
     return req("patch", type + "/check", null, data);
-  },
-  apiPatchAccountFloorOfHouse(type, accountId) {
-    //管理員手動驗證住戶門牌-住戶&帳號管理
-    return req("patch", type + "/addRole/member/" + accountId, null, null);
   },
   apiDeleteAccountAuthority(accountId) {
     return req("delete", "/accountSetting/" + accountId);
   },
-
+  //多筆新增
+  apiPostAccountAuthorities(data) {
+    return req("post", "/accountSetting/check/s", null, data);
+  },
   apiGetAccountAuthoritySearchPages(type, data) {
     return req(
       "post",
@@ -142,15 +131,14 @@ const authority = {
       true
     );
   },
-  // "/index/accounts/ss"
-  apiPostAccountAuthorities(data) {
-    return req("post", "/accountSetting/check/s", null, data);
+  //管理員手動驗證住戶門牌-住戶&帳號管理
+  apiPatchAccountFloorOfHouse(type, accountId) {
+    return req("patch", type + "/addRole/member/" + accountId, null, null);
   },
   //帳號取得權限管理
   apiGetAccountAuthorityByAccount(roleId) {
     return req("get", "/accountSetting/accessAuthorities/" + roleId);
   },
-
   //上傳大頭照
   apiPostUserPhoto(tgUserId, data, type) {
     return req(
@@ -160,7 +148,9 @@ const authority = {
       data
     );
   },
-  //產生人員屬性-以人為主:純人數mode=1, 人數+清單mode=2
+  //產生人員屬性
+  //type=PE => 以人為主:純人數mode=1, 人數+清單mode=2
+  //type=USAG => 以戶為主:門牌+純人數mode=1, 門牌+純人數+清冊mode=2
   apiGetHouseAttributes(type, mode) {
     if (type === "PE") {
       return req("get", "/basic/accountSetting/ageDistribution/" + mode);
@@ -170,45 +160,6 @@ const authority = {
         "/basic/accountSetting/ageDistribution/usageOfFloor/" + mode
       );
     }
-  },
-  //產生人員屬性-以戶為主:門牌+純人數mode=1, 門牌+純人數+清冊mode=2
-  apiGetHouseAttributesOfUaage(mode) {
-    return req(
-      "get",
-      "/basic/accountSetting/ageDistribution/usageOfFloor" + mode
-    );
-  },
-  // 以下暫時用不到
-  //帳號的狀態 - type: basic/accountSetting/settings
-  apiGetAccountCharacterStatus(type, accountId) {
-    return req("get", "/" + type + "/characterStatus/" + accountId + "/a");
-  },
-  apiGetAccountCharacterStatusSearchPages(type, accountId, data) {
-    return req(
-      "post",
-      "/" + type + "/characterStatus/ss",
-      accountId,
-      data,
-      true
-    );
-  },
-  apiGetCharacterStatusOfID(type, characterStatusId) {
-    return req("get", "/" + type + "/characterStatus/" + characterStatusId);
-  },
-  apiPostCharacterStatus(type, accountId, data) {
-    return req("post", "/" + type + "/characterStatus", accountId, data);
-  },
-  apiPatchCharacterStatus(type, data) {
-    return req("patch", "/" + type + "/characterStatus", null, data);
-  },
-  apiDeleteCharacterStatus(type, characterStatusId) {
-    return req("delete", "/" + type + "/characterStatus/" + characterStatusId);
-  },
-  apiPostCharacterStatuses(type, accountId, data) {
-    data.forEach((element) => {
-      element.parentId = accountId;
-    });
-    return req("post", "/" + type + "/characterStatus/s", null, data);
   },
 };
 

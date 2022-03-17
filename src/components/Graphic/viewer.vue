@@ -355,15 +355,20 @@ export default {
             : DeviceAddressManagement.getPLCTableConfig();
         var data = new DeviceAddressManagement(info[0]);
         config = config.filter((item) => {
-          return item.isViewerInfo == true;
+          return item.isShow == true;
         });
         var array = [];
         config.forEach((item) => {
           var value = "";
-          if (item.format == "addressdeviceSelect") {
-            value = data.getDevicesName();
-          } else if (item.format == "floorOfHouseSelect") {
-            value = data.getUsageOfFloorsName();
+          if (
+            item.format == "addressdeviceSelect" ||
+            item.format == "floorOfHouseSelect"
+          ) {
+            value = data[item.prop]
+              .map((item) => {
+                return item.getName();
+              })
+              .toString();
           } else {
             value = data[item.prop];
           }

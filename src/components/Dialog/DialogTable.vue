@@ -60,7 +60,7 @@
                 </span>
 
                 <span v-else-if="item.formType == 'selectSetting'">
-                  {{ changeOptionName(scope.row[item.prop]) }}
+                  {{ showSettingName(scope.row[item.prop]) }}
                 </span>
 
                 <!-- <span
@@ -68,7 +68,7 @@
                     item.formType == 'select' || item.formType == 'singleChoice'
                   "
                 >
-                  {{ changeShowFormat(item.format, scope.row, item.prop) }}
+                  {{ showSelectOrSingleChoice(item.format, scope.row, item.prop) }}
                 </span> -->
 
                 <span
@@ -84,7 +84,9 @@
                   "
                   style="color: #66b1ff; cursor: pointer"
                 >
-                  {{ changeShowFormat(item.format, scope.row, item.prop) }}
+                  {{
+                    showSelectOrSingleChoice(item.format, scope.row, item.prop)
+                  }}
                 </span>
 
                 <span
@@ -94,13 +96,11 @@
                     item.formType == 'fullType'
                   "
                 >
-                  {{
-                    changeShowFormatString(item.format, scope.row, item.prop)
-                  }}
+                  {{ showStringOrId(item.format, scope.row, item.prop) }}
                 </span>
 
                 <span v-else-if="item.formType == 'boolean'">
-                  {{ scope.row[item.prop] | changeBoolean(item.format) }}
+                  {{ scope.row[item.prop] | booleanFilter(item.format) }}
                 </span>
 
                 <span v-else-if="item.formType == 'image'">

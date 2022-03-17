@@ -1370,7 +1370,6 @@ export default {
           icon.status !== undefined ? icon.status : [],
           icon.action !== undefined ? icon.action : [],
           item.id,
-          icon.status[0].imgSrc,
         ];
         this.objectSelect(address);
       } else {
@@ -1386,7 +1385,6 @@ export default {
           icon.status !== undefined ? icon.status : [],
           icon.action !== undefined ? icon.action : [],
           null,
-          icon.status[0].imgSrc,
         ];
       }
       this.canvas.skipTargetFind = true;

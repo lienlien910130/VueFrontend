@@ -22,7 +22,6 @@ function showLoading() {
 // 隱藏遮罩
 function tryHideLoading() {
   requestCount--;
-  //采用setTimeout是为了解决一个请求结束后紧接着有另一请求发起导致loading闪烁的问题
   timer = setTimeout(() => {
     if (requestCount === 0) {
       loading.close();
@@ -95,8 +94,6 @@ service.interceptors.request.use(
     }
     config.headers.loadReverse = true;
     config.headers.buildId = store.getters.buildingid;
-
-    //config.url = decodeURI(encodeURI(config.url).replace(/%E2%80%8B/g,""))
     return config;
   },
   (error) => {
@@ -200,11 +197,6 @@ export default function (
       "method:" + method + " || url:" + url + " || data:" + JSON.stringify(data)
     );
     return service.patch(url, data);
-  } else if (method == "ipconfig") {
-    console.log(
-      "method:" + method + " || url:" + url + " || data:" + JSON.stringify(data)
-    );
-    return service_ip.get(url);
   } else {
     console.error("未知的method:" + method);
     return false;

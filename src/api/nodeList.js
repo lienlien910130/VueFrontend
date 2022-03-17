@@ -13,6 +13,9 @@ const nodeList = {
   apiGetAllSampleNode() {
     return req("get", "/CSampleNodeListMgmt/" + this.getBid() + "/a");
   },
+  apiGetSampleNodeSearchPages(data) {
+    return req("post", "/CSampleNodeListMgmt/ss", this.getBid(), data, true);
+  },
   apiPostSampleNode(data) {
     return req("post", "/CSampleNodeListMgmt/check", this.getBid(), data);
   },
@@ -21,9 +24,6 @@ const nodeList = {
   },
   apiDeleteSampleNode(sampleNodeId) {
     return req("delete", "/CSampleNodeListMgmt/" + sampleNodeId);
-  },
-  apiGetSampleNodeSearchPages(data) {
-    return req("post", "/CSampleNodeListMgmt/ss", this.getBid(), data, true);
   },
   apiPostSampleNodes(data) {
     data.forEach((element) => {

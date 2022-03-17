@@ -118,9 +118,9 @@ export default {
           if (j.formType == "date") {
             return this.dataStr(v, j.format, j.prop);
           } else if (j.formType == "selectSetting") {
-            return this.changeOptionName(v[j.prop]);
+            return this.showSettingName(v[j.prop]);
           } else if (j.formType == "boolean" || j.formType == "checkbox") {
-            return this.$options.filters.changeBoolean(v[j.prop], j.format);
+            return this.$options.filters.booleanFilter(v[j.prop], j.format);
           } else if (j.formType == "nTypeChange") {
             return this.$options.filters.changeNType(v[j.prop]);
           } else if (typeof v[j.prop] == "object") {
@@ -136,7 +136,7 @@ export default {
             j.formType == "addressStr" ||
             j.formType == "fullType"
           ) {
-            return this.changeShowFormatString(j.format, v, j.prop);
+            return this.showStringOrId(j.format, v, j.prop);
           } else {
             return v[j.prop];
           }

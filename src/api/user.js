@@ -48,9 +48,6 @@ const user = {
   apiPatchUserInfo(data) {
     return req("patch", "/index/accounts", null, data);
   },
-  apiGetUserIP() {
-    return req("ipconfig", "/ipconfig");
-  },
   //訂閱
   apiPatchPhysicalInfo(data) {
     return req("patch", "/index/physicalInfos/check", this.getUid(), data);

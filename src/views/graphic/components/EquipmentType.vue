@@ -122,19 +122,6 @@ export default {
       immediate: true,
     },
   },
-  // computed: {
-  //     getImg(){
-  //         return function (value) {
-  //             if(value !== null){
-  //                 let icon = constant.Equipment.filter((item, index) =>
-  //                     item.id == value
-  //                 )[0]
-  //                 return icon !== undefined ?  require('@assets/equipment/'+icon.status[0].imgSrc)  : ""
-  //             }
-  //             return null
-  //         }
-  //     }
-  // },
   data() {
     return {
       viewlist: constant.Equipment,

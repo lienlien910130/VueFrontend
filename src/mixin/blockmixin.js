@@ -58,7 +58,6 @@ export default {
         } else {
           this.dialogData.push(content);
         }
-        //this.dialogData.push(content);
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "update" },
           { name: "取消", type: "info", status: "cancel" },

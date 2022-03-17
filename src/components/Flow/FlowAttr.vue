@@ -34,7 +34,7 @@
               :key="selectKey"
             >
               <el-option
-                v-for="(item, index) in selectfilter('processSelect')"
+                v-for="(item, index) in optionFilter('processSelect')"
                 :key="index"
                 :label="item.name"
                 :value="item.id"
@@ -62,7 +62,7 @@
               :disabled="disabled"
             >
               <el-option
-                v-for="(item, index) in selectfilter('roleSelect')"
+                v-for="(item, index) in optionFilter('roleSelect')"
                 :key="index"
                 :label="item.name"
                 :value="item"
@@ -200,7 +200,7 @@ export default {
   },
   computed: {
     ...Vuex.mapGetters(["buildingroles", "role_record"]),
-    selectfilter() {
+    optionFilter() {
       return function (value) {
         if (value !== null) {
           switch (value) {
