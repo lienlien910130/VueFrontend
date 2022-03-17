@@ -188,7 +188,11 @@ export default {
     ...Vuex.mapGetters(["floorOfHouse_record", "buildingfloorOfHouse"]),
     roles() {
       if (this.userCopy.linkRoles) {
-        return this.userCopy.getRolesName();
+        return this.userCopy["linkRoles"]
+          .map((item) => {
+            return item.getName();
+          })
+          .toString();
       }
       return "尚未設定";
     },

@@ -5,7 +5,7 @@
         <h1>{{ marshallingClass.name }}</h1>
         <h2>
           班長：{{
-            changeShowFormatString(
+            showStringOrId(
               "classLeaderSelect",
               marshallingClass,
               "classLeaderId"
@@ -79,7 +79,7 @@ export default {
         if (this.marshallingClass.linkAccountList.length) {
           this.account = [];
           for await (let element of this.marshallingClass.linkAccountList) {
-            console.log(element)
+            console.log(element);
             var url = await this.getUserPhoto(element.headShotFileId);
             element.url = url;
             this.account.push(element);

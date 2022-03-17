@@ -146,9 +146,6 @@ export default {
       this.dialogData = [];
       if (index === "delete" || index === "deleteMany") {
         var isDelete = await this.handleBlockMixin(title, index, content, Menu);
-        if (isDelete) {
-          this.$socket.sendMsg("menus", "routes", "");
-        }
       } else {
         if (index === "exportExcel" || index === "uploadExcel") {
           if (this.selectId == null) {
@@ -177,7 +174,7 @@ export default {
           { mainMenuId: this.selectId, content: content }
         );
         if (isSuccess) {
-          this.$socket.sendMsg("menus", "routes", "");
+          this.$socket.sendMsg("mainMenu", "routes", "");
         }
         await this.handleDialogMixin_common(
           Menu,

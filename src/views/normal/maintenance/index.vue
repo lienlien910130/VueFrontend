@@ -1,11 +1,15 @@
 <template>
-  <div class="editor-container">    
+  <div class="editor-container">
     <el-row :gutter="20">
       <el-col :xs="24" :sm="24" :md="24" :lg="16">
         <div class="chart-wrapper">
-          <div><a @click="openWindows()" style="font-size: 20px; color: #66b1ff">設定保養天數 : {{maintainDays}}</a></div>
-          <div class="verticalhalfdiv">            
-            <el-col :xs="24" :sm="24" :md="24" :lg="4">              
+          <div>
+            <a @click="openWindows()" style="font-size: 20px; color: #66b1ff"
+              >設定保養天數 : {{ maintainDays }}</a
+            >
+          </div>
+          <div class="verticalhalfdiv">
+            <el-col :xs="24" :sm="24" :md="24" :lg="4">
               <span style="font-size: 20px"> 應保養清單：</span>
             </el-col>
             <el-col :xs="24" :sm="24" :md="24" :lg="20">
@@ -37,7 +41,9 @@
                     <el-button
                       size="mini"
                       @click="handleRepair(scope.$index, scope.row)"
-                      >{{ changeSettingsName(scope.row.status, "button") }}</el-button
+                      >{{
+                        changeSettingsName(scope.row.status, "button")
+                      }}</el-button
                     >
                   </template>
                 </el-table-column>
@@ -131,7 +137,7 @@ export default {
       remind: [],
       finishId: null,
       searchDeviceType: "",
-      maintainDays:""
+      maintainDays: "",
     };
   },
   computed: {
@@ -160,7 +166,7 @@ export default {
     },
     changeSettingsName() {
       //設定名稱
-      return function (value, options) {        
+      return function (value, options) {
         if (this.setting_record == 0) {
           this.$store.dispatch("building/setoptions");
           this.$store.dispatch("record/saveSettingRecord", 1);
@@ -169,24 +175,35 @@ export default {
           let _array = this.buildingoptions.filter(
             (item, index) => item.id == value
           );
-          
-          if(options === "status") {           
-            if(_array[0].classType === "MaintainProcessOptions" && _array[0].textName === "已保養") {
-            _array[0].textName = "正常"
-          } else if (_array[0].classType === "MaintainProcessOptions" && _array[0].textName === "故障中") {
-            _array[0].textName = "故障"
-          }         
-            return _array.length !== 0 ? _array[0].textName : "";               
-          } else if (options === "button") {            
-            if(_array[0].classType === "MaintainProcessOptions" && _array[0].textName === "正常") {
-            return _array.length !== 0 ? "定期檢測" : ""; 
-          } else if (_array[0].classType === "MaintainProcessOptions" && _array[0].textName === "故障") {
-            return _array.length !== 0 ? "叫修" : ""; 
-          } else {
-            return _array.length !== 0 ? "其他" : ""; 
-          }           
-          }                 
-          
+
+          if (options === "status") {
+            if (
+              _array[0].classType === "MaintainProcessOptions" &&
+              _array[0].textName === "已保養"
+            ) {
+              _array[0].textName = "正常";
+            } else if (
+              _array[0].classType === "MaintainProcessOptions" &&
+              _array[0].textName === "故障中"
+            ) {
+              _array[0].textName = "故障";
+            }
+            return _array.length !== 0 ? _array[0].textName : "";
+          } else if (options === "button") {
+            if (
+              _array[0].classType === "MaintainProcessOptions" &&
+              _array[0].textName === "正常"
+            ) {
+              return _array.length !== 0 ? "定期檢測" : "";
+            } else if (
+              _array[0].classType === "MaintainProcessOptions" &&
+              _array[0].textName === "故障"
+            ) {
+              return _array.length !== 0 ? "叫修" : "";
+            } else {
+              return _array.length !== 0 ? "其他" : "";
+            }
+          }
         }
         return "";
       };
@@ -229,8 +246,8 @@ export default {
       this.finishId = await this.setting();
       var reminder = await MaintainManagementList.getReminder(
         "/maintainListManagement"
-      ); 
-      this.remind = reminder.needMaintainDeviceLsit;   
+      );
+      this.remind = reminder.needMaintainDeviceLsit;
       this.getMaintainDays();
       console.log(JSON.stringify(this.remind));
       this.panelList = [
@@ -286,7 +303,7 @@ export default {
       );
       this.blockData = data.result;
       this.listQueryParams.total = data.totalPageCount;
-    },    
+    },
     async getMaintain() {
       //取得指定維保大項的細項
       var data = await MaintainManagement.getSearchPage(
@@ -333,7 +350,7 @@ export default {
       } else if (index === "empty") {
         this.dialogTitle = "maintainList";
         this.dialogConfig = MaintainManagementList.getCreateConfig();
-        this.dialogData.push(MaintainManagementList.empty());        
+        this.dialogData.push(MaintainManagementList.empty());
         this.dialogSelect = await MaintainManagementList.getReportInspection();
         this.dialogButtonsName = [
           { name: "儲存", type: "primary", status: "create" },
@@ -371,7 +388,6 @@ export default {
     async handleDialog(title, index, content) {
       //Dialog相關操作
       console.log(title, index, JSON.stringify(content));
-      
       if (title === "maintain") {
         if (index === "updateManySave") {
           var isOk = await content.update();
@@ -396,24 +412,25 @@ export default {
         }
       } else {
         if (index === "create" || index === "update") {
-          
           this.$delete(content, "linkMaintains");
-          if(content.reportSelectId !== "") {                     
-            var isOk = await content.createReport(content.reportSelectId)            
+          var isOk = false;
+          if (index === "create") {
+            if (content.maintainType == "其他") {
+              content.maintainType = content.maintainTypeOtherInput;
+            }
+            isOk =
+              content.reportSelectId !== null
+                ? await content.createReport(content.reportSelectId)
+                : await content.create();
           } else {
-            var isOk =
-            index === "update"
-            ? await content.update()
-            : await content.create();
+            isOk = content.update();
           }
-         
           if (isOk) {
             this.innerVisible = false;
             index === "update"
               ? this.$message("更新成功")
               : this.$message("新增成功");
             await this.searchAndPage();
-            //await this.resetlistQueryParams()
           } else {
             this.$message.error("系統錯誤");
           }
@@ -472,7 +489,7 @@ export default {
       }
     },
     async handleMaintain(index, content) {
-      console.log(index, content);      
+      console.log(index, content);
       this.dialogData = [];
       this.dialogTitle = "maintain";
       this.dialogConfig = MaintainManagement.getTableConfig();
@@ -603,7 +620,7 @@ export default {
             var reminder = await MaintainManagementList.getReminder(
               "/maintainListManagement"
             );
-            this.remind = reminder.needMaintainDeviceLsit;            
+            this.remind = reminder.needMaintainDeviceLsit;
             this.panelList = [
               {
                 label: "本月應保養數量",
@@ -879,17 +896,20 @@ export default {
       this.tableVisible = true;
     },
     async getMaintainDays() {
-      this.maintainDays = await this.$store.getters.buildingoptions.filter((item)=> {
-        return item.classType === "MaintainTimeOptions" && item.checked === true
-      })[0].textName
-      
+      this.maintainDays = await this.$store.getters.buildingoptions.filter(
+        (item) => {
+          return (
+            item.classType === "MaintainTimeOptions" && item.checked === true
+          );
+        }
+      )[0].textName;
     },
     openWindows() {
-      var routeData ;
+      var routeData;
       routeData = this.$router.resolve({
-          path: "/settings/index",
-          query: { type: "ma" },
-        });
+        path: "/settings/index",
+        query: { type: "ma" },
+      });
       if (window.child && window.child.open && !window.child.closed) {
         window.child.close();
       }

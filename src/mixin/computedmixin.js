@@ -1,7 +1,6 @@
 // const Vuex = require('vuex')
 const moment = require("moment");
 import constant from "@/constant/index";
-import { Role } from "@/object/index";
 import { _ } from "core-js";
 
 export default {
@@ -36,8 +35,20 @@ export default {
       "buildingcommittee",
       "committee_record",
     ]),
+    label() {
+      if (this.device === "mobile") {
+        return "top";
+      } else {
+        return "left";
+      }
+    },
+    stringToBr() {
+      return function (a) {
+        return a.replace(/{ln}/g, "<br/>");
+      };
+    },
     dataStr() {
-      //日期
+      //日期-row,format,prop
       return function (a, b, prop) {
         if (a == null) {
           return "";
@@ -84,93 +95,82 @@ export default {
         }
       };
     },
-    multipleStr() {
-      //多個
-      return function (type, value) {
-        var array = [];
-        var temp = [];
-        type === "user"
-          ? (temp = this.buildingusers)
-          : type === "contactunit"
-          ? (temp = this.buildingcontactunit)
-          : type === "floorOfHouse"
-          ? (temp = this.selectData)
-          : this.deviceList;
-        if (value !== null && value !== undefined) {
-          value.forEach((item) => {
-            var data = temp.filter((element) => {
-              return item.id == element.id;
-            });
-            if (data.length > 0) {
-              type === "floorOfHouse"
-                ? array.push(data[0].houseNumber)
-                : array.push(data[0].name);
-            }
-          });
-          return array.toString();
-        } else {
-          return "";
-        }
-      };
-    },
-    label() {
-      if (this.device === "mobile") {
-        return "top";
-      } else {
-        return "left";
-      }
-    },
-    changeShowFormat() {
+    showSelectOrSingleChoice() {
       return function (format, row, prop) {
         switch (format) {
           case "deviceSelect":
           case "addressdeviceSelect":
             return row.getDevicesName();
-          case "userInfo":
-          case "usageOfFloorUserInfo":
-          case "commitUserInfo":
-            return this.changeUserName(row[prop]);
-          case "floorOfHouseSelect":
-            return row.getUsageOfFloorsName();
-          case "contactunitSelect":
-            return this.changeContainUnit(row[prop]);
-          case "buildingSelect":
-            return row.getBuildingsName();
-          case "roleSelect":
-            return row.getRolesName();
-          case "inspectionSelect":
-            return row.getInspectionLackName();
           case "deviceTypeSelect":
             return row.getLinkType().getSelectName();
-          case "accountSelect":
-            return row.getAccountName();
-          case "manyFloorSelect":
-            return this.changeFloorName(row[prop]);
-          case "processList":
-            return row.getProcessName();
-          case "committeeSelect":
-            return row.getKeeperUnitsName();
+          default:
+            return row[prop]
+              .map((item) => {
+                return item.getName();
+              })
+              .toString();
         }
       };
     },
-    changeShowFormatString() {
+    showStringOrId() {
       return function (format, row, prop) {
         if (row !== undefined && row !== null) {
           switch (format) {
             case "floorSelect":
-              return this.changeFloorName(row[prop]);
+              if (this.floor_record == 0) {
+                this.$store.dispatch("building/setFloors");
+                this.$store.dispatch("record/saveFloorRecord", 1);
+              }
+              let _array = this.buildingfloors.filter(
+                (item, index) => item.id == val
+              );
+              return _array.length !== 0 ? _array[0].floor : "";
             case "valueType":
-              return row.getValueTypeName();
+              switch (row[prop]) {
+                case "status":
+                  return "監視狀態";
+                case "action":
+                  return "控制動作";
+                case "power":
+                  return "監視電源";
+                default:
+                  return "";
+              }
             case "fullType":
               return row.getType();
             case "addressStr":
               return row.getAddressStr();
             case "classLeaderSelect":
-              return this.changeAccountName(row[prop]);
+              if (this.account_record == 0) {
+                this.$store.dispatch("building/setaccounts");
+                this.$store.dispatch("record/saveAccountRecord", 1);
+              }
+              if (value !== null && value !== undefined) {
+                let _array = this.buildingaccount.filter(
+                  (item, index) => item.id == row[prop]
+                );
+                return _array.length !== 0 ? _array[0].name : "";
+              }
+              return "";
             case "certificateNumber":
-              return row.getCertificateNumber();
+              return row[prop];
             case "actionSelect":
-              return row.getActionSelect();
+              switch (row[prop]) {
+                case "query":
+                  return "查詢";
+                case "add":
+                  return "新增";
+                case "delete":
+                  return "刪除";
+                case "update":
+                  return "修改";
+                case "export":
+                  return "匯入檔案";
+                case "upload":
+                  return "匯出檔案";
+                default:
+                  return "";
+              }
             case "floorOfHouseSelect":
               if (this.floorOfHouse_record == 0) {
                 this.$store.dispatch("building/setFloorOfHouse");
@@ -190,105 +190,38 @@ export default {
         }
       };
     },
-    changeOptionName() {
+    showSettingName() {
       //設定名稱
-      
+
       return function (value) {
         if (this.setting_record == 0) {
           this.$store.dispatch("building/setoptions");
           this.$store.dispatch("record/saveSettingRecord", 1);
         }
-        if (value !== null && value !== undefined) {          
+        if (value !== null && value !== undefined) {
           let _array = this.buildingoptions.filter(
             (item, index) => item.id == value
-          ); 
-          if(_array.length !==0){
-            if(_array[0].classType = "MaintainProcessOptions" && _array[0].textName === "已保養") {
-              _array[0].textName = "正常"
-            } else if (_array[0].classType = "MaintainProcessOptions" && _array[0].textName === "故障中") {
-              _array[0].textName = "故障"
+          );
+          if (_array.length !== 0) {
+            if (
+              (_array[0].classType =
+                "MaintainProcessOptions" && _array[0].textName === "已保養")
+            ) {
+              _array[0].textName = "正常";
+            } else if (
+              (_array[0].classType =
+                "MaintainProcessOptions" && _array[0].textName === "故障中")
+            ) {
+              _array[0].textName = "故障";
             }
-          }         
-          
+          }
+
           return _array.length !== 0 ? _array[0].textName : "";
         }
         return "";
       };
     },
-    changeAccountName() {
-      //帳號名稱
-      return function (value) {
-        if (this.account_record == 0) {
-          this.$store.dispatch("building/setaccounts");
-          this.$store.dispatch("record/saveAccountRecord", 1);
-        }
-        if (value !== null && value !== undefined) {
-          let _array = this.buildingaccount.filter(
-            (item, index) => item.id == value
-          );
-          return _array.length !== 0 ? _array[0].name : "";
-        }
-        return "";
-      };
-    },
-    changeContainUnit() {
-      //廠商名稱
-      return function (val) {
-        if (val !== null && val !== undefined) {
-          return val
-            .map((item) => {
-              return item.getName();
-            })
-            .toString();
-        }
-        return "";
-      };
-    },
-    changeUserName() {
-      //住戶名稱
-      return function (val) {
-        if (val !== null && val !== undefined) {
-          return val
-            .map((item) => {
-              return item.getName();
-            })
-            .toString();
-        }
-        return "";
-      };
-    },
-    changeFloorName() {
-      return function (val) {
-        if (
-          val !== null &&
-          val !== undefined &&
-          typeof val !== "string" &&
-          typeof val !== "undefined"
-        ) {
-          return val
-            .map((item) => {
-              return item.getName();
-            })
-            .toString();
-        } else if (val !== null) {
-          if (this.floor_record == 0) {
-            this.$store.dispatch("building/setFloors");
-            this.$store.dispatch("record/saveFloorRecord", 1);
-          }
-          let _array = this.buildingfloors.filter(
-            (item, index) => item.id == val
-          );
-          return _array.length !== 0 ? _array[0].floor : "";
-        }
-        return "";
-      };
-    },
-    stringToBr() {
-      return function (a) {
-        return a.replace(/{ln}/g, "<br/>");
-      };
-    },
-    selectfilter() {
+    optionFilter() {
       return function (value) {
         if (value !== null) {
           switch (value) {
@@ -302,7 +235,9 @@ export default {
                 this.$set(
                   v,
                   "label",
-                  v.getLinkType().getSelectName() + "-" + v.getOnlyName()
+                  v.getLinkType().getSelectName() !== ""
+                    ? v.getLinkType().getSelectName() + "-" + v.getOnlyName()
+                    : v.getOnlyName()
                 );
                 this.$set(v, "id", v.getID());
                 return v;
@@ -363,7 +298,9 @@ export default {
                   this.$set(
                     v,
                     "label",
-                    v.getLinkType().getSelectName() + "-" + v.getOnlyName()
+                    v.getLinkType().getSelectName() !== ""
+                      ? v.getLinkType().getSelectName() + "-" + v.getOnlyName()
+                      : v.getOnlyName()
                   );
                   this.$set(v, "id", v.getID());
                   return v;
@@ -473,7 +410,7 @@ export default {
               } else {
                 return this.selectData;
               }
-            case "userInfo":            
+            case "userInfo":
             case "usageOfFloorUserInfo":
               if (this.account_record == 0) {
                 this.$store.dispatch("building/setaccounts");
@@ -524,13 +461,13 @@ export default {
               return this.commitUserInfoArray;
             case "accountSelect":
               return this.accountArray;
-            case "classLeaderSelect":      
-              return this.classLeaderArray.map((v) => {            
-              this.$set(v, "value", v.id);
-              this.$set(v, "label", v.name);
-              this.$set(v, "id", v.id);
-              return v;
-            });
+            case "classLeaderSelect":
+              return this.classLeaderArray.map((v) => {
+                this.$set(v, "value", v.id);
+                this.$set(v, "label", v.name);
+                this.$set(v, "id", v.id);
+                return v;
+              });
             case "certificateNumber":
               return [
                 { label: "消防設備師", id: "消防設備師" },
@@ -546,15 +483,67 @@ export default {
                 { label: "匯入檔案", id: "export" },
                 { label: "匯出檔案", id: "upload" },
               ];
-            case "maintainReportSelect":              
-              return this.selectData.map((v) => {            
+            case "maintainTypeRadio":
+              return [
+                { label: "維護保養" },
+                { label: "故障叫修" },
+                { label: "申報改善單" },
+                { label: "其他" },
+              ];
+            case "maintainReportSelect":
+              return this.selectData.map((v) => {
                 this.$set(v, "value", v.id);
                 this.$set(v, "label", v.declareYear);
                 this.$set(v, "id", v.id);
                 return v;
-            })           
-              
+              });
+            case "declareYearType":
+              return [
+                { label: "上半年" },
+                { label: "下半年" },
+                { label: "全年度" },
+              ];
           }
+        } else {
+          return "";
+        }
+      };
+    },
+    settingFilter() {
+      return function (format) {
+        if (this.setting_record == 0) {
+          this.$store.dispatch("building/setoptions");
+          this.$store.dispatch("record/saveSettingRecord", 1);
+        }
+        if (format !== null) {
+          let _array = this.buildingoptions.filter(
+            (item, index) => item.classType == format
+          );
+          var options = _array.map((v) => {
+            var str = v.textName;
+            if (v.classType == "InspectionTypeOfTime") {
+              var list = v.value.split("-");
+              var array = list.map((item) => {
+                return item + "月";
+              });
+              var _str = array.join("及");
+              str = v.textName + "/每年" + _str + "前";
+            } else if (v.classType == "PublicSafeTypeOfTime") {
+              var list = v.value.split("-");
+              str =
+                v.textName +
+                "/每" +
+                list[0] +
+                "年一次，" +
+                list[1] +
+                "月到" +
+                list[2] +
+                "月";
+            }
+            this.$set(v, "label", str);
+            return v;
+          });
+          return options;
         } else {
           return "";
         }
@@ -587,7 +576,7 @@ export default {
     },
   },
   filters: {
-    changeBoolean: function (val, format) {
+    booleanFilter: function (val, format) {
       if (val == true) {
         switch (format) {
           case "accountStatusSelect":
@@ -716,82 +705,7 @@ export default {
     };
   },
   methods: {
-    async changeText(config, val) {
-      if (val !== undefined) {
-        var array = [];
-        var data = val.getInfo();
-        var keys = Object.keys(data);
-        keys.forEach((item) => {
-          var i = config.filter((obj) => {
-            return obj.prop == item;
-          });
-          if (i.length !== 0) {
-            var value = "";
-            if (item == "fullType") {
-              value = val.getType();
-            } else if (item == "collaborate") {
-              value = data[item] == true ? "合作中" : "未配合";
-            } else if (
-              item == "linkOwners" ||
-              item == "linkUsers" ||
-              item == "linkFireManagers" ||
-              item == "linkLivingUsers"
-            ) {
-              value = this.changeUserName(data[item]);
-            } else if (item == "linkMaintainVendors") {
-              value = this.changeContainUnit(data[item]);
-            } else if (item == "linkRoles") {
-              value = val.getRolesName();
-            } else if (item == "linkKeeperUnits") {
-              value = val.getKeeperUnitsName();
-            } else if (item == "linkUsageOfFloors") {
-              value = val.getUsageOfFloorsName();
-            } else if (item == "linkDeviceTypes") {
-              value = val.getLinkType().getSelectName();
-            } else if (item == "linkBuildings") {
-              value = val.getBuildingsName();
-            } else if (
-              item == "status" ||
-              item == "inspectionPlaceCategory" ||
-              item == "publicPlaceCategory"
-            ) {
-              if (val.constructor == Role) {
-                value = data[item] == true ? "啟用中" : "未啟用";
-              } else {
-                value = this.changeOptionName(data[item]);
-              }
-            } else if (item == "removable") {
-              value = data[item] == true ? "允許" : "禁止";
-            } else if (item == "systemUsed") {
-              value = data[item] == true ? "已使用" : "未使用";
-            } else if (item == "revocation") {
-              value = data[item] == true ? "已撤銷" : "未撤銷";
-            } else if (item == "governmentApproval") {
-              value = data[item] == true ? "是" : "否";
-            } else if (item == "selfDeclared") {
-              value = this.changeBoolean([
-                data["selfInspectionDeclared"],
-                data["selfPublicDeclared"],
-              ]);
-            } else if (
-              item == "birthday" ||
-              item == "dateOfPurchase" ||
-              item == "dateOfWarranty" ||
-              item == "useLicenseDate"
-            ) {
-              value = moment(data[item]).format("YYYY-MM-DD");
-            } else {
-              value = data[item] !== undefined ? data[item] : "";
-            }
-            array.push({
-              label: i[0].label,
-              value: value,
-            });
-          }
-        });
-        return array;
-      }
-    },
+    //打開關聯的詳細資料視窗-表格、彈跳視窗表格
     async clickMessageBox(title, format, data) {
       console.log(title, format, data);
       if (data.length == 0) {
@@ -806,7 +720,6 @@ export default {
         for await (let item of data) {
           const newDatas = [];
           var objData = await constr.getOfID(item.id);
-          console.log(objData);
           var changetext = await this.changeText(config, objData);
           changetext.forEach((obj) => {
             newDatas.push(
@@ -838,7 +751,6 @@ export default {
             )
           );
         }
-
         this.$msgbox({
           title: title,
           message: h(
@@ -946,54 +858,70 @@ export default {
           .catch(() => {});
       }
     },
+    async changeText(config, val) {
+      if (val !== undefined) {
+        var array = [];
+        var keys = Object.keys(val);
+        keys.forEach((item) => {
+          var i = config.filter((obj) => {
+            return obj.prop == item;
+          });
+          if (i.length !== 0) {
+            var itemConfig = i[0];
+            var value = "";
+            if (itemConfig.formType === "boolean") {
+              value = this.$options.filters.booleanFilter(
+                val[item],
+                itemConfig.format
+              );
+            } else if (
+              itemConfig.formType === "select" ||
+              itemConfig.formType === "singleChoice"
+            ) {
+              value = this.showSelectOrSingleChoice(
+                itemConfig.format,
+                val,
+                item
+              );
+            } else if (itemConfig.formType === "selectSetting") {
+              value = this.showSettingName(val[item]);
+            } else if (
+              itemConfig.formType === "selectString" ||
+              itemConfig.formType === "addressStr" ||
+              itemConfig.formType === "fullType"
+            ) {
+              value = this.showStringOrId(itemConfig.format, val, item);
+            } else if (itemConfig.formType == "selfDeclared") {
+              value = this.$options.filters.booleanFilter(
+                [val["selfInspectionDeclared"], val["selfPublicDeclared"]],
+                itemConfig.format
+              );
+            } else if (itemConfig.formType === "date") {
+              value = this.dataStr(val, itemConfig.format, item);
+            } else {
+              value = val[item] !== undefined ? val[item] : "";
+            }
+            array.push({
+              label: i[0].label,
+              value: value,
+            });
+          }
+        });
+        return array;
+      }
+    },
     async changeRealData(val) {
-      console.log(val);
       var constr = val.constructor;
       var config = val.constructor.getTableConfig();
+      // var config = val.constructor.getTableConfig().filter((item) => {
+      //   return item.isShow == true;
+      // });
       return {
         constr: constr,
         config: config,
       };
     },
-    optionfilter(format) {
-      if (this.setting_record == 0) {
-        this.$store.dispatch("building/setoptions");
-        this.$store.dispatch("record/saveSettingRecord", 1);
-      }
-      if (format !== null) {
-        let _array = this.buildingoptions.filter(
-          (item, index) => item.classType == format
-        );
-        var options = _array.map((v) => {
-          var str = v.textName;
-          if (v.classType == "InspectionTypeOfTime") {
-            var list = v.value.split("-");
-            var array = list.map((item) => {
-              return item + "月";
-            });
-            var _str = array.join("及");
-            str = v.textName + "/每年" + _str + "前";
-          } else if (v.classType == "PublicSafeTypeOfTime") {
-            var list = v.value.split("-");
-            str =
-              v.textName +
-              "/每" +
-              list[0] +
-              "年一次，" +
-              list[1] +
-              "月到" +
-              list[2] +
-              "月";
-          }
-          this.$set(v, "label", str);
-          return v;
-        });
-        return options;
-      } else {
-        return "";
-      }
-    },
-    //表格排序
+    //排序-表格、彈跳視窗表格
     sortChange(column, data = null) {
       var self = this;
       var sortList = data == null ? this.blockData : data;

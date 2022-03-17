@@ -153,18 +153,6 @@ const actions = {
         });
     });
   },
-  ipconfig({ commit }) {
-    return new Promise((resolve, reject) => {
-      user
-        .apiGetUserIP()
-        .then((response) => {
-          resolve(response);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  },
   async getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
       user

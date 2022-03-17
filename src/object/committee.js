@@ -73,13 +73,6 @@ class Committee extends Parent {
   getLinkUsageOfFloors() {
     return this.linkUsageOfFloors;
   }
-  getUsageOfFloorsName() {
-    return this.linkUsageOfFloors
-      .map((item) => {
-        return item.getName();
-      })
-      .toString();
-  }
   //搜門關聯門牌的所有使用者，去掉重複的
   static empty() {
     return new Committee({

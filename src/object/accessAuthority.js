@@ -85,26 +85,6 @@ class AccessAuthority extends Parent {
   setlinkMainMenus(linkMainMenus) {
     this.linkMainMenus = linkMainMenus;
   }
-  //表格&區塊顯示名稱用
-  getRolesName() {
-    return this.linkRoles.map((item) => item.getName()).toString();
-  }
-  getActionSelect() {
-    switch (this.action) {
-      case "query":
-        return "查詢";
-      case "add":
-        return "新增";
-      case "delete":
-        return "刪除";
-      case "update":
-        return "修改";
-      case "export":
-        return "匯入檔案";
-      case "upload":
-        return "匯出檔案";
-    }
-  }
   static empty() {
     return new AccessAuthority({
       id: "",
@@ -124,121 +104,142 @@ class AccessAuthority extends Parent {
       {
         label: "名稱",
         prop: "name",
+        formType: "inputString",
+        isTable: true,
+        isBlock: true,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請輸入名稱",
         maxlength: "20",
-        isHidden: false,
-        isSearch: true,
         placeholder: "請輸入名稱",
-        isAssociate: false,
-        isEdit: true,
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: true,
       },
       {
         label: "權限",
         prop: "action",
-        mandatory: true,
+        formType: "selectString",
         format: "actionSelect",
-        message: "請選擇權限",
-        isHidden: false,
+        isTable: true,
+        isBlock: true,
         isSearch: false,
+        selectFilter: false,
         isAssociate: false,
+        isShow: true,
         isEdit: true,
+        mandatory: true,
+        message: "請選擇權限",
+        isCheck: true,
         isUpload: true,
         isExport: true,
-        isBlock: true,
-        formType: "selectString",
-        isCheck: true,
       },
       {
         label: "描述",
         prop: "description",
+        formType: "inputString",
         format: "textarea",
+        isTable: true,
+        isBlock: false,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: false,
         maxlength: "200",
-        isHidden: false,
-        isSearch: true,
-        isAssociate: false,
-        isEdit: true,
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: false,
-      },
-      {
-        label: "狀態",
-        prop: "status",
-        format: "accountStatusSelect",
-        mandatory: true,
-        message: "請選擇狀態",
-        type: "boolean",
-        typemessage: "",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: false,
-        isEdit: true,
-        isUpload: true,
-        isExport: true,
-        isBlock: true,
-        formType: "boolean",
       },
       {
         label: "排序",
         prop: "sort",
+        formType: "inputNumber",
         format: "inputnumber",
+        isTable: true,
+        isBlock: false,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請輸入0~999",
-        pattern: /^[0-9]{1,3}$/,
-        errorMsg: "請輸入0~999",
-        isPattern: true,
+        maxlength: "3",
+        placeholder: "請輸入0~999",
         type: "number",
         typemessage: "",
-        placeholder: "請輸入0~999",
-        isHidden: false,
-        maxlength: "3",
-        isSearch: true,
-        isAssociate: false,
-        isEdit: true,
+        isPattern: true,
+        pattern: /^[0-9]{1,3}$/,
+        errorMsg: "請輸入0~999",
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: false,
-        formType: "inputNumber",
       },
       {
         label: "角色",
         prop: "linkRoles",
+        formType: "select",
         format: "roleSelect",
+        isTable: true,
+        isBlock: true,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: true,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請選擇角色",
         type: "array",
         typemessage: "",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: true,
-        isEdit: true,
+        isCheck: false,
         isUpload: false,
         isExport: true,
+      },
+      {
+        label: "狀態",
+        prop: "status",
+        formType: "boolean",
+        format: "accountStatusSelect",
+        isTable: true,
         isBlock: true,
-        formType: "select",
-        limit: 0,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
+        mandatory: true,
+        message: "請選擇狀態",
+        type: "boolean",
+        typemessage: "",
+        isCheck: false,
+        isUpload: true,
+        isExport: true,
       },
       {
         label: "刪除",
         prop: "removable",
+        formType: "boolean",
         format: "removableSelect",
+        isTable: true,
+        isBlock: false,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請選擇是否允許刪除",
         type: "boolean",
         typemessage: "",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: false,
-        isEdit: true,
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: false,
-        formType: "boolean",
       },
     ];
   }
@@ -261,15 +262,6 @@ class AccessAuthority extends Parent {
       });
     return data;
   }
-  // static async getSearchPage(mainMenuId,data){
-  //     var data = await api.authority.apiGetAccessAuthoritySearchPages(mainMenuId,data).then(response => {
-  //         response.result = response.result.sort((x,y) => x.sort - y.sort).map(item=>{ return new AccessAuthority(item)})
-  //         return response
-  //     }).catch(error=>{
-  //         return []
-  //     })
-  //     return data
-  // }
   static async postMany(data) {
     var data = await api.authority
       .apiPostAccessAuthorities(data)

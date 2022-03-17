@@ -62,13 +62,6 @@ class PublicSafe extends Parent {
   getNextInspectionDate() {
     return moment(this.nextInspectionDate).format("YYYY-MM-DD");
   }
-  getUsageOfFloorsName() {
-    return this.linkUsageOfFloor
-      .map((item) => {
-        return item.getName();
-      })
-      .toString();
-  }
   async update() {
     var data = await api.report
       .apiPatchPublicSafe(this)

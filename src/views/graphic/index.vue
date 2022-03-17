@@ -73,27 +73,7 @@
             </Graphic>
           </el-col>
         </el-row>
-        <el-row>
-          <!-- <el-col :xs="24" :sm="24" :md="24" :lg="16">
-              <div class="collapse-wrapper" >
-                <GraphicTable
-                  :list-query-params.sync="listQueryParams"
-                  v-bind="tableAttrs"
-                  v-on="tableEvent">
-                </GraphicTable>
-              </div>
-            </el-col> -->
-          <!-- <el-col :xs="24" :sm="24" :md="24" :lg="8">
-              <div class="wrapper">
-                <ObjectList
-                  ref="objectList"
-                  v-show="type == 'edit'"
-                  v-bind="objectListAttrs"
-                  v-on:sendActionToCanvas="sendActionToCanvas">
-                </ObjectList>
-              </div>
-            </el-col> -->
-        </el-row>
+        <el-row> </el-row>
       </div>
     </div>
   </div>

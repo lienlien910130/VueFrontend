@@ -71,7 +71,7 @@
                         v-for="(val, index) in [true, false]"
                         :key="index"
                         :value="val"
-                        :label="val | changeBoolean(item.format)"
+                        :label="val | booleanFilter(item.format)"
                       ></el-option>
                     </template>
                     <!-- <template v-else>
@@ -92,7 +92,7 @@
                       "
                     >
                       <el-option
-                        v-for="(obj, index) in selectfilter(
+                        v-for="(obj, index) in optionFilter(
                           item.format == 'commitUserInfo'
                             ? 'userInfo'
                             : item.format
@@ -105,7 +105,7 @@
                     </template>
                     <template v-else-if="item.formType == 'selectSetting'">
                       <el-option
-                        v-for="(obj, index) in optionfilter(item.format)"
+                        v-for="(obj, index) in settingFilter(item.format)"
                         :key="index"
                         :label="obj.textName"
                         :value="obj.id"
@@ -126,7 +126,7 @@
                     v-else
                     v-model="searchForm.preset[index].searchValue"
                     placeholder="請選擇"
-                    :options="selectfilter('fullType')"
+                    :options="optionFilter('fullType')"
                     filterable
                     clearable
                   >
@@ -268,7 +268,7 @@
                         "
                         style="color: #66b1ff; cursor: pointer"
                       >
-                        {{ changeUserName(item[option.prop]) }}
+                        <!-- {{ changeUserName(item[option.prop]) }} -->
                       </span>
 
                       <span
@@ -280,7 +280,7 @@
                           option.format == 'systemUsedBoolean'
                         "
                       >
-                        {{ item[option.prop] | changeBoolean(option.format) }}
+                        {{ item[option.prop] | booleanFilter(option.format) }}
                       </span>
 
                       <span
@@ -292,7 +292,7 @@
                           option.format == 'DeviceStatusOptions'
                         "
                       >
-                        {{ changeOptionName(item[option.prop]) }}
+                        {{ showSettingName(item[option.prop]) }}
                       </span>
 
                       <span
@@ -306,7 +306,7 @@
                         "
                         style="color: #66b1ff; cursor: pointer"
                       >
-                        {{ item.getUsageOfFloorsName() }}
+                        <!-- {{ item.getUsageOfFloorsName() }} -->
                       </span>
                       <!-- assignFireDeviceSelect -->
                       <span
@@ -327,7 +327,7 @@
                       </span>
 
                       <span v-else-if="option.format == 'floorSelect'">
-                        {{ changeFloorName(item[option.prop]) }}
+                        <!-- {{ changeFloorName(item[option.prop]) }} -->
                       </span>
 
                       <span v-else-if="option.format == 'addressStr'">
@@ -335,7 +335,7 @@
                       </span>
 
                       <span v-else-if="option.format == 'valueType'">
-                        {{ item.getValueTypeName() }}
+                        <!-- {{ item.getValueTypeName() }} -->
                       </span>
 
                       <span v-else-if="option.format == 'iconSelect'">
@@ -384,7 +384,7 @@
                         "
                         style="color: #66b1ff; cursor: pointer"
                       >
-                        {{ changeContainUnit(item[option.prop]) }}
+                        <!-- {{ changeContainUnit(item[option.prop]) }} -->
                       </span>
 
                       <span
@@ -398,7 +398,7 @@
                         "
                         style="color: #66b1ff; cursor: pointer"
                       >
-                        {{ item.getBuildingsName() }}
+                        <!-- {{ item.getBuildingsName() }} -->
                       </span>
 
                       <span
@@ -412,7 +412,7 @@
                         "
                         style="color: #66b1ff; cursor: pointer"
                       >
-                        {{ item.getRolesName() }}
+                        <!-- {{ item.getRolesName() }} -->
                       </span>
 
                       <span
@@ -520,7 +520,7 @@
                 </span>
 
                 <span v-else-if="item.formType == 'selectSetting'">
-                  {{ changeOptionName(scope.row[item.prop]) }}
+                  {{ showSettingName(scope.row[item.prop]) }}
                 </span>
 
                 <span
@@ -537,7 +537,7 @@
                     -
                   </template>
                   <template v-else>
-                    {{ scope.row[item.prop] | changeBoolean(item.format) }}
+                    {{ scope.row[item.prop] | booleanFilter(item.format) }}
                   </template>
                 </span>
 
@@ -546,7 +546,7 @@
                     [
                       scope.row["selfInspectionDeclared"],
                       scope.row["selfPublicDeclared"],
-                    ] | changeBoolean(item.format)
+                    ] | booleanFilter(item.format)
                   }}
                 </span>
 
@@ -567,7 +567,9 @@
                   "
                   style="color: #66b1ff; cursor: pointer"
                 >
-                  {{ changeShowFormat(item.format, scope.row, item.prop) }}
+                  {{
+                    showSelectOrSingleChoice(item.format, scope.row, item.prop)
+                  }}
                 </span>
 
                 <span
@@ -584,9 +586,7 @@
                     />
                   </template>
                   <template v-else>
-                    {{
-                      changeShowFormatString(item.format, scope.row, item.prop)
-                    }}
+                    {{ showStringOrId(item.format, scope.row, item.prop) }}
                   </template>
                 </span>
 
@@ -941,7 +941,7 @@ export default {
         this.isTable == true ? (this.gutter = 0) : (this.gutter = 32);
         if (this.isTable == true) {
           this.rowlabel = this.config.filter(
-            (item, index) => item.isHidden == false
+            (item, index) => item.isTable == true
           );
           // item.isTable == true  item.isHidden == false
         } else {
@@ -1153,39 +1153,6 @@ export default {
       this.$emit("setDeviceIdSelect", this.deviceIdSelect.getID());
       this.$emit("update:listQueryParams", this.listQueryParams);
       this.$emit("clickPagination");
-    },
-    //舊版搜尋功能-清空selectArray
-    clearInputSearch() {
-      this.inputSelect = null;
-      this.$emit("resetlistQueryParams");
-    },
-    handleSearchWord() {
-      if (this.inputSelect == null || this.inputSelect.length == 0) {
-        this.$message.error("請選擇搜尋欄位");
-        return false;
-      }
-      var data = this.config.filter((config) => {
-        if (this.inputSelect.findIndex((item) => item == config.prop) !== -1)
-          return config;
-      });
-      if (this.inputSearch == "") {
-        this.clearInputSearch();
-      } else {
-        var words = this.inputSearch.split(",");
-        words = words.filter((item) => item !== "");
-        data.forEach((item, index) => {
-          if (words[index] !== undefined) {
-            this.$set(this.listQueryParams, item.prop, "{LIKE}" + words[index]);
-          }
-        });
-        this.listQueryParams.pageIndex = 1;
-        this.$emit("update:listQueryParams", this.listQueryParams);
-        this.$emit("clickPagination");
-      }
-    },
-    clearSelectArray() {
-      this.selectArray = [];
-      this.$refs.tableData.clearSelection();
     },
     //新版搜尋功能-日期不能多個
     setConditionType(val, index) {

@@ -102,15 +102,6 @@ export default {
         .catch((error) => {
           console.log(error);
         });
-      // this.$store
-      //   .dispatch("user/ipconfig")
-      //   .then((response) => {
-      //     console.log(response);
-      //     this.$message(response);
-      //   })
-      //   .catch((error) => {
-      //     this.$message.error(error);
-      //   });
     },
     getIp() {
       var url =
@@ -182,6 +173,7 @@ export default {
   min-height: 100%;
   width: 100%;
   overflow: hidden;
+  //background-image: url("../../assets/image/login_bg.jpg");
   background-image: url("@assets/image/login_bg.jpg");
   background-size: 100% 100%;
   background-repeat: no-repeat;

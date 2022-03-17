@@ -68,66 +68,65 @@ class SampleNodeList extends Parent {
       {
         label: "名稱",
         prop: "name",
+        formType: "inputString",
+        isTable: true,
+        isBlock: true,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請輸入名稱",
-        isHidden: false,
         maxlength: "20",
-        isSearch: true,
         placeholder: "請輸入名稱",
-        isAssociate: false,
-        isEdit: true,
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: true,
       },
       {
         label: "節點類型",
         prop: "nType",
+        formType: "nTypeChange",
         format: "nTypeChange",
+        isTable: true,
+        isBlock: true,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請輸入節點類型",
-        isHidden: false,
         maxlength: "20",
-        isSearch: true,
         placeholder: "請輸入節點類型",
-        isAssociate: false,
-        isEdit: true,
+        isCheck: true,
         isUpload: true,
         isExport: true,
-        isBlock: true,
-        formType: "nTypeChange",
-        isCheck: true,
       },
       {
         label: "icon",
         prop: "icon",
-        mandatory: false,
-        message: "請輸入icon",
-        isHidden: false,
-        maxlength: "40",
+        formType: "inputString",
+        isTable: true,
+        isBlock: true,
         isSearch: true,
-        placeholder: "請輸入icon",
+        selectFilter: false,
         isAssociate: false,
+        isShow: true,
         isEdit: true,
+        mandatory: false,
+        maxlength: "40",
+        placeholder: "請輸入icon",
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: true,
       },
     ];
   }
   static getChName() {
     return "指令";
   }
-  // static async get (){
-  //     var data = await api.nodeList.apiGetAllSampleNode().then(response => {
-  //         var array = response.result.sort((x,y) => x.id - y.id)
-  //         .map(item=>{ return new SelfDefenseFireMarshalling(item) })
-  //         return array
-  //     }).catch(error=>{
-  //         return []
-  //     })
-  //     return data
-  // }
   static async getSearchPage(data) {
     var data = await api.nodeList
       .apiGetSampleNodeSearchPages(data)

@@ -167,7 +167,6 @@
 import { blockmixin, dialogmixin, excelmixin, sharemixin } from "@/mixin/index";
 import Setting from "@/object/setting";
 import { Account, Files, User } from "@/object";
-import CharacterStatus from "@/object/characterStatus";
 export default {
   mixins: [dialogmixin, blockmixin, excelmixin, sharemixin],
   components: {

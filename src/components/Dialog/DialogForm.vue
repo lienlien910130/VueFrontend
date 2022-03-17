@@ -58,7 +58,7 @@
                 list-type="picture-card"
                 :limit="1"
                 :auto-upload="false"
-                :on-change="handlePhotoChange"
+                :on-change="photoChange"
                 :file-list="fileList"
                 :multiple="false"
               >
@@ -89,17 +89,8 @@
               placeholder="請選擇"
               style="width: 100%"
               :type="item.format == 'YYYY' ? 'year' : 'date'"
-              @change="
-                item.hasEvent ? handleDatePicker($event, item.prop) : null
-              "
+              @change="item.hasEvent ? dateChange($event, item.prop) : null"
             />
-            <template v-else-if="item.formType == 'radio'">
-              <el-radio-group v-model="radioType" @change="handleChangeRadio">
-                <el-radio label="上半年">上半年</el-radio>
-                <el-radio label="下半年">下半年</el-radio>
-                <el-radio label="全年度">全年度</el-radio>
-              </el-radio-group>
-            </template>
             <!-- 範圍 -->
             <span v-else-if="item.formType == 'range'">
               <el-date-picker
@@ -182,7 +173,7 @@
             </template>
             <!-- 下拉選單-單-array -->
             <el-select
-              v-else-if="item.formType == 'singleChoice'"              
+              v-else-if="item.formType == 'singleChoice'"
               v-model="temp[item.prop]"
               placeholder="請選擇"
               filterable
@@ -203,7 +194,7 @@
             >
               <template v-if="item.format == 'inspectionSelect'">
                 <el-option-group
-                  v-for="group in selectfilter('inspectionSelect')"
+                  v-for="group in optionFilter('inspectionSelect')"
                   :key="group.label"
                   :label="group.label"
                 >
@@ -217,20 +208,9 @@
                   </el-option>
                 </el-option-group>
               </template>
-              <template v-else-if="item.format == 'maintainReportSelect'">
-                <el-option
-                  v-for="(obj, index) in selectfilter('maintainReportSelect')"
-                  :key="index"
-                  :label="                    
-                    obj.label                      
-                  "
-                  :value="obj.value"
-                >
-                </el-option>
-              </template>
               <template v-else>
                 <el-option
-                  v-for="(obj, index) in selectfilter(item.format)"
+                  v-for="(obj, index) in optionFilter(item.format)"
                   :key="index"
                   :label="
                     item.format == 'maintainListSelect'
@@ -251,11 +231,13 @@
               value-key="id"
               placeholder="請選擇"
               style="width: 100%"
-              @change="checkMode($event, item.format)"
+              @change="
+                item.hasEvent ? multipleChoiceChange($event, item.format) : null
+              "
               :disabled="item.format == 'accountSelect' ? disable : false"
             >
               <el-option
-                v-for="(obj, index) in selectfilter(item.format)"
+                v-for="(obj, index) in optionFilter(item.format)"
                 :key="index"
                 :label="
                   item.format == 'accountSelect' ? obj.getName() : obj.label
@@ -281,7 +263,7 @@
               <template
                 v-if="
                   item.format == 'iconSelect' &&
-                  selectfilter('iconShow') !== null
+                  optionFilter('iconShow') !== null
                 "
                 slot="prefix"
               >
@@ -291,7 +273,7 @@
                 />
               </template>
               <el-option
-                v-for="(obj, index) in selectfilter(item.format)"
+                v-for="(obj, index) in optionFilter(item.format)"
                 :key="index"
                 :label="
                   item.format == 'marshallingMgmtSelect' ? obj.name : obj.label
@@ -312,11 +294,11 @@
               v-else-if="item.formType == 'fullType'"
               v-model="fulltypevalue"
               placeholder="請選擇"
-              :options="selectfilter('fullType')"
+              :options="optionFilter('fullType')"
               filterable
               style="width: 100%"
               clearable
-              @change="changeFullType"
+              @change="fullTypeChange"
             >
             </el-cascader>
             <!-- 設定的下拉選單(單) -->
@@ -329,10 +311,10 @@
               style="width: 100%"
               allow-create
               default-first-option
-              @change="changeValue($event, item.format, item.prop)"
+              @change="settingChange($event, item.format, item.prop)"
             >
               <el-option
-                v-for="(item, index) in optionfilter(item.format)"
+                v-for="(item, index) in settingFilter(item.format)"
                 :key="index"
                 :label="item.label"
                 :value="item.id"
@@ -343,10 +325,10 @@
             <span v-else-if="item.formType == 'address'">
               <el-cascader
                 v-model="addressvalue"
-                :options="selectfilter(item.format)"
+                :options="optionFilter(item.format)"
                 :props="{ value: 'label' }"
                 style="width: 100%"
-                @change="handleChange"
+                @change="addreddChange"
                 placeholder="請選擇縣市區域"
               ></el-cascader>
               <el-input
@@ -364,14 +346,14 @@
               placeholder="請選擇"
               style="width: 100%"
               @change="
-                item.hasEvent ? handleMainSelect($event, item.format) : null
+                item.hasEvent ? booleanChange($event, item.format) : null
               "
             >
               <el-option
                 v-for="(val, index) in [true, false]"
                 :key="index"
                 :value="val"
-                :label="val | changeBoolean(item.format)"
+                :label="val | booleanFilter(item.format)"
               ></el-option>
             </el-select>
             <!-- 門牌-自行申報 -->
@@ -383,14 +365,32 @@
                 公安申報
               </el-checkbox>
             </template>
+            <!-- 多個 radio(string)-->
+            <template v-else-if="item.formType == 'radio'">
+              <el-radio-group
+                v-model="radioType"
+                @change="
+                  item.hasEvent ? radioChange($event, item.format) : null
+                "
+              >
+                <el-radio
+                  v-for="(item, index) in optionFilter(item.format)"
+                  :key="index"
+                  :label="item.label"
+                  >{{ item.label }}
+                </el-radio>
+              </el-radio-group>
+            </template>
+            <!-- 單一 checkbox(boolean)-->
             <el-checkbox
               v-else-if="item.formType == 'checkbox'"
               v-model="temp[item.prop]"
-              @change="handleChangeCheckBox"
+              @change="
+                item.hasEvent ? checkBoxChange($event, item.format) : null
+              "
             >
               {{ item.label }}
             </el-checkbox>
-
             <!-- inputnumber -->
             <el-input
               v-else-if="item.formType == 'inputNumber'"
@@ -426,24 +426,7 @@
               show-word-limit
             >
             </el-input>
-            <!-- 維保類別 -->
-            <template v-else-if="item.formType == 'maintainTypeRadio'">
-              <el-radio-group v-model="maintainType" @change="maintainTypeChange">
-                <el-radio :label="'維護保養'">維護保養</el-radio>
-                <el-radio :label="'故障叫修'">故障叫修</el-radio>
-                <el-radio :label="'申報改善單'">申報改善單</el-radio>
-                <el-radio :label="'其他'">其他</el-radio>
-              </el-radio-group>
 
-              <el-input         
-                v-model="maintainTypeDescription"
-                v-if="maintainTypeOtherShow"
-                placeholder="勾選其他時，需填寫此欄位"
-                @input="maintainTypeDescriptionInput"
-              >
-            </el-input>
-
-            </template>
             <el-input
               v-else
               v-model="temp[item.prop]"
@@ -475,7 +458,7 @@
 import computedmixin from "@/mixin/computedmixin";
 import Setting from "@/object/setting";
 import { changeDefaultFullType } from "@/utils/index";
-import constant from "@/constant/index";
+
 import {
   Account,
   Contactunit,
@@ -531,7 +514,7 @@ export default {
       deep: true,
     },
   },
-  computed: {  
+  computed: {
     dialogWidth() {
       if (this.$store.state.app.device === "mobile") {
         return "90%";
@@ -560,7 +543,7 @@ export default {
           case "committee":
             return item.title;
           case "maintain":
-            var label = this.changeOptionName(item.processContent);
+            var label = this.showSettingName(item.processContent);
             return label !== "" ? label : "維護保養";
           case "InspectionMaintain":
             return item.linkInspectionLacks[0].lackItem;
@@ -570,7 +553,7 @@ export default {
           case "floor":
             return item.floor;
           case "characterStatus":
-            var label = this.changeOptionName(item.cStatus);
+            var label = this.showSettingName(item.cStatus);
             return label !== "" ? label : "狀態";
           default:
             return item.name;
@@ -602,20 +585,19 @@ export default {
       originalInternet: null,
       commitUserInfoArray: [],
       accountArray: [],
-      classLeaderArray:[],      
+      classLeaderArray: [],
       radioType: null,
       fileList: [],
       previewPath: "",
-      maintainTypeDescription:"",
-      maintainType:"維護保養",
-      maintainTypeOtherShow: false,
-      
+      maintainTypeDescription: "",
+      //maintainType: "維護保養",
+      //maintainTypeOtherShow: false,
     };
   },
   methods: {
     async init() {
       // window.addEventListener("message", this.receiveMessage, false)
-      console.log("form", this.title, this.dialogStatus);      
+      console.log("form", this.title, this.dialogStatus);
       if (this.dialogData.length) {
         this.activeName = this.dialogData[0].getID();
         this.temp =
@@ -642,9 +624,8 @@ export default {
           temp["declareYear"] = moment(
             new Date(temp["declareYear"].substr(0, 4))
           ).format("YYYY");
-          console.log(temp["declareYear"]);
         }
-        this.handleChangeCheckBox(this.temp["declareResult"]);
+        this.checkBoxChange(this.temp["declareResult"], "declareResultBoolean");
       } else if (this.title == "committee") {
         //array=>object
         var usage = temp.getLinkUsageOfFloors();
@@ -675,7 +656,10 @@ export default {
           }
         }
       } else if (this.title == "contactUnit") {
-        this.handleChangeCheckBox(this.temp["governmentApproval"]);
+        this.checkBoxChange(
+          this.temp["governmentApproval"],
+          "governmentApprovalBoolean"
+        );
       } else if (this.title == "devicetype") {
         var fullType = temp["fullType"];
         var obj = _.cloneDeep(changeDefaultFullType(fullType));
@@ -730,10 +714,13 @@ export default {
           this.accountArray = data.filter((item) =>
             !set.has(item.id) ? set.add(item.id) : false
           );
-        }        
-        this.classLeaderArray = temp.linkAccountList;        
+        }
+        this.classLeaderArray = temp.linkAccountList;
       } else if (this.title == "account" || this.title == "user") {
-        this.handleChangeCheckBox(this.temp["moveWithDifficulty"]);
+        this.checkBoxChange(
+          this.temp["moveWithDifficulty"],
+          "moveWithDifficultyBoolean"
+        );
         if (
           temp["headShotFileId"] !== undefined &&
           temp["headShotFileId"] !== null &&
@@ -758,6 +745,54 @@ export default {
               : {};
         }
       });
+    },
+    dateChange(val, prop) {
+      //故障日期、叫修日期、完成日期=>連動處理進度
+      if (this.title == "contactUnit") {
+        if (val == "") {
+          this.temp["expirationDate"] = "";
+        } else {
+          this.temp["expirationDate"] = moment(val)
+            .add(3, "years")
+            .subtract(1, "days")
+            .format("YYYY-MM-DD");
+        }
+      } else {
+        if (val == "") {
+          return false;
+        }
+        var list = this.settingFilter("MaintainProcessOptions");
+        var txtName = "";
+        switch (prop) {
+          case "dateOfFailure":
+            if (
+              this.temp["dateOfCallRepair"] == null &&
+              this.temp["completedTime"] == null
+            ) {
+              txtName = "故障中";
+            }
+            break;
+          case "dateOfCallRepair":
+            if (this.temp["completedTime"] == null) {
+              txtName = "維修中";
+            }
+            break;
+          case "completedTime":
+            txtName = "已保養";
+            break;
+          default:
+            break;
+        }
+        var setting = list.filter((item) => {
+          return (
+            item.textName == txtName &&
+            item.classType == "MaintainProcessOptions"
+          );
+        });
+        if (setting.length) {
+          this.temp["processStatus"] = setting[0].id;
+        }
+      }
     },
     async singleChoiceChange(value, format) {
       var keys = Object.keys(value);
@@ -807,15 +842,14 @@ export default {
         }
       }
     },
-    // 點位-指定設備
     // 消防編組細項-選擇角色時要撈出account清單
-    async checkMode(value, format) {
-      console.log(value);                   
+    async multipleChoiceChange(value, format) {
+      console.log(value);
       if (value.length) {
         if (
           this.title == "selfDefenseFireMarshallingMgmt" &&
           format == "roleSelect"
-        ) {            
+        ) {
           var data = [];
           for (let item of value) {
             var account = await SelfDefenseFireMarshalling.getAccountByRole(
@@ -829,30 +863,18 @@ export default {
           this.accountArray = data.filter((item) =>
             !set.has(item.id) ? set.add(item.id) : false
           );
-          this.disable = false;         
+          this.disable = false;
         } else if (
           this.title == "selfDefenseFireMarshallingMgmt" &&
           format == "accountSelect"
         ) {
           this.classLeaderArray = value;
-          let idArray = value.map((item) => item.id)     
-          if(!idArray.includes(this.temp.classLeaderId)) {
-            this.temp.classLeaderId = ""
+          let idArray = value.map((item) => item.id);
+          if (!idArray.includes(this.temp.classLeaderId)) {
+            this.temp.classLeaderId = "";
           }
-                
         }
       } else {
-        // if (this.title == "equipment" && format == "deviceTypeSelect") {
-        //   this.disable = true;
-        //   this.temp["internetNumber"] = null;
-        //   this.$emit("handleChangeConfig", false);
-        // } else
-        // if (
-        //   format == "assignFireDeviceSelect" ||
-        //   format == "assignPLCDeviceSelect"
-        // ) {
-        //   this.temp["internet"] = null;
-        // } else
         if (
           this.title == "selfDefenseFireMarshallingMgmt" &&
           format == "roleSelect"
@@ -860,16 +882,159 @@ export default {
           this.disable = true;
           this.temp["linkAccountList"] = [];
           this.temp.classLeaderId = "";
-          this.classLeaderArray = []; 
+          this.classLeaderArray = [];
         } else if (
           this.title == "selfDefenseFireMarshallingMgmt" &&
           format == "accountSelect"
         ) {
           this.temp.classLeaderId = "";
-          this.classLeaderArray = []; 
+          this.classLeaderArray = [];
         }
       }
     },
+    checkBoxChange(value, format) {
+      console.log(value, format);
+      if (this.title == "contactUnit") {
+        if (value) {
+          this.config.forEach((item) => {
+            if (!item.isEdit) {
+              item.isEdit = true;
+            }
+          });
+        } else {
+          var c = _.cloneDeep(Contactunit.getTableConfig());
+          this.config = c;
+        }
+      } else if (
+        this.title == "reportInspectio" ||
+        this.title == "reportPublicSafe"
+      ) {
+        if (!value) {
+          this.config.forEach((item) => {
+            if (!item.isEdit && !item.isTable) {
+              item.isEdit = true;
+            }
+          });
+        } else {
+          var c = _.cloneDeep(Inspection.getTableConfig());
+          this.config = c;
+          this.temp["declarationImproveDate"] = "";
+          this.temp["isImproved"] = true;
+          this.temp["nextInspectionDate"] = "";
+        }
+      } else if (this.title == "account") {
+        if (value) {
+          this.config.forEach((item) => {
+            if (!item.isEdit && item.prop == "description") {
+              item.isEdit = true;
+            }
+          });
+        } else {
+          var c = _.cloneDeep(Account.getTableConfig());
+          c[6].label = "生日";
+          if (this.dialogStatus === "update") {
+            c[2].isEdit = false;
+            c[2].mandatory = false;
+          }
+          this.config = c;
+        }
+      }
+    },
+    //radio改變
+    radioChange(value, format) {
+      if (format == "declareYearType") {
+        this.temp["declareYearType"] = value;
+      } else if (format == "maintainTypeRadio") {
+        let maintainTypeIndex = this.config.findIndex(
+          (item) => item.prop == "maintainType"
+        );
+        let reportIndex = this.config.findIndex(
+          (item) => item.prop == "reportSelectId"
+        );
+        this.temp["maintainType"] = value;
+        this.temp["reportSelectId"] = null;
+        this.config[reportIndex].isEdit = false;
+        var maintainTypeOtherInputIndex = this.config.findIndex(
+          (item) => item.prop == "maintainTypeOtherInput"
+        );
+        if (maintainTypeOtherInputIndex !== -1) {
+          this.config.splice(maintainTypeOtherInputIndex, 1);
+          this.temp["maintainTypeOtherInput"] = "";
+        }
+        if (value === "其他") {
+          //在類別下新增一個欄位
+          this.config.splice(maintainTypeIndex + 1, 0, {
+            label: "",
+            prop: "maintainTypeOtherInput",
+            isEdit: true,
+            mandatory: true,
+            hasEvent: true,
+            message: "請輸入類別名稱",
+            maxlength: 40,
+            isAssociate: false,
+          });
+        } else if (value === "申報改善單") {
+          this.config[reportIndex].isEdit = true;
+        }
+      }
+    },
+    //火警點位的類型
+    booleanChange(value, format) {
+      console.log(value, format);
+      if (format == "mainSelect") {
+        var icon = this.config.filter((item) => {
+          return item.prop == "iconId";
+        });
+        var device = this.config.filter((item) => {
+          return item.prop == "linkDevices";
+        });
+        if (value) {
+          //防災盤訊號
+          this.disable = true;
+          icon[0].mandatory = false;
+          device[0].mandatory = false;
+          this.temp["system"] = "";
+          this.temp["address"] = "";
+          this.temp["number"] = "";
+        } else {
+          this.disable = false;
+          icon[0].mandatory = true;
+          device[0].mandatory = true;
+        }
+      }
+    },
+    //動態新增選項-先判斷是否為新的選項，是的話則先儲存起來
+    settingChange(event, format, prop) {
+      var array = this.settingFilter(format);
+      var data = array.filter((item) => item.id == event);
+      if (data.length == 0) {
+        var item = {
+          classType: format,
+          textName: event,
+          sort: 99,
+        };
+        this.prop.push(prop);
+        this.createOption.push(item);
+      }
+    },
+    //fulltype選單變動
+    fullTypeChange() {
+      var data = _.cloneDeep(this.fulltypevalue);
+      this.temp["fullType"] = data.pop();
+    },
+    //地址欄位
+    addreddChange(value) {
+      this.temp.address = value[0] + value[1];
+    },
+    //大頭貼改變-更新的時候會直接動作
+    photoChange(file, fileList) {
+      this.fileList = fileList;
+      if (this.dialogStatus == "update" && fileList.length > 0) {
+        var data = _.cloneDeep(fileList);
+        this.$emit("handleDialog", "photo", "photo", data);
+      }
+    },
+    //專技人員欄位使用
     querySearch(queryString, cb) {
       var restaurants = this.selectData;
       var results = queryString
@@ -885,6 +1050,7 @@ export default {
         );
       };
     },
+    //打開視窗
     openWindows(format) {
       console.log(format);
       var routeData;
@@ -1008,168 +1174,11 @@ export default {
       window.child = window.open(routeData.href, "_blank");
       //window.child = window.open(routeData.href, '_blank', 'toolbar=no, width=400, height=600,location=no')
     },
-    //動態新增選項
-    changeValue(event, format, prop) {
-      var array = this.optionfilter(format);
-      var data = array.filter((item) => item.id == event);
-      if (data.length == 0) {
-        var item = {
-          classType: format,
-          textName: event,
-          sort: 99,
-        };
-        this.prop.push(prop);
-        this.createOption.push(item);
-      }
-    },
     async getOptions() {
       //取得大樓的所有分類
       this.options = await Setting.getAllOption();
       this.$store.dispatch("building/setoptions", this.options);
       this.$store.dispatch("record/saveSettingRecord", 1);
-    },
-    //fulltype選單變動
-    changeFullType() {
-      var data = _.cloneDeep(this.fulltypevalue);
-      this.temp["fullType"] = data.pop();
-    },
-    handleChangeCheckBox(value) {
-      console.log(value);
-      if (this.title == "contactUnit") {
-        if (value) {
-          this.config.forEach((item) => {
-            if (!item.isEdit) {
-              item.isEdit = true;
-            }
-          });
-        } else {
-          var c = _.cloneDeep(Contactunit.getTableConfig());
-          this.config = c;
-        }
-      } else if (
-        this.title == "reportInspectio" ||
-        this.title == "reportPublicSafe"
-      ) {
-        if (!value) {
-          this.config.forEach((item) => {
-            if (!item.isEdit && !item.isHidden) {
-              item.isEdit = true;
-            }
-          });
-        } else {
-          var c = _.cloneDeep(Inspection.getTableConfig());
-          this.config = c;
-          this.temp["declarationImproveDate"] = "";
-          this.temp["isImproved"] = true;
-          this.temp["nextInspectionDate"] = "";
-        }
-      } else if (this.title == "account") {
-        if (value) {
-          this.config.forEach((item) => {
-            if (!item.isEdit && item.prop == "description") {
-              item.isEdit = true;
-            }
-          });
-        } else {
-          var c = _.cloneDeep(Account.getTableConfig());
-          c[6].label = "生日";
-          if (this.dialogStatus === "update") {
-            c[2].isEdit = false;
-            c[2].mandatory = false;
-          }
-          this.config = c;
-        }
-      }
-    },
-    //地址欄位
-    handleChange(value) {
-      this.temp.address = value[0] + value[1];
-    },
-    //radio改變
-    handleChangeRadio(value) {
-      this.temp["declareYearType"] = value;
-    },
-    //火警點位的類型
-    handleMainSelect(value, format) {
-      console.log(value, format);
-      if (format == "mainSelect") {
-        var icon = this.config.filter((item) => {
-          return item.prop == "iconId";
-        });
-        var device = this.config.filter((item) => {
-          return item.prop == "linkDevices";
-        });
-        if (value) {
-          //防災盤訊號
-          this.disable = true;
-          icon[0].mandatory = false;
-          device[0].mandatory = false;
-          this.temp["system"] = "";
-          this.temp["address"] = "";
-          this.temp["number"] = "";
-        } else {
-          this.disable = false;
-          icon[0].mandatory = true;
-          device[0].mandatory = true;
-        }
-      }
-    },
-    //維保細項日期變動事件
-    handleDatePicker(val, prop) {
-      //故障日期、叫修日期、完成日期=>連動處理進度
-      if (this.title == "contactUnit") {
-        if (val == "") {
-          this.temp["expirationDate"] = "";
-        } else {
-          this.temp["expirationDate"] = moment(val)
-            .add(3, "years")
-            .subtract(1, "days")
-            .format("YYYY-MM-DD");
-        }
-      } else {
-        if (val == "") {
-          return false;
-        }
-        var list = this.optionfilter("MaintainProcessOptions");
-        var txtName = "";
-        switch (prop) {
-          case "dateOfFailure":
-            if (
-              this.temp["dateOfCallRepair"] == null &&
-              this.temp["completedTime"] == null
-            ) {
-              txtName = "故障中";
-            }
-            break;
-          case "dateOfCallRepair":
-            if (this.temp["completedTime"] == null) {
-              txtName = "維修中";
-            }
-            break;
-          case "completedTime":
-            txtName = "已保養";
-            break;
-          default:
-            break;
-        }
-        var setting = list.filter((item) => {
-          return (
-            item.textName == txtName &&
-            item.classType == "MaintainProcessOptions"
-          );
-        });
-        if (setting.length) {
-          this.temp["processStatus"] = setting[0].id;
-        }
-      }
-    },
-    //大頭貼改變-更新的時候會直接動作
-    handlePhotoChange(file, fileList) {
-      this.fileList = fileList;
-      if (this.dialogStatus == "update" && fileList.length > 0) {
-        var data = _.cloneDeep(fileList);
-        this.$emit("handleDialog", "photo", "photo", data);
-      }
     },
     handleRemovePhoto() {
       this.$confirm("是否確認刪除圖片?", "提示", {
@@ -1189,7 +1198,7 @@ export default {
     },
     //子傳父窗口
     handleClickOption(status) {
-      console.log("title", this.title, "status", status)
+      console.log("title", this.title, "status", status);
       if (this.title == "reportInspectio" || this.title == "reportPublicSafe") {
         this.temp["checkStartDate"] = this.rangevalue[0];
         this.temp["checkEndDate"] = this.rangevalue[1];
@@ -1200,8 +1209,8 @@ export default {
         status !== "canceldeviceType" &&
         status !== "empty" &&
         status !== "cancelfloor"
-      ) {        
-        this.$refs.dataForm.validate(async (valid) => {          
+      ) {
+        this.$refs.dataForm.validate(async (valid) => {
           if (valid) {
             if (this.createOption.length !== 0) {
               //有動態新增選項
@@ -1317,8 +1326,8 @@ export default {
     async handleTabClick(tab, event) {
       var data = this.dialogData.filter(
         (element, index) => element.id == tab.name
-      )[0];     
-      this.temp = data.clone(data);          
+      )[0];
+      this.temp = data.clone(data);
       await this.setDataForm(this.temp);
     },
     changeObjectToArray() {
@@ -1334,33 +1343,13 @@ export default {
       });
       return data;
     },
-    maintainTypeChange(value) {   
-      let reportIndex = this.config.findIndex((item) => item.label == "申報改善單")      
-      this.temp["maintainType"] = value;
-      this.temp["reportSelectId"] = "";
-
-      if(this.maintainType === "其他" ) {   
-        this.config[reportIndex].isEdit = false;      
-        this.maintainTypeOtherShow = true;       
-      }else if (this.maintainType === "申報改善單") {        
-        this.config[reportIndex].isEdit = true;
-        this.maintainTypeOtherShow = false;
-        this.maintainTypeDescription = "";         
-      }else {       
-        this.config[reportIndex].isEdit = false; 
-        this.maintainTypeOtherShow = false;
-        this.maintainTypeDescription = "";
+    maintainTypeDescriptionInput(value) {
+      if (value === "") {
+        this.temp["maintainType"] = "其他";
+      } else {
+        this.temp["maintainType"] = value;
       }
     },
-    maintainTypeDescriptionInput(value) {    
-      if(value === "") {
-        this.temp["maintainType"] = "其他"
-      } else {
-        this.temp["maintainType"] = value; 
-      }
-         
-     
-    }
   },
 };
 </script>

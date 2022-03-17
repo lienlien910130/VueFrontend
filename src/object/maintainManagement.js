@@ -5,12 +5,21 @@ import Files from "./files";
 import Device from "./device";
 import Contactunit from "./contactunit";
 import InspectionLacks from "./inspectionLacks";
+import Inspection from "./inspection";
 
 //大項
 class MaintainManagementList extends Parent {
   constructor(data) {
     super(data);
-    const { name, createdDate, completedCount,maintainType, allCount, linkMaintains, reportSelectId } = data;
+    const {
+      name,
+      createdDate,
+      completedCount,
+      maintainType,
+      allCount,
+      linkMaintains,
+      reportSelectId,
+    } = data;
     var maintain =
       linkMaintains !== undefined
         ? linkMaintains.map((item) => {
@@ -52,7 +61,7 @@ class MaintainManagementList extends Parent {
         return false;
       });
     return data;
-  }  
+  }
   async createReport(InspectionListId) {
     let data = await api.device
       .apiPostInspectionListImport(this, InspectionListId)
@@ -60,7 +69,6 @@ class MaintainManagementList extends Parent {
         return true;
       })
       .catch((error) => {
-        console.log(error)
         return false;
       });
     return data;
@@ -108,10 +116,10 @@ class MaintainManagementList extends Parent {
       name: "",
       createdDate: moment().format("YYYY-MM-DD"),
       completedCount: 0,
-      maintainType:"維護保養",
+      maintainType: "維護保養",
       allCount: 0,
       linkMaintains: [],
-      reportSelectId:""
+      reportSelectId: null,
     });
   }
   static getTableConfig() {
@@ -149,17 +157,18 @@ class MaintainManagementList extends Parent {
       {
         label: "類別",
         prop: "maintainType",
-        format: "radio",
+        format: "maintainTypeRadio",
         mandatory: true,
         message: "請勾選類別",
         isHidden: false,
         isSearch: false,
         isAssociate: false,
-        isEdit: true,
+        isEdit: false,
         isUpload: true,
         isExport: true,
         isBlock: true,
-        formType: "maintainTypeRadio",
+        formType: "radio",
+        hasEvent: true,
       },
       {
         label: "已保養細項",
@@ -227,7 +236,7 @@ class MaintainManagementList extends Parent {
       {
         label: "類別",
         prop: "maintainType",
-        format: "radio",
+        format: "maintainTypeRadio",
         mandatory: true,
         message: "請勾選類別",
         isHidden: false,
@@ -237,13 +246,15 @@ class MaintainManagementList extends Parent {
         isUpload: true,
         isExport: true,
         isBlock: true,
-        formType: "maintainTypeRadio",
+        formType: "radio",
+        hasEvent: true,
       },
       {
-        label: "申報改善單",        
+        label: "申報改善單",
         format: "maintainReportSelect",
         prop: "reportSelectId",
-        mandatory: false,        
+        mandatory: false,
+        type: "string",
         typemessage: "",
         isHidden: false,
         isSearch: false,
@@ -252,7 +263,7 @@ class MaintainManagementList extends Parent {
         isUpload: false,
         isExport: true,
         isBlock: true,
-        formType: "singleChoice",
+        formType: "selectString",
         limit: 1,
         selectFilter: true,
       },
@@ -314,14 +325,6 @@ class MaintainManagementList extends Parent {
       });
     return data;
   }
-  // static async postMany(data){
-  //     var data = await api.device.apiPostMaintainsLists(data).then(response => {
-  //         return true
-  //     }).catch(error=>{
-  //         return false
-  //     })
-  //     return data
-  // }
   static async getAllLack() {
     var data = await api.device
       .apiGetInspectionListByMaintain()
@@ -338,7 +341,6 @@ class MaintainManagementList extends Parent {
       .apiGetMaintainsListRemind(type)
       .then((response) => {
         //照下次維保時間排序
-        console.log("123",response)
         response.result.needMaintainDeviceLsit =
           response.result.needMaintainDeviceLsit
             .sort(function (a, b) {
@@ -360,10 +362,16 @@ class MaintainManagementList extends Parent {
     let data = await api.device
       .apiPostMaintainReportInspection()
       .then((response) => {
-        return response.result})
+        response.result = response.result
+          .sort((x, y) => new Date(y.declareDate) - new Date(x.declareDate))
+          .map((item) => {
+            return new Inspection(item);
+          });
+        return response.result;
+      })
       .catch((error) => {
         return [];
-      })    
+      });
     return data;
   }
 }

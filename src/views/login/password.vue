@@ -81,6 +81,7 @@ export default {
   min-height: 100%;
   width: 100%;
   overflow: hidden;
+  //background-image: url("../../assets/image/login_bg.jpg");
   background-image: url("@assets/image/login_bg.jpg");
   background-size: 100% 100%;
   background-repeat: no-repeat;

@@ -1,30 +1,15 @@
 import Parent from "./parent";
 import api from "@/api";
-import AccessAuthority from "./accessAuthority";
 
 class Role extends Parent {
   constructor(data) {
     super(data);
-    const {
-      name,
-      description,
-      status,
-      sort,
-      removable,
-      linkAccessAuthorities,
-    } = data;
-    var accessAuthorities =
-      linkAccessAuthorities !== undefined
-        ? linkAccessAuthorities.map((item) => {
-            return new AccessAuthority(item);
-          })
-        : [];
+    const { name, description, status, sort, removable } = data;
     this.name = name;
     this.description = description;
     this.status = status;
     this.sort = sort;
     this.removable = removable;
-    this.linkAccessAuthorities = accessAuthorities;
   }
   clone(data) {
     return new Role(data);
@@ -114,7 +99,6 @@ class Role extends Parent {
       status: true,
       sort: 0,
       removable: false,
-      linkAccessAuthorities: [],
     });
   }
   static getTableConfig() {
@@ -122,93 +106,105 @@ class Role extends Parent {
       {
         label: "名稱",
         prop: "name",
+        formType: "inputString",
+        isTable: true,
+        isBlock: true,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請輸入名稱",
         maxlength: "20",
-        isHidden: false,
-        isSearch: true,
         placeholder: "請輸入名稱",
-        isAssociate: false,
-        isEdit: true,
+        isCheck: true,
         isUpload: true,
         isExport: true,
-        isBlock: true,
-        selectFilter: false,
-        isCheck: true,
       },
       {
         label: "描述",
         prop: "description",
+        formType: "inputString",
         format: "textarea",
+        isTable: true,
+        isBlock: false,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: false,
         maxlength: "200",
-        isHidden: false,
-        isSearch: true,
-        isAssociate: false,
-        isEdit: true,
+        placeholder: "請輸入描述",
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: false,
-        selectFilter: false,
       },
       {
         label: "排序",
         prop: "sort",
+        formType: "inputNumber",
         format: "inputnumber",
+        isTable: true,
+        isBlock: false,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請輸入0~999",
-        pattern: /^[0-9]{1,3}$/,
-        errorMsg: "請輸入0~999",
-        isPattern: true,
+        maxlength: "3",
+        placeholder: "請輸入0~999",
         type: "number",
         typemessage: "",
-        placeholder: "請輸入0~999",
-        isHidden: false,
-        maxlength: "3",
-        isSearch: true,
-        isAssociate: false,
-        isEdit: true,
+        isPattern: true,
+        pattern: /^[0-9]{1,3}$/,
+        errorMsg: "請輸入0~999",
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: false,
-        formType: "inputNumber",
-        selectFilter: false,
       },
       {
         label: "狀態",
         prop: "status",
+        formType: "boolean",
         format: "accountStatusSelect",
+        isTable: true,
+        isBlock: true,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請選擇狀態",
         type: "boolean",
         typemessage: "",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: false,
-        isEdit: true,
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: true,
-        formType: "boolean",
-        selectFilter: false,
       },
       {
         label: "刪除",
         prop: "removable",
+        formType: "boolean",
         format: "removableSelect",
+        isTable: true,
+        isBlock: false,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請選擇是否允許刪除",
         type: "boolean",
         typemessage: "",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: false,
-        isEdit: true,
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: false,
-        formType: "boolean",
-        selectFilter: false,
       },
     ];
   }
@@ -282,15 +278,7 @@ class Role extends Parent {
       });
     return data;
   }
-  // static async getMainMenuAuthority(mainMenuId){
-  //     var data = await api.authority.apiGetAccountAuthorityByMenu(mainMenuId).then(response => {
-  //         console.log(JSON.stringify(response))
-  //         return true
-  //     }).catch(error=>{
-  //         return false
-  //     })
-  //     return data
-  // }
+  //角色多筆更新權限
   static async updateAccessAuthority(data) {
     var data = await api.authority
       .apiPutAuthorityByRole(data)

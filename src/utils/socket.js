@@ -444,7 +444,7 @@ function getMessage(msg) {
         case "roles":
           handleRoles(data.SendType, data.Data.Content);
           break;
-        case "menus":
+        case "mainMenu":
           handleMenus(data.SendType, data.Data.Content);
           break;
         case "setting":
@@ -525,7 +525,7 @@ function handleMenus(index, content) {
   if (index == "reset") {
     //切換頁面的同時重新載入選單並儲存
     //store.dispatch("permission/setneedreload", true);
-  } else if (index == "routes") {
+  } else if (index == "routes" || index === "delete") {
     store.dispatch("permission/setRoutes");
   }
 }

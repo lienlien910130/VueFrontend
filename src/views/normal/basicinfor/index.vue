@@ -205,11 +205,11 @@
                   -
                 </template>
                 <template v-else>
-                  {{ scope.row[item.prop] | changeBoolean(item.format) }}
+                  {{ scope.row[item.prop] | booleanFilter(item.format) }}
                 </template>
               </span>
               <span v-else-if="item.formType == 'selectString'">
-                {{ changeShowFormatString(item.format, scope.row, item.prop) }}
+                {{ showStringOrId(item.format, scope.row, item.prop) }}
               </span>
 
               <span v-else>{{ scope.row[item.prop] }}</span>

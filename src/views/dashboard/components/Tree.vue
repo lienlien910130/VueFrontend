@@ -182,9 +182,9 @@ export default {
           return this.dataStr(data, format, prop);
         case "select":
         case "singleChoice":
-          return this.changeShowFormat(format, data, prop);
+          return this.showSelectOrSingleChoice(format, data, prop);
         case "selectSetting":
-          return this.changeOptionName(data[prop]);
+          return this.showSettingName(data[prop]);
         default:
           return data[prop];
       }
