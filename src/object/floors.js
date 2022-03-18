@@ -8,27 +8,14 @@ import idb from "@/utils/indexedDB";
 class Floors extends Parent {
   constructor(data) {
     super(data);
-    const { floor, floorPlanID, sort, isUnderground, linkDevices } = data;
-    var devices =
-      linkDevices !== undefined
-        ? linkDevices.map((item) => {
-            return new Device(item);
-          })
-        : [];
+    const { floor, floorPlanID, sort, isUnderground } = data;
     this.floor = floor;
     this.floorPlanID = floorPlanID == undefined ? null : floorPlanID;
     this.sort = sort;
     this.isUnderground = isUnderground;
-    this.linkDevices = devices;
   }
   clone(data) {
     return new Floors(data);
-  }
-  setFloorPlanID(planID) {
-    this.floorPlanID = planID;
-  }
-  getFloor() {
-    return this.floor;
   }
   async update(buildingId) {
     var temp = JSON.parse(JSON.stringify(this));
@@ -122,6 +109,9 @@ class Floors extends Parent {
   getName() {
     return this.floor;
   }
+  setFloorPlanID(planID) {
+    this.floorPlanID = planID;
+  }
   getImageID() {
     return this.floorPlanID !== null ? this.floorPlanID.toString() : null;
   }
@@ -144,54 +134,64 @@ class Floors extends Parent {
       {
         label: "樓層",
         prop: "floor",
+        formType: "inputString",
+        isTable: true,
+        isBlock: true,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請輸入樓層",
         maxlength: "10",
-        isHidden: false,
-        isSearch: true,
         placeholder: "請輸入樓層",
-        isAssociate: false,
-        isEdit: true,
+        isCheck: false,
         isUpload: false,
         isExport: true,
-        isBlock: true,
       },
       {
         label: "平面圖檔",
         prop: "floorPlanID",
+        formType: "image",
+        isTable: true,
+        isBlock: false,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: false,
+        mandatory: false,
         type: "number",
         typemessage: "",
-        mandatory: false,
-        isHidden: false,
-        isSearch: false,
-        isAssociate: false,
-        isEdit: false,
+        isCheck: false,
         isUpload: false,
         isExport: false,
-        isBlock: false,
-        formType: "image",
       },
       {
         label: "排序",
         prop: "sort",
+        formType: "inputNumber",
         format: "inputnumber",
+        isTable: true,
+        isBlock: true,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請輸入0~999",
-        pattern: /^[0-9]{1,3}$/,
-        errorMsg: "請輸入0~999",
-        isPattern: true,
+        maxlength: "3",
+        placeholder: "請輸入0~999",
         type: "number",
         typemessage: "",
-        placeholder: "請輸入0~999",
-        isHidden: false,
-        maxlength: "3",
-        isSearch: true,
-        isAssociate: false,
-        isEdit: true,
+        isPattern: true,
+        pattern: /^[0-9]{1,3}$/,
+        errorMsg: "請輸入0~999",
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: true,
-        formType: "inputNumber",
       },
     ];
   }
