@@ -3,7 +3,6 @@ export default {
     return {
       dialogTitle: "",
       innerVisible: false,
-      contactVisible: false,
       dialogData: [],
       dialogStatus: "",
       dialogButtonsName: [],

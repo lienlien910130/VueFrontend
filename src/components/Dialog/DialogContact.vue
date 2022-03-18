@@ -91,6 +91,12 @@ export default {
       this.$emit("handleDialog", this.title, status, this.accessArray);
     },
     async getImg() {
+      if (
+        this.account.headShotFileId == undefined ||
+        this.account.headShotFileId == null
+      ) {
+        return false;
+      }
       var file = await Files.getOfID(this.account.headShotFileId);
       var filename = file.getExtName();
       var fileType = filename == "png" ? "image/png" : "image/jpeg";

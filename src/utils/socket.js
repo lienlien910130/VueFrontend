@@ -12,7 +12,6 @@ import {
   Floors,
   Role,
   UsageOfFloor,
-  User,
 } from "../object";
 import moment from "moment";
 const ElementUI = require("element-ui");
@@ -459,9 +458,6 @@ function getMessage(msg) {
         case "contactUnit":
           handleContactUnit(data.SendType, data.Data.Content);
           break;
-        case "houseHolder":
-          handleHouseHolder(data.SendType, data.Data.Content);
-          break;
         case "floorOfHouse":
           handleFloorOfHouse(data.SendType, data.Data.Content);
           break;
@@ -608,23 +604,6 @@ function handleContactUnit(index, content) {
       "building/addContactunit",
       content.map((item) => {
         return new Contactunit(item);
-      })
-    );
-  }
-}
-function handleHouseHolder(index, content) {
-  console.log("handleHouseHolder", index, content);
-  if (index == "update" || index == "updateManySave") {
-    store.dispatch("building/updateHouseHolder", new User(content));
-  } else if (index == "delete") {
-    store.dispatch("building/deleteHouseHolder", content);
-  } else if (index == "create") {
-    store.dispatch("building/addHouseHolder", new Array(new User(content)));
-  } else if (index == "uploadExcelSave") {
-    store.dispatch(
-      "building/addHouseHolder",
-      content.map((item) => {
-        return new User(item);
       })
     );
   }

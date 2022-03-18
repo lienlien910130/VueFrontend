@@ -132,20 +132,6 @@ class SelfDefenseFireMarshalling extends Parent {
       });
     return data;
   }
-  // static async getSearchPage(type, data) {
-  //   var data = await api.selfDefenseFireMarshalling
-  //     .apiGetFireMarshallingSearchPages(type, data)
-  //     .then((response) => {
-  //       response.result = response.result.map((item) => {
-  //         return new SelfDefenseFireMarshalling(item);
-  //       });
-  //       return response;
-  //     })
-  //     .catch((error) => {
-  //       return [];
-  //     });
-  //   return data;
-  // }
   static async getAccountByRole(roleId) {
     var data = await api.selfDefenseFireMarshalling
       .apiGetAccountByRole(roleId)

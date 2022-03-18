@@ -117,7 +117,6 @@ export default {
       accessAuthority: [],
       authorityVisible: false,
       account: null,
-      contactVisible: true,
       dialogFormVisible: false,
       ruleForm: { usageOfFloor: null },
       rules: {

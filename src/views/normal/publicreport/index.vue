@@ -173,10 +173,6 @@ export default {
       ];
       var data = await PublicSafe.getRemind("/reportPublicSafe");
       console.log(this.remind);
-      // this.remind.checkDate =
-      //   moment(this.remind.startDate).format("YYYY-MM-DD") +
-      //   "~" +
-      //   moment(this.remind.endDate).format("YYYY-MM-DD");
       if (data.buildInfo !== undefined) {
         //管理員-可察看大樓檢修+門牌檢修
         this.viewType = "bu";

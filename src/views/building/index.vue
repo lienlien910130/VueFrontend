@@ -63,7 +63,7 @@ import {
   tablemixin,
   excelmixin,
 } from "@/mixin/index";
-import { Files, Building, Floors, User } from "@/object/index";
+import { Files, Building, Floors } from "@/object/index";
 import QRCode from "qrcode";
 
 export default {
@@ -220,7 +220,6 @@ export default {
       this.dialogConfig = Building.getTableConfig();
       if (index === "open") {
         this.building = content;
-        //var userlist = await User.getOfBuildingID(this.building.getID());
         this.dialogConfig[4].isEdit = false;
         this.dialogConfig[5].isEdit = false;
         // this.dialogSelect = userlist.map((v) => {

@@ -127,8 +127,6 @@ export default {
           { name: "取消", type: "info", status: "cancel" },
         ];
         this.innerVisible = true;
-      } else if (index === "contact") {
-        this.contactVisible = true;
       }
     },
   },

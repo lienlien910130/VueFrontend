@@ -5,7 +5,6 @@ import {
 } from "../../utils/auth";
 import {
   Device,
-  User,
   Contactunit,
   Floors,
   Building,
@@ -289,34 +288,6 @@ const actions = {
       return deleteList.findIndex((obj) => obj === item.id) == -1;
     });
     commit("SET_BUILDINGCONTACTUNIT", obj);
-  },
-  //住戶
-  async setHouseHolders({ commit }) {
-    var data = await User.get();
-    commit("SET_BUILDINGUSERS", data);
-  },
-  addHouseHolder({ commit }, content) {
-    content.forEach((element) => {
-      state.buildingusers.push(element);
-    });
-  },
-  updateHouseHolder({ commit }, content) {
-    var index = state.buildingusers.findIndex((item) => {
-      return item.id === content.id;
-    });
-    if (index !== -1) {
-      Object.keys(content).forEach((item) => {
-        state.buildingusers[index][item] = content[item];
-      });
-      //state.buildingusers[index] = content;
-    }
-  },
-  deleteHouseHolder({ commit }, id) {
-    var deleteList = id.split(",");
-    var obj = state.buildingusers.filter((item) => {
-      return deleteList.findIndex((obj) => obj === item.id) == -1;
-    });
-    commit("SET_BUILDINGUSERS", obj);
   },
   //門牌
   async setFloorOfHouse({ commit }) {

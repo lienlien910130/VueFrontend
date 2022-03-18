@@ -145,7 +145,7 @@ export default {
                 this.$store.dispatch("building/setaccounts");
                 this.$store.dispatch("record/saveAccountRecord", 1);
               }
-              if (value !== null && value !== undefined) {
+              if (row[prop] !== null && row[prop] !== undefined) {
                 let _array = this.buildingaccount.filter(
                   (item, index) => item.id == row[prop]
                 );

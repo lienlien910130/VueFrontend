@@ -2,7 +2,6 @@ import Parent from "./parent";
 import DeviceType from "./deviceType";
 import api from "@/api";
 import Contactunit from "./contactunit";
-const moment = require("moment");
 import { MaintainManagement } from "@/object/maintainManagement";
 import DeviceAddressManagement from "@/object/deviceAddressManagement";
 import { Committee } from ".";

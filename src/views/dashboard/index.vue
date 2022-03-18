@@ -364,7 +364,7 @@ export default {
       if (maintainProcessOptions.length) {
         this.lacksQueryParams.status = "{!=}" + maintainProcessOptions[0].id;
         inlacks = await InspectionLacks.getAllSearchPage(
-          "/reportInspection",
+          "/index/reportInspection",
           this.lacksQueryParams
         );
       }
@@ -379,7 +379,7 @@ export default {
       if (lackStatusOptions.length) {
         this.lacksQueryParams.status = "{!=}" + lackStatusOptions[0].id;
         pulacks = await PublicSafeLack.getAllSearchPage(
-          "/reportPublicSafe",
+          "/index/reportPublicSafe",
           this.lacksQueryParams
         );
       }
@@ -462,7 +462,7 @@ export default {
                   item.value == "system"
               );
               var doneid = doneobj.length !== 0 ? doneobj[0].id : 0;
-              var done = value.filter((item) => item.getStatus() == doneid);
+              var done = value.filter((item) => item.status == doneid);
               value =
                 done.length.toString() +
                 "/" +
@@ -479,9 +479,7 @@ export default {
                   item.value == "system"
               );
               var doneid = doneobj.length !== 0 ? doneobj[0].id : 0;
-              var done = value.filter(
-                (item) => item.getProcessStatus() == doneid
-              );
+              var done = value.filter((item) => item.status == doneid);
               value =
                 done.length.toString() +
                 "/" +

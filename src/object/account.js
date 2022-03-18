@@ -1586,6 +1586,7 @@ class Account extends Parent {
     var data = await api.authority
       .apiGetHouseAttributes(type, model)
       .then((response) => {
+        console.log(JSON.stringify(response));
         return response.result;
       })
       .catch((error) => {

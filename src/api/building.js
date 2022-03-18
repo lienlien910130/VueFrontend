@@ -35,6 +35,15 @@ const building = {
   apiGetCommittee() {
     return req("get", "/index/communityManagementCommittee/a");
   },
+  apiGetCommitteeSearchPages(data) {
+    return req(
+      "post",
+      "/basic/communityManagementCommittee/ss",
+      this.getBid(),
+      data,
+      true
+    );
+  },
   apiGetCommitteeOfID(id) {
     return req("get", "/index/communityManagementCommittee/" + id);
   },
@@ -46,21 +55,11 @@ const building = {
       data
     );
   },
-  //apiPostCommittee(data){ return req('post','/basic/communityManagementCommittee', this.getBid(), data) },
   apiPatchCommittee(data) {
     return req("patch", "/basic/communityManagementCommittee", null, data);
   },
   apiDeleteCommittee(committeeId) {
     return req("delete", "/basic/communityManagementCommittee/" + committeeId);
-  },
-  apiGetCommitteeSearchPages(data) {
-    return req(
-      "post",
-      "/basic/communityManagementCommittee/ss",
-      this.getBid(),
-      data,
-      true
-    );
   },
   apiPostCommittees(data) {
     data.forEach((element) => {
@@ -72,6 +71,9 @@ const building = {
   //廠商
   apiGetContactUnit() {
     return req("get", "/index/contactUnit/a");
+  },
+  apiGetContactUnitSearchPages(data) {
+    return req("post", "/basic/contactUnit/ss", this.getBid(), data, true);
   },
   apiGetContactUnitOfID(id) {
     return req("get", "/index/contactUnit/" + id);
@@ -96,9 +98,6 @@ const building = {
   apiDeleteContactUnit(contactunitId) {
     return req("delete", "/basic/contactUnit/" + contactunitId);
   },
-  apiGetContactUnitSearchPages(data) {
-    return req("post", "/basic/contactUnit/ss", this.getBid(), data, true);
-  },
   apiPostContactUnits(data) {
     data.forEach((element) => {
       element.parentId = this.getBid();
@@ -113,6 +112,9 @@ const building = {
   apiGetFloor(floorId) {
     return req("get", "/index/floors/" + floorId);
   },
+  apiGetFloorSearchPages(buildingId, data) {
+    return req("post", "/index/floors/ss", buildingId, data);
+  },
   apiPostFloors(buildingId, data) {
     return req("post", "/index/floors/check/s", buildingId, data);
   },
@@ -121,9 +123,6 @@ const building = {
   },
   apiDeleteFloors(floorId) {
     return req("delete", "/index/floors/" + floorId);
-  },
-  apiGetFloorSearchPages(buildingId, data) {
-    return req("post", "/index/floors/ss", buildingId, data);
   },
 
   //門牌資料
@@ -139,7 +138,9 @@ const building = {
   apiGetFloorOfHouseFromRegister(buildingId) {
     return req("get", "/index/usageOfFloors/" + buildingId + "/nLink/a");
   },
-  // apiGetHouse(usageOfFloorId){ return req('get','/basic/usage-of-floors/'+usageOfFloorId) },
+  apiGetHouseSearchPages(data) {
+    return req("post", "/basic/usageOfFloors/ss", null, data);
+  },
   apiPostFloorOfHouse(floorId, data) {
     return req("post", "/basic/usageOfFloors/check", floorId, data);
   },
@@ -152,44 +153,11 @@ const building = {
   apiGetFloorOfHouseSearchPages(floorId, data) {
     return req("post", "/basic/usageOfFloors/floors/ss", floorId, data);
   },
-  apiGetHouseSearchPages(data) {
-    return req("post", "/basic/usageOfFloors/ss", null, data);
-  },
   apiPostFloorOfHouses(floorId, data) {
     data.forEach((element) => {
       element.parentId = floorId;
     });
     return req("post", "/basic/usageOfFloors/check/s", null, data);
-  },
-  //門牌底下的使用者資料
-  // apiGetFloorOfHouseUser(floorofhouseId){ return req('get','/basic/usageOfFloors/'+floorofhouseId+'/house-holders') },
-  // apiPostFloorOfHouseUser(floorofhouseId,data){ return req('post','/basic/usageOfFloors/'+floorofhouseId+'/house-holders',data) },
-  //住戶資料
-  // apiGetAllBuildingOfUser(){ return req('get','/index/a/house-holders') },
-  apiGetBuildingOfUser(buildingId) {
-    return req("get", "/index/" + buildingId + "/a/houseHolders");
-  },
-  apiGetUser() {
-    return req("get", "/index/houseHolders/a");
-  },
-  // apiGetUser(userId){ return req('get','/basic/house-holders/'+userId) },
-  apiPostUser(data) {
-    return req("post", "/basic/houseHolders/check", this.getBid(), data);
-  },
-  apiPatchUser(data) {
-    return req("patch", "/basic/houseHolders/check", this.getBid(), data);
-  },
-  apiDeleteUser(userId) {
-    return req("delete", "/basic/houseHolders/" + userId);
-  },
-  // apiGetUserSearchPages(data) {
-  //   return req("post", "/basic/houseHolders/ss", this.getBid(), data, true);
-  // },
-  apiPostUsers(data) {
-    data.forEach((element) => {
-      element.parentId = this.getBid();
-    });
-    return req("post", "/basic/houseHolders/check/s", null, data);
   },
 };
 

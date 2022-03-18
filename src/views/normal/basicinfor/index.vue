@@ -242,7 +242,6 @@ import {
   Files,
   Committee,
   UsageOfFloor,
-  User,
   Contactunit,
   Building,
   Account,
@@ -714,7 +713,7 @@ export default {
         case "user":
           this.dialogConfig = Account.getUserTableConfig();
           exportdata = this.downData;
-          constructor = User;
+          constructor = Account;
           if (index === "open" || index === "empty" || index === "updateMany") {
             this.dialogConfig[2].label = "生日";
           }
@@ -1266,22 +1265,6 @@ export default {
         ];
       } else {
         var result = await Account.getDistributed("USAG", 1);
-        // result = result.sort((a,b)=>{
-        //   let reg = /[a-zA-Z0-9]/
-        //   let x = a.houseNumber
-        //   let y = b.houseNumber
-        //   if(reg.test(x) || reg.test(y)){
-        //     if(x>y){
-        //       return 1
-        //     }else if(x<y){
-        //       return -1
-        //     }else{
-        //       return 0
-        //     }
-        //   }else{
-        //     return x.localeCompare(y)
-        //   }
-        // });
         this.distributedData = result.sort((x, y) => {
           x.houseNumberId - y.houseNumberId;
         });

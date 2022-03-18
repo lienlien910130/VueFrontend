@@ -581,7 +581,6 @@ export default {
       prop: [],
       maintainListID: "",
       disable: true,
-      //originalProtocolMode:'',
       originalInternet: null,
       commitUserInfoArray: [],
       accountArray: [],
@@ -589,9 +588,6 @@ export default {
       radioType: null,
       fileList: [],
       previewPath: "",
-      maintainTypeDescription: "",
-      //maintainType: "維護保養",
-      //maintainTypeOtherShow: false,
     };
   },
   methods: {
@@ -911,7 +907,7 @@ export default {
       ) {
         if (!value) {
           this.config.forEach((item) => {
-            if (!item.isEdit && !item.isTable) {
+            if (!item.isEdit && item.isTable) {
               item.isEdit = true;
             }
           });
@@ -948,12 +944,6 @@ export default {
         let maintainTypeIndex = this.config.findIndex(
           (item) => item.prop == "maintainType"
         );
-        let reportIndex = this.config.findIndex(
-          (item) => item.prop == "reportSelectId"
-        );
-        this.temp["maintainType"] = value;
-        this.temp["reportSelectId"] = null;
-        this.config[reportIndex].isEdit = false;
         var maintainTypeOtherInputIndex = this.config.findIndex(
           (item) => item.prop == "maintainTypeOtherInput"
         );
@@ -961,6 +951,13 @@ export default {
           this.config.splice(maintainTypeOtherInputIndex, 1);
           this.temp["maintainTypeOtherInput"] = "";
         }
+        let reportIndex = this.config.findIndex(
+          (item) => item.prop == "reportSelectId"
+        );
+        this.temp["maintainType"] = value;
+        this.temp["reportSelectId"] = null;
+        this.config[reportIndex].isEdit = false;
+
         if (value === "其他") {
           //在類別下新增一個欄位
           this.config.splice(maintainTypeIndex + 1, 0, {
@@ -1342,13 +1339,6 @@ export default {
         }
       });
       return data;
-    },
-    maintainTypeDescriptionInput(value) {
-      if (value === "") {
-        this.temp["maintainType"] = "其他";
-      } else {
-        this.temp["maintainType"] = value;
-      }
     },
   },
 };

@@ -17,15 +17,14 @@ const files = {
   apiGetBuildingFiles() {
     return req("get", "/index/" + this.getBid() + "/filesList");
   },
-  // apiPostBuildingFiles(data){ return req('post','/basic/'+this.getUid()+'/buildings/'+this.getBid()+'/fileUpload',data,false,true) } ,
   apiPostBuildingFiles(data) {
     return req("upload", "/index/" + this.getUid() + "/fileUpload", null, data);
   },
+
   //樓層檔案
   apiGetFloorFiles(floorId) {
     return req("get", "/index/Floors/" + floorId + "/filesList");
   },
-  // apiPostFloorFiles(floorId,data){ return req('post','/basic/'+this.getUid()+'/buildings/'+this.getBid()+'/Floors/'+floorId+'/fileUpload',data,false,true) } ,
   apiPostFloorFiles(floorId, data) {
     return req(
       "upload",
@@ -34,15 +33,11 @@ const files = {
       data
     );
   },
-  //樓層平面圖檔案
-  // apiGetFloorImage(filesId){ return req('files','/public/fileDownload/'+filesId+'/r') } ,
 
   //門牌檔案
   apiGetFloorOfHouseFiles(floorofhouseId) {
     return req("get", "/basic/usageOfFloors/" + floorofhouseId + "/filesList");
   },
-  // apiPostFloorOfHouseFiles(floorofhouseId,data){
-  //     return req('post','/basic/'+this.getUid()+'/buildings/'+this.getBid()+'/usageOfFloors/'+floorofhouseId+'/fileUpload',data,false,true) } ,
   apiPostFloorOfHouseFiles(floorofhouseId, data) {
     return req(
       "upload",
@@ -121,7 +116,6 @@ const files = {
   },
 
   //維護保養細項
-
   apiGetMaintainsFiles(maintainId) {
     return req(
       "get",
@@ -143,10 +137,7 @@ const files = {
     );
   },
 
-  //用圖控檔案id找資料
-  // apiGetFileIdToGraphicFile(supervisoryControlSystemId){
-  //     return req('get','/drawingControl/'+supervisoryControlSystemId+'/supervisoryControlSystems/file') },
-  //用樓層id找資料
+  //用樓層id找圖控
   apiGetFloorIdToGraphicFile(type, floorId) {
     return req(
       "get",

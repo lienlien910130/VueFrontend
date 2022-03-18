@@ -1289,6 +1289,10 @@ export default {
       }
       return dest;
     },
+    clearSelectArray() {
+      this.selectArray = [];
+      this.$refs.tableData.clearSelection();
+    },
   },
 };
 </script>

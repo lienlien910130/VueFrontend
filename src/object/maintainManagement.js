@@ -497,9 +497,6 @@ class MaintainManagement extends Parent {
   getContactUnitsName() {
     return this.linkContactUnits.map((item) => item.getName()).toString();
   }
-  getProcessStatus() {
-    return this.processStatus;
-  }
   getDevice() {
     return this.linkDevices;
   }

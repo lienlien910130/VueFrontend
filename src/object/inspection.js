@@ -59,9 +59,6 @@ class Inspection extends Parent {
   clone(data) {
     return new Inspection(data);
   }
-  getCertificateNumber() {
-    return this.certificateNumber;
-  }
   async update() {
     var data = await api.report
       .apiPatchInspection(this)
@@ -137,7 +134,6 @@ class Inspection extends Parent {
     var data = await api.report
       .apiPostInspectionLackFiles(autoCreateMaintain, this.id, fileId, cover)
       .then((response) => {
-        console.log(JSON.stringify(response));
         var temp = [];
         response.result.linkMaintains.forEach((element) => {
           temp.push(new MaintainManagement(element));

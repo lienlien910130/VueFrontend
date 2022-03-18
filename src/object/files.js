@@ -20,7 +20,6 @@ class Files extends Parent {
     this.targetModule = targetModule;
     this.targetID = targetID;
   }
-
   getID() {
     return this.id;
   }
@@ -51,14 +50,6 @@ class Files extends Parent {
       });
     return data;
   }
-  // async image(){
-  //     var data = await api.files.apiGetImage(this.id).then(response => {
-  //         return response
-  //     }).catch(error=>{
-  //         return []
-  //     })
-  //     return data
-  // }
   static async delete(id) {
     var data = await api.files
       .apiDeleteFile(id)

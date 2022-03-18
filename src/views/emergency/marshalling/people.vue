@@ -37,7 +37,14 @@
       v-on:handleDialog="handleMarshallingMgmt"
     ></DialogForm>
 
-    <el-dialog
+    <DialogContact
+      ref="dialogcontact"
+      v-if="contactAttrs.visible === true"
+      v-bind="contactAttrs"
+      v-on:handleDialog="handleMarshallingMgmt"
+    ></DialogContact>
+
+    <!-- <el-dialog
       title="人員資料"
       :visible.sync="dialogFormVisible"
       center
@@ -97,7 +104,7 @@
           </p>
         </el-col>
       </el-row>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
@@ -122,15 +129,18 @@ export default {
       selectData: [],
       floor: null,
       peopleList: [],
-      dialogFormVisible: false,
       account: {},
       accountList: [],
+      contactAttrs: {
+        visible: false,
+        account: {},
+      },
     };
   },
-  created() {
-    this.$store.dispatch("app/toggleDevice", "mobile");
-    this.$store.dispatch("app/closeSideBar", { withoutAnimation: false });
-  },
+  // created() {
+  //   this.$store.dispatch("app/toggleDevice", "mobile");
+  //   this.$store.dispatch("app/closeSideBar", { withoutAnimation: false });
+  // },
   methods: {
     async init() {
       this.title = "selfDefenseFireMarshalling";
@@ -189,7 +199,8 @@ export default {
         }
       } else if (index === "openUser") {
         this.account = content;
-        this.dialogFormVisible = true;
+        this.contactAttrs.visible = true;
+        this.contactAttrs.account = content;
       } else if (index === "create" || index === "update") {
         var isOk =
           index === "update" ? await content.update() : await content.create();
@@ -206,6 +217,7 @@ export default {
       } else if (index === "cancel") {
         this.innerVisible = false;
         this.excelVisible = false;
+        this.contactAttrs.visible = false;
       }
     },
     async changeTable(value) {

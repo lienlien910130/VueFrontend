@@ -105,7 +105,6 @@ export default {
     },
     closeAll() {
       this.innerVisible = false;
-      this.contactVisible = false;
       this.excelVisible = false;
       this.uploadVisible = false;
       this.authorityVisible = false;

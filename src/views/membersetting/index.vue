@@ -166,7 +166,7 @@
 // const Vuex = require('vuex')
 import { blockmixin, dialogmixin, excelmixin, sharemixin } from "@/mixin/index";
 import Setting from "@/object/setting";
-import { Account, Files, User } from "@/object";
+import { Account, Files } from "@/object";
 export default {
   mixins: [dialogmixin, blockmixin, excelmixin, sharemixin],
   components: {

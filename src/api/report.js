@@ -48,6 +48,14 @@ const report = {
   apiGetInspectionLackOfID(id) {
     return req("get", "index/reportInspection/InspectionLack/" + id);
   },
+  apiGetInspectionLackSearchPages(inspectionId, data) {
+    return req(
+      "post",
+      "/reportInspection/InspectionLack/ss",
+      inspectionId,
+      data
+    );
+  },
   apiGetInspectionLack(inspectionId) {
     return req(
       "get",
@@ -66,6 +74,7 @@ const report = {
       "/reportInspection/InspectionLack/" + inspectionLackId
     );
   },
+  // 設定缺失項目的檔案
   apiPostInspectionLackFiles(autoCreateMaintain, inspectionId, fileId, cover) {
     return req(
       "post",
@@ -78,14 +87,6 @@ const report = {
         "/" +
         cover,
       null
-    );
-  },
-  apiGetInspectionLackSearchPages(inspectionId, data) {
-    return req(
-      "post",
-      "/reportInspection/InspectionLack/ss",
-      inspectionId,
-      data
     );
   },
   apiPostInspectionLacks(inspectionId, data) {
@@ -107,6 +108,9 @@ const report = {
   apiGetBuildingPublicSafe() {
     return req("get", "/reportPublicSafe/" + this.getBid() + "/a");
   },
+  apiGetPublicSafeSearchPages(data) {
+    return req("post", "/reportPublicSafe/ss", this.getBid(), data, true);
+  },
   apiGetPublicSafe(reportPublicSafeListId) {
     return req("get", "/reportPublicSafe/" + reportPublicSafeListId);
   },
@@ -118,9 +122,6 @@ const report = {
   },
   apiDeletePublicSafe(reportPublicSafeListId) {
     return req("delete", "/reportPublicSafe/" + reportPublicSafeListId);
-  },
-  apiGetPublicSafeSearchPages(data) {
-    return req("post", "/reportPublicSafe/ss", this.getBid(), data, true);
   },
   apiPostPublicSafes(data) {
     data.forEach((element) => {
@@ -142,18 +143,6 @@ const report = {
       "/reportPublicSafe/PublicSafeLack/" + publicSafeId + "/a"
     );
   },
-  apiPostPublicSafeLack(publicSafeId, data) {
-    return req("post", "/reportPublicSafe/PublicSafeLack", publicSafeId, data);
-  },
-  apiPatchPublicSafeLack(data) {
-    return req("patch", "/reportPublicSafe/PublicSafeLack", null, data);
-  },
-  apiDeletePublicSafeLack(publicSafeLackId) {
-    return req(
-      "delete",
-      "/reportPublicSafe/PublicSafeLack/" + publicSafeLackId
-    );
-  },
   apiGetPublicSafeLackSearchPages(publicSafeId, data) {
     return req(
       "post",
@@ -168,6 +157,18 @@ const report = {
       type + "/publicSafeLack/buildInfo/ss",
       this.getBid(),
       data
+    );
+  },
+  apiPostPublicSafeLack(publicSafeId, data) {
+    return req("post", "/reportPublicSafe/PublicSafeLack", publicSafeId, data);
+  },
+  apiPatchPublicSafeLack(data) {
+    return req("patch", "/reportPublicSafe/PublicSafeLack", null, data);
+  },
+  apiDeletePublicSafeLack(publicSafeLackId) {
+    return req(
+      "delete",
+      "/reportPublicSafe/PublicSafeLack/" + publicSafeLackId
     );
   },
   apiPostPublicSafeLacks(publicSafeId, data) {

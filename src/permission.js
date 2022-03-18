@@ -86,11 +86,6 @@ router.beforeEach(async (to, from, next) => {
               "building/setBuildingInfo",
               await Building.getInfo()
             );
-            // await store.dispatch('building/setbuildingoptions',await Setting.getAllOption())
-            // await store.dispatch('building/setbuildingcontactunit',await Contactunit.get())
-            // await store.dispatch('building/setbuildingusers',await User.get())
-            // await store.dispatch('building/setbuildingdevices',await Device.get())
-            // await store.dispatch('building/setbuildingfloors',await Floors.get())
           } else {
             //第一次登入 選單初始化
             const accessRoutes = await store.dispatch(
