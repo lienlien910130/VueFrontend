@@ -183,16 +183,16 @@ const device = {
     );
   },
 
-  //維護保養提醒
-  apiGetMaintainsListRemind(type) {
-    return req("get", type + "/deviceMaintainReminder");
-  },
+
   //維護保養大項
   apiGetBuildingMaintainsList() {
     return req("get", "/maintainListManagement/" + this.getBid() + "/a");
   },
   apiGetMaintainsList(maintainListId) {
     return req("get", "/maintainListManagement/" + maintainListId);
+  },
+  apiGetMaintainsListSearchPages(data) {
+    return req("post", "/maintainListManagement/ss", this.getBid(), data, true);
   },
   apiPostMaintainsList(data) {
     return req("post", "/maintainListManagement", this.getBid(), data);
@@ -203,10 +203,10 @@ const device = {
   apiDeleteMaintainsList(maintainListId) {
     return req("delete", "/maintainListManagement/" + maintainListId);
   },
-  apiGetMaintainsListSearchPages(data) {
-    return req("post", "/maintainListManagement/ss", this.getBid(), data, true);
+  //維護保養提醒 - type：/index、/maintainListManagement
+  apiGetMaintainsListRemind(type) {
+    return req("get", type + "/deviceMaintainReminder");
   },
-  // apiPostMaintainsLists(data){ return req('post','/maintainListManagement/s', null, data) },
   //維護保養取得檢修申報缺失內容
   apiGetInspectionListByMaintain() {
     return req("get", "/maintainListManagement/options");
@@ -224,6 +224,7 @@ const device = {
       data
     );
   },
+
   //維護保養細項
   apiGetMaintainAll() {
     return req("get", "/maintainListManagement/maintainManagement/a/ss");
@@ -232,6 +233,15 @@ const device = {
     return req(
       "get",
       "/maintainListManagement/maintainManagement/" + maintainListId + "/a"
+    );
+  },
+  apiGetMaintainAllSearchPages(data) {
+    return req(
+      "post",
+      "/maintainListManagement/maintainManagement/a/ss",
+      this.getBid(),
+      data,
+      true
     );
   },
   apiGetMaintains(maintainId) {
@@ -270,15 +280,6 @@ const device = {
       "/maintainListManagement/maintainManagement/" + maintainId
     );
   },
-  apiGetMaintainAllSearchPages(data) {
-    return req(
-      "post",
-      "/maintainListManagement/maintainManagement/a/ss",
-      this.getBid(),
-      data,
-      true
-    );
-  },
   apiGetMaintainSearchPages(maintainListId, data) {
     return req(
       "post",
@@ -308,6 +309,7 @@ const device = {
       data
     );
   },
+
   //取得樓層點位
   apiGetDrawingAddress(floorId) {
     return req("get", "/index/" + floorId + "/address");

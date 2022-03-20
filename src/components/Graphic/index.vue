@@ -233,10 +233,6 @@ export default {
     floor: {
       type: Object,
     },
-    actionObj: {
-      type: Object,
-      default: null,
-    },
     pointarray: {
       type: Array,
       default: function () {
@@ -260,21 +256,6 @@ export default {
       "buildingaccount",
       "account_record",
     ]),
-    getHeaders() {
-      return this.addressInfo.reduce(
-        (pre, cur, index) => pre.concat(`value${index}`),
-        ["title"]
-      );
-    },
-    getValues() {
-      return this.headers.map((item) => {
-        return this.addressInfo.reduce(
-          (pre, cur, index) =>
-            Object.assign(pre, { ["value" + index]: cur[item.prop] }),
-          { title: item.label }
-        );
-      });
-    },
     connectArray() {
       if (this.srcId == "p7") {
         //定位設定-節點ID+人物ID
@@ -392,28 +373,6 @@ export default {
       state: "", //狀態
       undo: [], //之前的步驟
       redo: [],
-      //點位資訊
-      // addressDiv:{x:0,y:0},
-      // infovisible:false,
-      // headers: [
-      //   {
-      //     prop: 'date',
-      //     label: '日期',
-      //   },
-      //   {
-      //     prop: 'name',
-      //     label: '姓名',
-      //   },
-      //   {
-      //     prop: 'address',
-      //     label: '地址',
-      //   },
-      // ],
-      // addressInfo:[{
-      //   date: '2016-05-02',
-      //   name: '王小虎',
-      //   address: '123'
-      // }],
       jsonInfoVisible: false,
       jsondata: [],
       //節點id+人物id
@@ -714,13 +673,6 @@ export default {
     },
     //圖層傳來的事件
     objectSelect(address) {
-      //圖層選取物件
-      // this.canvas.discardActiveObject()
-      // if(val.visible && this.type == 'edit'){
-      //   this.canvas.setActiveObject(val)
-      //   this.objectName = val.objectName
-      //   this.canvas.renderAll()
-      // }
       this.canvas.discardActiveObject();
       var icon = this.canvas.getObjects().filter((item) => {
         return item.addressId == address;
@@ -733,8 +685,6 @@ export default {
     //選取 刪除 移動物件
     selectioncreatedandupdated(e) {
       //畫面顯示選取到的物件的屬性狀況
-      //this.addressDiv = {x:e.e.offsetX,y:e.e.offsetY}
-      // this.infovisible = true
       this.selectioncleared(null);
       var items = this.canvas.getActiveObjects();
       this.selectType = null;
@@ -1152,10 +1102,6 @@ export default {
     },
     drawing() {
       //新增矩形
-      // console.log(this.imgSource.length !== 0, this.imgSource.length);
-      // if (this.imgSource.length !== 0) {
-      //   return false;
-      // }
       if (this.canvas.getActiveObjects().length === 0) {
         if (this.drawingObject !== null) {
           this.canvas.remove(this.drawingObject);
@@ -1469,9 +1415,6 @@ export default {
       ) {
         this.canvas.getActiveObject().set({ blockType: this.blockType });
         this.isEditChange(true);
-        // if(this.canvas.getActiveObject().type !== 'image'){
-        //   this.$emit('sendBlcokChange',this.canvas.getActiveObject().id,this.objectName,this.blockType)
-        // }
         //檢查現在選取的方框是否有修改的類型
         var ret1 = this.checkList.find((value, index, arr) => {
           return value == this.blockType;
@@ -1531,9 +1474,6 @@ export default {
           this.connectId = event;
         }
       } else {
-        // if (this.connectId == "") {
-        //   this.connectId = [];
-        // }
         this.connectId.forEach((con) => {
           var index = event.findIndex((obj) => {
             return obj == con;
@@ -1550,8 +1490,6 @@ export default {
                     arr.splice(index, 1);
                   }
                 });
-              //this.canvas.getObjects()[index_image].connectId.remove(this.objId)
-              //this.canvas.getObjects()[index_image].set({ connectId: [] });
             }
           }
         });
@@ -1561,7 +1499,6 @@ export default {
           });
           if (index !== -1) {
             this.canvas.getObjects()[index].connectId.push(this.objId);
-            // this.canvas.getObjects()[index].set({ connectId: this.objId });
           }
         });
         this.canvas.getActiveObject().set({ connectId: event });
@@ -1615,10 +1552,6 @@ export default {
       canvasObject.set("status", status);
       canvasObject.set("action", action);
     },
-    //sendAllobj(){ //傳給父元件：貼上/初始化物件/圖例/矩形/文字/多邊
-    // this.saveCanvasState()
-    // this.$emit('sendObjectListToLayer',this.canvas.getObjects())
-    //},
     saveCanvasState() {
       //儲存畫布狀態：物件有編輯/物件刪除/傳給父元件(貼上/初始化物件/圖例/矩形/文字/多邊)
       console.log("saveCanvasState");
@@ -1699,7 +1632,6 @@ export default {
         _clipboard.left += 10;
         canvas.setActiveObject(clonedObj);
         canvas.requestRenderAll();
-        //self.sendAllobj()
         self.isEditChange(true);
       });
     },
@@ -1713,7 +1645,6 @@ export default {
       this.canvas.loadFromJSON(lastJSON, () => {
         this.redo.push(this.state); // 在做上一步時把目前狀態 push 到 redo 陣列
         this.state = lastJSON; // 換成上一步的狀態
-        //this.$emit('sendObjectRedoUndoToLayer',this.canvas.getObjects())
         this.isEditChange(true);
       });
     },
@@ -1761,27 +1692,6 @@ export default {
       this.isEditChange(true);
       this.canvas.renderAll();
     },
-    // animateAddTop(obj) {
-    //   obj.animate('top', obj.top += 10  , {
-    //     duration: 250,
-    //     onChange: this.canvas.renderAll.bind(this.canvas),
-    //     onComplete: () => this.animateLessTop(obj),
-    //     abort: () => !this.hasAnimationStarted,
-    //     easing: fabric.util.ease.easeInSine
-    //   })
-    // },
-    // animateLessTop(obj) {
-    //   obj.animate('top', obj.top -= 10  , {
-    //     duration: 250,
-    //     onChange: this.canvas.renderAll.bind(this.canvas),
-    //     onComplete: () => this.animateAddTop(obj),
-    //     abort: () => !this.hasAnimationStarted,
-    //     easing: fabric.util.ease.easeInSine
-    //   })
-    // },
-    // disableVisible(){
-    //   this.infovisible = false
-    // },
     //操作列
     async handleOperateMenu(operate) {
       switch (operate) {

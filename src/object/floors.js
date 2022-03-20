@@ -1,6 +1,5 @@
 import Parent from "./parent";
 import api from "@/api";
-import Device from "./device";
 import Files from "./files";
 import UsageOfFloor from "./usageOfFloor";
 import idb from "@/utils/indexedDB";

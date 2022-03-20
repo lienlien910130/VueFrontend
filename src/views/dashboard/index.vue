@@ -411,156 +411,156 @@ export default {
         },
       ];
     },
-    async handleList(title, item) {
-      var config =
-        title == "maintain"
-          ? MaintainManagement.getTableConfig()
-          : title == "inspection"
-          ? Inspection.getTableConfig()
-          : PublicSafe.getTableConfig();
-      var titlename =
-        title == "maintain"
-          ? "維護保養"
-          : title == "inspection"
-          ? "檢修申報"
-          : "公安申報";
-      var keys = Object.keys(item);
-      var array = [];
-      var newDatas = [];
-      const h = this.$createElement;
-      const bigData = [];
-      keys.forEach((key) => {
-        var i = config.filter((obj) => {
-          return obj.prop == key;
-        });
-        if (i.length !== 0) {
-          var value = item[key];
-          if (i[0].format == "YYYY-MM-DD" || i[0].format == "YYYY") {
-            value = moment(item[key]).format(i[0].format);
-          } else if (i[0].format == "deviceSelect") {
-            value = item.getDevicesName();
-          } else if (i[0].format == "inspectionSelect") {
-            value = item.getInspectionLackName();
-          } else if (i[0].format == "contactunitSelect") {
-            value = item.getContactUnitsName();
-          } else if (
-            i[0].format == "MaintainProcessOptions" ||
-            i[0].format == "MaintainContentOptions"
-          ) {
-            let _array = this.buildingoptions.filter(
-              (item, index) => item.id == item[key]
-            );
-            value = _array.length !== 0 ? _array[0].textName : "";
-          } else if (i[0].format == "improvedBoolean") {
-            value = item[key] == true ? "已改善" : "未改善";
-          } else if (i[0].format == "openreportlack") {
-            if (value !== null && value.length) {
-              var doneobj = this.buildingoptions.filter(
-                (item) =>
-                  item.classType == "LackStatusOptions" &&
-                  item.textName == "已改善" &&
-                  item.value == "system"
-              );
-              var doneid = doneobj.length !== 0 ? doneobj[0].id : 0;
-              var done = value.filter((item) => item.status == doneid);
-              value =
-                done.length.toString() +
-                "/" +
-                (value.length - done.length).toString();
-            } else {
-              value = "0/0";
-            }
-          } else if (i[0].format == "openmaintain") {
-            if (value !== null && value.length) {
-              var doneobj = this.buildingoptions.filter(
-                (item) =>
-                  item.classType == "MaintainProcessOptions" &&
-                  item.textName == "已保養" &&
-                  item.value == "system"
-              );
-              var doneid = doneobj.length !== 0 ? doneobj[0].id : 0;
-              var done = value.filter((item) => item.status == doneid);
-              value =
-                done.length.toString() +
-                "/" +
-                (value.length - done.length).toString();
-            } else {
-              value = "0/0";
-            }
-          }
-          array.push({
-            label: i[0].label,
-            value: value,
-          });
-        }
-      });
-      array.forEach((obj) => {
-        newDatas.push(
-          h("p", { style: "width:100%" }, [
-            h(
-              "span",
-              { style: "width:40%;display:inline-block;vertical-align:top" },
-              obj.label
-            ),
-            h(
-              "span",
-              { style: "width:60%;display:inline-block;vertical-align:top" },
-              obj.value
-            ),
-          ])
-        );
-      });
-      bigData.push(
-        h(
-          "div",
-          { style: "border:1px solid;padding:10px;margin-bottom:5px" },
-          newDatas
-        )
-      );
-      this.$msgbox({
-        title: titlename,
-        message: h(
-          "div",
-          { style: "max-height:500px;overflow-x:hidden;overflow-y:auto;" },
-          bigData
-        ),
-        showCancelButton: true,
-        distinguishCancelAndClose: true,
-        confirmButtonText: "編輯",
-        cancelButtonText: "取消",
-        beforeClose: (action, instance, done) => {
-          if (action === "confirm") {
-            done();
-            switch (title) {
-              case "maintain":
-                this.$router.push({
-                  name: "maintainManagement",
-                  params: { target: item },
-                });
-                break;
-              case "inspection":
-                this.$router.push({
-                  name: "ReportInspection",
-                  params: { type: "open", target: item },
-                });
-                break;
-              case "publicSafe":
-                this.$router.push({
-                  name: "ReportPublicSafe",
-                  params: { target: item },
-                });
-                break;
-            }
-          } else {
-            done();
-          }
-        },
-      })
-        .then((action) => {
-          done();
-        })
-        .catch(() => {});
-    },
+    // async handleList(title, item) {
+    //   var config =
+    //     title == "maintain"
+    //       ? MaintainManagement.getTableConfig()
+    //       : title == "inspection"
+    //       ? Inspection.getTableConfig()
+    //       : PublicSafe.getTableConfig();
+    //   var titlename =
+    //     title == "maintain"
+    //       ? "維護保養"
+    //       : title == "inspection"
+    //       ? "檢修申報"
+    //       : "公安申報";
+    //   var keys = Object.keys(item);
+    //   var array = [];
+    //   var newDatas = [];
+    //   const h = this.$createElement;
+    //   const bigData = [];
+    //   keys.forEach((key) => {
+    //     var i = config.filter((obj) => {
+    //       return obj.prop == key;
+    //     });
+    //     if (i.length !== 0) {
+    //       var value = item[key];
+    //       if (i[0].format == "YYYY-MM-DD" || i[0].format == "YYYY") {
+    //         value = moment(item[key]).format(i[0].format);
+    //       } else if (i[0].format == "deviceSelect") {
+    //         value = item.getDevicesName();
+    //       } else if (i[0].format == "inspectionSelect") {
+    //         value = item.getInspectionLackName();
+    //       } else if (i[0].format == "contactunitSelect") {
+    //         value = item.getContactUnitsName();
+    //       } else if (
+    //         i[0].format == "MaintainProcessOptions" ||
+    //         i[0].format == "MaintainContentOptions"
+    //       ) {
+    //         let _array = this.buildingoptions.filter(
+    //           (item, index) => item.id == item[key]
+    //         );
+    //         value = _array.length !== 0 ? _array[0].textName : "";
+    //       } else if (i[0].format == "improvedBoolean") {
+    //         value = item[key] == true ? "已改善" : "未改善";
+    //       } else if (i[0].format == "openreportlack") {
+    //         if (value !== null && value.length) {
+    //           var doneobj = this.buildingoptions.filter(
+    //             (item) =>
+    //               item.classType == "LackStatusOptions" &&
+    //               item.textName == "已改善" &&
+    //               item.value == "system"
+    //           );
+    //           var doneid = doneobj.length !== 0 ? doneobj[0].id : 0;
+    //           var done = value.filter((item) => item.status == doneid);
+    //           value =
+    //             done.length.toString() +
+    //             "/" +
+    //             (value.length - done.length).toString();
+    //         } else {
+    //           value = "0/0";
+    //         }
+    //       } else if (i[0].format == "openmaintain") {
+    //         if (value !== null && value.length) {
+    //           var doneobj = this.buildingoptions.filter(
+    //             (item) =>
+    //               item.classType == "MaintainProcessOptions" &&
+    //               item.textName == "已保養" &&
+    //               item.value == "system"
+    //           );
+    //           var doneid = doneobj.length !== 0 ? doneobj[0].id : 0;
+    //           var done = value.filter((item) => item.status == doneid);
+    //           value =
+    //             done.length.toString() +
+    //             "/" +
+    //             (value.length - done.length).toString();
+    //         } else {
+    //           value = "0/0";
+    //         }
+    //       }
+    //       array.push({
+    //         label: i[0].label,
+    //         value: value,
+    //       });
+    //     }
+    //   });
+    //   array.forEach((obj) => {
+    //     newDatas.push(
+    //       h("p", { style: "width:100%" }, [
+    //         h(
+    //           "span",
+    //           { style: "width:40%;display:inline-block;vertical-align:top" },
+    //           obj.label
+    //         ),
+    //         h(
+    //           "span",
+    //           { style: "width:60%;display:inline-block;vertical-align:top" },
+    //           obj.value
+    //         ),
+    //       ])
+    //     );
+    //   });
+    //   bigData.push(
+    //     h(
+    //       "div",
+    //       { style: "border:1px solid;padding:10px;margin-bottom:5px" },
+    //       newDatas
+    //     )
+    //   );
+    //   this.$msgbox({
+    //     title: titlename,
+    //     message: h(
+    //       "div",
+    //       { style: "max-height:500px;overflow-x:hidden;overflow-y:auto;" },
+    //       bigData
+    //     ),
+    //     showCancelButton: true,
+    //     distinguishCancelAndClose: true,
+    //     confirmButtonText: "編輯",
+    //     cancelButtonText: "取消",
+    //     beforeClose: (action, instance, done) => {
+    //       if (action === "confirm") {
+    //         done();
+    //         switch (title) {
+    //           case "maintain":
+    //             this.$router.push({
+    //               name: "maintainManagement",
+    //               params: { target: item },
+    //             });
+    //             break;
+    //           case "inspection":
+    //             this.$router.push({
+    //               name: "ReportInspection",
+    //               params: { type: "open", target: item },
+    //             });
+    //             break;
+    //           case "publicSafe":
+    //             this.$router.push({
+    //               name: "ReportPublicSafe",
+    //               params: { target: item },
+    //             });
+    //             break;
+    //         }
+    //       } else {
+    //         done();
+    //       }
+    //     },
+    //   })
+    //     .then((action) => {
+    //       done();
+    //     })
+    //     .catch(() => {});
+    // },
     //圓餅圖
     handleChartClick(value) {
       this.currentNode = value;

@@ -2135,16 +2135,6 @@ export default {
   },
   GraphicMenuView: {
     left: [
-      // {
-      //     type:'',
-      //     name:'移動',
-      //     icon:'el-icon-thumb'
-      // },
-      // {
-      //     type:'icon',
-      //     name:'圖例',
-      //     icon:'el-icon-add-location'
-      // }
     ],
     right: [
       {
@@ -2181,11 +2171,6 @@ export default {
   },
   GraphicMenuEdit: {
     left: [
-      // {
-      //     type:'icon',
-      //     name:'圖例',
-      //     icon:'el-icon-add-location'
-      // },
       {
         type: "text",
         name: "文字",

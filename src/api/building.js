@@ -5,13 +5,16 @@ const building = {
   getBid() {
     return store.getters.buildingid;
   },
-  //基本資料
+  //建築物
   apiGetBuilding() {
     return req("get", "/index/buildings/a");
-  }, //取得所有建築物
+  },
+  apiGetBuildingSearchPages(data) {
+    return req("post", "index/buildings/ss", null, data, true);
+  },
   apiGetBuildingInfo() {
     return req("get", "/index/buildings/" + this.getBid());
-  }, //取得該建築物的基本資料
+  },
   apiGetBuildingOfID(id) {
     return req("get", "/index/buildings/" + id);
   },
@@ -23,9 +26,6 @@ const building = {
   }, //修改建築物資料
   apiDeleteBuilding(buildingId) {
     return req("delete", "/index/buildings/" + buildingId);
-  },
-  apiGetBuildingSearchPages(data) {
-    return req("post", "index/buildings/ss", null, data, true);
   },
   apiPostBuildings(data) {
     return req("post", "index/check/s", null, data);

@@ -73,7 +73,6 @@
             </Graphic>
           </el-col>
         </el-row>
-        <el-row> </el-row>
       </div>
     </div>
   </div>
@@ -86,9 +85,6 @@ import DrawingControl from "@/object/drawingControl";
 
 export default {
   mixins: [sharemixin, computedmixin],
-  components: {
-    ObjectList: () => import("./components/ObjectList"),
-  },
   computed: {
     floorselectAttrs() {
       return {
@@ -102,43 +98,17 @@ export default {
         type: this.type,
         checkList: this.checkList,
         floor: this.floor,
-        actionObj: this.actionObj,
         pointarray: this.pointarray,
         cNodeList: this.cNodeList,
       };
     },
     graphicEvent() {
       return {
-        //sendActionToLayer:this.sendActionToLayer,
-        //sendObjectListToLayer: this.sendObjectListToLayer,
-        //sendObjectRedoUndoToLayer:this.sendObjectRedoUndoToLayer,
         sendFloorGraphicFile: this.sendFloorGraphicFile,
-        //sendLabelChange:this.sendLabelChange,
-        //sendBlcokChange:this.sendBlcokChange,
         sendSaveToSelect: this.sendSaveToSelect,
         loadFinish: this.loadFinish,
       };
     },
-    // objectListAttrs(){
-    //   return {
-    //       objectList: this.objectList,
-    //       type:this.type
-    //   }
-    // },
-    // tableAttrs(){
-    //   return {
-    //       title:'graphic',
-    //       tableData: this.tableData,
-    //       config:this.config,
-    //       hasColumn:false,
-    //       pageSizeList:[5,30,50]
-    //   }
-    // },
-    // tableEvent(){
-    //   return {
-    //       clickPagination:this.clickPagination
-    //   }
-    // }
   },
   data() {
     return {
@@ -150,25 +120,9 @@ export default {
       disabled: true, //若樓層沒平面圖則不開啟按鈕使用
       isSelect: false, //是否有尚未儲存的資料
       type: "view", //檢視&編輯
-      //objectList:[], //圖控上的所有元件
       //跟wsg相關
       isEdit: false, //是否可編輯圖控
-      actionObj: null, //正在做動的物件
-      origindata: [], //即時訊息
       cNodeList: [],
-      // tableData:[],
-      // config:[
-      //       { label:'時間' , prop:'date'},
-      //       { label:'樓層' , prop:'floor'},
-      //       { label:'事件' , prop:'action'},
-      //       { label:'設備名稱' , prop:'name'},
-      //       { label:'點位名稱' , prop:'point'},
-      // ],
-      // listQueryParams:{
-      //   page: 1,
-      //   limit: 5,
-      //   total: 0
-      // }
     };
   },
   watch: {
@@ -177,10 +131,8 @@ export default {
         if (this.graphicMsg !== null) {
           var data = JSON.parse(this.graphicMsg.data);
           var type = data.SendType;
-          var sendId = data.Data.Id; // 傳送的人
           var floor = data.Data.Content; //進入的樓層
           var senderName = data.SenderName;
-          //sendId !== this.wsuserId
           if (senderName !== this.name) {
             console.log(data);
             switch (type) {
@@ -244,13 +196,6 @@ export default {
         return v;
       });
     },
-    async clickPagination() {
-      this.tableData = this.origindata.filter(
-        (item, index) =>
-          index < this.listQueryParams.limit * this.listQueryParams.page &&
-          index >= this.listQueryParams.limit * (this.listQueryParams.page - 1)
-      );
-    },
     changeType(type) {
       if (this.process) {
         this.$message.error("現在啟動緊急應變中，請勿編輯圖控");
@@ -304,37 +249,10 @@ export default {
     loadFinish() {
       this.disabled = false;
     },
-    //圖層事件
-    // sendActionToCanvas(index,val){ //圖層選取/刪除物件
-    //     if(index == "del"){
-    //       this.$refs.graphic.objectDelete(val)
-    //     }else{
-    //       this.$refs.graphic.objectSelect(val)
-    //     }
-    // },
     //圖控的事件
     sendSaveToSelect(val) {
       this.isSelect = val;
     },
-    // sendObjectListToLayer(val){ //圖控傳過來的所有物件清單,更新圖層節點用
-    //   this.objectList = val
-    // },
-    //sendActionToLayer(index,val){ //圖控上面選取/刪除物件
-    // if(index == 'del'){
-    //   this.$refs.objectList.objectDelete(val)
-    // }else{
-    //   this.$refs.objectList.objectSelect(val)
-    // }
-    //},
-    //sendLabelChange(id,objname){ //圖控更新標題，圖層須連動更新
-    //this.$refs.objectList.updateNodeLabel([id,objname])
-    //},
-    //sendBlcokChange(id,objname,blocktype){ //圖控更新區塊類型，圖層須連動更新
-    //this.$refs.objectList.updateNodeLevel([id,objname,blocktype])
-    //},
-    //sendObjectRedoUndoToLayer(val){//圖控上一步下一步，圖層須連動更新
-    //this.$refs.objectList.redoundo(val)
-    //},
     async sendFloorGraphicFile(state, addressArray) {
       //儲存圖控檔案，同步更新點位有無被設置
       var str = JSON.stringify(state);

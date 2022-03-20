@@ -426,7 +426,7 @@
                         "
                         style="color: #66b1ff; cursor: pointer"
                       >
-                        {{ item.getInspectionLackName() }}
+                        <!-- {{ item.getInspectionLackName() }} -->
                       </span>
 
                       <span v-else>{{ item[option.prop] }}</span>

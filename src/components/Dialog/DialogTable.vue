@@ -266,7 +266,7 @@ export default {
     config: {
       handler: async function () {
         this.tableconfigs = this.config.filter(
-          (item, index) => item.isHidden == false
+          (item, index) => item.isTable == true
         );
       },
       immediate: true,

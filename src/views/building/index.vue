@@ -101,9 +101,6 @@ export default {
   async created() {
     await this.initBuilding();
   },
-  // components: {
-  //   QrcodeVue,
-  // },
   data() {
     return {
       uploadVisible: false,
@@ -127,16 +124,7 @@ export default {
           dark: "#010599FF",
           light: "#FFBF60FF",
         },
-      },
-      //dialog額外的參數
-      // formtableData:[],
-      // formtableconfig: Floors.getTableConfig(),
-      // floorlistQueryParams:{
-      //   pageIndex: 1,
-      //   pageSize: 10,
-      //   total:0,
-      //   orderBy:'sort'
-      // }
+      }
     };
   },
   methods: {
@@ -213,8 +201,6 @@ export default {
     async handleBlock(title, index, content) {
       console.log(title, index, JSON.stringify(content));
       this.dialogData = [];
-      this.dialogTitle = this.title;
-      this.dialogButtonsName = [];
       this.dialogSelect = [];
       this.building = null;
       this.dialogConfig = Building.getTableConfig();
@@ -222,82 +208,86 @@ export default {
         this.building = content;
         this.dialogConfig[4].isEdit = false;
         this.dialogConfig[5].isEdit = false;
-        // this.dialogSelect = userlist.map((v) => {
-        //   this.$set(v, "value", v.getID());
-        //   this.$set(v, "label", v.getName());
-        //   this.$set(v, "id", v.getID());
-        //   return v;
-        // });
-        this.dialogData.push(content);
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "update" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "update";
-      } else if (index === "empty") {
-        this.dialogData.push(Building.empty());
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "create" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
-        this.dialogStatus = "create";
-      } else if (index === "delete" || index === "deleteMany") {
-        var isDelete = false;
-        if (index === "delete") {
-          if (this.buildingid == content.getID()) {
-            this.$message.error("請勿刪除正在選取的建築物");
-            return false;
-          }
-          isDelete = await content.delete();
-        } else {
-          var deleteArray = [];
-          content.forEach((item) => {
-            deleteArray.push(item.id);
-          });
-          var indexBuilding = deleteArray.findIndex(
-            (item) => item == this.buildingid
-          );
-          if (indexBuilding !== -1) {
-            this.$message.error("請勿刪除正在選取的建築物");
-            deleteArray = deleteArray.filter((item) => {
-              return item !== this.buildingid;
-            });
-          }
-          isDelete = await Building.deleteMany(deleteArray.toString());
+        await this.handleBlockMixin(title, index, content, Building);
+      } else if (
+        index === "empty" ||
+        index === "exportExcel" ||
+        index === "uploadExcel" ||
+        index === "updateMany"
+      ) {
+        if (index === "updateMany"){
+          this.dialogConfig[4].isEdit = false;
+          this.dialogConfig[5].isEdit = false;
         }
+        await this.handleBlockMixin(title, index, content, Building);
+      }else if (index === "delete" || index === "deleteMany") {
+        var hasThisBuilding = index === 'delete' ?
+          this.buildingid == content.getID() :
+          content.findIndex((item)=>{ return item.id === this.buildingid}) !== -1
+        if(hasThisBuilding){
+          this.$message.error("請勿刪除正在選取的建築物");
+          return false;
+        }
+        var isDelete = await this.handleBlockMixin(
+          title,
+          index,
+          content,
+          Building
+        );
         if (isDelete) {
-          this.$message("刪除成功");
-          var length = content.length !== undefined ? content.length : 1;
-          var page = Math.ceil(
-            (this.listQueryParams.total - length) /
-              this.listQueryParams.pageSize
-          );
-          if (this.listQueryParams.pageIndex > page) {
-            this.listQueryParams.pageIndex = page;
-          }
           await this.getAllBuilding();
           this.$store.dispatch(
             "building/setBuildingList",
             await Building.get()
           );
-          this.$socket.sendMsg(
-            "building",
-            "delete",
-            index === "delete" ? content.getID() : deleteArray.toString()
-          );
-          this.$refs.block.clearSelectArray();
-        } else {
-          this.$message.error("系統錯誤");
         }
-      } else if (index === "exportExcel") {
-        this.exportExcelData = this.blockData;
-        this.excelVisible = true;
-        this.excelType = "exportExcel";
-      } else if (index === "uploadExcel") {
-        this.excelVisible = true;
-        this.excelType = "uploadExcel";
+        // var isDelete = false;
+        // if (index === "delete") {
+        //   if (this.buildingid == content.getID()) {
+        //     this.$message.error("請勿刪除正在選取的建築物");
+        //     return false;
+        //   }
+        //   isDelete = await content.delete();
+        // } else {
+        //   var deleteArray = [];
+        //   content.forEach((item) => {
+        //     deleteArray.push(item.id);
+        //   });
+        //   var indexBuilding = deleteArray.findIndex(
+        //     (item) => item == this.buildingid
+        //   );
+        //   if (indexBuilding !== -1) {
+        //     this.$message.error("請勿刪除正在選取的建築物");
+        //     deleteArray = deleteArray.filter((item) => {
+        //       return item !== this.buildingid;
+        //     });
+        //   }
+        //   isDelete = await Building.deleteMany(deleteArray.toString());
+        // }
+        // if (isDelete) {
+        //   this.$message("刪除成功");
+        //   var length = content.length !== undefined ? content.length : 1;
+        //   var page = Math.ceil(
+        //     (this.listQueryParams.total - length) /
+        //       this.listQueryParams.pageSize
+        //   );
+        //   if (this.listQueryParams.pageIndex > page) {
+        //     this.listQueryParams.pageIndex = page;
+        //   }
+        //   await this.getAllBuilding();
+        //   this.$store.dispatch(
+        //     "building/setBuildingList",
+        //     await Building.get()
+        //   );
+        //   this.$socket.sendMsg(
+        //     "building",
+        //     "delete",
+        //     index === "delete" ? content.getID() : deleteArray.toString()
+        //   );
+        //   this.$refs.block.clearSelectArray();
+        // } else {
+        //   this.$message.error("系統錯誤");
+        // }
       } else if (index === "openfloors") {
         this.building = content;
         this.filesTitle = "building";
@@ -308,10 +298,8 @@ export default {
           orderBy: "sort",
         };
         await this.getFloorList();
-        // await this.resettablelistQueryParams()
         this.tableVisible = true;
         this.tablebuttonsName = [
-          // { name:'刪除',icon:'el-icon-delete',status:'delete'},
           { name: "編輯", icon: "el-icon-edit", status: "open" },
           { name: "檔案", icon: "el-icon-folder-opened", status: "openfiles" },
         ];
@@ -323,31 +311,15 @@ export default {
         this.filesTitle = "building";
         this.building = content;
         await this.handleUpload(this.building, index, content);
-      } else if (index === "updateMany") {
-        this.dialogStatus = "updateMany";
-        this.dialogConfig[4].isEdit = false;
-        this.dialogConfig[5].isEdit = false;
-        content.forEach((item) => {
-          var obj = _.cloneDeep(item);
-          this.dialogData.push(obj);
-        });
-        this.dialogButtonsName = [
-          { name: "儲存", type: "primary", status: "updateManySave" },
-          { name: "取消", type: "info", status: "cancel" },
-        ];
-        this.innerVisible = true;
       } else if (index === "qrcode") {
         this.previewTitle = content.buildingName + " QRcode 註冊";
-        //this.previewPath = "https://demo.mercuryfire.com.tw/";
         this.previewType = "qrcode";
         var _this = this;
-        //const element = this.$refs.qrcode
         QRCode.toDataURL(
           "https://demo.mercuryfire.com.tw/register?bID=" + content.id,
           this.options,
           function (err, url) {
             if (err) throw err;
-            //var img = document.getElementById('image')
             _this.previewPath = url;
           }
         );
@@ -423,10 +395,6 @@ export default {
             isOk == true
               ? this.$message("新增成功")
               : this.$message.error("新增樓層有誤");
-            // this.$store.dispatch(
-            //   "building/setBuildingList",
-            //   await Building.get()
-            // );
             this.$socket.sendMsg("building", "create", result);
             await this.getAllBuilding();
             this.innerVisible = false;
@@ -437,18 +405,8 @@ export default {
           var result = await content.update();
           if (Object.keys(result).length !== 0) {
             this.$message("更新成功");
-            // this.$store.dispatch(
-            //   "building/setBuildingList",
-            //   await Building.get()
-            // );
             this.$socket.sendMsg("building", "update", result, result.getID());
             this.$socket.sendMsg("building", "info", result, result.getID());
-            // if (this.buildingid == content.getID()) {
-            //   this.$store.dispatch(
-            //     "building/setBuildingInfo",
-            //     await Building.getInfo()
-            //   );
-            // }
             await this.getAllBuilding();
             if (index !== "updateManySave") {
               this.innerVisible = false;

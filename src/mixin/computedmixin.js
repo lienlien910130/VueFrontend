@@ -192,7 +192,6 @@ export default {
     },
     showSettingName() {
       //設定名稱
-
       return function (value) {
         if (this.setting_record == 0) {
           this.$store.dispatch("building/setoptions");
@@ -519,6 +518,7 @@ export default {
           let _array = this.buildingoptions.filter(
             (item, index) => item.classType == format
           );
+          console.log(JSON.stringify(this.buildingoptions))
           var options = _array.map((v) => {
             var str = v.textName;
             if (v.classType == "InspectionTypeOfTime") {
