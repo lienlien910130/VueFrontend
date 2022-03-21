@@ -138,12 +138,6 @@ const actions = {
   saveWaitingNode({ commit }, waitingNode) {
     commit("SET_WAITINGNODE", waitingNode);
   },
-  // updateWaitingNode({ commit, state }, content) {
-  //   var waitingNode = state.waitingNode.filter((item) => {
-  //     return item.nodeId !== content.nodeId;
-  //   });
-  //   commit("SET_WAITINGNODE", waitingNode);
-  // },
 };
 
 export default {
