@@ -135,7 +135,6 @@ import {
   CNode,
   ContingencyProcess,
   COption,
-  SelfDefenseFireMarshalling,
   SelfDefenseFireMarshallingMgmt,
 } from "@/object";
 import constant from "@/constant/development";
@@ -243,10 +242,8 @@ export default {
         if (this.processMsg !== null && this.processMsg !== undefined) {
           var data = JSON.parse(this.graphicMsg.data);
           var type = data.SendType;
-          var sendId = data.Data.Id; // 傳送的人
           var sendProcess = data.Data.Content; //進入的流程圖
           var senderName = data.SenderName;
-          //sendId !== this.wsuserId
           if (senderName !== this.name) {
             console.log(data);
             switch (type) {
@@ -305,24 +302,6 @@ export default {
       return v;
     });
     this.selectItemVisible = true;
-    //取得預設節點資料
-    //pa=>預設載入第一個
-    // if (this.$route.query.l !== undefined) {
-    //   //取得所有流程圖
-    //   this.selfDefenseFireMarshallingId = this.$route.query.l;
-    //   this.processArray = await SelfDefenseFireMarshalling.getProcess(
-    //     "/emergencyResponseFlowEdit/flowEditMgmt",
-    //     this.selfDefenseFireMarshallingId
-    //   );
-    //   this.sampleNodeArray = await SelfDefenseFireMarshalling.getSampleNode();
-    //   await this.getJsonFile(
-    //     this.processArray.length ? this.processArray[0].getID() : null
-    //   );
-    //   await this.onkeydownSetting()
-    // } else {
-    //   // this.$message.error("尚未選擇自衛消防編組");
-
-    // }
   },
   beforeDestroy() {
     document.onkeydown = async (e) => {
@@ -473,18 +452,20 @@ export default {
         });
         // 連線前的判斷：需判斷該連線是否已存在
         this.jsPlumb.bind("beforeDrop", (evt) => {
+          console.log("beforeDrop");
           let from = evt.sourceId;
           let to = evt.targetId;
           if (from === to) {
             this.$message.error("節點不支援連接自己");
             return false;
           }
-          // if (this.hasLine(from, to)) {
-          //     this.$message.error('該關係已存在，不允許重複')
-          //     return false
-          // }
           if (this.hashOppositeLine(from, to)) {
             this.$message.error("不支援兩點之間循環");
+            return false;
+          }
+          if (this.processStatus !== "edit") {
+            console.log("beforeDropbeforeDrop", evt);
+            this.$message.error("請開啟編輯後再進行操作");
             return false;
           }
           this.$message.success("連接成功");
@@ -492,12 +473,10 @@ export default {
         });
         // 連線：需判斷data-lineList是否已存在
         this.jsPlumb.bind("connection", (evt) => {
+          console.log("connection");
           let lineId = evt.connection.id;
           let from = evt.sourceId;
           let to = evt.targetId;
-          // let isExist = this.data.lineList.findIndex((item) => {
-          //     return item.from === from && item.to === to
-          // })
           if (this.loadFlowFinish) {
             this.data.lineList.push({ id: lineId, from: from, to: to });
             this.saveState();
@@ -537,7 +516,6 @@ export default {
           };
         }
         this.$nextTick(() => {
-          //this.jsPlumbInit()
           this.jsPlumb = jsPlumb.getInstance({ Container: "zll-index" });
           this.$nextTick(() => {
             this.jsPlumbInit();
@@ -590,7 +568,6 @@ export default {
           await this.saveFile();
           this.copyFile = false;
         }
-        //this.jsPlumb.setSuspendDrawing(false, true)
         this.saveState();
       });
     },
@@ -1255,11 +1232,7 @@ export default {
         var isDelete = await ContingencyProcess.delete(content.id);
         if (isDelete) {
           this.$message("刪除成功");
-          await this.getPrcessOfFloor();
-          // this.processArray = await SelfDefenseFireMarshalling.getProcess(
-          //   "/emergencyResponseFlowEdit/flowEditMgmt",
-          //   this.selfDefenseFireMarshallingId
-          // );
+          await this.getProcessOfFloor();
           var data = [];
           this.processArray.forEach((item) => {
             item.children.forEach((children) => {
@@ -1287,10 +1260,6 @@ export default {
         this.innerVisible = true;
         this.dialogStatus = "update";
       } else if (index == "empty" || index == "copyFile") {
-        // this.dialogSelect =
-        //   await SelfDefenseFireMarshalling.getOfIDMarshallingMgmt(
-        //     this.selfDefenseFireMarshallingId
-        //   );
         this.dialogSelect = this.processArray;
         this.dialogButtonsName = [
           {
@@ -1315,11 +1284,7 @@ export default {
           index == "update"
             ? this.$message("更新成功")
             : this.$message("新增成功");
-          await this.getPrcessOfFloor();
-          // this.processArray = await SelfDefenseFireMarshalling.getProcess(
-          //   "/emergencyResponseFlowEdit/flowEditMgmt",
-          //   this.selfDefenseFireMarshallingId
-          // );
+          await this.getProcessOfFloor();
           var data = [];
           this.processArray.forEach((item) => {
             item.children.forEach((children) => {
@@ -1364,18 +1329,9 @@ export default {
       if (index === "floor") {
         event.target.blur();
         this.selectFloorId = content;
-        await this.getPrcessOfFloor();
+        await this.getProcessOfFloor();
         //取得樓層的所有流程圖
-
-        // else if (index === "fireMarshalling") {
-        //   this.selfDefenseFireMarshallingId = content;
-        //   //取得自衛消防編組大項的細項的流程圖
-        //   this.processArray = await SelfDefenseFireMarshalling.getProcess(
-        //     "/emergencyResponseFlowEdit/flowEditMgmt",
-        //     this.selfDefenseFireMarshallingId
-        //   );
-        //   console.log(JSON.stringify(this.processArray))
-        this.sampleNodeArray = await SelfDefenseFireMarshalling.getSampleNode();
+        this.sampleNodeArray = await ContingencyProcess.getSampleNode();
         await this.getJsonFile(
           null
           // this.processArray.length ? this.processArray[0].getID() : null
@@ -1392,7 +1348,7 @@ export default {
         this.selectItemVisible = true;
       }
     },
-    async getPrcessOfFloor() {
+    async getProcessOfFloor() {
       var data = await SelfDefenseFireMarshallingMgmt.getOfFloor(
         "/emergencyResponseFlowEdit/flowEditMgmt",
         this.selectFloorId

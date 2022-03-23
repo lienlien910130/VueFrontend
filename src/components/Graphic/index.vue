@@ -368,7 +368,6 @@ export default {
       line: {},
       //複製貼上
       clipboard: null,
-
       //上一步下一步
       state: "", //狀態
       undo: [], //之前的步驟
@@ -462,10 +461,6 @@ export default {
       if (e.keyCode == 83 && e.ctrlKey) {
         //存檔 s
         await this.saveCanvasFile();
-      }
-      if (e.keyCode == 71 && e.altKey) {
-        //打開圖例
-        this.openLegendWindows();
       }
       if (e.keyCode == 83 && e.altKey) {
         await this.drawTypeChange("");
@@ -1023,11 +1018,6 @@ export default {
     //新增物件
     async drawTypeChange(e) {
       //切換繪圖類別
-      // if(window.child && window.child.open && !window.child.closed){
-      //   window.child.close()
-      //   this.imgSource = []
-      // }
-
       if (this.drawType == "text" && this.textbox !== null) {
         this.textbox.exitEditing(); //關閉文字框編輯
         this.textbox = null;

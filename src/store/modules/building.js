@@ -202,14 +202,14 @@ const actions = {
     state.buildingoptions.push(content);
   },
   updateOption({ commit }, content) {
-    var index = state.buildingoptions.findIndex((item) => {
-      return item.id === content.id;
-    });
-    if (index !== -1) {
-      Object.keys(content).forEach((item) => {
-        state.buildingoptions[index][item] = content[item];
-      });
-    }
+    // var index = state.buildingoptions.findIndex((item) => {
+    //   return item.id === content.id;
+    // });
+    // if (index !== -1) {
+    //   Object.keys(content).forEach((item) => {
+    //     state.buildingoptions[index][item] = content[item];
+    //   });
+    // }
   },
   deleteOption({ commit }, id) {
     var obj = state.buildingoptions.filter((item) => {

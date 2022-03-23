@@ -21,7 +21,6 @@ import Role from "./role";
 import Setting from "./setting";
 import UsageOfFloor from "./usageOfFloor";
 import {
-  SelfDefenseFireMarshalling,
   SelfDefenseFireMarshallingMgmt,
   ContingencyProcess,
 } from "./selfDefenseFireMarshalling";
@@ -49,7 +48,6 @@ export {
   Role,
   Setting,
   UsageOfFloor,
-  SelfDefenseFireMarshalling,
   SelfDefenseFireMarshallingMgmt,
   ContingencyProcess,
   SampleNodeList,

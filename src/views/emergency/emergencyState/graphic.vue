@@ -43,18 +43,6 @@
         </div>
       </template>
     </div>
-    <!-- <img
-      src="/viewer/videourl0.cgi?user=viewer&pass=viewer"
-      width="100%"
-      height="auto"
-    /> -->
-    <!-- <div v-if="deviceType !== 'null' && process == true" class="videobox">
-      <img
-        src="/viewer/videourl0.cgi?user=viewer&pass=viewer"
-        width="100%"
-        height="auto"
-      />
-    </div> -->
   </div>
 </template>
 <script>

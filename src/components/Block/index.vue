@@ -1125,10 +1125,6 @@ export default {
         }
       });
     },
-    //選取列
-    handleSelectionChange(val) {
-      this.selectArray = val;
-    },
     // 改變翻頁組件中每頁數據總數
     handleSizeChange(val) {
       this.listQueryParams.pageSize = val;
@@ -1288,6 +1284,10 @@ export default {
         }
       }
       return dest;
+    },
+    //選取列
+    handleSelectionChange(val) {
+      this.selectArray = val;
     },
     clearSelectArray() {
       this.selectArray = [];

@@ -37,7 +37,6 @@ let wsConnection = {
     floorId: null,
     watchFloorId: null,
     addressChangeList: [], //有異動的清單
-    selfDefenseFireMarshallingListId: null,
     contingencyProcessId: null,
     login: false,
     getProcess: false, //用來判斷關閉後是否要重新連線
@@ -394,12 +393,6 @@ async function emergencyInfo(data) {
   wsConnection.processWs.floorId = data.floorId;
   store.dispatch("building/setBuildingID", data.buildingId);
   wsConnection.processWs.addressChangeList = data.addressChangeList;
-  var marList = data.selfDefenseFireMarshallingListId.split(",");
-  wsConnection.processWs.selfDefenseFireMarshallingListId = marList.filter(
-    function (element, index, arr) {
-      return arr.indexOf(element) === index;
-    }
-  );
   var processList = data.contingencyProcessId.split(",");
   wsConnection.processWs.contingencyProcessId = processList.filter(function (
     element,

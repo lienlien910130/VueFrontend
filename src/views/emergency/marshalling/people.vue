@@ -210,7 +210,6 @@ export default {
             : this.$message("新增成功");
           await this.getMgmt();
           this.innerVisible = false;
-          // await this.marshallingList.patchFloor();
         } else {
           this.$message.error("班別名稱已存在，請重新輸入");
         }

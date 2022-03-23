@@ -36,8 +36,6 @@
             <p class="tipck">4.【Alt】+【T】：文字</p>
             <p class="tipck">5.【Alt】+【R】：矩形</p>
             <p class="tipck">6.【Alt】+【A】：多邊形</p>
-            <!-- <p class="tipck">8.【Alt】+【Z】：取消拖曳圖片</p> -->
-            <p class="tipck">7.【Alt】+【G】：打開圖例</p>
             <p class="tipck">8.【Ctrl】+【C】：複製</p>
             <p class="tipck">9.【Ctrl】+【V】：貼上</p>
             <p class="tipck">10.【Ctrl】+【Z】：上一步</p>

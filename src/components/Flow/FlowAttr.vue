@@ -162,7 +162,11 @@
 </template>
 
 <script>
-import { Role, SelfDefenseFireMarshalling } from "@/object";
+import {
+  ContingencyProcess,
+  Role,
+  SelfDefenseFireMarshallingMgmt,
+} from "@/object";
 import { getUUID } from "@/utils";
 
 export default {
@@ -263,11 +267,6 @@ export default {
         return new Role(item);
       });
       this.accountArray = this.node.linkAccountList;
-      // if (this.title == "selfDefenseClass") {
-      //   this.accountArray = this.node.linkAccountList;
-      // } else {
-      //   await this.filterAccount(this.node.linkRoles);
-      // }
     },
     lineInit(line) {
       this.type = "line";
@@ -303,7 +302,8 @@ export default {
       var account = [];
       for (let role of value) {
         if (role) {
-          var result = await SelfDefenseFireMarshalling.getAccountByRole(
+          var result = await ContingencyProcess.getAccountByRole(
+            "/emergencyResponseFlowEdit",
             role.id
           );
           result.forEach((element) => {

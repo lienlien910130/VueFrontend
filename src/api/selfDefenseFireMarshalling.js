@@ -9,54 +9,10 @@ const selfDefenseFireMarshalling = {
     return store.getters.buildingid;
   },
 
-  //自衛消防編組大項
-  apiGetAllFireMarshalling() {
-    return req("get", "/selfDefenseFireMarshalling/" + this.getBid() + "/a");
-  },
-  apiGetFireMarshalling(selfDefenseFireMarshallingId) {
-    return req(
-      "get",
-      "/selfDefenseFireMarshalling/" + selfDefenseFireMarshallingId
-    );
-  },
-  apiPostFireMarshalling(data) {
-    return req("post", "/selfDefenseFireMarshalling", this.getBid(), data);
-  },
-  apiPatchFireMarshalling(data) {
-    return req("patch", "/selfDefenseFireMarshalling", null, data);
-  },
-  apiDeleteFireMarshalling(selfDefenseFireMarshallingId) {
-    return req(
-      "delete",
-      "/selfDefenseFireMarshalling/" + selfDefenseFireMarshallingId
-    );
-  },
-  // apiGetFireMarshallingSearchPages(type, data) {
-  //   return req("post", type + "/ss", this.getBid(), data, true);
-  // },
-  apiGetAllProcess(type, selfDefenseFireMarshallingId) {
-    return req(
-      "get",
-      type + "/" + selfDefenseFireMarshallingId + "/contingencyProcessList"
-    );
-  },
-  apiGetAccountByRole(roleId) {
-    return req("get", "/selfDefenseFireMarshalling/" + roleId + "/accounts");
-  },
-  apiPatchFloorFromMgmt(selfDefenseFireMarshallingId) {
-    return req(
-      "delete",
-      "/selfDefenseFireMarshalling/" + selfDefenseFireMarshallingId + "/floors"
-    );
-  },
-  //自衛消防編組細項-班別
-  apiGetFireMarshallingMgmt(type ,selfDefenseFireMarshallingId) {
-    return req(
-      "get",
-      type +"/" +
-        selfDefenseFireMarshallingId +
-        "/a"
-    );
+  //自衛消防編組-班別
+  //透過樓層取得班別
+  apiGetMarshallingMgmtOfFloor(type, floorId) {
+    return req("get", type + "/floors/" + floorId);
   },
   apiPostFireMarshallingMgmt(data) {
     return req(
@@ -80,29 +36,7 @@ const selfDefenseFireMarshalling = {
       "/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/" + mgmtId
     );
   },
-  apiGetFireMarshallingMgmtSearchPages(selfDefenseFireMarshallingId, data) {
-    return req(
-      "post",
-      "/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/ss",
-      selfDefenseFireMarshallingId,
-      data
-    );
-  },
-  apiPostFireMarshallingMgmts(selfDefenseFireMarshallingId, data) {
-    data.forEach((element) => {
-      element.parentId = selfDefenseFireMarshallingId;
-    });
-    return req(
-      "post",
-      "/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/check/s",
-      null,
-      data
-    );
-  },
-  //透過樓層取得班別
-  apiGetMarshallingMgmtOfFloor(type, floorId) {
-    return req("get", type + "/floors/" + floorId);
-  },
+
   //細項的流程資料 p:細項
   apiGetContingencyProcess(mgmtId) {
     return req(
@@ -132,14 +66,9 @@ const selfDefenseFireMarshalling = {
       "/emergencyResponseFlowEdit/flowEditContingencyProcess/" + processId
     );
   },
-  //apiGetContingencyProcessSearchPages(mgmtId,data){
-  //    return req('post','/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt/ss', mgmtId, data)  },
   //用流程圖ID取得檔案JSON/selfDefenseFireMarshalling
-  apiGetContingencyProcessJson(type,processId) {
-    return req(
-      "get",
-      type+"/" + processId + "/f"
-    );
+  apiGetContingencyProcessJson(type, processId) {
+    return req("get", type + "/" + processId + "/f");
   },
   //儲存流程圖檔案
   apiPostContingencyProcessJson(processId, data) {
@@ -154,10 +83,13 @@ const selfDefenseFireMarshalling = {
       data
     );
   },
-
   //預設的所有節點資料
   apiGetAllOfMarshallingSampleNode() {
     return req("get", "/emergencyResponseFlowEdit/flowEditCNodeMgmt/sample/a");
+  },
+  // 取得角色的帳號 - type：/selfDefenseFireMarshalling、/emergencyResponseFlowEdit
+  apiGetAccountByRole(type, roleId) {
+    return req("get", type + "/" + roleId + "/accounts");
   },
 };
 

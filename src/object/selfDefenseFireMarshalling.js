@@ -4,205 +4,7 @@ import Account from "./account";
 import Role from "./role";
 import { Floors, SampleNodeList } from ".";
 
-//大項
-class SelfDefenseFireMarshalling extends Parent {
-  constructor(data) {
-    super(data);
-    const { name, classLeaderId, linkSelfDefenseFireMarshalling, linkFloors } =
-      data;
-    var floor =
-      linkFloors !== undefined
-        ? linkFloors.map((item) => {
-            return new Floors(item);
-          })
-        : [];
-    var selfDefenseFireMarshallingMgmt =
-      linkSelfDefenseFireMarshalling !== undefined
-        ? linkSelfDefenseFireMarshalling.map((item) => {
-            return new SelfDefenseFireMarshallingMgmt(item);
-          })
-        : [];
-    this.name = name;
-    this.classLeaderId = classLeaderId;
-    this.linkFloors = floor;
-    this.linkSelfDefenseFireMarshalling = selfDefenseFireMarshallingMgmt;
-  }
-  clone(data) {
-    return new SelfDefenseFireMarshalling(data);
-  }
-  async update() {
-    var data = await api.selfDefenseFireMarshalling
-      .apiPatchFireMarshalling(this)
-      .then(async (response) => {
-        return new SelfDefenseFireMarshalling(response.result);
-      })
-      .catch((error) => {
-        return {};
-      });
-    return data;
-  }
-  async create() {
-    var data = await api.selfDefenseFireMarshalling
-      .apiPostFireMarshalling(this)
-      .then((response) => {
-        return new SelfDefenseFireMarshalling(response.result);
-      })
-      .catch((error) => {
-        return {};
-      });
-    return data;
-  }
-  async delete() {
-    var data = await api.selfDefenseFireMarshalling
-      .apiDeleteFireMarshalling(this.id)
-      .then(async (response) => {
-        return true;
-      })
-      .catch((error) => {
-        return false;
-      });
-    return data;
-  }
-  async getMarshallingMgmt() {
-    var data = await api.selfDefenseFireMarshalling
-      .apiGetFireMarshallingMgmt(
-        "/selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt",
-        this.id
-      )
-      .then((response) => {
-        response.result = response.result
-          .sort((x, y) => x.id - y.id)
-          .map((item) => {
-            return new SelfDefenseFireMarshallingMgmt(item);
-          });
-        return response.result;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
-  async patchFloor() {
-    await api.selfDefenseFireMarshalling.apiPatchFloorFromMgmt(this.id);
-  }
-  getName() {
-    return this.name;
-  }
-  static empty() {
-    return new SelfDefenseFireMarshalling({
-      id: "",
-      name: "",
-      classLeaderId: "",
-      linkFloors: [],
-      linkSelfDefenseFireMarshalling: [],
-    });
-  }
-  static getTableConfig() {
-    return [
-      {
-        label: "名稱",
-        prop: "name",
-        mandatory: true,
-        message: "請輸入名稱",
-        isHidden: false,
-        maxlength: "20",
-        isSearch: true,
-        placeholder: "請輸入名稱",
-        isAssociate: false,
-        isEdit: true,
-        isUpload: true,
-        isExport: true,
-        isBlock: true,
-      },
-    ];
-  }
-  static async get() {
-    var data = await api.selfDefenseFireMarshalling
-      .apiGetAllFireMarshalling()
-      .then((response) => {
-        var array = response.result
-          .sort((x, y) => x.id - y.id)
-          .map((item) => {
-            return new SelfDefenseFireMarshalling(item);
-          });
-        return array;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
-  static async getAccountByRole(roleId) {
-    var data = await api.selfDefenseFireMarshalling
-      .apiGetAccountByRole(roleId)
-      .then((response) => {
-        var array = response.result
-          .sort((x, y) => x.id - y.id)
-          .map((item) => {
-            return new Account(item);
-          });
-        return array;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
-  //emergencyResponseFlowView/flowViewMgmt
-  //emergencyResponseFlowEdit/flowEditMgmt
-  static async getProcess(type, selfDefenseFireMarshallingId) {
-    var data = await api.selfDefenseFireMarshalling
-      .apiGetAllProcess(type, selfDefenseFireMarshallingId)
-      .then(async (response) => {
-        var array = response.result
-          .sort((x, y) => x.id - y.id)
-          .map((item) => {
-            return new ContingencyProcess(item);
-          });
-        return array;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
-  static async getOfIDMarshallingMgmt(id) {
-    //功能同getMarshallingMgmt，開給process使用
-    var data = await api.selfDefenseFireMarshalling
-      .apiGetFireMarshallingMgmt("/emergencyResponseFlowEdit/flowEditMgmt", id)
-      .then((response) => {
-        console.log("copyFile");
-        console.log(JSON.stringify(response));
-        var array = response.result
-          .sort((x, y) => x.id - y.id)
-          .map((item) => {
-            return new SelfDefenseFireMarshallingMgmt(item);
-          });
-        return array;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
-  static async getSampleNode() {
-    var data = await api.selfDefenseFireMarshalling
-      .apiGetAllOfMarshallingSampleNode()
-      .then(async (response) => {
-        var array = response.result
-          .sort((x, y) => x.id - y.id)
-          .map((item) => {
-            return new SampleNodeList(item);
-          });
-        return array;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
-}
-//細項
+//自衛消防編組
 class SelfDefenseFireMarshallingMgmt extends Parent {
   constructor(data) {
     super(data);
@@ -293,12 +95,6 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
   getLinkRole() {
     return this.linkRoles;
   }
-  getAccountName() {
-    return this.linkAccountList.map((item) => item.getName()).toString();
-  }
-  getProcessName() {
-    return this.linkContingencyProcess.map((item) => item.getName()).toString();
-  }
   static empty() {
     return new SelfDefenseFireMarshallingMgmt({
       id: "",
@@ -315,139 +111,126 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
       {
         label: "名稱",
         prop: "name",
+        formType: "inputString",
+        isTable: true,
+        isBlock: true,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請輸入名稱",
-        isHidden: false,
         maxlength: "20",
-        isSearch: true,
         placeholder: "請輸入名稱",
-        isAssociate: false,
-        isEdit: true,
+        isCheck: true,
         isUpload: true,
         isExport: true,
-        isBlock: true,
       },
       {
         label: "樓層",
         prop: "linkFloors",
+        formType: "select",
         format: "manyFloorSelect",
+        isTable: true,
+        isBlock: true,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: true,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請選擇樓層",
         type: "array",
         typemessage: "",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: true,
-        isEdit: true,
+        isCheck: false,
         isUpload: false,
         isExport: true,
-        isBlock: true,
-        formType: "select",
-        limit: 0,
       },
       {
         label: "角色",
         prop: "linkRoles",
+        formType: "select",
         format: "roleSelect",
+        isTable: true,
+        isBlock: true,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: true,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請選擇角色",
         type: "array",
         typemessage: "",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: true,
-        isEdit: true,
+        hasEvent: true,
+        isCheck: false,
         isUpload: false,
         isExport: true,
-        isBlock: true,
-        formType: "select",
-        limit: 0,
       },
       {
         label: "帳號",
         prop: "linkAccountList",
+        formType: "select",
         format: "accountSelect",
+        isTable: true,
+        isBlock: true,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: true,
+        isShow: true,
+        isEdit: true,
         mandatory: false,
-        message: "請選擇帳號",
         type: "array",
         typemessage: "",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: true,
-        isEdit: true,
+        hasEvent: true,
+        isCheck: false,
         isUpload: false,
         isExport: true,
-        isBlock: true,
-        formType: "select",
-        limit: 0,
       },
       {
         label: "班長",
         prop: "classLeaderId",
+        formType: "selectString",
         format: "classLeaderSelect",
+        isTable: true,
+        isBlock: true,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請選擇班長",
         type: "string",
         typemessage: "",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: false,
-        isEdit: true,
+        isCheck: false,
         isUpload: false,
         isExport: true,
-        isBlock: true,
-        formType: "selectString",
       },
       {
-        label: "流程圖名稱",
+        label: "流程圖",
         prop: "linkContingencyProcess",
+        formType: "select",
         format: "processList",
+        isTable: true,
+        isBlock: true,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: false,
         mandatory: false,
         type: "array",
         typemessage: "",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: false,
-        isEdit: false,
+        isCheck: false,
         isUpload: false,
         isExport: true,
-        isBlock: true,
-        formType: "select",
-        limit: 0,
       },
     ];
   }
-  static async get(selfDefenseFireMarshallingId) {
-    var data = await api.selfDefenseFireMarshalling
-      .apiGetFireMarshallingMgmtSearchPages(selfDefenseFireMarshallingId, data)
-      .then((response) => {
-        response.result = response.result.map((item) => {
-          return new SelfDefenseFireMarshallingMgmt(item);
-        });
-        return response;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
-  static async getSearchPage(selfDefenseFireMarshallingId, data) {
-    var data = await api.selfDefenseFireMarshalling
-      .apiGetFireMarshallingMgmtSearchPages(selfDefenseFireMarshallingId, data)
-      .then((response) => {
-        response.result = response.result.map((item) => {
-          return new SelfDefenseFireMarshallingMgmt(item);
-        });
-        return response;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
   //selfDefenseFireMarshalling/selfDefenseFireMarshallingMgmt
   //emergencyResponseFlowEdit/flowEditMgmt
-  //emergencyResponseFlowView/flowViewMgmt
   static async getOfFloor(type, floorId) {
     var data = await api.selfDefenseFireMarshalling
       .apiGetMarshallingMgmtOfFloor(type, floorId)
@@ -456,20 +239,6 @@ class SelfDefenseFireMarshallingMgmt extends Parent {
           return new SelfDefenseFireMarshallingMgmt(item);
         });
         return response.result;
-      })
-      .catch((error) => {
-        return [];
-      });
-    return data;
-  }
-  static async postMany(selfDefenseFireMarshallingId, data) {
-    var data = await api.selfDefenseFireMarshalling
-      .apiPostFireMarshallingMgmts(selfDefenseFireMarshallingId, data)
-      .then((response) => {
-        response.result = response.result.map((item) => {
-          return new SelfDefenseFireMarshallingMgmt(item);
-        });
-        return response;
       })
       .catch((error) => {
         return [];
@@ -502,32 +271,39 @@ class ContingencyProcess extends Parent {
       {
         label: "班別",
         prop: "selfDefenseFireMarshallingMgmt",
+        formType: "selectString",
         format: "marshallingMgmtSelect",
+        isTable: true,
+        isBlock: true,
+        isSearch: false,
+        selectFilter: false,
+        isAssociate: true,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請選擇班別",
-        isHidden: false,
-        isSearch: false,
-        isAssociate: true,
-        isEdit: true,
+        isCheck: false,
         isUpload: false,
         isExport: true,
-        isBlock: true,
-        formType: "selectString",
       },
       {
         label: "流程圖名稱",
         prop: "name",
+        formType: "inputString",
+        isTable: true,
+        isBlock: true,
+        isSearch: true,
+        selectFilter: false,
+        isAssociate: false,
+        isShow: true,
+        isEdit: true,
         mandatory: true,
         message: "請輸入名稱",
-        isHidden: false,
         maxlength: "20",
-        isSearch: true,
         placeholder: "請輸入名稱",
-        isAssociate: false,
-        isEdit: true,
+        isCheck: false,
         isUpload: true,
         isExport: true,
-        isBlock: true,
       },
     ];
   }
@@ -607,10 +383,38 @@ class ContingencyProcess extends Parent {
       });
     return data;
   }
+  static async getSampleNode() {
+    var data = await api.selfDefenseFireMarshalling
+      .apiGetAllOfMarshallingSampleNode()
+      .then(async (response) => {
+        var array = response.result
+          .sort((x, y) => x.id - y.id)
+          .map((item) => {
+            return new SampleNodeList(item);
+          });
+        return array;
+      })
+      .catch((error) => {
+        return [];
+      });
+    return data;
+  }
+  static async getAccountByRole(type, roleId) {
+    var data = await api.selfDefenseFireMarshalling
+      .apiGetAccountByRole(type, roleId)
+      .then((response) => {
+        var array = response.result
+          .sort((x, y) => x.id - y.id)
+          .map((item) => {
+            return new Account(item);
+          });
+        return array;
+      })
+      .catch((error) => {
+        return [];
+      });
+    return data;
+  }
 }
 
-export {
-  SelfDefenseFireMarshalling,
-  SelfDefenseFireMarshallingMgmt,
-  ContingencyProcess,
-};
+export { SelfDefenseFireMarshallingMgmt, ContingencyProcess };

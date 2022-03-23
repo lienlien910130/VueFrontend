@@ -5,6 +5,7 @@ let Setting = {
     var data = await api.setting
       .apiGetBuildingOptions()
       .then((response) => {
+        console.log("getAllOption");
         console.log(JSON.stringify(response));
         return response.result.sort((x, y) => x.id - y.id);
       })

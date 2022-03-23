@@ -716,7 +716,7 @@ class MaintainManagement extends Parent {
         isCheck: false,
         isUpload: true,
         isExport: true,
-      }
+      },
     ];
   }
   static getDeviceOfMaintainTableConfig() {
@@ -867,7 +867,7 @@ class MaintainManagement extends Parent {
         isCheck: false,
         isUpload: true,
         isExport: true,
-      }
+      },
     ];
   }
   static async get() {

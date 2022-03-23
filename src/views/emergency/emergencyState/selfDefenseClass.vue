@@ -176,12 +176,7 @@
 <script>
 import "@/utils/jsplumb";
 import { flowmixin } from "@/mixin/index";
-import {
-  CNode,
-  ContingencyProcess,
-  COption,
-  SelfDefenseFireMarshalling,
-} from "@/object";
+import { CNode, ContingencyProcess, COption } from "@/object";
 import ws from "@/utils/socket";
 
 export default {
@@ -256,11 +251,7 @@ export default {
       handler: async function () {
         if (this.process == true && ws.processWs.floorId !== null) {
           this.$nextTick(async () => {
-            this.processArray = await SelfDefenseFireMarshalling.getProcess(
-              "/emergencyResponseFlowView/flowViewMgmt",
-              ws.processWs.selfDefenseFireMarshallingListId
-            );
-            await this.getJsonFile(ws.processWs.contingencyProcessId);
+            await this.handleFloorDialog("emergency", ws.processWs.floorId);
           });
         }
       },
@@ -596,18 +587,8 @@ export default {
       if (index === "floor") {
         event.target.blur();
         this.selectFloorId = content;
-        await this.getPrcessOfFloor();
+        await this.getProcessOfFloor();
         //取得樓層的所有流程圖
-
-        // else if (index === "fireMarshalling") {
-        //   this.selfDefenseFireMarshallingId = content;
-        //   //取得自衛消防編組大項的細項的流程圖
-        //   this.processArray = await SelfDefenseFireMarshalling.getProcess(
-        //     "/emergencyResponseFlowEdit/flowEditMgmt",
-        //     this.selfDefenseFireMarshallingId
-        //   );
-        //   console.log(JSON.stringify(this.processArray))
-        this.sampleNodeArray = await SelfDefenseFireMarshalling.getSampleNode();
         await this.getJsonFile(
           null
           // this.processArray.length ? this.processArray[0].getID() : null
@@ -615,16 +596,16 @@ export default {
         this.selectItemVisible = false;
         await this.onkeydownSetting();
       } else if (index === "cancel") {
-        // if (this.selfDefenseFireMarshallingId == null) {
-        //   this.$message.error("請選擇自衛消防編組再開始編輯");
-        //   return false;
-        // }
         this.selectItemVisible = false;
       } else if (index === "open") {
         this.selectItemVisible = true;
+      } else if (index === "emergency") {
+        this.selectFloorId = content;
+        await this.getProcessOfFloor();
+        await this.getJsonFile(ws.processWs.contingencyProcessId);
       }
     },
-    async getPrcessOfFloor() {
+    async getProcessOfFloor() {
       var data = await SelfDefenseFireMarshallingMgmt.getOfFloor(
         "/emergencyResponseFlowEdit/flowEditMgmt",
         this.selectFloorId

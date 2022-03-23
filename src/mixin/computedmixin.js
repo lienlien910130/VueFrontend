@@ -202,20 +202,17 @@ export default {
             (item, index) => item.id == value
           );
           if (_array.length !== 0) {
-            if (
-              (_array[0].classType =
-                "MaintainProcessOptions" && _array[0].textName === "已保養")
-            ) {
-              _array[0].textName = "正常";
-            } else if (
-              (_array[0].classType =
-                "MaintainProcessOptions" && _array[0].textName === "故障中")
-            ) {
-              _array[0].textName = "故障";
+            if (_array[0].classType !== "MaintainProcessOptions") {
+              return _array[0].textName;
+            } else {
+              if (_array[0].textName === "已保養") {
+                return "正常";
+              } else if (_array[0].textName === "故障中") {
+                return "故障";
+              }
             }
           }
-
-          return _array.length !== 0 ? _array[0].textName : "";
+          return "";
         }
         return "";
       };
@@ -514,11 +511,11 @@ export default {
           this.$store.dispatch("building/setoptions");
           this.$store.dispatch("record/saveSettingRecord", 1);
         }
+        var tempList = _.cloneDeep(this.buildingoptions);
         if (format !== null) {
-          let _array = this.buildingoptions.filter(
-            (item, index) => item.classType == format
-          );
-          console.log(JSON.stringify(this.buildingoptions))
+          let _array = tempList.filter((item) => {
+            return item.classType == format;
+          });
           var options = _array.map((v) => {
             var str = v.textName;
             if (v.classType == "InspectionTypeOfTime") {

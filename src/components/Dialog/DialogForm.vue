@@ -20,7 +20,6 @@
           ></el-tab-pane>
         </el-tabs>
       </div>
-      <!-- dialogStatus : 一般表單/upload/lack/authority -->
       <keep-alive>
         <el-form
           ref="dataForm"
@@ -462,10 +461,10 @@ import { changeDefaultFullType } from "@/utils/index";
 import {
   Account,
   Contactunit,
+  ContingencyProcess,
   Files,
   Inspection,
   MaintainManagementList,
-  SelfDefenseFireMarshalling,
 } from "@/object";
 const moment = require("moment");
 export default {
@@ -592,7 +591,6 @@ export default {
   },
   methods: {
     async init() {
-      // window.addEventListener("message", this.receiveMessage, false)
       console.log("form", this.title, this.dialogStatus);
       if (this.dialogData.length) {
         this.activeName = this.dialogData[0].getID();
@@ -699,7 +697,8 @@ export default {
         var data = [];
         if (roles.length) {
           for (let item of roles) {
-            var account = await SelfDefenseFireMarshalling.getAccountByRole(
+            var account = await ContingencyProcess.getAccountByRole(
+              "/selfDefenseFireMarshalling",
               item.id
             );
             account.forEach((acc) => {
@@ -742,7 +741,7 @@ export default {
         }
       });
     },
-    dateChange(val, prop) {
+    async dateChange(val, prop) {
       //故障日期、叫修日期、完成日期=>連動處理進度
       if (this.title == "contactUnit") {
         if (val == "") {
@@ -757,7 +756,7 @@ export default {
         if (val == "") {
           return false;
         }
-        var list = this.settingFilter("MaintainProcessOptions");
+        var list = await this.settingFilter("MaintainProcessOptions");
         var txtName = "";
         switch (prop) {
           case "dateOfFailure":
@@ -848,7 +847,8 @@ export default {
         ) {
           var data = [];
           for (let item of value) {
-            var account = await SelfDefenseFireMarshalling.getAccountByRole(
+            var account = await ContingencyProcess.getAccountByRole(
+              "/selfDefenseFireMarshalling",
               item.id
             );
             account.forEach((acc) => {
@@ -1001,8 +1001,8 @@ export default {
       }
     },
     //動態新增選項-先判斷是否為新的選項，是的話則先儲存起來
-    settingChange(event, format, prop) {
-      var array = this.settingFilter(format);
+    async settingChange(event, format, prop) {
+      var array = await this.settingFilter(format);
       var data = array.filter((item) => item.id == event);
       if (data.length == 0) {
         var item = {

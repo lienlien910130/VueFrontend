@@ -33,7 +33,7 @@
                 </el-table-column>
                 <el-table-column prop="status" label="設備狀態">
                   <template slot-scope="scope">
-                    {{ changeSettingsName(scope.row.status, "status") }}
+                    {{ scope.row.statuslabel }}
                   </template>
                 </el-table-column>
                 <el-table-column>
@@ -41,10 +41,9 @@
                     <el-button
                       size="mini"
                       @click="handleRepair(scope.$index, scope.row)"
-                      >{{
-                        changeSettingsName(scope.row.status, "button")
-                      }}</el-button
                     >
+                      {{ scope.row.buttonName }}
+                    </el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -135,7 +134,6 @@ export default {
       panelList: [],
       hasSearch: false,
       remind: [],
-      finishId: null,
       searchDeviceType: "",
       maintainDays: "",
     };
@@ -162,50 +160,6 @@ export default {
         visible: this.uploadVisible,
         title: this.title,
         files: this.maintainFiles,
-      };
-    },
-    changeSettingsName() {
-      //設定名稱
-      return function (value, options) {
-        if (this.setting_record == 0) {
-          this.$store.dispatch("building/setoptions");
-          this.$store.dispatch("record/saveSettingRecord", 1);
-        }
-        if (value !== null && value !== undefined) {
-          let _array = this.buildingoptions.filter(
-            (item, index) => item.id == value
-          );
-
-          if (_array.length !== 0 && options === "status") {
-            if (
-              _array[0].classType === "MaintainProcessOptions" &&
-              _array[0].textName === "已保養"
-            ) {
-              _array[0].textName = "正常";
-            } else if (
-              _array[0].classType === "MaintainProcessOptions" &&
-              _array[0].textName === "故障中"
-            ) {
-              _array[0].textName = "故障";
-            }
-            return _array[0].textName;
-          } else if (_array.length !== 0 && options === "button") {
-            if (
-              _array[0].classType === "MaintainProcessOptions" &&
-              _array[0].textName === "正常"
-            ) {
-              return "定期檢測";
-            } else if (
-              _array[0].classType === "MaintainProcessOptions" &&
-              _array[0].textName === "故障"
-            ) {
-              return "叫修";
-            } else {
-              return "其他";
-            }
-          }
-        }
-        return "";
       };
     },
   },
@@ -243,11 +197,34 @@ export default {
         },
         { name: "匯出檔案", icon: "el-icon-download", status: "exportExcel" },
       ];
-      this.finishId = await this.setting();
       var reminder = await MaintainManagementList.getReminder(
         "/maintainListManagement"
       );
-      this.remind = reminder.needMaintainDeviceLsit;
+      if (this.setting_record == 0) {
+        await this.$store.dispatch("building/setoptions");
+        this.$store.dispatch("record/saveSettingRecord", 1);
+      }
+      this.remind = reminder.needMaintainDeviceLsit.map((element) => {
+        var status = "";
+        var buttonName = "其他";
+        var _array = this.buildingoptions.filter(
+          (item, index) => item.id == element.status
+        );
+        if (_array.length > 0) {
+          var item = _.cloneDeep(_array[0]);
+          status = item.textName;
+          if (item.textName === "已保養") {
+            status = "正常";
+            buttonName = "定期檢測";
+          } else if (item.textName === "故障中") {
+            status = "故障";
+            buttonName = "叫修";
+          }
+        }
+        this.$set(element, "statuslabel", status);
+        this.$set(element, "buttonName", buttonName);
+        return element;
+      });
       this.getMaintainDays();
       console.log(JSON.stringify(this.remind));
       this.panelList = [
@@ -849,19 +826,6 @@ export default {
       this.dialogData.push(data);
       this.innerVisible = true;
       this.dialogStatus = "create";
-    },
-    async setting() {
-      if (this.setting_record == 0) {
-        await this.$store.dispatch("building/setoptions");
-        this.$store.dispatch("record/saveSettingRecord", 1);
-      }
-      let _array = this.buildingoptions.filter(
-        (item, index) =>
-          item.classType == "MaintainProcessOptions" &&
-          item.systemUse &&
-          item.textName == "已保養"
-      );
-      return _array.length !== 0 ? _array[0].id.toString() : "";
     },
     async handleSetLineChartData(type) {
       //本月應保養數量/過期未保養
