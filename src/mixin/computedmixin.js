@@ -412,12 +412,20 @@ export default {
                 this.$store.dispatch("building/setaccounts");
                 this.$store.dispatch("record/saveAccountRecord", 1);
               }
-              return this.buildingaccount.map((v) => {
-                this.$set(v, "id", v.id);
-                this.$set(v, "label", v.name);
-                this.$set(v, "value", v.id);
-                return v;
-              });
+              return this.buildingaccount
+                .filter((item) => {
+                  var buildings = item.linkBuildings;
+                  var index = buildings.findIndex((item) => {
+                    return item.id === this.buildingid;
+                  });
+                  return index > -1;
+                })
+                .map((v) => {
+                  this.$set(v, "id", v.id);
+                  this.$set(v, "label", v.name);
+                  this.$set(v, "value", v.id);
+                  return v;
+                });
             case "deviceTypeSelect":
               if (this.deviceType_record == 0) {
                 this.$store.dispatch("building/setDeviceType");
