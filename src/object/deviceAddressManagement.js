@@ -931,6 +931,9 @@ class DeviceAddressManagement extends Parent {
   static getChName() {
     return "點位";
   }
+  getDevicesName() {
+    return this.linkDevices.map((item) => item.getOnlyName()).toString();
+  }
   static async getOfID(deviceAddressId, isPLC = null) {
     if (isPLC == null) {
       var data = await api.device

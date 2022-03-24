@@ -122,7 +122,7 @@ export default {
                 this.$store.dispatch("record/saveFloorRecord", 1);
               }
               let _array = this.buildingfloors.filter(
-                (item, index) => item.id == val
+                (item, index) => item.id == row[prop]
               );
               return _array.length !== 0 ? _array[0].floor : "";
             case "valueType":
@@ -574,6 +574,9 @@ export default {
   },
   filters: {
     booleanFilter: function (val, format) {
+      if (val == undefined) {
+        return "";
+      }
       if (val == true) {
         switch (format) {
           case "accountStatusSelect":
@@ -866,7 +869,10 @@ export default {
           if (i.length !== 0) {
             var itemConfig = i[0];
             var value = "";
-            if (itemConfig.formType === "boolean") {
+            if (
+              itemConfig.formType === "boolean" ||
+              itemConfig.formType === "checkbox"
+            ) {
               value = this.$options.filters.booleanFilter(
                 val[item],
                 itemConfig.format
@@ -909,10 +915,10 @@ export default {
     },
     async changeRealData(val) {
       var constr = val.constructor;
-      var config = val.constructor.getTableConfig();
-      // var config = val.constructor.getTableConfig().filter((item) => {
-      //   return item.isShow == true;
-      // });
+      //var config = val.constructor.getTableConfig();
+      var config = val.constructor.getTableConfig().filter((item) => {
+        return item.isShow == true;
+      });
       return {
         constr: constr,
         config: config,
